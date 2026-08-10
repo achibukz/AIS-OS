@@ -62,6 +62,35 @@ Seven-domain map lives in `connections.md`. Day-1 state:
 
 Most are reachable locally but not yet wired as `mcp`/`script`/`key+ref` connections. Day 2 → pick one and wire it.
 
+## Logging contract
+
+Every substantive session here is captured into achiMem automatically. claude-mem is
+**disabled in this repo** — achiMem is the only memory layer for achiOS work.
+
+**Automatic.** A SessionEnd hook (`scripts/achimem_capture.py`) captures the session when
+files were written, a commit was made, or the conversation ran 6+ turns. It writes a stub
+to `achiMem/raw/sessions/`, appends to `achiMem/log.md`, commits, then enriches the stub
+in the background with Haiku. A SessionStart hook (`scripts/achimem_recall.py`) reads
+those files back as the recall digest at the top of each session.
+
+**Manual.** `/log-achimem` (or "log this to achimem") captures mid-session and then offers
+achiMem's INGEST Phase 1 so a session can become real wiki pages while context is live.
+
+**What automation may never do.** Unattended writes go to `raw/sessions/` and `log.md`
+only. Anything reaching `achiMem/wiki/` needs a human in the session — that is what keeps
+the vault's anti-hallucination guarantee true. The full allowlist lives in achiMem's
+`CLAUDE.md` under **Automated writes**.
+
+**Decisions.** `decisions/log.md` here is canonical for build and tooling decisions, in
+prose, with alternatives considered. `achiMem/wiki/personal/decisions.md` is canonical for
+life and strategy decisions. When Aki makes a decision, write it here, then apply the
+promotion test out loud: does this change how he works, spends, or decides *outside* this
+repo? If yes, add a one-line row to achiMem's `## Tooling / workflow` category linking
+back. Never duplicate the reasoning.
+
+**Pointers, not copies.** achiOS never duplicates achiMem content, and achiMem never
+duplicates code or build rationale. One canonical home per fact.
+
 ## How you work with Aki
 
 - Be direct, concise, and clear. No fluff. No trailing summaries of what you just did.
