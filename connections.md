@@ -4,21 +4,45 @@ Registry of every system achiOS can reach. Filled by `/onboard` from Q4-Q7 answe
 
 | # | Domain | Tool | Mechanism | Auth | Last checked |
 |---|---|---|---|---|---|
-| 1 | Revenue / Financials | Phone money manager app (name TBD) + allowance | not yet connected | — | — |
-| 2 | Customer interactions | Gmail (akibukzwork@gmail.com — recruiters/career) | not yet connected | — | — |
-| 3 | Calendar | Google Calendar (both Gmails) | not yet connected | — | — |
-| 4 | Communication | Discord (thesis) + Messenger (school/personal groups) + DLSU Gmail (abram_bukuhan@dlsu.edu.ph) | not yet connected | — | — |
+| 1 | Revenue / Financials | Tarsi (iOS money manager) + allowance | `export` — manual CSV backup dropped into `~/Downloads`, read on request. No API exists. | — | 2026-08-10 |
+| 2 | Email | Gmail ×4 — main `aki.bukz12@gmail.com`, sub-main `akibukuhan10@gmail.com`, work `akibukzwork@gmail.com`, school `abram_bukuhan@dlsu.edu.ph` | connected — `gws gmail`, one config dir per account (see `references/gws-api.md`) | OAuth ×4, `~/.config/gws-{main,personal,work,dlsu}` | 2026-08-10 |
+| 3 | Calendar | Google Calendar — 15 distinct calendars. Default to `gws-personal` (school, thesis, Personal, Bdayy, Canvas feed); `gws-dlsu` for DLSU event detail; `gws-work` to write to Job. | connected — `gws calendar`, full id table in `references/gws-api.md` | same four OAuth dirs | 2026-08-10 |
+| 4 | Communication | Discord (thesis) + Messenger (school/personal groups) | not yet connected — DLSU mail moved to row 2 | — | — |
 | 5 | Project / task tracking | Canvas LMS (school tasks) + achiMem (general — proposed) + achiOS (this repo, project specs) | partial — Canvas reachable via `/canvas-tracker` (Chrome session, see `~/.claude/CLAUDE.md` memory) | session cookie via Claude in Chrome | 2026-06-13 |
 | 6 | Meeting intelligence | Thesis F2F notes → schoolMem/raw → schoolMem/wiki; class material likewise | partial — manual ingestion today; `ingest-batch` skill exists | — | — |
-| 7 | Knowledge / files | Obsidian: schoolMem (~/Documents/Obsidian/schoolMem, primary) + achiMem (~/Documents/Obsidian/achiMem). CV/cover-letter docs: `career-ops` repo. | local files — no API yet | — | 2026-06-15 |
+| 7 | Knowledge / files | achiMem (`~/Documents/Obsidian/achiMem`) — the single entry point. It hubs out to schoolMem, career-ops, and thesis; go through achiMem, not around it. | connected — local files + git; auto-capture via `scripts/achimem_capture.py`, recall via `scripts/achimem_recall.py` | — | 2026-08-10 |
 
 **Mechanism options:** `mcp` (MCP server), `script` (Python/Bash hitting an API, in `scripts/`), `export` (CSV/JSON dump pipeline), `key+ref` (`.env` key + `references/{tool}-api.md` guide), `not yet connected`.
 
 When you wire a new tool, also save `references/{tool}-api.md` capturing endpoints, auth flow, and common queries — researched-once-saved-forever.
 
-## Related repos (not connections, but reachable locally)
+## Financials — how Aki organizes money
 
-- `~/Code/GitHub/career-ops` — application pipeline, CV/cover letter generation, follow-up cadence. `data/applications.md` is the source of truth for active applications.
+Tarsi, iOS, PHP, single-user. Backup export is one flat CSV where every row carries a
+`recordType` (`account`, `customCategory`, `customSubcategory`, `expense`, `income`,
+`transfer`, `recurringExpense`, `recurringIncome`, `metadata`) and only the columns for
+that type are filled. Category names live in `label`, not `name`. Transactions reference
+categories by id, so resolve `id → label` before reporting anything.
+
+- **Accounts (19).** Spending: Cash, GCash. Digital banks: Tonik, Tonik Emergency Stash,
+  GoTyme, GoTyme GoSave, CIMB. Prepaid/stored-value treated as accounts: Starbucks, Zus,
+  Beep, TZ, QPS. Sinking fund: "Pls Save Aki". Investments held as accounts with
+  `type` `stocks`/`crypto`: VOO, QQQ, VXUS, BTC, ETH, SOL — all at 0 today.
+- **Expense categories.** Drinks, 🍜 Food (subs: Dinner, Eating out, Lunch, Beverages),
+  Transportation (Subway, Taxi, Bus, Car), Social Life (Friend, Dues, Fellowship, Alumni),
+  Sweet Treat, Climbing, Gym, Tech, Gambling, Games, Parking, Flowers, other, fees.
+- **Income** is uncategorized — allowance and transfers in, tagged only by account.
+- History runs 2024-09-24 → present, ~1,500 transactions.
+
+Not connected and not connectable — Tarsi has no API. When Aki wants analysis he drops a
+fresh `tarsi-backup-*.csv` and says so. Don't assume a stale export is current.
+
+## Related repos (reachable through achiMem)
+
+achiMem is the hub. Its `wiki/personal/` pages already bridge to each of these, so start
+there rather than opening repos blind.
+
+- `~/Documents/Obsidian/achiMem` — general vault, **the entry point**. `index.md` lists hub pages.
+- `~/Documents/Obsidian/schoolMem` — school notes + thesis meeting minutes. Bridged by `wiki/personal/school-context.md`.
+- `~/Code/GitHub/career-ops` — application pipeline, CV/cover letter generation, follow-up cadence. Bridged by `wiki/personal/career-ops-hub.md`. `data/applications.md` is the source of truth for active applications.
 - `~/Code/GitHub/sfv-thesis` — thesis source, chapters, dataset pipeline.
-- `~/Documents/Obsidian/schoolMem` — Obsidian vault (school notes + thesis meeting minutes).
-- `~/Documents/Obsidian/achiMem` — Obsidian vault (general / non-school).

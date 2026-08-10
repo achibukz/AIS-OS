@@ -1,0 +1,258 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>scribe</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='13' font-size='13'%3E%F0%9F%8E%99%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #16130f;
+    --panel: #1e1a15;
+    --line: #352e24;
+    --ink: #e9e2d3;
+    --dim: #8d8471;
+    --amber: #ffb454;
+    --amber-dark: #b97a24;
+    --green: #9ece6a;
+    --red: #f7768e;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 14px;
+    min-height: 100vh;
+    padding: 48px 24px 96px;
+    position: relative;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  main { max-width: 720px; margin: 0 auto; position: relative; }
+
+  header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 8px; }
+  h1 {
+    font-family: "Instrument Serif", serif;
+    font-weight: 400;
+    font-size: 56px;
+    letter-spacing: -0.02em;
+    color: var(--amber);
+  }
+  h1 .dot { color: var(--dim); }
+  .tagline { color: var(--dim); font-size: 12px; text-transform: uppercase; letter-spacing: 0.18em; }
+  .rule {
+    height: 1px; margin: 20px 0 32px;
+    background: repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 12px);
+  }
+
+  #drop {
+    border: 1px dashed var(--line);
+    border-radius: 2px;
+    padding: 56px 24px;
+    text-align: center;
+    color: var(--dim);
+    cursor: pointer;
+    transition: border-color .15s, background .15s, color .15s;
+  }
+  #drop.over, #drop:hover { border-color: var(--amber-dark); color: var(--ink); background: var(--panel); }
+  #drop .big { font-size: 15px; color: inherit; margin-bottom: 8px; }
+  #drop kbd {
+    border: 1px solid var(--line); border-radius: 3px;
+    padding: 1px 6px; font-size: 11px; color: var(--dim);
+  }
+
+  section h2 {
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    color: var(--dim); margin: 36px 0 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  section h2::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 16px;
+    padding: 12px 14px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    margin-bottom: 8px;
+    animation: rise .25s ease both;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+  .row .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .meta { color: var(--dim); font-size: 12px; text-align: right; white-space: nowrap; }
+  .row .meta.done { color: var(--green); }
+  .row .meta.error { color: var(--red); }
+  .row .meta.active { color: var(--amber); }
+  .row button.x {
+    background: none; border: none; color: var(--dim);
+    font: inherit; cursor: pointer; padding: 0 0 0 8px;
+  }
+  .row button.x:hover { color: var(--red); }
+
+  .bar {
+    grid-column: 1 / -1;
+    height: 10px;
+    margin-top: 6px;
+    background:
+      repeating-linear-gradient(90deg, #2a251d 0 5px, var(--bg) 5px 7px);
+    border: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+  .bar .fill {
+    position: absolute; inset: 0;
+    width: 0%;
+    background: repeating-linear-gradient(90deg, var(--amber) 0 5px, transparent 5px 7px);
+    transition: width .4s ease;
+  }
+  .bar.done .fill { background: repeating-linear-gradient(90deg, var(--green) 0 5px, transparent 5px 7px); }
+  .bar.indet .fill {
+    width: 30%;
+    animation: sweep 1.2s ease-in-out infinite alternate;
+  }
+  @keyframes sweep { from { left: 0; } to { left: 70%; } }
+  .out { grid-column: 1 / -1; font-size: 12px; color: var(--dim); margin-top: 4px; }
+  .out b { color: var(--green); font-weight: 500; }
+
+  #confirm {
+    margin-top: 16px;
+    width: 100%;
+    padding: 14px;
+    font: 600 13px "IBM Plex Mono", monospace;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--bg);
+    background: var(--amber);
+    border: none; border-radius: 2px;
+    cursor: pointer;
+    transition: filter .15s;
+  }
+  #confirm:hover { filter: brightness(1.1); }
+  #confirm:disabled { background: var(--line); color: var(--dim); cursor: default; }
+  .hidden { display: none !important; }
+  footer { margin-top: 48px; color: var(--dim); font-size: 11px; text-align: center; letter-spacing: 0.08em; }
+</style>
+
+<main>
+  <header>
+    <h1>scribe<span class="dot">.</span></h1>
+    <span class="tagline">audio &amp; video → text · whisper large-v3-turbo</span>
+  </header>
+  <div class="rule"></div>
+
+  <div id="drop">
+    <div class="big">drop mp4 / audio files here</div>
+    <div>or <kbd>click</kbd> to browse — multiple files welcome</div>
+  </div>
+  <input type="file" id="picker" multiple class="hidden"
+         accept=".mp4,.mov,.mkv,.webm,.mp3,.m4a,.wav,.aac,.flac,.ogg,audio/*,video/*">
+
+  <section id="staged-section" class="hidden">
+    <h2>staged</h2>
+    <div id="staged"></div>
+    <button id="confirm">transcribe 0 files</button>
+  </section>
+
+  <section id="queue-section" class="hidden">
+    <h2>queue</h2>
+    <div id="queue"></div>
+  </section>
+
+  <footer>outputs/ · sequential queue · files never leave this machine</footer>
+</main>
+
+<script>
+  const drop = document.getElementById("drop");
+  const picker = document.getElementById("picker");
+  const stagedEl = document.getElementById("staged");
+  const stagedSection = document.getElementById("staged-section");
+  const queueEl = document.getElementById("queue");
+  const queueSection = document.getElementById("queue-section");
+  const confirmBtn = document.getElementById("confirm");
+
+  let staged = [];
+
+  const fmtSize = (b) =>
+    b > 1 << 30 ? (b / (1 << 30)).toFixed(1) + " GB"
+    : b > 1 << 20 ? (b / (1 << 20)).toFixed(1) + " MB"
+    : Math.ceil(b / 1024) + " KB";
+
+  function renderStaged() {
+    stagedSection.classList.toggle("hidden", staged.length === 0);
+    confirmBtn.textContent = `transcribe ${staged.length} file${staged.length === 1 ? "" : "s"}`;
+    stagedEl.innerHTML = "";
+    staged.forEach((f, i) => {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `<span class="name"></span>
+        <span class="meta">${fmtSize(f.size)}<button class="x" title="remove">✕</button></span>`;
+      row.querySelector(".name").textContent = f.name;
+      row.querySelector(".x").onclick = () => { staged.splice(i, 1); renderStaged(); };
+      stagedEl.appendChild(row);
+    });
+  }
+
+  function addFiles(list) {
+    const ok = /\.(mp4|mov|mkv|webm|mp3|m4a|wav|aac|flac|ogg)$/i;
+    for (const f of list) if (ok.test(f.name)) staged.push(f);
+    renderStaged();
+  }
+
+  drop.onclick = () => picker.click();
+  picker.onchange = () => { addFiles(picker.files); picker.value = ""; };
+  ["dragover", "dragenter"].forEach(ev =>
+    drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach(ev =>
+    drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", e => addFiles(e.dataTransfer.files));
+
+  confirmBtn.onclick = async () => {
+    if (!staged.length) return;
+    confirmBtn.disabled = true;
+    const form = new FormData();
+    staged.forEach(f => form.append("files", f));
+    try {
+      await fetch("/api/jobs", { method: "POST", body: form });
+      staged = [];
+      renderStaged();
+    } finally {
+      confirmBtn.disabled = false;
+    }
+  };
+
+  const STATUS = {
+    queued: () => ["waiting", ""],
+    extracting: () => ["extracting audio", "active"],
+    transcribing: j => [Math.round(j.progress * 100) + "%", "active"],
+    done: () => ["done", "done"],
+    error: j => [j.error || "failed", "error"],
+  };
+
+  function renderQueue(jobsList) {
+    queueSection.classList.toggle("hidden", jobsList.length === 0);
+    queueEl.innerHTML = "";
+    for (const j of [...jobsList].reverse()) {
+      const [label, cls] = STATUS[j.status](j);
+      const row = document.createElement("div");
+      row.className = "row";
+      const showBar = j.status !== "error";
+      const indet = j.status === "extracting";
+      row.innerHTML = `<span class="name"></span><span class="meta ${cls}"></span>
+        ${showBar ? `<div class="bar ${j.status === "done" ? "done" : ""} ${indet ? "indet" : ""}">
+          <div class="fill" style="width:${indet ? "" : Math.round(j.progress * 100) + "%"}"></div></div>` : ""}
+        ${j.output ? `<div class="out">→ outputs/<b></b></div>` : ""}`;
+      row.querySelector(".name").textContent = j.name;
+      row.querySelector(".meta").textContent = label;
+      if (j.output) row.querySelector(".out b").textContent = j.output;
+      queueEl.appendChild(row);
+    }
+  }
+
+  new EventSource("/api/events").onmessage = e => renderQueue(JSON.parse(e.data));
+</script>
