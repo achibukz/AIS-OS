@@ -6,6 +6,16 @@ SEGMENT_RE = re.compile(
     r"^\[(\d{2}):(\d{2}):(\d{2})\.\d{3} --> (\d{2}):(\d{2}):(\d{2})\.\d{3}\]\s*(.*)$"
 )
 
+ERROR_RE = re.compile(r"error|failed", re.IGNORECASE)
+
+
+def whisper_error(log: str) -> str:
+    lines = [line.strip() for line in log.splitlines() if line.strip()]
+    for line in lines:
+        if ERROR_RE.search(line):
+            return line
+    return lines[-1] if lines else "whisper.cpp exited with an error"
+
 
 def parse_segment(line: str):
     m = SEGMENT_RE.match(line.strip())

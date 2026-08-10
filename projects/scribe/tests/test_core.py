@@ -1,6 +1,13 @@
 from datetime import date
 
-from core import format_timestamp, group_segments, output_path, parse_segment, slugify
+from core import (
+    format_timestamp,
+    group_segments,
+    output_path,
+    parse_segment,
+    slugify,
+    whisper_error,
+)
 
 
 def test_parse_segment_valid():
@@ -44,6 +51,25 @@ def test_group_segments_collapses_repeats():
     segments = [(0, 2, "yung kasama na siya")] * 5 + [(10, 12, "tapos yun na")]
     body = group_segments(segments, window=60)
     assert body == "[00:00:00] yung kasama na siya tapos yun na"
+
+
+def test_whisper_error_reports_missing_model():
+    log = (
+        "load_backend: loaded BLAS backend from libggml-blas.so\n"
+        "ggml_metal_device_init: GPU name:   MTL0 (Apple M4)\n"
+        "whisper_init_from_file_with_params_no_state: loading model from 'models/ggml-large-v3-turbo.bin'\n"
+        "whisper_init_from_file_with_params_no_state: failed to open 'models/ggml-large-v3-turbo.bin'\n"
+        "error: failed to initialize whisper context\n"
+    )
+    assert whisper_error(log) == (
+        "whisper_init_from_file_with_params_no_state: "
+        "failed to open 'models/ggml-large-v3-turbo.bin'"
+    )
+
+
+def test_whisper_error_falls_back_to_last_line():
+    assert whisper_error("starting up\nsomething odd happened\n") == "something odd happened"
+    assert whisper_error("   \n\n") == "whisper.cpp exited with an error"
 
 
 def test_group_segments_windows():

@@ -11,7 +11,7 @@ import uvicorn
 from fastapi import FastAPI, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 
-from core import group_segments, output_path, parse_segment, render_markdown
+from core import group_segments, output_path, parse_segment, render_markdown, whisper_error
 
 ROOT = Path(__file__).parent
 UPLOADS = ROOT / "uploads"
@@ -67,6 +67,7 @@ def transcribe(jid: str):
     job = jobs[jid]
     src = Path(job["upload_path"])
     wav = src.with_suffix(".16k.wav")
+    errlog = src.with_suffix(".err.log")
     try:
         update(jid, status="extracting")
         duration = probe_duration(src)
@@ -77,18 +78,19 @@ def transcribe(jid: str):
         )
 
         update(jid, status="transcribing", duration=duration)
-        proc = subprocess.Popen(
-            [whisper_binary(), "-m", str(MODEL), "-l", "auto", "-mc", "0", "-f", str(wav)],
-            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
-        )
-        segments = []
-        for line in proc.stdout:
-            seg = parse_segment(line)
-            if seg:
-                segments.append(seg)
-                update(jid, progress=min(seg[1] / duration, 1.0) if duration else 0)
-        if proc.wait() != 0:
-            raise RuntimeError("whisper.cpp exited with an error")
+        with errlog.open("w") as err:
+            proc = subprocess.Popen(
+                [whisper_binary(), "-m", str(MODEL), "-l", "auto", "-mc", "0", "-f", str(wav)],
+                stdout=subprocess.PIPE, stderr=err, text=True,
+            )
+            segments = []
+            for line in proc.stdout:
+                seg = parse_segment(line)
+                if seg:
+                    segments.append(seg)
+                    update(jid, progress=min(seg[1] / duration, 1.0) if duration else 0)
+            if proc.wait() != 0:
+                raise RuntimeError(whisper_error(errlog.read_text()))
         if not segments:
             raise RuntimeError("no speech found in file")
 
@@ -103,6 +105,7 @@ def transcribe(jid: str):
         update(jid, status="error", error=str(e))
     finally:
         wav.unlink(missing_ok=True)
+        errlog.unlink(missing_ok=True)
 
 
 def worker():
