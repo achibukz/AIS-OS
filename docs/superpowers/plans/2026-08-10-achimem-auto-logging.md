@@ -1109,7 +1109,7 @@ if __name__ == "__main__":
 - [ ] **Step 4: Run all tests to verify they pass**
 
 Run: `uv run --with pytest pytest tests/ -v`
-Expected: PASS, 45 passed
+Expected: PASS, 44 passed
 
 - [ ] **Step 5: Commit**
 
@@ -1710,7 +1710,7 @@ After every task, the full suite must be green:
 uv run --with pytest pytest tests/ -v
 ```
 
-Expected: 45 passed.
+Expected: 44 passed.
 
 Final end-to-end check, in a fresh Claude Code session opened in this repo:
 
