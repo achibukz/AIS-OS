@@ -6,3 +6,8 @@ __pycache__/
 node_modules/
 .claude/settings.local.json
 audits/
+.obsidian/
+.playwright-mcp/
+projects/scribe/models/
+projects/scribe/uploads/
+projects/achi/
