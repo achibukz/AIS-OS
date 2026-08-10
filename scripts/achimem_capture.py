@@ -17,6 +17,39 @@ SESSIONS = VAULT / "raw" / "sessions"
 WRITE_TOOLS = {"Edit", "Write", "NotebookEdit"}
 TURN_THRESHOLD = 6
 GIT_COMMIT_RE = re.compile(r"\bgit\s+(?:-C\s+\S+\s+)?commit\b")
+ENRICH_MODEL = "claude-haiku-4-5-20251001"
+DIGEST_LIMIT = 50_000
+ENRICH_TIMEOUT = 180
+GIT_TIMEOUT = 30
+
+ENRICH_PROMPT = """Summarise a Claude Code session from the achiOS repo for a personal
+knowledge vault. Output GitHub-flavored markdown only. No preamble, no closing remarks.
+
+Use exactly these section headings, omitting any section that would be empty:
+
+## What happened
+Two to five bullets. Past tense. Concrete.
+
+## Decisions
+One bullet per decision, formatted "decision — why". Real decisions only, not routine
+steps. Omit the section entirely if none were made.
+
+## Open threads
+One bullet per unfinished item. Omit the section entirely if nothing is open.
+
+## Files touched
+The list given below, verbatim, as bullets.
+
+Rules. Report only what the transcript shows. Never speculate about the user's intent,
+plans, or feelings. Never state a fact about the user that is not in the transcript. Be
+terse. Do not use em dashes except as the separator in the Decisions section.
+
+Files touched: {files}
+
+Transcript digest follows.
+
+{digest}
+"""
 
 
 @dataclass
@@ -146,7 +179,83 @@ def run_capture(payload: dict) -> Path | None:
     return path
 
 
+def build_digest(summary: TranscriptSummary, limit: int = DIGEST_LIMIT) -> str:
+    text = "\n".join(summary.digest_lines)
+    return text[-limit:] if len(text) > limit else text
+
+
+def _frontmatter_value(text: str, key: str) -> str:
+    match = re.search(rf"^{re.escape(key)}:\s*(.+?)\s*$", text, re.M)
+    return match.group(1) if match else ""
+
+
+def enrich(path: Path, runner=subprocess.run) -> bool:
+    text = path.read_text(encoding="utf-8")
+    summary = parse_transcript(_frontmatter_value(text, "transcript"))
+    prompt = ENRICH_PROMPT.format(
+        files=", ".join(summary.files_touched) or "none",
+        digest=build_digest(summary),
+    )
+    env = {**os.environ, "ACHIMEM_CAPTURE": "1", "CLAUDE_MEM_INTERNAL": "1"}
+    try:
+        result = runner(
+            ["claude", "-p", "--model", ENRICH_MODEL],
+            input=prompt,
+            capture_output=True,
+            text=True,
+            env=env,
+            timeout=ENRICH_TIMEOUT,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    body = (result.stdout or "").strip()
+    if result.returncode != 0 or not body:
+        return False
+    head = text.split("\n## Mechanical record", 1)[0]
+    path.write_text(
+        head.replace("status: unenriched", "status: enriched") + "\n" + body + "\n",
+        encoding="utf-8",
+    )
+    return True
+
+
+def commit(paths, message: str, runner=subprocess.run) -> bool:
+    rels = [str(Path(p).relative_to(VAULT)) for p in paths if Path(p).exists()]
+    if not rels:
+        return False
+    try:
+        runner(["git", "-C", str(VAULT), "add", *rels], capture_output=True, timeout=GIT_TIMEOUT)
+        runner(
+            ["git", "-C", str(VAULT), "commit", "-m", message],
+            capture_output=True,
+            timeout=GIT_TIMEOUT,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return True
+
+
+def spawn_enrich(path: Path) -> None:
+    env = {**os.environ, "ACHIMEM_CAPTURE": "1", "CLAUDE_MEM_INTERNAL": "1"}
+    try:
+        subprocess.Popen(
+            [sys.executable, str(Path(__file__).resolve()), "--enrich", str(path)],
+            env=env,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+    except OSError:
+        pass
+
+
 def main(argv: list[str], stdin_text: str) -> None:
+    if argv[1:2] == ["--enrich"]:
+        path = Path(argv[2])
+        if enrich(path):
+            commit([path], f"achimem: enrich {path.stem}")
+        return
     if os.environ.get("ACHIMEM_CAPTURE") == "1" or os.environ.get("CLAUDE_MEM_INTERNAL") == "1":
         return
     try:
@@ -155,7 +264,11 @@ def main(argv: list[str], stdin_text: str) -> None:
         return
     if not isinstance(payload, dict):
         return
-    run_capture(payload)
+    path = run_capture(payload)
+    if path is None:
+        return
+    commit([path, VAULT / "log.md"], f"achimem: auto-capture {path.stem}")
+    spawn_enrich(path)
 
 
 if __name__ == "__main__":

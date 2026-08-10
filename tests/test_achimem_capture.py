@@ -1,4 +1,6 @@
 import json
+import subprocess
+import types
 
 import achimem_capture as cap
 import pytest
@@ -222,3 +224,113 @@ def test_main_respects_claude_mem_internal_guard(vault, tmp_path, monkeypatch):
 
 def test_main_survives_garbage_stdin(vault):
     cap.main(["achimem_capture.py"], "not json at all")
+
+
+class FakeRunner:
+    def __init__(self, stdout="", returncode=0, exc=None):
+        self.stdout = stdout
+        self.returncode = returncode
+        self.exc = exc
+        self.calls = []
+
+    def __call__(self, cmd, **kwargs):
+        self.calls.append((cmd, kwargs))
+        if self.exc:
+            raise self.exc
+        return types.SimpleNamespace(stdout=self.stdout, stderr="", returncode=self.returncode)
+
+
+def make_stub(vault, tmp_path, transcript=None):
+    if transcript is None:
+        transcript = write_transcript(
+            tmp_path,
+            typed("build it"),
+            assistant(tool_use("Write", file_path="/a/one.py")),
+        )
+    return cap.run_capture({"session_id": "abcd1234", "transcript_path": str(transcript)})
+
+
+def test_build_digest_keeps_the_tail_when_over_limit():
+    summary = cap.TranscriptSummary(digest_lines=["A: " + "x" * 100 for _ in range(50)])
+    digest = cap.build_digest(summary, limit=200)
+    assert len(digest) == 200
+    assert digest.endswith("x")
+
+
+def test_enrich_replaces_body_and_flips_status(vault, tmp_path):
+    path = make_stub(vault, tmp_path)
+    runner = FakeRunner(stdout="## What happened\n- Wrote the parser\n")
+    assert cap.enrich(path, runner=runner) is True
+    body = path.read_text(encoding="utf-8")
+    assert "status: enriched" in body
+    assert "status: unenriched" not in body
+    assert "## Mechanical record" not in body
+    assert "- Wrote the parser" in body
+    assert body.startswith("---\n")
+
+
+def test_enrich_sets_both_recursion_guards(vault, tmp_path):
+    path = make_stub(vault, tmp_path)
+    runner = FakeRunner(stdout="## What happened\n- x\n")
+    cap.enrich(path, runner=runner)
+    env = runner.calls[0][1]["env"]
+    assert env["ACHIMEM_CAPTURE"] == "1"
+    assert env["CLAUDE_MEM_INTERNAL"] == "1"
+
+
+def test_enrich_uses_the_pinned_haiku_model(vault, tmp_path):
+    path = make_stub(vault, tmp_path)
+    runner = FakeRunner(stdout="## What happened\n- x\n")
+    cap.enrich(path, runner=runner)
+    assert cap.ENRICH_MODEL in runner.calls[0][0]
+
+
+def test_enrich_leaves_stub_intact_on_nonzero_exit(vault, tmp_path):
+    path = make_stub(vault, tmp_path)
+    before = path.read_text(encoding="utf-8")
+    assert cap.enrich(path, runner=FakeRunner(stdout="junk", returncode=1)) is False
+    assert path.read_text(encoding="utf-8") == before
+
+
+def test_enrich_leaves_stub_intact_on_empty_output(vault, tmp_path):
+    path = make_stub(vault, tmp_path)
+    before = path.read_text(encoding="utf-8")
+    assert cap.enrich(path, runner=FakeRunner(stdout="   ")) is False
+    assert path.read_text(encoding="utf-8") == before
+
+
+def test_enrich_leaves_stub_intact_on_timeout(vault, tmp_path):
+    path = make_stub(vault, tmp_path)
+    before = path.read_text(encoding="utf-8")
+    runner = FakeRunner(exc=subprocess.TimeoutExpired(cmd="claude", timeout=1))
+    assert cap.enrich(path, runner=runner) is False
+    assert path.read_text(encoding="utf-8") == before
+
+
+def test_enrich_returns_false_when_claude_is_missing(vault, tmp_path):
+    path = make_stub(vault, tmp_path)
+    assert cap.enrich(path, runner=FakeRunner(exc=FileNotFoundError())) is False
+
+
+def test_commit_is_path_scoped(vault, tmp_path):
+    path = make_stub(vault, tmp_path)
+    runner = FakeRunner()
+    cap.commit([path, vault / "log.md"], "achimem: auto-capture test", runner=runner)
+    add_cmd = runner.calls[0][0]
+    assert "-A" not in add_cmd
+    assert "raw/sessions/" + path.name in add_cmd
+    assert "log.md" in add_cmd
+
+
+def test_commit_survives_git_failure(vault, tmp_path):
+    path = make_stub(vault, tmp_path)
+    assert cap.commit([path], "msg", runner=FakeRunner(exc=OSError())) is False
+
+
+def test_enrich_mode_dispatches_from_main(vault, tmp_path, monkeypatch):
+    path = make_stub(vault, tmp_path)
+    seen = []
+    monkeypatch.setattr(cap, "enrich", lambda p, **kw: seen.append(p) or True)
+    monkeypatch.setattr(cap, "commit", lambda *a, **kw: True)
+    cap.main(["achimem_capture.py", "--enrich", str(path)], "")
+    assert seen == [path]
