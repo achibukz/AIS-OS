@@ -19,6 +19,11 @@ SRC="$HOME/.claude"
 FILES=(CLAUDE.md GEMINI_WORKFLOW.md settings.json)
 DIRS=(skills agents commands hooks)
 
+# Hermes reads its own ~/.hermes/skills, not ~/.claude/skills. Only the ones that work
+# headless go there — Hermes already ships 40+ of its own, and the design and frontend
+# skills are useless over Telegram.
+HERMES_SKILLS=(message-writer linkedin-poster humanizer essay-writer)
+
 echo "→ $HOST${DRY:+  (dry run)}"
 
 ssh "$HOST" 'mkdir -p ~/.claude'
@@ -39,6 +44,16 @@ done
 if [[ -f "$HOME/.config/ccstatusline/settings.json" ]]; then
   ssh "$HOST" 'mkdir -p ~/.config/ccstatusline'
   rsync -az $DRY "$HOME/.config/ccstatusline/settings.json" "$HOST:.config/ccstatusline/settings.json"
+fi
+
+if ssh "$HOST" 'test -d ~/.hermes'; then
+  ssh "$HOST" 'mkdir -p ~/.hermes/skills'
+  for s in "${HERMES_SKILLS[@]}"; do
+    [[ -d "$SRC/skills/$s" ]] || continue
+    rsync -az --delete --exclude='.git' --exclude='.DS_Store' $DRY \
+      "$SRC/skills/$s/" "$HOST:.hermes/skills/$s/"
+  done
+  echo "hermes skills: ${HERMES_SKILLS[*]}"
 fi
 
 echo "done. plugins restore themselves from enabledPlugins in settings.json on next start."
