@@ -124,6 +124,22 @@ Seven-domain map lives in `connections.md`. Day-1 state:
 
 Most are reachable locally but not yet wired as `mcp`/`script`/`key+ref` connections. Day 2 → pick one and wire it.
 
+## Git
+
+**On the `achibuntu` server only**, pushing to `origin` after a commit is pre-authorised —
+granted 2026-08-17, don't stop to ask. He drives that box over SSH and Telegram, so a
+session that pauses for permission strands finished work on a machine he isn't at. Check
+`hostname` if unsure; anywhere else the global rule in `~/.claude/CLAUDE.md` applies and
+you ask first.
+
+Force-push and rebasing published history are **not** covered and still need explicit
+confirmation each time.
+
+This repo has two remotes. `origin` is Aki's fork (`achibukz/AIS-OS`) and is the only
+push target. `upstream` is the original kit (`nateherkai/AIS-OS`) — never push there.
+
+Never add a `Co-Authored-By: Claude` trailer. He has rebased them out before.
+
 ## Logging contract
 
 Every substantive session here is captured into achiMem automatically. claude-mem is
