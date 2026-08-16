@@ -18,3 +18,20 @@ Rejected:
 Open:
 - Phase 8 unfinished: cron round-trip, power-cut test.
 - SSH password auth still enabled on the server.
+
+## 2026-08-17 04:30 [saved]
+Goal: Port Claude Code writing skills to Hermes on the server.
+
+Decisions:
+- Copy chosen skills into `~/.hermes/skills/` rather than pointing `external_dirs` at `~/.claude/skills` — Hermes already ships 40+, and 51 more bloats what it reasons over.
+- Made paths `~/`-relative in the **Mac** copies too, not a server fork — hardcoded `/Users/achibukz/` breaks on any second machine.
+- `pbcopy` guarded with `command -v`, not removed — still works on the Mac, skips silently on Linux.
+- career-ops personal data (`cv.md`, `applications.md`, `profile.yml`) is gitignored and stays that way; recruiter replies degrade on the server rather than putting a CV on a box with password SSH enabled.
+
+Rejected:
+- `external_dirs` exposing all 51 skills — context bloat.
+- Reimplementing `pbcopy` via xclip — headless has no clipboard to fill.
+
+Open:
+- career-ops data unreachable on server; three options pending.
+- `message-writer` voice.md path bug existed on Mac too, now fixed.
