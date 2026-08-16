@@ -12,6 +12,8 @@ Registry of every system achiOS can reach. Filled by `/onboard` from Q4-Q7 answe
 | 6 | Meeting intelligence | Thesis F2F notes → schoolMem/raw → schoolMem/wiki; class material likewise | partial — manual ingestion today; `ingest-batch` skill exists | — | — |
 | 7 | Knowledge / files | achiMem (`~/Documents/Obsidian/achiMem`) — the single entry point. It hubs out to schoolMem, career-ops, and thesis; go through achiMem, not around it. | connected — local files + git; auto-capture via `scripts/achimem_capture.py`, recall via `scripts/achimem_recall.py` | — | 2026-08-10 |
 
+| 8 | Notifications | Telegram — achiOS bot (its own bot, not Hermes') | `script` — `scripts/telegram_notify.py` is the shared sender; cron on achibuntu under `CRON_TZ=Asia/Manila`. Wire new jobs with the `cron-telegram` skill. | bot token + chat id in `~/.config/achios/telegram.env`, mode 600 | 2026-08-17 |
+
 **Mechanism options:** `mcp` (MCP server), `script` (Python/Bash hitting an API, in `scripts/`), `export` (CSV/JSON dump pipeline), `key+ref` (`.env` key + `references/{tool}-api.md` guide), `not yet connected`.
 
 When you wire a new tool, also save `references/{tool}-api.md` capturing endpoints, auth flow, and common queries — researched-once-saved-forever.

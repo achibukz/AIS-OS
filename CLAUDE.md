@@ -13,16 +13,78 @@ Read `references/3ms-framework.md` once. It's how Aki thinks about AI work. Mind
 - `/onboard` — already run if you're seeing this filled in. Re-run any time to refresh from an edited `aios-intake.md`.
 - `/audit` — Four-Cs gap report. Run on Day 7, then weekly. Watch the score climb.
 - `/level-up` — Weekly 3Ms interview. Find one automation, scope it, ship it. One per week.
+- `/cron-telegram` — Wire a new scheduled job on achibuntu that reports to Telegram. Use it
+  whenever Aki asks for something to run on a schedule and reach his phone.
 
 ## Where things live
 
 - `context/` — about Aki, his "business" (student + future client work), his priorities
 - `references/` — frameworks, voice samples, API guides as new tools get wired
 - `connections.md` — registry of every system achiOS can reach
+- `tasks.md` — the master task register (see **Task register** below)
 - `decisions/log.md` — append-only record of decisions and why
 - `archives/` — old stuff. Don't delete. Move here.
 
 See `EXPANSIONS.md` for what to add as the system grows.
+
+## Task register
+
+`tasks.md` is the master list of what Aki has to do. achiOS hosts it — settled 2026-08-10;
+achiMem records knowledge, not pending work.
+
+**When Aki says he has to do something, write it down.** Not only when he says "add a task".
+Any commitment that lands in conversation — "I still need to message Vanscell", "remind me to
+fix profile.yml", "we have to mount that drive" — goes into `## Active` in the same turn,
+then tell him in one line that you logged it. Don't ask permission first; it's cheaper to
+delete a line than to lose the task. Don't invent tasks he didn't commit to.
+
+Line format, one per line, or the parser skips it:
+
+```
+- [ ] What to do #area !high @2026-08-20
+```
+
+`- [ ]` active, `- [x]` done, `- [~]` blocked. `#area`, `!high|!med|!low`, and `@YYYY-MM-DD`
+are all optional; missing priority means `!med`. Finished work moves to `## Done` with the
+date — never deleted.
+
+When something is genuinely an unanswered *question* rather than an action, it belongs in
+achiMem's `wiki/personal/open-questions.md`, not here. Both feed the same brief.
+
+## Daily brief
+
+`scripts/daily_brief.py` sends **two separate Telegram messages** at 8am:
+
+1. **Schedule** — today, the week ahead grouped by calendar, birthdays last. Each
+   calendar carries a coloured circle emoji matched to its Google Calendar colour.
+2. **Tasks** — `tasks.md` grouped by `#area`, numbered, with a Blocked group at the end.
+
+Open questions are deliberately **not** in the brief. Aki cut them; don't add them back.
+
+Two stages. Python gathers and structures everything — deterministic and free. Then a
+**Sonnet** call per message rewrites the wording (both run in parallel). Sonnet only;
+never raise this to Opus, a daily cron does not warrant it. The rewrite may not add,
+drop, or reorder items, and must preserve the layout — the spacing and emoji are the
+design. If a model call fails or times out that message sends in its structured form,
+so a bad night degrades to plainer text rather than to silence.
+
+Layout rules worth keeping: blank line between every item, three newlines between
+sections, section headers are `EMOJI  TITLE` in caps, detail lines indent six spaces.
+It is meant to read loose on a phone, not dense.
+
+- Cron: `0 8 * * *` under `CRON_TZ=Asia/Manila` in Aki's user crontab. The box runs UTC.
+- Interpreter: `~/.local/share/achios/venv/bin/python` (uv-managed, has the Google libs)
+- Telegram sending lives in `scripts/telegram_notify.py` and is shared by every job —
+  import `send`, don't reimplement it. The `cron-telegram` skill covers the whole path.
+- Model call: `claude -p --model claude-sonnet-5`, run from `~/.local/share/achios/llm`
+  so no project `CLAUDE.md` and no achiMem capture hook loads. Tools and MCP are off.
+- Secrets: `~/.config/achios/` — `telegram.env` plus two Google OAuth token files. Mode 700.
+  Isolated from Hermes on purpose; nothing here reads `~/.hermes`.
+- Log: `~/.local/state/achios/daily_brief.log`
+- Preview: `daily_brief.py --dry-run` (`--raw` skips Sonnet, `--no-calendar` skips Google)
+- Re-pairing a bot: `daily_brief.py --find-chat-id` prints chat ids without echoing the token
+- Either message splits further at a blank line if it passes Telegram's 4096-char limit.
+- Tests: `tests/test_daily_brief.py`. Keep them passing when the format changes.
 
 ## Knowledge base
 
