@@ -21,6 +21,7 @@ ENRICH_MODEL = "claude-haiku-4-5-20251001"
 DIGEST_LIMIT = 50_000
 ENRICH_TIMEOUT = 180
 GIT_TIMEOUT = 30
+NET_TIMEOUT = 60
 
 ENRICH_PROMPT = """Summarise a Claude Code session from the achiOS repo for a personal
 knowledge vault. Output GitHub-flavored markdown only. No preamble, no closing remarks.
@@ -219,17 +220,44 @@ def enrich(path: Path, runner=subprocess.run) -> bool:
     return True
 
 
+def sync(runner) -> None:
+    pulled = runner(
+        ["git", "-C", str(VAULT), "pull", "--rebase", "--autostash"],
+        capture_output=True,
+        timeout=NET_TIMEOUT,
+    )
+    if getattr(pulled, "returncode", 0) != 0:
+        # Both machines append to log.md, so a diverged rebase conflicts at its tail and
+        # no unattended process can resolve that. Abort rather than leave the vault mid
+        # rebase: the capture still commits locally and a human reconciles later.
+        runner(
+            ["git", "-C", str(VAULT), "rebase", "--abort"],
+            capture_output=True,
+            timeout=GIT_TIMEOUT,
+        )
+
+
 def commit(paths, message: str, runner=subprocess.run) -> bool:
     rels = [str(Path(p).relative_to(VAULT)) for p in paths if Path(p).exists()]
     if not rels:
         return False
     try:
+        # The Mac and the headless server both capture into this vault. Rebasing before
+        # the write keeps each machine's history linear on the remote, so log.md never
+        # collides at the tail both of them append to.
+        sync(runner)
         runner(["git", "-C", str(VAULT), "add", *rels], capture_output=True, timeout=GIT_TIMEOUT)
         runner(
             ["git", "-C", str(VAULT), "commit", "-m", message],
             capture_output=True,
             timeout=GIT_TIMEOUT,
         )
+        pushed = runner(
+            ["git", "-C", str(VAULT), "push"], capture_output=True, timeout=NET_TIMEOUT
+        )
+        if getattr(pushed, "returncode", 0) != 0:
+            sync(runner)
+            runner(["git", "-C", str(VAULT), "push"], capture_output=True, timeout=NET_TIMEOUT)
     except (OSError, subprocess.SubprocessError):
         return False
     return True
