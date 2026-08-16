@@ -1,7 +1,23 @@
 # gws — Google Workspace CLI
 
-Binary: `/opt/homebrew/bin/gws`. Shape: `gws <service> <resource> [sub-resource] <method> --params '<JSON>' [--json '<body>']`.
+Binary on Mac: `/opt/homebrew/bin/gws`. Shape: `gws <service> <resource> [sub-resource] <method> --params '<JSON>' [--json '<body>']`.
 Services in use here: `gmail`, `calendar`.
+
+## Hermes Linux route
+
+On the Linux Hermes host, `gws` is not installed, but Hermes Google Workspace OAuth is wired and live through two token files:
+
+- `~/.hermes/google_token.json` — personal token, currently `akibukuhan10@gmail.com`; sees Gala, Personal, Bdayy, DLSU, Job (reader), CSOPESY, PEDFOUR, STCLOUD, STSP001, THS-ST1, Canvas import, LSCS, and DLSU primary as free/busy.
+- `~/.hermes/gws-work/google_token.json` — work token, `akibukzwork@gmail.com`; sees Job as primary/owner plus ING, Family, Holidays PH, and shared school calendars.
+
+Use this script for upcoming events across all visible personal + work calendars:
+
+```bash
+~/.hermes/scripts/gcal_upcoming.py --days 14 --max 50
+~/.hermes/scripts/gcal_upcoming.py --days 14 --max 50 --json
+```
+
+Verified 2026-08-16 from Hermes: personal and work Google live checks OK, work Gmail profile returns `akibukzwork@gmail.com`, ING calendar is visible, and upcoming ING events are returned. The default Hermes `google_api.py calendar list` checks only one calendar and can return `[]`; use the script above when Aki asks for incoming events.
 
 ## Three accounts, three config dirs
 
