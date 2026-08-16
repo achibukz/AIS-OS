@@ -11,3 +11,6 @@ audits/
 projects/scribe/models/
 projects/scribe/uploads/
 projects/achi/
+
+# AI assistant artifacts
+context-snapshot.json
