@@ -312,14 +312,75 @@ def test_enrich_returns_false_when_claude_is_missing(vault, tmp_path):
     assert cap.enrich(path, runner=FakeRunner(exc=FileNotFoundError())) is False
 
 
+def git_verbs(runner):
+    return [next(a for a in cmd[3:] if not a.startswith("-")) for cmd, _ in runner.calls]
+
+
 def test_commit_is_path_scoped(vault, tmp_path):
     path = make_stub(vault, tmp_path)
     runner = FakeRunner()
     cap.commit([path, vault / "log.md"], "achimem: auto-capture test", runner=runner)
-    add_cmd = runner.calls[0][0]
+    add_cmd = next(cmd for cmd, _ in runner.calls if "add" in cmd)
     assert "-A" not in add_cmd
     assert "raw/sessions/" + path.name in add_cmd
     assert "log.md" in add_cmd
+
+
+def test_commit_rebases_before_staging(vault, tmp_path):
+    path = make_stub(vault, tmp_path)
+    runner = FakeRunner()
+    cap.commit([path], "msg", runner=runner)
+    verbs = git_verbs(runner)
+    assert verbs[0] == "pull"
+    assert verbs.index("pull") < verbs.index("add")
+    assert runner.calls[0][0][4:] == ["--rebase", "--autostash"]
+
+
+def test_commit_pushes_so_the_other_machine_sees_it(vault, tmp_path):
+    path = make_stub(vault, tmp_path)
+    runner = FakeRunner()
+    cap.commit([path], "msg", runner=runner)
+    verbs = git_verbs(runner)
+    assert verbs[-1] == "push"
+    assert verbs.count("push") == 1
+
+
+def test_commit_retries_push_once_after_rebasing(vault, tmp_path):
+    path = make_stub(vault, tmp_path)
+    runner = FakeRunner(returncode=1)
+    assert cap.commit([path], "msg", runner=runner) is True
+    verbs = git_verbs(runner)
+    assert verbs.count("push") == 2
+    assert verbs[-3:] == ["pull", "rebase", "push"]
+
+
+def test_commit_does_not_loop_forever_when_push_keeps_failing(vault, tmp_path):
+    path = make_stub(vault, tmp_path)
+    runner = FakeRunner(returncode=1)
+    cap.commit([path], "msg", runner=runner)
+    assert git_verbs(runner).count("push") == 2
+
+
+def test_conflicting_rebase_is_aborted_not_left_mid_flight(vault, tmp_path):
+    path = make_stub(vault, tmp_path)
+    runner = FakeRunner(returncode=1)
+    cap.commit([path], "msg", runner=runner)
+    verbs = git_verbs(runner)
+    assert verbs[:2] == ["pull", "rebase"]
+    assert ["--abort"] == runner.calls[1][0][4:]
+    assert verbs.index("rebase") < verbs.index("add")
+
+
+def test_clean_pull_never_aborts(vault, tmp_path):
+    path = make_stub(vault, tmp_path)
+    runner = FakeRunner(returncode=0)
+    cap.commit([path], "msg", runner=runner)
+    assert "rebase" not in git_verbs(runner)
+
+
+def test_commit_survives_network_failure(vault, tmp_path):
+    path = make_stub(vault, tmp_path)
+    assert cap.commit([path], "msg", runner=FakeRunner(exc=subprocess.TimeoutExpired("git", 60))) is False
 
 
 def test_commit_survives_git_failure(vault, tmp_path):
