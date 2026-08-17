@@ -70,3 +70,22 @@ Rejected:
 Open:
 - Bash under bypass is narrowed by heuristic, not closed.
 - Separate unix user with read-only `wiki/` is the airtight fix, deferred.
+
+## 2026-08-17 12:38 [saved]
+Goal: Second always-on Telegram bot for achiOS, this one with write access.
+
+Decisions:
+- Operator bot runs unguarded — editing tasks.md, calendar and commits are the job, not a hazard.
+- One `telegram-bot.sh` driven by `BOT_*` env vars per unit; `schoolmem-bot.sh` deleted.
+- Guard made optional, not assumed, so an unguarded bot reuses the path without pretending otherwise.
+- Restart timers staggered 04:00/04:10 — both fetch on launch and the box has one uplink.
+- `install_units.sh` now enables `WantedBy=default.target` services, not only timers.
+
+Rejected:
+- A second standalone script — drifts, duplicates the fail-closed guard logic.
+- Guarding the operator's achiMem/wiki writes anyway — would override an explicit instruction.
+- A shared library sourced by two thin scripts — more parts than env vars, for two callers.
+
+Open:
+- Logging contract's achiMem/wiki ban is now documented but unenforced on the operator bot.
+- Push is pre-authorised here, so a Telegram message can reach GitHub unattended.
