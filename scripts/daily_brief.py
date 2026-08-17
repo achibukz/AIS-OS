@@ -27,7 +27,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from telegram_notify import find_chat_ids, send  # noqa: E402
 
 CONFIG_DIR = Path.home() / ".config" / "achios"
-GOOGLE_TOKENS = [CONFIG_DIR / "google_token.json", CONFIG_DIR / "google_token_work.json"]
+GOOGLE_TOKENS = [
+    CONFIG_DIR / "google_token_dlsu.json",
+    CONFIG_DIR / "google_token.json",
+    CONFIG_DIR / "google_token_work.json",
+]
 
 TASKS_FILE = Path(__file__).resolve().parent.parent / "tasks.md"
 

@@ -32,7 +32,11 @@ from telegram_notify import send
 
 TASKS_FILE = SCRIPT_DIR.parent / "tasks.md"
 CONFIG_DIR = Path.home() / ".config" / "achios"
-GOOGLE_TOKENS = [CONFIG_DIR / "google_token.json", CONFIG_DIR / "google_token_work.json"]
+GOOGLE_TOKENS = [
+    CONFIG_DIR / "google_token_dlsu.json",
+    CONFIG_DIR / "google_token.json",
+    CONFIG_DIR / "google_token_work.json",
+]
 LOCAL_TZ = ZoneInfo("Asia/Manila")
 
 TASK_RE = re.compile(r"^\s*-\s*\[([ x~])\]\s+(.*\S)\s*$")
