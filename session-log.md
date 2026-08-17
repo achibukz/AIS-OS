@@ -121,6 +121,7 @@ Decisions:
 - Refactored `scripts/daily_brief.py` into a fast, deterministic Python pipeline (zero LLM overhead, instant <1s execution, Google Calendar across DLSU/Personal/Work + top focus tasks with `---------------------------------` framing).
 - Implemented Vault Inbox Sync daemon (`scripts/vault_inbox_sync.py` & `systemd/achios-vault-sync.timer` every 15 mins) to automatically commit and push mobile Telegram captures in `schoolMem/inbox/` (and `achiMem/inbox/`) to GitHub with autostash rebase conflict protection.
 - Built Universal Telegram Database (`achiMem/tgdb/` & `scripts/tgdb_logger.py`) archiving sanitized, structured conversation notes across all 4 Telegram bots (`@achiOSClaudeBot`, `@schoMemBot`, `@achiAgyBot`, `@schoMemAGYBot`) with 15-min automated GitHub vault sync.
+- Added Universal Transcript Exporter (`scripts/export_transcripts.py`) parsing both Claude Code project logs (`~/.claude/projects/`) and Antigravity CLI brain logs (`~/.gemini/antigravity-cli/brain/`) for complete cross-platform session archiving.
 
 Rejected:
 - Standard cron for ETF digest — ignores `CRON_TZ` and lacks `Persistent=true` recovery.
@@ -130,6 +131,7 @@ Rejected:
 
 Open:
 - Automated `logrotate` for `~/.local/state/achios/*.log`.
+
 
 
 
