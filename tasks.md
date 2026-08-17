@@ -22,6 +22,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 
+- [ ] Research whether the three Telegram bots (achiOS/Claude Code, Antigravity/Gemini, Hermes/Codex) can be made to discuss with each other and produce a combined decision or discussion output #achios !low
 - [ ] Reply to Rohde & Schwarz re: unsolicited application (email in work inbox, 2026-08-17) #career
 - [ ] Check GitHub CodeQL Analysis failure on career-ops main (9d8d3fa) #achios
 - [ ] Follow up on BPI account application notice in work inbox (2026-08-17) #finances
