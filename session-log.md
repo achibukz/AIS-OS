@@ -120,6 +120,7 @@ Decisions:
 - Added VIP Email & Action Triage (`scripts/email_digest.py` & `systemd/achios-email-digest.timer`) scheduled at 08:30 & 17:30 Manila time (filtering noise and surfacing recruiters, security alerts, and correspondence).
 - Refactored `scripts/daily_brief.py` into a fast, deterministic Python pipeline (zero LLM overhead, instant <1s execution, Google Calendar across DLSU/Personal/Work + top focus tasks with `---------------------------------` framing).
 - Implemented Vault Inbox Sync daemon (`scripts/vault_inbox_sync.py` & `systemd/achios-vault-sync.timer` every 15 mins) to automatically commit and push mobile Telegram captures in `schoolMem/inbox/` (and `achiMem/inbox/`) to GitHub with autostash rebase conflict protection.
+- Built Universal Telegram Database (`achiMem/tgdb/` & `scripts/tgdb_logger.py`) archiving sanitized, structured conversation notes across all 4 Telegram bots (`@achiOSClaudeBot`, `@schoMemBot`, `@achiAgyBot`, `@schoMemAGYBot`) with 15-min automated GitHub vault sync.
 
 Rejected:
 - Standard cron for ETF digest — ignores `CRON_TZ` and lacks `Persistent=true` recovery.
@@ -129,6 +130,7 @@ Rejected:
 
 Open:
 - Automated `logrotate` for `~/.local/state/achios/*.log`.
+
 
 
 

@@ -32,9 +32,22 @@ VAULTS = [
         "name": "achiMem",
         "path": Path.home() / "Documents" / "Obsidian" / "achiMem",
         "branch": "main",
-        "watch_dirs": ["inbox"],
+        "watch_dirs": ["inbox", "tgdb"],
     },
 ]
+
+
+def clean_stale_index_lock(vault_path: Path) -> None:
+    """Remove stale .git/index.lock if older than 5 minutes to prevent hang."""
+    lock_file = vault_path / ".git" / "index.lock"
+    if lock_file.exists():
+        try:
+            mtime = lock_file.stat().st_mtime
+            age_seconds = dt.datetime.now().timestamp() - mtime
+            if age_seconds > 300:  # 5 minutes
+                lock_file.unlink(missing_ok=True)
+        except Exception:
+            pass
 
 
 def run_git(vault_dir: Path, args: list[str]) -> subprocess.CompletedProcess[str]:
@@ -55,6 +68,8 @@ def check_and_sync_vault(vault: dict, dry_run: bool = False) -> tuple[bool, str]
 
     if not vault_path.exists() or not (vault_path / ".git").exists():
         return False, f"[{name}] Vault directory or .git not found at {vault_path}"
+
+    clean_stale_index_lock(vault_path)
 
     # 1. Check git status
     status = run_git(vault_path, ["status", "--porcelain"])
@@ -119,9 +134,18 @@ def main() -> int:
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Preview pending vault inbox changes without committing or pushing",
+        help="Preview pending vault inbox and tgdb changes without committing or pushing",
     )
     args = parser.parse_args()
+
+    # 1. Sweep recent Claude Code transcripts into achiMem/tgdb/
+    try:
+        from export_claude_transcripts import export_recent_sessions
+        exported = export_recent_sessions(days_lookback=2)
+        if exported > 0 and args.dry_run:
+            print(f"[tgdb] [DRY RUN] Exported/refreshed {exported} Claude Code session note(s).")
+    except Exception as e:
+        print(f"Warning: Claude transcript export skipped: {e}", file=sys.stderr)
 
     overall_success = True
     for vault in VAULTS:
