@@ -243,7 +243,7 @@ def build_daily_brief(events: list[CalendarEvent], tasks: list[Task], today: dt.
         action_items = tasks[:3]
 
     lines.append("⚡ KEY ACTIONS TODAY:")
-    for idx, t in enumerate(action_items[:4], start=1):
+    for idx, t in enumerate(action_items[:5], start=1):
         # Shorten overly verbose sentences for the clean brief
         short_text = t.text.split("—")[0].strip() if "—" in t.text else t.text
         pri_tag = " [!high]" if t.priority == "high" and not t.due else ""
