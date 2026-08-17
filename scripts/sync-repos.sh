@@ -79,14 +79,19 @@ for repo in "${repos[@]}"; do
   dirty=$(git -C "$repo" status --porcelain --untracked-files=no | wc -l)
   untracked=$(git -C "$repo" ls-files --others --exclude-standard | wc -l)
 
+  # A shallow clone's history is truncated, so almost everything upstream counts
+  # as "behind". The fast-forward is still correct; only the number is nonsense.
+  shallow=""
+  [ "$(git -C "$repo" rev-parse --is-shallow-repository)" = "true" ] && shallow=" (shallow, count inflated)"
+
   if [ "$behind" -gt 0 ] && [ "$ahead" -gt 0 ]; then
-    echo "DIVERGED      $branch is $behind behind, $ahead ahead of $upstream"
+    echo "DIVERGED      $branch is $behind behind, $ahead ahead of $upstream$shallow"
     failures=$((failures + 1))
     continue
   fi
 
   if [ "$behind" -gt 0 ] && [ "$dirty" -gt 0 ]; then
-    echo "held back     $behind to pull, $dirty uncommitted change(s)"
+    echo "held back     $behind to pull, $dirty uncommitted change(s)$shallow"
     warnings=$((warnings + 1))
     continue
   fi
@@ -100,10 +105,12 @@ for repo in "${repos[@]}"; do
     status="pulled $behind"
   else
     status="up to date"
+    shallow=""
   fi
 
   notes=""
-  [ "$ahead" -gt 0 ] && notes="$ahead unpushed"
+  [ -n "$shallow" ] && notes="${shallow# }"
+  [ "$ahead" -gt 0 ] && notes="${notes:+$notes, }$ahead unpushed"
   [ "$dirty" -gt 0 ] && notes="${notes:+$notes, }$dirty uncommitted"
   [ "$untracked" -gt 0 ] && notes="${notes:+$notes, }$untracked untracked"
   [ -n "$notes" ] && warnings=$((warnings + 1))

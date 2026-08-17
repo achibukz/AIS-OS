@@ -125,6 +125,26 @@ class TestSync:
         assert "1 unpushed" in result.stdout
         assert "1 need a look" in result.stdout
 
+    def test_marks_a_shallow_clone_so_the_count_is_not_believed(self, workspace, tmp_path):
+        shallow_root = tmp_path / "shallow-root"
+        shallow_root.mkdir()
+        git(
+            tmp_path,
+            "clone",
+            "-q",
+            "--depth",
+            "1",
+            "file://" + str(workspace["upstream"]),
+            str(shallow_root / "shallow"),
+        )
+        push_new_commit(workspace)
+
+        result = run(shallow_root, workspace["tmp"])
+
+        assert result.returncode == 0
+        assert "shallow" in result.stdout
+        assert "pulled" in result.stdout
+
     def test_skips_a_repo_with_no_remote(self, workspace):
         loner = workspace["root"] / "loner"
         loner.mkdir()

@@ -159,13 +159,19 @@ lose work. A repo it cannot fast-forward is reported and left exactly as it was:
 Untracked files do **not** block a pull — a fast-forward leaves them alone and aborts by
 itself if an incoming file would clobber one. Only tracked changes hold a repo back.
 
+A shallow clone's counts are meaningless — its history is truncated, so nearly everything
+upstream reads as "behind" (`hermes-agent` reports 23,326 while being one day old). The
+fast-forward is still correct, so the line is tagged `(shallow, count inflated)` rather
+than suppressed.
+
 Exit code is 1 if anything failed, so it composes into a larger startup script. Warnings
 (unpushed commits, uncommitted work) do not fail the run.
 
 - Auth is `gh`'s git credential helper, already configured globally. `GIT_TERMINAL_PROMPT=0`
   is exported so stale credentials fail fast instead of hanging on a password prompt.
-- Per-repo fetch timeout is 300s, `SYNC_REPOS_TIMEOUT` overrides. `hermes-agent` is a ~100 MB
-  clone and its first fetch on this connection runs into minutes; incremental ones are quick.
+- Per-repo fetch timeout is 300s, `SYNC_REPOS_TIMEOUT` overrides. `hermes-agent`'s first
+  `--all` fetch took 12m36s and grew `.git` from 68 MB to 489 MB, because it pulls every tag.
+  That is done now; a full five-repo run takes 38s.
 - Tests: `tests/test_sync_repos.py`. They build real repos in a tmpdir and assert the script
   never loses work — keep them passing.
 
