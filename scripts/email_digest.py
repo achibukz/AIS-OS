@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""VIP Email & Action Item Triage -> Telegram (achinouncements).
+"""Email Debrief -> Telegram (achinouncements).
 
-Scans authenticated Google inboxes (Personal & Work) for unread, high-signal
-messages (professors, recruiters, direct correspondence, financial notices, security alerts),
-filtering out marketing spam, job board blasts, and newsletter noise.
+Scans authenticated Google inboxes and sends THREE separate messages:
+1. 🎓 DLSU School Email (abram_bukuhan@dlsu.edu.ph)
+2. 💼 Work / Career Email (akibukzwork@gmail.com)
+3. 📬 Personal / Main Email (akibukuhan10@gmail.com / aki.bukz12@gmail.com)
 
 Scheduled twice daily: 08:30 AM & 05:30 PM Manila time.
 
@@ -19,6 +20,7 @@ import datetime as dt
 import html
 import re
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -29,12 +31,25 @@ sys.path.insert(0, str(SCRIPT_DIR))
 from telegram_notify import send
 
 CONFIG_DIR = Path.home() / ".config" / "achios"
-GOOGLE_TOKENS = [
-    (CONFIG_DIR / "google_token_dlsu.json", "🎓 DLSU School"),
-    (CONFIG_DIR / "google_token_work.json", "💼 Work / Career"),
-    (CONFIG_DIR / "google_token.json", "📬 Personal"),
-    (CONFIG_DIR / "google_token_main.json", "👤 Main Personal"),
+
+ACCOUNT_CONFIGS = [
+    {
+        "id": "dlsu",
+        "title": "🎓 DLSU School Email",
+        "tokens": [CONFIG_DIR / "google_token_dlsu.json"],
+    },
+    {
+        "id": "work",
+        "title": "💼 Work / Career Email",
+        "tokens": [CONFIG_DIR / "google_token_work.json"],
+    },
+    {
+        "id": "personal",
+        "title": "📬 Personal Email",
+        "tokens": [CONFIG_DIR / "google_token.json", CONFIG_DIR / "google_token_main.json"],
+    },
 ]
+
 LOCAL_TZ = ZoneInfo("Asia/Manila")
 
 # Automated blast keywords to ignore
@@ -62,7 +77,6 @@ IGNORE_PATTERNS = [
 
 @dataclass
 class EmailItem:
-    account: str
     sender: str
     subject: str
     snippet: str
@@ -91,15 +105,15 @@ def is_noise(from_hdr: str, subject: str, snippet: str) -> bool:
 def categorize_email(from_hdr: str, subject: str, snippet: str) -> str:
     """Categorize into priority vs network vs general."""
     combined = f"{from_hdr} {subject} {snippet}".lower()
-    if any(k in combined for k in ["application", "interview", "rohde", "ing", "failed", "security", "bank", "bpi", "tonik", "dlsu", "professor"]):
+    if any(k in combined for k in ["application", "interview", "rohde", "ing", "failed", "security", "bank", "bpi", "tonik", "dlsu", "professor", "hda", "ovplc", "final exam", "evaluation"]):
         return "priority"
     if any(k in combined for k in ["invitation", "accepted your", "connection", "linkedin"]):
         return "network"
     return "general"
 
 
-def fetch_actionable_emails() -> tuple[list[EmailItem], int]:
-    """Fetch unread actionable emails across all accounts."""
+def fetch_account_emails(token_paths: list[Path]) -> tuple[list[EmailItem], int]:
+    """Fetch unread actionable emails for a specific account."""
     from google.auth.transport.requests import Request
     from google.oauth2.credentials import Credentials
     from googleapiclient.discovery import build
@@ -107,7 +121,7 @@ def fetch_actionable_emails() -> tuple[list[EmailItem], int]:
     actionable: list[EmailItem] = []
     filtered_noise_count = 0
 
-    for token_path, account_label in GOOGLE_TOKENS:
+    for token_path in token_paths:
         if not token_path.exists():
             continue
 
@@ -149,7 +163,6 @@ def fetch_actionable_emails() -> tuple[list[EmailItem], int]:
                 sender = clean_sender(from_hdr)
                 actionable.append(
                     EmailItem(
-                        account=account_label,
                         sender=sender,
                         subject=subject,
                         snippet=snippet[:100].strip(),
@@ -157,24 +170,24 @@ def fetch_actionable_emails() -> tuple[list[EmailItem], int]:
                     )
                 )
         except Exception as e:
-            print(f"Error checking {account_label}: {e}", file=sys.stderr)
+            print(f"Error checking {token_path.name}: {e}", file=sys.stderr)
 
     return actionable, filtered_noise_count
 
 
-def build_email_digest(items: list[EmailItem], noise_count: int) -> str:
+def build_account_message(title: str, items: list[EmailItem], noise_count: int) -> str:
     now = dt.datetime.now(LOCAL_TZ)
     date_str = now.strftime("%b %d, %Y (%I:%M %p Manila)")
 
     lines = [
         "---------------------------------",
-        "📬 Email Debrief",
+        f"{title} Debrief",
         f"🗓 {date_str}",
         "",
     ]
 
     if not items:
-        lines.append("🍃 Inboxes clear. No unread VIP action items or urgent correspondence.")
+        lines.append("🍃 Inbox clear. No unread VIP action items or urgent correspondence.")
         if noise_count > 0:
             lines.append(f"\n💡 Filtered {noise_count} promotional/automated emails.")
         return "\n".join(lines).strip()
@@ -186,7 +199,7 @@ def build_email_digest(items: list[EmailItem], noise_count: int) -> str:
     if priority_items:
         lines.append("🚨 PRIORITY & ACTION ITEMS:")
         for it in priority_items[:4]:
-            lines.append(f"• {it.sender} — {it.subject} ({it.account})")
+            lines.append(f"• {it.sender} — {it.subject}")
         lines.append("")
 
     if network_items:
@@ -195,14 +208,14 @@ def build_email_digest(items: list[EmailItem], noise_count: int) -> str:
             lines.append(f"• {it.sender} — {it.subject}")
         lines.append("")
 
-    if general_items and not priority_items:
-        lines.append("📌 OTHER RECENT INBOX:")
+    if general_items and not priority_items and not network_items:
+        lines.append("📌 RECENT INBOX:")
         for it in general_items[:3]:
             lines.append(f"• {it.sender} — {it.subject}")
         lines.append("")
 
-    total_shown = min(len(priority_items), 4) + min(len(network_items), 4) + (min(len(general_items), 3) if not priority_items else 0)
-    lines.append(f"💡 {total_shown} action items surfaced • {noise_count} promotional/noise emails filtered")
+    total_shown = min(len(priority_items), 4) + min(len(network_items), 4) + (min(len(general_items), 3) if not priority_items and not network_items else 0)
+    lines.append(f"💡 {total_shown} action items surfaced • {noise_count} promotional emails filtered")
     return "\n".join(lines).strip()
 
 
@@ -211,21 +224,38 @@ def main() -> int:
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Print the email digest without sending to Telegram",
+        help="Print the three email debrief messages without sending to Telegram",
     )
     args = parser.parse_args()
 
-    items, noise_count = fetch_actionable_emails()
-    digest = build_email_digest(items, noise_count)
+    messages_to_send = []
+
+    for acc in ACCOUNT_CONFIGS:
+        # Check if at least one token exists for this account
+        existing_tokens = [p for p in acc["tokens"] if p.exists()]
+        if not existing_tokens:
+            continue
+
+        items, noise_count = fetch_account_emails(existing_tokens)
+        msg = build_account_message(acc["title"], items, noise_count)
+        messages_to_send.append((acc["title"], msg))
 
     if args.dry_run:
-        print("=== DRY RUN (Not sending) ===")
-        print(digest)
+        print("=== DRY RUN (3 Separate Messages) ===\n")
+        for title, msg in messages_to_send:
+            print(f"--- [MESSAGE FOR {title}] ---")
+            print(msg)
+            print("\n" + "="*40 + "\n")
         return 0
 
-    print(f"[{dt.datetime.now().isoformat()}] Sending email triage digest to Telegram...")
-    count = send(digest)
-    print(f"Successfully sent {count} message(s) to Telegram.")
+    print(f"[{dt.datetime.now().isoformat()}] Sending {len(messages_to_send)} email debrief messages to Telegram...")
+    total_sent = 0
+    for title, msg in messages_to_send:
+        sent_count = send(msg)
+        total_sent += sent_count
+        time.sleep(0.5)  # Slight pause between messages for clean delivery
+
+    print(f"Successfully sent {total_sent} message(s) to Telegram.")
     return 0
 
 
