@@ -33,7 +33,24 @@ Runbook Phases 0–7 complete. **Phase 8 (prove it works) is 1 of 4:**
 - Codex is the intended eventual model. Verify the plan tier permits third-party harnesses
   **before** subscribing — the Anthropic Pro/Max mistake has the same shape.
 
+## Waiting on Aki
+- **Start the schoolMem bot unit.** Built, tested, pushed — not yet running. He must exit the
+  foreground session on pts/2 first (two pollers on one token 409), then
+  `systemctl --user start achios-schoolmem-bot.service`. The restart timer is already live and
+  fires 04:00 Manila. `tasks.md` still lists this as active; flip it once the unit is up.
+- **achiOS bot's channel server is down** — `~/.claude/channels/telegram/bot.pid` is gone and its
+  MCP disconnected mid-session, though the session on pts/1 is still alive. Unrelated to the
+  schoolMem work; the achiOS bot will not answer until that session is restarted.
+
 ## Done since last save (2026-08-17)
+- **schoolMem Telegram bot** — `@schoMemBot`, second channel session, own token and allowlist via
+  `TELEGRAM_STATE_DIR=~/.claude/channels/telegram-schoolmem`, launched from the vault so
+  schoolMem's own `CLAUDE.md` loads. Runs `sonnet` with `bypassPermissions` under
+  `tmux -L schoolmem`, restarting daily at 04:00 Manila and fast-forwarding the vault first.
+  `scripts/schoolmem_wiki_guard.py` is a PreToolUse hook that hard-denies writes into `wiki/`;
+  the wrapper arms it every start and refuses to launch without it. 26 guard tests, 164 total,
+  all pass. Captures land in the new tracked `schoolMem/inbox/`. Full rationale in
+  `decisions/log.md`.
 - **`sync-repos` ships** — `scripts/sync-repos.sh`, symlinked to `~/.local/bin/sync-repos`. Aki
   runs it when he opens the VM. Scans `~/Code/GitHub`, `~/Documents/Obsidian`, `~/.hermes` and
   fast-forwards only; `held back` / `DIVERGED` / `FETCH FAILED` are reported and the repo left

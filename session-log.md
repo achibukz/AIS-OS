@@ -51,3 +51,22 @@ Rejected:
 
 Open:
 - `hermes-agent` first fetch exceeds the 300s default; still running at 227 MB.
+
+## 2026-08-17 12:30 [saved]
+Goal: Always-on schoolMem Telegram bot that can never write to the wiki.
+
+Decisions:
+- One bot per vault, not one routing between them — a misroute writes to the wrong vault under the wrong rules.
+- `wiki/` ban enforced by a PreToolUse hook, not by CLAUDE.md — bypassPermissions removes every other gate.
+- PreToolUse hooks DO fire under `--permission-mode bypassPermissions`; verified with a real denied write.
+- `claude` falls back to `--print` with no TTY, so an unattended session needs tmux, not just systemd.
+- Captures go to a tracked `inbox/`; `raw/` and `output/` are gitignored and strand notes on the server.
+
+Rejected:
+- `chmod -R a-w wiki/` — also blocks git fast-forwards, breaking daily sync.
+- Trusting CLAUDE.md to hold the wiki line under bypass.
+- `RuntimeMaxSec`+`Restart=always` — does not compose with oneshot+tmux.
+
+Open:
+- Bash under bypass is narrowed by heuristic, not closed.
+- Separate unix user with read-only `wiki/` is the airtight fix, deferred.
