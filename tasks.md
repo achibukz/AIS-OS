@@ -32,7 +32,6 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Run `ADD TERM` for `AY2627-T1` in schoolMem once enlistment lands #school !low @2026-09-03
 - [ ] Fix stale skill descriptions — `thesis-script-writer` and `thesis-humanizer` reference C3-LMM and MicroTok-PH, which match neither vault #achios !low
 - [ ] Reapply for a BPI SaveUp account — the 2026-08-15 application was closed for being unfunded. Required initial deposit is Php 1 and monthly ADB is Php 0, so the deadline is the risk, not the amount. Fund it the day the account number lands #finances !med
-- [ ] Sync Claude Code memory to achibuntu — `~/.claude/projects/*/memory/` is outside the allowlist in `scripts/sync-claude-config.sh`, so the Mac's 14 memories and the server's 2 have never met. Not a plain rsync: the project slug is path-derived (`-Users-achibukz-...` vs `-home-achibukz-...`) so it needs remapping, `--delete` would wipe the server's own two, and `projects/` also holds full session transcripts that must not be swept along #achios !med
 - [ ] Check `CLAUDE_MEM_EXCLUDED_PROJECTS` in the Mac's `~/.claude-mem/settings.json` — it was empty on achibuntu despite CLAUDE.md saying claude-mem is disabled here. That file sits outside `~/.claude/`, so `sync-claude-config.sh` never copies it #achios !med
 
 ## Blocked
@@ -40,3 +39,5 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [~] Pull the power cord on achibuntu to test unattended boot recovery — blocked until a battery is installed. BAT0 is absent and the BIOS has no "Restore on AC Power Loss", so pulling the cord today just hard-kills it #achios !med
 
 ## Done
+
+- [x] Sync Claude Code memory to achibuntu — `scripts/sync_claude_memory.py`, called from `sync-claude-config.sh`. Remaps the path-derived project slug, sends only `memory/*.md` so session transcripts stay put, and unions `MEMORY.md` with no `--delete` so the server's own memories survive. Allowlisted to achiOS alone #achios !med @2026-08-17
