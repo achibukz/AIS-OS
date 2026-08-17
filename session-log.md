@@ -35,3 +35,19 @@ Rejected:
 Open:
 - career-ops data unreachable on server; three options pending.
 - `message-writer` voice.md path bug existed on Mac too, now fixed.
+
+## 2026-08-17 09:15 [saved]
+Goal: One command to bring every git repo on achibuntu up to date.
+
+Decisions:
+- `sync-repos` fast-forwards only — no merge, rebase, stash or push, because nothing running unattended may lose a commit.
+- Untracked files do not block a pull; a fast-forward leaves them alone and aborts by itself on collision.
+- Roots are scanned, not hardcoded, so a new clone is never silently skipped.
+
+Rejected:
+- `pull --rebase` everywhere — rewrites local commits unattended.
+- Auto-stash before pulling — hides work he was mid-way through.
+- `~/.claude` as a root — no remote on skills, marketplaces are `/plugin`'s job.
+
+Open:
+- `hermes-agent` first fetch exceeds the 300s default; still running at 227 MB.

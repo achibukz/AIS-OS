@@ -34,6 +34,12 @@ Runbook Phases 0–7 complete. **Phase 8 (prove it works) is 1 of 4:**
   **before** subscribing — the Anthropic Pro/Max mistake has the same shape.
 
 ## Done since last save (2026-08-17)
+- **`sync-repos` ships** — `scripts/sync-repos.sh`, symlinked to `~/.local/bin/sync-repos`. Aki
+  runs it when he opens the VM. Scans `~/Code/GitHub`, `~/Documents/Obsidian`, `~/.hermes` and
+  fast-forwards only; `held back` / `DIVERGED` / `FETCH FAILED` are reported and the repo left
+  untouched. 11 tests build real repos in a tmpdir and assert no work is lost. Caveat:
+  `hermes-agent`'s first fetch on this connection has run past 20 minutes and 227 MB, so it will
+  report a timeout until that completes — `SYNC_REPOS_TIMEOUT` overrides the 300s default.
 - **Claude Code memory now reaches achibuntu** — `scripts/sync_claude_memory.py`, called from
   `sync-claude-config.sh`. The two machines each kept their own `~/.claude/projects/*/memory`
   and had never exchanged anything, so Mac-side rules did not bind the box that runs
