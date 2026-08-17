@@ -43,17 +43,13 @@ ACCOUNT_CONFIGS = [
         "title": "💼 Work / Career Email",
         "tokens": [CONFIG_DIR / "google_token_work.json"],
     },
-    {
-        "id": "personal",
-        "title": "📬 Personal Email",
-        "tokens": [CONFIG_DIR / "google_token.json", CONFIG_DIR / "google_token_main.json"],
-    },
 ]
 
 LOCAL_TZ = ZoneInfo("Asia/Manila")
 
-# Automated blast keywords to ignore
+# Automated blast & irrelevant keywords to ignore
 IGNORE_PATTERNS = [
+    r"laguna",  # Aki is Manila campus only
     r"promo",
     r"discount",
     r"off select",
