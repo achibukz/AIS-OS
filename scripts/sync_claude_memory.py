@@ -27,8 +27,9 @@ INDEX = "MEMORY.md"
 
 # Allowlist of project paths relative to $HOME, same principle as sync-claude-config.sh.
 # Only achiOS memory is operating rules the server needs. Other projects' memory carries
-# personal data — schoolMem holds Aki's student ID and contact details — and achibuntu
-# still accepts SSH password auth.
+# personal data — schoolMem holds Aki's full name and student ID — and the server runs a
+# sub-70B model autonomously with Telegram reach, so anything landing there is readable
+# by a model nobody is supervising.
 PROJECTS = ["Code/GitHub/AIS-OS"]
 ENTRY_RE = re.compile(r"^- \[[^\]]*\]\(([^)]+)\)")
 

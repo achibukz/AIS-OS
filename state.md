@@ -34,6 +34,14 @@ Runbook Phases 0–7 complete. **Phase 8 (prove it works) is 1 of 4:**
   **before** subscribing — the Anthropic Pro/Max mistake has the same shape.
 
 ## Done since last save (2026-08-17)
+- **Claude Code memory now reaches achibuntu** — `scripts/sync_claude_memory.py`, called from
+  `sync-claude-config.sh`. The two machines each kept their own `~/.claude/projects/*/memory`
+  and had never exchanged anything, so Mac-side rules did not bind the box that runs
+  unattended. Not a plain rsync: the project dir is a slug of the repo's absolute path so the
+  `$HOME` prefix is remapped, `projects/` also holds session transcripts so only `memory/*.md`
+  is sent, and `MEMORY.md` is unioned with no `--delete` so the server's own memories survive.
+  Allowlisted to achiOS alone — schoolMem's memory carries Aki's student ID, and Hermes reads
+  whatever lands there unsupervised. 17 new tests; verified idempotent against the live box.
 - **SSH hardened** — key-only, root login off, `sshd_config.d/01-hardening.conf`. Tailscale SSH
   enabled first as an independent fallback. Verified via the LAN IP.
 - **`hermes` PATH fixed** — `~/.local/bin` moved above `.bashrc`'s non-interactive guard. Note
