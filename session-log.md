@@ -89,3 +89,19 @@ Rejected:
 Open:
 - Logging contract's achiMem/wiki ban is now documented but unenforced on the operator bot.
 - Push is pre-authorised here, so a Telegram message can reach GitHub unattended.
+
+## 2026-08-17 12:55 [saved]
+Goal: achiOS bot went deaf — ordinary sessions were stealing its Telegram token.
+
+Decisions:
+- No bot token may live in `~/.claude/channels/telegram/`; achiOS moved to `telegram-achios`.
+- Diagnosis is in the MCP log line `Channel notifications skipped: not in --channels list`.
+- Regression test asserts no unit's `BOT_STATE_DIR` ends in `/channels/telegram`.
+- Accepted a failed telegram MCP server in every ordinary session as the cost.
+
+Rejected:
+- Disabling the telegram plugin globally — the bot needs it enabled to use `--channels`.
+- Per-project plugin scoping — bot and terminal share the same cwd, so it cannot separate them.
+
+Open:
+- Nothing stops a future `/telegram:configure` from writing a token back to the default dir.

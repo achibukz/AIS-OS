@@ -211,3 +211,23 @@ Restart times are staggered ten minutes apart on purpose: both fetch before laun
 **Owner:** Aki.
 
 **Renamed same day:** "operator" was dropped for "achiOS" across the unit, tmux socket, `BOT_NAME` and log — `achios-bot.service`, `tmux -L achios`, `achios_bot.log`. Aki names things for himself and types the socket name; `operator` was a word only this file used. The old unit was disabled and its symlinks removed rather than left shadowing the new one.
+
+## 2026-08-17 — no bot token in the plugin's default channel dir
+
+**Decision:** The achiOS bot's Telegram state moves from `~/.claude/channels/telegram/` to `~/.claude/channels/telegram-achios/`, set through `BOT_STATE_DIR` in its unit. The default path must stay empty. A regression test in `tests/test_telegram_bot.py` asserts no unit's `BOT_STATE_DIR` ends in `/channels/telegram`.
+
+**Why:** Aki messaged the bot and nothing arrived. The bot was healthy — unit active, tmux alive, pane at the prompt, his id in `allowFrom` — and Telegram reported `pending_update_count: 0`, meaning the message had been fetched and acked by *something*. That something was an ordinary terminal session in this repo.
+
+The telegram plugin is enabled globally in `~/.claude/settings.json`, so every Claude Code session anywhere on the box spawns its `server.ts`. With no `TELEGRAM_STATE_DIR` in the environment that server resolves to `~/.claude/channels/telegram/`, loads whatever token it finds there, reads `bot.pid`, SIGTERMs the holder if it looks like a `server.ts`, and starts polling. That stale-holder kill exists for a good reason — an orphaned poller otherwise holds the token's single `getUpdates` slot forever — but it cannot tell a zombie from the live bot.
+
+The failure is silent in both directions. The hijacking session logs `Channel notifications skipped: server plugin:telegram:telegram not in --channels list for this session` and injects nothing, so the message vanishes. The bot session sees no error at all; it simply stops receiving. Nothing surfaces on Aki's phone either — the message sends normally and is never answered. The MCP log under `~/.cache/claude-cli-nodejs/<cwd-slug>/mcp-logs-plugin-telegram-telegram/` is the only place the takeover is visible, and only by comparing `Channel notifications registered` against `skipped` across two sessions.
+
+A named state dir is reachable only when `TELEGRAM_STATE_DIR` is set, and only the two units set it. With the default dir empty, an ordinary session's server exits at the missing-token check, which happens before it reads or writes `bot.pid` — so it cannot touch either bot. schoolMem was never vulnerable; it has been on a named dir since it was built, which is why only achiOS went deaf.
+
+**Known and accepted:** every ordinary session on this box now shows the telegram MCP server as failed to connect, because there is no token at the default path. That noise is the price of the isolation and is cheaper than a bot that stops answering without saying so.
+
+**Alternatives considered:** Disabling the telegram plugin globally (the bot needs it enabled to accept `--channels`); scoping the plugin per project (the bot and Aki's terminal share the same cwd, so project settings cannot separate them); leaving the token in place and restarting the bot after each session (treats the symptom, and the next session steals it back); a wrapper that re-claims the token on a timer (two processes fighting over one `getUpdates` slot, which is the bug rather than a fix).
+
+**Residual risk:** nothing prevents a future `/telegram:configure` run from writing a token back into the default dir. If that happens the symptom returns exactly as before — silence, no error.
+
+**Owner:** Aki.

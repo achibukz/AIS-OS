@@ -146,3 +146,12 @@ def test_a_failed_sync_still_launches(bot):
     assert launched(bot) != ""
     log = (bot["home"] / ".local/state/achios/test_bot.log").read_text()
     assert "WARNING" in log
+
+
+# A token in the plugin's default state dir is claimed by every ordinary Claude Code
+# session on the box, which polls but does not inject — the bot goes deaf in silence.
+@pytest.mark.parametrize("unit", ["achios-bot.service", "achios-schoolmem-bot.service"])
+def test_no_unit_uses_the_default_channel_state_dir(unit):
+    text = (SCRIPT.parent.parent / "systemd" / unit).read_text()
+    line = next(l for l in text.splitlines() if l.startswith("Environment=BOT_STATE_DIR="))
+    assert not line.endswith("/channels/telegram")

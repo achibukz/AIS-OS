@@ -36,14 +36,19 @@ Runbook Phases 0–7 complete. **Phase 8 (prove it works) is 1 of 4:**
 ## Waiting on Aki
 - **schoolMem bot is still `dmPolicy: pairing`.** Strangers who find `@schoMemBot` get a pairing
   code back. Fix is `/telegram:access policy allowlist` run *inside the bot's own session* — that
-  skill resolves `TELEGRAM_STATE_DIR` from the environment, so running it anywhere else edits the
-  achiOS bot instead. Aki is already in `allowFrom`, so this locks nothing out.
-- **achiOS bot's channel server is down** — `~/.claude/channels/telegram/bot.pid` is gone and its
-  MCP disconnected mid-session, though the session on pts/1 is still alive. Unrelated to the
-  schoolMem work; the achiOS bot will not answer until that session is restarted. It needs no
-  re-pairing — its `allowFrom` still holds Aki's id.
+  skill resolves `TELEGRAM_STATE_DIR` from the environment, so running it anywhere else writes to
+  the empty default dir. Aki is already in `allowFrom`, so this locks nothing out.
 
 ## Done since last save (2026-08-17)
+- **achiOS bot's silence diagnosed and fixed.** It was not "down" — the telegram plugin is
+  enabled globally, so *every* Claude Code session on the box spawned its `server.ts`, which
+  defaults to `~/.claude/channels/telegram/`, SIGTERMs whatever `bot.pid` names and claims the
+  token's single `getUpdates` slot. An ordinary session polls but cannot inject (`Channel
+  notifications skipped: not in --channels list`), so messages were fetched, acked and dropped
+  with no error anywhere Aki could see. State moved to `~/.claude/channels/telegram-achios/`,
+  which is only reachable with `TELEGRAM_STATE_DIR` set. Unit, `CLAUDE.md` and a regression test
+  updated; 16 telegram-bot tests pass; both pollers verified alive on separate dirs. Cost: every
+  ordinary session now shows the telegram MCP server as failed to connect.
 - **schoolMem Telegram bot** — `@schoMemBot`, second channel session, own token and allowlist via
   `TELEGRAM_STATE_DIR=~/.claude/channels/telegram-schoolmem`, launched from the vault so
   schoolMem's own `CLAUDE.md` loads. Runs `sonnet` with `bypassPermissions` under

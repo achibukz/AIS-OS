@@ -241,10 +241,18 @@ permission mode and the hook layer are independent, which is the whole reason th
   starts a fresh session anyway.
 - Model is `sonnet` for both. Never raise it; these answer questions all day.
 - Logs: `~/.local/state/achios/{achios,schoolmem}_bot.log`
-- Secrets: `~/.claude/channels/telegram/.env` and `…/telegram-schoolmem/.env`, mode 600.
+- Secrets: `~/.claude/channels/telegram-achios/.env` and `…/telegram-schoolmem/.env`, mode 600.
   `TELEGRAM_STATE_DIR` is the only thing keeping the two bots' tokens and allowlists
   apart — **never run `/telegram:configure` or `/telegram:access` for a bot from a session
   that lacks the matching env var**, or it silently edits the other bot.
+- **No token may live in the default `~/.claude/channels/telegram/`.** The plugin is enabled
+  globally, so *every* Claude Code session on this box spawns its `server.ts`, which reads
+  that path, SIGTERMs whatever `bot.pid` names, and claims the token's single `getUpdates`
+  slot. An ordinary session does not inject inbound messages — its log says `Channel
+  notifications skipped: not in --channels list` — so the bot goes deaf and Aki's messages
+  are swallowed with no error anywhere he can see. Settled 2026-08-17 after achiOS spent
+  eight minutes silently hijacked by a terminal session in the same repo. A named state dir
+  is only ever reached with `TELEGRAM_STATE_DIR` set, which only the units do.
 - Never run two sessions against one token. Telegram 409s and the bot stops answering; the
   symptom is silence, not an error he will see.
 - Tests: `tests/test_telegram_bot.py` (wrapper config, fail-closed guard install) and

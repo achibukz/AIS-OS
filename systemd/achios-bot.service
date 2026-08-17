@@ -10,7 +10,11 @@ RemainAfterExit=yes
 Environment=PATH=%h/.local/bin:%h/.npm-global/bin:/usr/local/bin:/usr/bin:/bin
 Environment=BOT_NAME=achios
 Environment=BOT_CWD=@REPO@
-Environment=BOT_STATE_DIR=%h/.claude/channels/telegram
+# Never the default `channels/telegram` — every ordinary Claude Code session on this box
+# spawns the telegram plugin's server.ts, which reads that path, kills whatever bot.pid
+# names and takes the token's single getUpdates slot. The bot goes deaf. A named dir is
+# only ever reached with TELEGRAM_STATE_DIR set, which only this unit does.
+Environment=BOT_STATE_DIR=%h/.claude/channels/telegram-achios
 # No BOT_GUARD. This one reads and writes — tasks.md, the calendar, decisions/log.md and
 # commits are the job, not a hazard. Its blast radius is wider than schoolMem's by design.
 
