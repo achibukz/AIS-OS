@@ -77,14 +77,15 @@ def fetch_ticker_data(ticker: str) -> dict:
 
 
 def build_digest(results: list[tuple[str, dict]]) -> str:
-    """Format the ETF digest into a concise, mobile-friendly Telegram message."""
+    """Format the ETF digest into a concise, mobile-friendly Telegram message with clean borders."""
     now = dt.datetime.now(dt.timezone(dt.timedelta(hours=8)))
     date_str = now.strftime("%b %d, %Y (%I:%M %p Manila)")
+    divider = "---------------------------------"
 
     lines = [
         "📊 ETF Market Digest",
         f"🗓 {date_str}",
-        "",
+        divider,
     ]
 
     for label, data in results:
@@ -97,7 +98,7 @@ def build_digest(results: list[tuple[str, dict]]) -> str:
             f"• Daily Change: {sign}${data['daily_change']:.2f} ({sign}{data['daily_pct']:.2f}%)",
             f"• 1-Year Return: {yr_sign}{data['one_yr_return']:.2f}%",
             f"• 52W Range: ${data['low_52w']:.2f} - ${data['high_52w']:.2f}",
-            "",
+            divider,
         ])
 
     return "\n".join(lines).strip()

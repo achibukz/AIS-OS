@@ -75,9 +75,10 @@ def get_recent_logs(service_name: str, max_lines: int = 8) -> str:
 
 
 def build_alert_message(service_name: str, reason: str = "") -> str:
-    """Format the failure alert message for Telegram."""
+    """Format the failure alert message for Telegram with clean borders."""
     now = dt.datetime.now(dt.timezone(dt.timedelta(hours=8)))
     date_str = now.strftime("%b %d, %Y (%I:%M:%S %p Manila)")
+    divider = "---------------------------------"
 
     logs = get_recent_logs(service_name)
     if len(logs) > 1500:
@@ -85,7 +86,8 @@ def build_alert_message(service_name: str, reason: str = "") -> str:
 
     lines = [
         "🚨 SYSTEM ALERT: Service Failure Detected",
-        f"🗓 {date_str}",
+        divider,
+        f"🗓 Time: {date_str}",
         f"💻 Host: achibuntu",
         f"⚙️ Service: {service_name}",
     ]
@@ -94,10 +96,10 @@ def build_alert_message(service_name: str, reason: str = "") -> str:
         lines.append(f"⚠️ Reason: {reason}")
 
     lines.extend([
-        "",
+        divider,
         "📋 Recent Log Output:",
         logs,
-        "",
+        divider,
         f"💡 Check status: `systemctl --user status {service_name}`",
     ])
 
