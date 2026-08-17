@@ -184,14 +184,14 @@ wrong rules — which chat he opens *is* the routing decision.
 
 | Bot | Unit / tmux | cwd | Writes |
 |---|---|---|---|
-| achiOS operator | `achios-operator-bot`, `tmux -L operator` | this repo | **read + write**, no guard |
+| achiOS | `achios-bot`, `tmux -L achios` | this repo | **read + write**, no guard |
 | schoolMem `@schoMemBot` | `achios-schoolmem-bot`, `tmux -L schoolmem` | the vault | everything **except `wiki/`** |
 
 Both run `scripts/telegram-bot.sh`, configured by `BOT_NAME` / `BOT_CWD` /
 `BOT_STATE_DIR` / `BOT_GUARD` / `BOT_MODEL` set in each unit. One script, because the two
 bots differ only in configuration. Both are `sonnet` on `--permission-mode
 bypassPermissions`; both fast-forward their repo with `sync-repos` before launching; both
-restart daily (schoolMem 04:00 Manila, operator 04:10, staggered so one uplink is not
+restart daily (schoolMem 04:00 Manila, achiOS 04:10, staggered so one uplink is not
 doing two fetches at once).
 
 **Pairing is one-time.** The 6-character code only captures Aki's numeric Telegram id
@@ -199,13 +199,13 @@ into `access.json`, which persists across restarts and reboots. A new session ne
 new code. What does *not* persist is the conversation — a restarted bot remembers nothing
 beyond what reached a file.
 
-**The operator bot reads and writes.** Editing `tasks.md`, adding calendar events, and
+**The achiOS bot reads and writes.** Editing `tasks.md`, adding calendar events, and
 committing are the job, not a hazard. Its blast radius is genuinely wider than
 schoolMem's, and push to `origin` is pre-authorised on this box — so a Telegram message
 can reach GitHub. That is intended; know it.
 
 The `achiMem/wiki/` rule in **Logging contract** still stands and is *not* mechanically
-enforced on the operator bot. If unattended wiki writes ever become a real worry, point
+enforced on the achiOS bot. If unattended wiki writes ever become a real worry, point
 `BOT_GUARD` at a guard for that path — the plumbing already exists.
 
 ### schoolMem's wiki guard
@@ -231,16 +231,16 @@ permission mode and the hook layer are independent, which is the whole reason th
 ### Running them
 
 - tmux is not optional. `claude` falls back to `--print` with no TTY, so the channel needs
-  a PTY. Each unit starts its own tmux **server** (`-L operator`, `-L schoolmem`), so
+  a PTY. Each unit starts its own tmux **server** (`-L achios`, `-L schoolmem`), so
   stopping one can never kill the other or an interactive tmux Aki has open.
 - Look without touching: `tmux -L schoolmem capture-pane -p -t bot | tail -30`. Attach
   with `tmux -L schoolmem attach -t bot`, detach with `Ctrl-b d` — `Ctrl-c` kills the bot.
-- Control: `systemctl --user {start,stop,restart} achios-{operator,schoolmem}-bot.service`.
+- Control: `systemctl --user {start,stop,restart} achios-bot.service` / `achios-schoolmem-bot.service`.
   A restart re-syncs the repo and starts a fresh context.
 - Restart timers are not `Persistent` — a missed restart means the box was off, and boot
   starts a fresh session anyway.
 - Model is `sonnet` for both. Never raise it; these answer questions all day.
-- Logs: `~/.local/state/achios/{operator,schoolmem}_bot.log`
+- Logs: `~/.local/state/achios/{achios,schoolmem}_bot.log`
 - Secrets: `~/.claude/channels/telegram/.env` and `…/telegram-schoolmem/.env`, mode 600.
   `TELEGRAM_STATE_DIR` is the only thing keeping the two bots' tokens and allowlists
   apart — **never run `/telegram:configure` or `/telegram:access` for a bot from a session

@@ -1,5 +1,5 @@
 [Unit]
-Description=achiOS operator Telegram bot (Claude Code channel session)
+Description=achiOS Telegram bot (Claude Code channel session)
 After=network-online.target
 Wants=network-online.target
 
@@ -8,17 +8,17 @@ Type=oneshot
 RemainAfterExit=yes
 
 Environment=PATH=%h/.local/bin:%h/.npm-global/bin:/usr/local/bin:/usr/bin:/bin
-Environment=BOT_NAME=operator
+Environment=BOT_NAME=achios
 Environment=BOT_CWD=@REPO@
 Environment=BOT_STATE_DIR=%h/.claude/channels/telegram
 # No BOT_GUARD. This one reads and writes — tasks.md, the calendar, decisions/log.md and
 # commits are the job, not a hazard. Its blast radius is wider than schoolMem's by design.
 
-ExecStart=/usr/bin/tmux -L operator new-session -d -s bot @REPO@/scripts/telegram-bot.sh
-ExecStop=/usr/bin/tmux -L operator kill-server
+ExecStart=/usr/bin/tmux -L achios new-session -d -s bot @REPO@/scripts/telegram-bot.sh
+ExecStop=/usr/bin/tmux -L achios kill-server
 
-StandardOutput=append:%h/.local/state/achios/operator_bot.log
-StandardError=append:%h/.local/state/achios/operator_bot.log
+StandardOutput=append:%h/.local/state/achios/achios_bot.log
+StandardError=append:%h/.local/state/achios/achios_bot.log
 
 [Install]
 WantedBy=default.target

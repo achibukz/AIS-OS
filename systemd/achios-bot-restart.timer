@@ -1,5 +1,5 @@
 [Unit]
-Description=Daily restart of the achiOS operator Telegram bot
+Description=Daily restart of the achiOS Telegram bot
 
 [Timer]
 # 04:10 Manila — ten minutes after schoolMem, so the two never fetch and relaunch at once

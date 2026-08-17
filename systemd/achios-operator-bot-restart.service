@@ -1,6 +1,0 @@
-[Unit]
-Description=Restart the achiOS operator Telegram bot (daily, to cap context growth)
-
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/systemctl --user restart achios-operator-bot.service
