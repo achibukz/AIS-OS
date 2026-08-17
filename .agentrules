@@ -15,3 +15,8 @@ Whenever an active task carries a date or deadline:
 ## 3. Secret Safety
 - Never print or echo raw bot tokens, API keys, or OAuth secrets into chat or logs.
 - Sensitive environment variables belong strictly in `~/.config/achios/` or `.env` files protected by `.gitignore`.
+
+## 4. Instruction File Separation
+- **Do NOT edit `CLAUDE.md`**: `CLAUDE.md` is reserved exclusively for Claude Code.
+- Antigravity / `agy` reads and updates **`AGENTS.md`** and **`.agentrules`** only.
+

@@ -37,6 +37,11 @@ Whenever we build, configure, change, or decide something in this repository, **
 3. **`tasks.md`**: Update task statuses immediately (`## Active` with `@YYYY-MM-DD` and calendar event if dated, or `## Done` with completion date).
 4. **`connections.md`**: Update when wiring new endpoints, crons, or integrations.
 
+## Agent Separation Rule
+- **`CLAUDE.md` is reserved exclusively for Claude Code** — do not edit or overwrite `CLAUDE.md`.
+- Antigravity / `agy` reads and maintains **`AGENTS.md`** and **`.agentrules`** only.
+
+
 
 ## Task register
 
