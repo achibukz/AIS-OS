@@ -12,7 +12,25 @@ Registry of every system achiOS can reach. Filled by `/onboard` from Q4-Q7 answe
 | 6 | Meeting intelligence | Thesis F2F notes → schoolMem/raw → schoolMem/wiki; class material likewise | partial — manual ingestion today; `ingest-batch` skill exists | — | — |
 | 7 | Knowledge / files | achiMem (`~/Documents/Obsidian/achiMem`) — the single entry point. It hubs out to schoolMem, career-ops, and thesis; go through achiMem, not around it. | connected — local files + git; auto-capture via `scripts/achimem_capture.py`, recall via `scripts/achimem_recall.py` | — | 2026-08-10 |
 
-| 8 | Notifications | Telegram — achiOS bot (its own bot, not Hermes') | `script` — `scripts/telegram_notify.py` is the shared sender; systemd user timers on achibuntu (`OnCalendar=… Asia/Manila`, `Persistent=true`). Not cron — it ignores `CRON_TZ`. Wire new jobs with the `cron-telegram` skill. **Also two-way**: the `telegram` plugin's channel runs Claude Code itself in this Telegram DM — Aki messages the bot from his phone, the session sees it as a `<channel source="plugin:telegram:telegram">` block and replies inline (`mcp__plugin_telegram_telegram__reply`), so achiOS is reachable from mobile without a terminal. Access gated by `/telegram:access` (allowlist/pairing in `~/.claude/channels/telegram/access.json`). **Two bots, one box** — `TELEGRAM_STATE_DIR` gives each its own token and allowlist: achiOS on the default dir, schoolMem (`@schoMemBot`) on `~/.claude/channels/telegram-schoolmem`, launched from the vault so its `CLAUDE.md` loads. Both run unattended as systemd user units inside their own tmux servers — `achios-bot` (`tmux -L achios`, reads and writes) and `achios-schoolmem-bot` (`tmux -L schoolmem`, write-blocked out of `wiki/`) — restarting daily at 04:10 and 04:00 Manila. See **Telegram bots** in `CLAUDE.md`. Live 2026-08-17. Pairing is one-time; ids persist in each bot's `access.json`. | bot token + chat id in `~/.config/achios/telegram.env`, mode 600; schoolMem token in its own state dir `.env`, mode 600 | 2026-08-17 |
+| 8 | Notifications | Telegram — six bots, see **naming registry** below | `script` — `scripts/telegram_notify.py` is the shared sender for cron/one-way notifications; systemd user timers on achibuntu (`OnCalendar=… Asia/Manila`, `Persistent=true`). Not cron — it ignores `CRON_TZ`. Wire new jobs with the `cron-telegram` skill. **Also two-way**: the `telegram` plugin's channel runs Claude Code itself in a Telegram DM — Aki messages a bot from his phone, the session sees it as a `<channel source="plugin:telegram:telegram">` block and replies inline (`mcp__plugin_telegram_telegram__reply`). Access gated by `/telegram:access` (allowlist/pairing per bot's own `access.json`). **Named state dirs, one per bot** — `TELEGRAM_STATE_DIR` gives each its own token and allowlist: `~/.claude/channels/telegram-achios` and `telegram-schoolmem`. No token may live in the plugin's default `~/.claude/channels/telegram/` — see **Telegram bots** in `CLAUDE.md` for why. The two Claude Code bots run unattended as systemd user units inside their own tmux servers — `achios-bot` (`tmux -L achios`, reads and writes) and `achios-schoolmem-bot` (`tmux -L schoolmem`, write-blocked out of `wiki/`) — restarting daily at 04:10 and 04:00 Manila. Live 2026-08-17. Pairing is one-time; ids persist in each bot's `access.json`. | bot token + chat id in `~/.config/achios/telegram.env` (achinouncements), mode 600; each other bot's token in its own state dir `.env`, mode 600 | 2026-08-17 |
+
+## Telegram bots — naming registry
+
+Six identities Aki uses to talk about these bots. Verified against each `getMe` on 2026-08-17
+— the Telegram `@username` is the source of truth if this table and a bot ever disagree.
+
+| Aki's name | Telegram | Tool | Scope | Purpose | Status |
+|---|---|---|---|---|---|
+| achiOS | `@achiOSClaudeBot` | Claude Code | AIS-OS repo | Two-way chat, read + write, no guard | live |
+| schoolMem | `@schoMemBot` | Claude Code | schoolMem vault | Two-way chat, write-blocked out of `wiki/` | live |
+| achiOS AGY | `@achiAgyOSBot` | agy (Google Antigravity) | AIS-OS repo | Two-way chat via `achiAgy` | live, built 2026-08-17 |
+| schoolMem AGY | `@schoMemAGYBot` | agy (Google Antigravity) | schoolMem vault | Two-way chat via `achiAgy` | live, built 2026-08-17 |
+| achinouncements | `@achiOSBot` | Claude Code (cron only) | AIS-OS `scripts/telegram_notify.py` | One-way: daily brief + every scheduled/cron job. Aki intends to route achiAgy's cron output here too | live |
+| achiHermes | not yet created | Codex (planned) | Hermes agent | Hermes bot, to be powered by Codex once he has a subscription | planned |
+
+`achiAgy` (`~/Code/GitHub/achiAgy`) is a separate repo from AIS-OS that wraps `agy` for
+Telegram, mirroring the achiOS bot pattern one-for-one — tmux commands for all four live
+bots are in achiMem's [[achi-os]] page, not duplicated here.
 
 **Mechanism options:** `mcp` (MCP server), `script` (Python/Bash hitting an API, in `scripts/`), `export` (CSV/JSON dump pipeline), `key+ref` (`.env` key + `references/{tool}-api.md` guide), `not yet connected`.
 
