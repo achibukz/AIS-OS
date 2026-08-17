@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """Google OAuth Authenticator for achiOS.
 
-Authenticates a Google account (DLSU, Personal, Work) and generates
+Authenticates a Google account (DLSU, Personal, Work, Main) and generates
 a token in ~/.config/achios/google_token_<name>.json.
 
+Supports pasting the redirect URL directly from your browser!
+
 Usage:
-    python scripts/auth_google_account.py dlsu
+    python3 scripts/auth_google_account.py dlsu
 """
 
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import sys
 from pathlib import Path
@@ -42,12 +43,6 @@ def main() -> int:
         choices=["dlsu", "main", "work", "personal"],
         help="Account identifier (e.g. dlsu -> google_token_dlsu.json)",
     )
-    parser.add_argument(
-        "--port",
-        type=int,
-        default=8085,
-        help="Local server port for OAuth redirect callback (default: 8085)",
-    )
     args = parser.parse_args()
 
     if not CLIENT_SECRET_FILE.exists():
@@ -61,24 +56,39 @@ def main() -> int:
     flow = InstalledAppFlow.from_client_secrets_file(
         str(CLIENT_SECRET_FILE),
         scopes=SCOPES,
+        redirect_uri="http://localhost:8085/",
     )
 
-    print(f"\n🔑 Authenticating Google Account for [{args.name.upper()}]...")
-    print(f"Destination: {output_token_path}\n")
+    auth_url, _ = flow.authorization_url(prompt="consent", access_type="offline")
 
-    # Run local server flow
-    creds = flow.run_local_server(
-        port=args.port,
-        prompt="consent",
-        open_browser=False,
-        authorization_prompt_message="Open this link in your browser to sign in:\n\n{url}\n",
-        success_message="Authentication complete! You can now close this browser tab.",
-    )
+    print("==================================================================")
+    print(f"🔑 AUTHENTICATING GOOGLE ACCOUNT: [{args.name.upper()}]")
+    print("==================================================================")
+    print("\n1. Copy and open this URL in your browser:\n")
+    print(auth_url)
+    print("\n------------------------------------------------------------------")
+    print("2. Sign in with your account and click 'Allow'.")
+    print("3. Your browser will redirect to a page that looks like:")
+    print("   'http://localhost:8085/?state=...&code=...'")
+    print("4. Copy that FULL URL from your browser's address bar and paste it below:\n")
 
-    output_token_path.write_text(creds.to_json(), encoding="utf-8")
-    output_token_path.chmod(0o600)
-    print(f"\n✅ Successfully saved token to {output_token_path} (mode 600)!")
-    return 0
+    try:
+        redirect_response = input("Paste redirect URL here: ").strip()
+        if not redirect_response:
+            print("Error: No URL provided.", file=sys.stderr)
+            return 1
+
+        print("\nExchanging authorization code for token...")
+        flow.fetch_token(authorization_response=redirect_response)
+        creds = flow.credentials
+
+        output_token_path.write_text(creds.to_json(), encoding="utf-8")
+        output_token_path.chmod(0o600)
+        print(f"\n✅ SUCCESS! Token securely saved to: {output_token_path} (mode 600)")
+        return 0
+    except Exception as e:
+        print(f"\n❌ Authentication failed: {e}", file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":
