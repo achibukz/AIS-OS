@@ -45,6 +45,10 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Measure what the two always-on Sonnet sessions cost against the plan quota — no visibility today, and they restart daily forever. The `usage-limit-reducer` skill reads the local JSONL logs #achios !low
 - [ ] Harden the Bash side of the schoolMem wiki guard, or stop relying on it — the path-based deny is deterministic but the Bash layer is a regex heuristic, so a shell can still reach `wiki/`. The airtight fix is running that bot as its own unix user with read-only access to `wiki/` #achios !low
 - [ ] Install and evaluate CasaOS dashboard for browser-based monitoring and file management (`curl -fsSL https://get.casaos.io | sudo bash`) #infra #achios !high
+- [ ] Build Autonomous Correction Harvester (`scripts/extract_corrections.py` to detect user corrections in `tgdb/` and auto-update `.agentrules` & `decisions/log.md`) #achios !med
+- [ ] Build achiOS Curator & Log Rotation daemon (user-level `logrotate` for `~/.local/state/achios/*.log` and state pruning timer) #achios !med
+- [ ] Implement Dynamic CLI Skill Synthesizer (auto-packaging complex workflows into documented Python CLI scripts with `--help` and `--dry-run`) #achios !med
+- [ ] Create System Crash Reflection & Self-Healing Playbook (logging service failures and validated fixes to `references/troubleshooting-recipes.md`) #achios !med
 
 
 
