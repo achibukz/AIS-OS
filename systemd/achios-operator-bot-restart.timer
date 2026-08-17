@@ -1,0 +1,13 @@
+[Unit]
+Description=Daily restart of the achiOS operator Telegram bot
+
+[Timer]
+# 04:10 Manila — ten minutes after schoolMem, so the two never fetch and relaunch at once
+# on a box with one slow uplink. Both land well before the 08:00 daily brief.
+OnCalendar=04:10 Asia/Manila
+# Deliberately NOT Persistent: a missed restart means the box was off, and boot already
+# starts a fresh session.
+Persistent=false
+
+[Install]
+WantedBy=timers.target

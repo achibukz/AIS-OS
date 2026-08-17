@@ -195,3 +195,17 @@ tmux is a requirement, not a preference: `claude` detects the absent TTY under s
 **Known limit:** Bash under bypass is narrowed, not closed. The guard catches redirects, `rm`/`mv`/`cp`/`tee`/`sed -i`/`dd` and destructive `git` subcommands aimed at `wiki/`. A determined or unlucky shell construction can still get through. Stated plainly here so the guarantee is not overclaimed.
 
 **Owner:** Aki.
+
+## 2026-08-17 — the operator bot writes; one wrapper drives both
+
+**Decision:** achiOS gets its own always-on Telegram session too — `achios-operator-bot`, `tmux -L operator`, cwd this repo, `sonnet`, `bypassPermissions`, restarting daily at 04:10 Manila. Unlike schoolMem it carries **no write guard**: editing `tasks.md`, adding calendar events, appending to `decisions/log.md` and committing are the job. Both bots now run one script, `scripts/telegram-bot.sh`, configured per-unit through `BOT_NAME` / `BOT_CWD` / `BOT_STATE_DIR` / `BOT_GUARD` / `BOT_MODEL`. `scripts/schoolmem-bot.sh` is deleted.
+
+**Why:** The second bot made the per-bot script a template rather than a one-off, and the two differ only in configuration — same sync, same tmux shape, same launch flags. Two near-identical scripts would have drifted, and the half that matters most is the fail-closed guard install, which must not exist in two versions. The guard is now optional rather than assumed, which is what let the operator bot reuse the same path without pretending to be guarded.
+
+Restart times are staggered ten minutes apart on purpose: both fetch before launching, and the box has one uplink.
+
+**Known and accepted:** the operator bot's blast radius is genuinely wider. Push to `origin` is pre-authorised on achibuntu, so a Telegram message can reach GitHub with no human at a keyboard. Aki asked for read and write knowingly. The one place this rubs against an existing guarantee is the logging contract, which says unattended writes may never reach `achiMem/wiki/` — that rule is now documented-but-unenforced for this bot. The plumbing to fix it is already there: point `BOT_GUARD` at a guard for that path. Deliberately not done today, because he asked for an unrestricted operator and the contradiction is worth stating rather than silently resolving against his instruction.
+
+**Alternatives considered:** A second standalone script (drifts, and duplicates the fail-closed guard logic); one bot serving both repos (settled the other way in the entry above, and writes make a misroute worse, not better); guarding the operator bot's `achiMem/wiki/` writes anyway (would have quietly overridden an explicit instruction — raised instead); a shared library sourced by two thin scripts (more moving parts than env vars, for two callers).
+
+**Owner:** Aki.

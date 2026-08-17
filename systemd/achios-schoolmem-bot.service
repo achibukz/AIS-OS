@@ -12,10 +12,16 @@ RemainAfterExit=yes
 
 # A user unit's PATH has neither claude (.npm-global/bin) nor bun and sync-repos (.local/bin).
 Environment=PATH=%h/.local/bin:%h/.npm-global/bin:/usr/local/bin:/usr/bin:/bin
+Environment=BOT_NAME=schoolmem
+Environment=BOT_CWD=%h/Documents/Obsidian/schoolMem
+Environment=BOT_STATE_DIR=%h/.claude/channels/telegram-schoolmem
+# Read-only against wiki/. This bot answers from a phone with nobody watching, and the
+# vault's provenance guarantee is that wiki pages are written with Aki present.
+Environment=BOT_GUARD=@REPO@/scripts/schoolmem_wiki_guard.py
 
 # -L gives the bot its own tmux server, so stopping the unit can never take down an
 # interactive tmux Aki happens to have open.
-ExecStart=/usr/bin/tmux -L schoolmem new-session -d -s bot @REPO@/scripts/schoolmem-bot.sh
+ExecStart=/usr/bin/tmux -L schoolmem new-session -d -s bot @REPO@/scripts/telegram-bot.sh
 ExecStop=/usr/bin/tmux -L schoolmem kill-server
 
 StandardOutput=append:%h/.local/state/achios/schoolmem_bot.log

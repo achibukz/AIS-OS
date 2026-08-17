@@ -176,15 +176,39 @@ Exit code is 1 if anything failed, so it composes into a larger startup script. 
 - Tests: `tests/test_sync_repos.py`. They build real repos in a tmpdir and assert the script
   never loses work — keep them passing.
 
-## schoolMem Telegram bot
+## Telegram bots
 
-A second always-on Claude Code session answers schoolMem questions from Aki's phone, as
-`@schoMemBot`. Separate from the achiOS bot in every way that matters: own BotFather
-token, own allowlist, own vault as cwd so schoolMem's `CLAUDE.md` loads and it comes up
-as the wiki agent rather than as this operator.
+Two always-on Claude Code sessions answer Aki from his phone. One bot per repo rather
+than one routing between them, because a misroute writes to the wrong place under the
+wrong rules — which chat he opens *is* the routing decision.
 
-Two bots rather than one routing between them, because a misroute writes to the wrong
-vault under the wrong rules. Which chat he opens is the routing decision.
+| Bot | Unit / tmux | cwd | Writes |
+|---|---|---|---|
+| achiOS operator | `achios-operator-bot`, `tmux -L operator` | this repo | **read + write**, no guard |
+| schoolMem `@schoMemBot` | `achios-schoolmem-bot`, `tmux -L schoolmem` | the vault | everything **except `wiki/`** |
+
+Both run `scripts/telegram-bot.sh`, configured by `BOT_NAME` / `BOT_CWD` /
+`BOT_STATE_DIR` / `BOT_GUARD` / `BOT_MODEL` set in each unit. One script, because the two
+bots differ only in configuration. Both are `sonnet` on `--permission-mode
+bypassPermissions`; both fast-forward their repo with `sync-repos` before launching; both
+restart daily (schoolMem 04:00 Manila, operator 04:10, staggered so one uplink is not
+doing two fetches at once).
+
+**Pairing is one-time.** The 6-character code only captures Aki's numeric Telegram id
+into `access.json`, which persists across restarts and reboots. A new session needs no
+new code. What does *not* persist is the conversation — a restarted bot remembers nothing
+beyond what reached a file.
+
+**The operator bot reads and writes.** Editing `tasks.md`, adding calendar events, and
+committing are the job, not a hazard. Its blast radius is genuinely wider than
+schoolMem's, and push to `origin` is pre-authorised on this box — so a Telegram message
+can reach GitHub. That is intended; know it.
+
+The `achiMem/wiki/` rule in **Logging contract** still stands and is *not* mechanically
+enforced on the operator bot. If unattended wiki writes ever become a real worry, point
+`BOT_GUARD` at a guard for that path — the plumbing already exists.
+
+### schoolMem's wiki guard
 
 **It may never write to `wiki/`.** The session runs `--permission-mode bypassPermissions`,
 so nothing else stands between the model and the vault, and schoolMem's provenance
@@ -200,26 +224,32 @@ permission mode and the hook layer are independent, which is the whole reason th
 - Bash under bypass is narrowed by heuristic, not closed. A determined shell can still
   reach `wiki/`. The real fix, if it ever matters, is running the bot as its own unix
   user with read-only access to `wiki/` — deliberately not built yet.
-- `scripts/schoolmem-bot.sh` arms the guard, **fails closed** if it cannot, fast-forwards
-  the vault with `sync-repos`, then execs `claude`. A failed fetch warns and continues; a
-  missing guard aborts.
+- `telegram-bot.sh` arms the guard when `BOT_GUARD` is set and **fails closed** if it
+  cannot — a bot that believes it is guarded but is not is worse than no bot. A failed
+  `sync-repos` only warns; stale answers beat no bot.
+
+### Running them
+
 - tmux is not optional. `claude` falls back to `--print` with no TTY, so the channel needs
-  a PTY. The unit starts `tmux -L schoolmem` — its own server, so stopping the unit can
-  never kill an interactive tmux Aki has open. Attach with
-  `tmux -L schoolmem attach -t bot`.
-- Restarts daily at 04:00 Manila (`achios-schoolmem-bot-restart.timer`). One conversation
-  running for days fills its context and degrades; the restart also picks up whatever he
-  committed from the Mac overnight. Not `Persistent` — a missed restart means the box was
-  off, and boot starts a fresh session anyway.
-- Model is `sonnet`. Never raise it; this answers school questions all day.
-- Secrets: `~/.claude/channels/telegram-schoolmem/.env`, mode 600. `TELEGRAM_STATE_DIR`
-  is what keeps the two bots' tokens and allowlists apart — **never run
-  `/telegram:configure` or `/telegram:access` for this bot from a session that lacks that
-  env var**, or it edits the achiOS bot instead.
-- Log: `~/.local/state/achios/schoolmem_bot.log`
-- Tests: `tests/test_schoolmem_wiki_guard.py`. They assert the guard denies traversal into
-  `wiki/`, allows `inbox/`, ignores lookalike siblings like `wiki-archive/`, and fails
-  closed on unparseable input. Keep them passing.
+  a PTY. Each unit starts its own tmux **server** (`-L operator`, `-L schoolmem`), so
+  stopping one can never kill the other or an interactive tmux Aki has open.
+- Look without touching: `tmux -L schoolmem capture-pane -p -t bot | tail -30`. Attach
+  with `tmux -L schoolmem attach -t bot`, detach with `Ctrl-b d` — `Ctrl-c` kills the bot.
+- Control: `systemctl --user {start,stop,restart} achios-{operator,schoolmem}-bot.service`.
+  A restart re-syncs the repo and starts a fresh context.
+- Restart timers are not `Persistent` — a missed restart means the box was off, and boot
+  starts a fresh session anyway.
+- Model is `sonnet` for both. Never raise it; these answer questions all day.
+- Logs: `~/.local/state/achios/{operator,schoolmem}_bot.log`
+- Secrets: `~/.claude/channels/telegram/.env` and `…/telegram-schoolmem/.env`, mode 600.
+  `TELEGRAM_STATE_DIR` is the only thing keeping the two bots' tokens and allowlists
+  apart — **never run `/telegram:configure` or `/telegram:access` for a bot from a session
+  that lacks the matching env var**, or it silently edits the other bot.
+- Never run two sessions against one token. Telegram 409s and the bot stops answering; the
+  symptom is silence, not an error he will see.
+- Tests: `tests/test_telegram_bot.py` (wrapper config, fail-closed guard install) and
+  `tests/test_schoolmem_wiki_guard.py` (denies traversal into `wiki/`, allows `inbox/`,
+  ignores lookalike siblings like `wiki-archive/`, fails closed on bad input).
 
 ## Knowledge base
 
