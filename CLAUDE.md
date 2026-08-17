@@ -51,6 +51,36 @@ date — never deleted.
 When something is genuinely an unanswered *question* rather than an action, it belongs in
 achiMem's `wiki/personal/open-questions.md`, not here. Both feed the same brief.
 
+**A dated task also becomes a calendar event.** Whenever a task carries a date — he said it
+outright ("by Friday", "on the 29th") or it is implied by a deadline — write the `@YYYY-MM-DD`
+line in `tasks.md` *and* create the event, in the same turn, without asking. Settled
+2026-08-17: the register alone is not enough, because he reads the calendar on his phone.
+
+```
+scripts/gcal_add.py "Title" 2026-08-29 --calendar ING
+```
+
+All-day, reminders off, because the brief already surfaces it that morning. Re-running with
+the same title and date is a no-op, so retry freely.
+
+**Pick the calendar that fits the subject** — do not default everything to one place:
+
+| Task is about | Calendar |
+|---|---|
+| ING internship | `ING` |
+| A specific course | that course's calendar — `CSOPESY`, `THS-ST1`, `STCLOUD`, `PEDFOUR`, `STSP001`, `LSCS` |
+| School generally, no single course | `DLSU` |
+| Job hunting outside ING — applications, recruiters, interviews | `Job` |
+| Birthdays | `Bdayy` |
+| Family | `Family` |
+| Everything else — personal, admin, spending, achiOS and infra work | `Personal` |
+
+`scripts/gcal_add.py --list` prints every writable calendar across both accounts. It searches
+the personal account then the work one, and only matches a calendar Aki owns or can write to,
+so course calendars shared across both resolve either way. If no calendar fits, use `Personal`
+rather than inventing one. Read-only calendars — `ABRAM AKI BUKUHAN Calendar (Canvas)`,
+`Holidays in Philippines`, `abram_bukuhan@dlsu.edu.ph` — can never be written to.
+
 ## Daily brief
 
 `scripts/daily_brief.py` sends **two separate Telegram messages** at 8am:

@@ -22,6 +22,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 
+- [ ] Maybe buy Codex — align its billing to the Claude subscription renewal so both land on the 29th #achios !low @2026-08-29
 - [ ] Get achibuntu a battery or a small UPS — it is batteryless, so any mains blip is an instant power-off. Its Insyde consumer BIOS has no AC-recovery setting (hp-bioscfg exposes 2 attributes), so firmware cannot fix this #infra !med
 - [ ] Confirm which ING team Aki is joining — Data/AI/Transformation vs Retail Tech, one message to Vanscell Nierra #career !high
 - [ ] Approach the DLSU school coordinator for the internship agreement signature #career !high
