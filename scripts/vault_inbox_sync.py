@@ -138,14 +138,14 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    # 1. Sweep recent Claude Code transcripts into achiMem/tgdb/
+    # 1. Sweep recent Claude Code & Antigravity transcripts into achiMem/tgdb/
     try:
-        from export_claude_transcripts import export_recent_sessions
+        from export_transcripts import export_recent_sessions
         exported = export_recent_sessions(days_lookback=2)
         if exported > 0 and args.dry_run:
-            print(f"[tgdb] [DRY RUN] Exported/refreshed {exported} Claude Code session note(s).")
+            print(f"[tgdb] [DRY RUN] Exported/refreshed {exported} session note(s) (Claude + Antigravity).")
     except Exception as e:
-        print(f"Warning: Claude transcript export skipped: {e}", file=sys.stderr)
+        print(f"Warning: Transcript export skipped: {e}", file=sys.stderr)
 
     overall_success = True
     for vault in VAULTS:
