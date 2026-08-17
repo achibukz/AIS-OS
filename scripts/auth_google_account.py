@@ -12,8 +12,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
+
+# Automatically switch to achiOS venv if run with system python
+VENV_PYTHON = Path.home() / ".local" / "share" / "achios" / "venv" / "bin" / "python"
+if VENV_PYTHON.exists() and sys.executable != str(VENV_PYTHON):
+    os.execv(str(VENV_PYTHON), [str(VENV_PYTHON)] + sys.argv)
+
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 SCOPES = [
