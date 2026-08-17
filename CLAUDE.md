@@ -122,8 +122,13 @@ It is meant to read loose on a phone, not dense.
 - Log: `~/.local/state/achios/daily_brief.log` (the unit appends both streams there)
 - Run it now: `systemctl --user start achios-daily-brief.service`. Next fire:
   `systemctl --user list-timers achios-daily-brief.timer`
-- The box is **batteryless** — only `AC` under `/sys/class/power_supply/`. Mains loss is an
-  instant power-off with no shutdown sequence, which is why the timer must stay `Persistent`.
+- The box has **no battery installed** — firmware declares the slot but the kernel reports
+  `ACPI: battery: Slot [BAT0] (battery absent)`, so only `AC` appears under
+  `/sys/class/power_supply/`. Mains loss is an instant power-off with no shutdown sequence,
+  which is why the timer must stay `Persistent`. Fitting a battery would fix this at source.
+- The timer→service path is verified, not assumed: a drop-in was used to point `OnCalendar`
+  two minutes out and `ExecStart` at `--dry-run`, and the timer activated the service on its
+  own (`Result=success`). Use that trick to test a schedule without sending Aki a message.
 - Preview: `daily_brief.py --dry-run` (`--raw` skips Sonnet, `--no-calendar` skips Google)
 - Re-pairing a bot: `daily_brief.py --find-chat-id` prints chat ids without echoing the token
 - Either message splits further at a blank line if it passes Telegram's 4096-char limit.

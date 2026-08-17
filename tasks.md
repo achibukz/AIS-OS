@@ -23,7 +23,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 ## Active
 
 - [ ] Maybe buy Codex — align its billing to the Claude subscription renewal so both land on the 29th #achios !low @2026-08-29
-- [ ] Get achibuntu a battery or a small UPS — it is batteryless, so any mains blip is an instant power-off. Its Insyde consumer BIOS has no AC-recovery setting (hp-bioscfg exposes 2 attributes), so firmware cannot fix this #infra !med
+- [ ] Put a battery back in achibuntu — the BAT0 slot is empty (`ACPI: battery: Slot [BAT0] (battery absent)`), so any mains blip is an instant power-off. Firmware supports one, and its Insyde BIOS has no AC-recovery setting, so a battery is the only fix. A UPS is the fallback #infra !med
 - [ ] Confirm which ING team Aki is joining — Data/AI/Transformation vs Retail Tech, one message to Vanscell Nierra #career !high
 - [ ] Approach the DLSU school coordinator for the internship agreement signature #career !high
 - [ ] Fix `career-ops/config/profile.yml` — still says T1 starts 2026-08-03, feeds wrong availability into live applications #career !high
@@ -34,6 +34,6 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Blocked
 
-- [~] Pull the power cord on achibuntu to test unattended boot recovery — BIOS has no "Restore on AC Power Loss", depends on a ten-year-old battery #achios !med
+- [~] Pull the power cord on achibuntu to test unattended boot recovery — blocked until a battery is installed. BAT0 is absent and the BIOS has no "Restore on AC Power Loss", so pulling the cord today just hard-kills it #achios !med
 
 ## Done
