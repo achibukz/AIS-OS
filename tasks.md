@@ -31,6 +31,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Mount the 1 TB HDD at `/srv` and set up restic or borg backups for both vaults #achios !med
 - [ ] Run `ADD TERM` for `AY2627-T1` in schoolMem once enlistment lands #school !low @2026-09-03
 - [ ] Fix stale skill descriptions — `thesis-script-writer` and `thesis-humanizer` reference C3-LMM and MicroTok-PH, which match neither vault #achios !low
+- [ ] Check `CLAUDE_MEM_EXCLUDED_PROJECTS` in the Mac's `~/.claude-mem/settings.json` — it was empty on achibuntu despite CLAUDE.md saying claude-mem is disabled here. That file sits outside `~/.claude/`, so `sync-claude-config.sh` never copies it #achios !med
 
 ## Blocked
 

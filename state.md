@@ -9,7 +9,8 @@ Runbook Phases 0–7 complete. **Phase 8 (prove it works) is 1 of 4:**
 - [x] Message the bot from the phone and get a reply
 - [ ] Ask it to read a file from a vault
 - [ ] Schedule a one-off cron job, confirm delivery to Telegram
-- [ ] **Pull the power cord** — confirm unattended boot, gateway return, bot answers
+- [~] **Pull the power cord** — blocked, not pending. No battery is fitted, so this cannot pass
+      as written (see Open Issues)
 
 ## Evidence
 - Gateway: `active`, ~104 MB, lingering user systemd unit, `✓ telegram connected` at 19:51:04
@@ -19,8 +20,11 @@ Runbook Phases 0–7 complete. **Phase 8 (prove it works) is 1 of 4:**
 - Wiki written and pushed (`892bf20`): new `achibuntu` page, 4 open questions closed
 
 ## Open Issues
-- **Brownout survival untested.** This BIOS has no "Restore on AC Power Loss"; recovery depends
-  on a ten-year-old battery of unmeasured health. This is the power-cut test.
+- **Brownout survival is already answered, and the answer is no.** There is no battery in the
+  box at all — the kernel reports `ACPI: battery: Slot [BAT0] (battery absent)` and only `AC`
+  appears under `/sys/class/power_supply/`. With no battery and no BIOS "Restore on AC Power
+  Loss", mains loss is an instant power-off and the box stays off until someone presses the
+  button. Fitting a battery is the fix; `Persistent=true` on the timers is the mitigation.
 - **1 TB HDD unattached.** Intended for `/srv` as a restic/borg target; both vaults are currently
   protected only by their git remotes.
 - **career-ops data unreachable on the server** — `cv.md`, `applications.md`, `profile.yml` are
@@ -39,3 +43,12 @@ Runbook Phases 0–7 complete. **Phase 8 (prove it works) is 1 of 4:**
   `~/.claude/skills` and `~/.hermes/skills`.
 - **Access guide written** — `achiMem/output/2026-08-17-achibuntu-access-guide.md`, including
   the add-a-device procedure.
+- **Bun installed on achibuntu** (1.3.14, `~/.bun/bin/bun`, symlinked into `~/.local/bin`).
+  The official `bun.sh/install` script needs `unzip`, which the box lacks and which needs sudo,
+  so the release zip was fetched from GitHub and extracted with Python instead. Same binary.
+  This was silently breaking claude-mem's `bun-runner.js` on every SessionStart.
+- **claude-mem was never actually excluded from this repo on achibuntu.** `CLAUDE.md` says it is
+  disabled here, but `CLAUDE_MEM_EXCLUDED_PROJECTS` in `~/.claude-mem/settings.json` was empty and
+  the db already held 9 observations and 1 session summary tagged `AIS-OS`. The exclusion lives
+  outside `~/.claude/`, so `sync-claude-config.sh`'s allowlist never carried it over from the Mac.
+  Now set to `AIS-OS` on this box. Check the Mac's copy matches.
