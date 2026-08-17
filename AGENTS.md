@@ -160,11 +160,21 @@ It is meant to read loose on a phone, not dense.
 
 ### Active Tasks Checkpoint
 
-`scripts/tasks_digest.py` sends an area-grouped, priority-sorted active tasks checkpoint from `tasks.md` to `achinouncements`:
+`scripts/tasks_digest.py` sends a prioritized active tasks checkpoint from `tasks.md` to `achinouncements`:
 - Schedule: `systemd/achios-tasks-digest.timer` (set to `11:00`, `15:00`, `18:00`, `21:00`, `23:00` Asia/Manila with `Persistent=true`)
 - Log: `~/.local/state/achios/tasks_digest.log`
 - Preview: `python scripts/tasks_digest.py --dry-run`
 - Run now: `systemctl --user start achios-tasks-digest.service`
+
+### Midnight Evening Debrief
+
+`scripts/evening_debrief.py` sends a concise, <300 word debrief of the day concluding at midnight to `achinouncements`:
+- Content: Completed tasks today, system failure status, and tomorrow's focus/schedule
+- Schedule: `systemd/achios-evening-debrief.timer` (set to `00:00` Asia/Manila with `Persistent=true`)
+- Log: `~/.local/state/achios/evening_debrief.log`
+- Preview: `python scripts/evening_debrief.py --dry-run`
+- Run now: `systemctl --user start achios-evening-debrief.service`
+
 
 
 ## Repo sync

@@ -1,0 +1,10 @@
+[Unit]
+Description=achiOS Evening Debrief at 12:00 MN (Midnight Manila)
+
+[Timer]
+OnCalendar=00:00 Asia/Manila
+Persistent=true
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

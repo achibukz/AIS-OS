@@ -116,6 +116,7 @@ Decisions:
 - Initialized and published `achiAgy` private repository to GitHub (`achibukz/achiAgy`) with strict `.gitignore` protection for `.env*` secrets and dynamic sessions.
 - Added PDF generation and Telegram document delivery pipeline (`reportlab` + `sendDocument` in `scripts/generate_sample_pdf.py`).
 - Added Active Tasks Checkpoint (`scripts/tasks_digest.py` & `systemd/achios-tasks-digest.timer`) scheduled at 11am, 3pm, 6pm, 9pm, 11pm Manila time to `achinouncements`.
+- Added Midnight Evening Debrief (`scripts/evening_debrief.py` & `systemd/achios-evening-debrief.timer`) scheduled at 00:00 Manila time (<300 words, day accomplishments, failure status, and tomorrow's focus/schedule).
 
 Rejected:
 - Standard cron for ETF digest — ignores `CRON_TZ` and lacks `Persistent=true` recovery.
@@ -124,5 +125,6 @@ Rejected:
 Open:
 - Automated `logrotate` for `~/.local/state/achios/*.log`.
 - Auto-sync/commit loop for `schoolMem/inbox/`.
+
 
 
