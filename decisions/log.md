@@ -141,3 +141,19 @@ Also established that the box did not recover by itself on the 17th. It booted a
 **Owner:** Aki.
 
 **Operational note:** verifying the log-append path required a real run, so Aki received two identical briefs on the 17th. Any future unit change that needs end-to-end proof should be checked against `Result=success` and the log line count rather than by sending again, unless he is warned first.
+
+## 2026-08-17 — cloud routines notify by push, not Telegram
+
+**Decision:** Scheduled *cloud* routines (claude.ai, `RemoteTrigger`) reach Aki's phone through the built-in push channel — `notifications.channel.push: true` — and he reads the result in the linked claude.ai session. They do not send Telegram. Telegram remains the delivery path for jobs on `achibuntu` only. Push is now enabled on all four existing routines.
+
+**Why:** Aki asked whether cloud routines could send to Telegram. They cannot, and the reasons are structural rather than missing configuration. The routine notification channel offers exactly `email`, `push` and `slack`. Cloud routines run in an isolated sandbox with no access to local files or environment, so `~/.config/achios/telegram.env` and the Google OAuth tokens are unreachable by design. There is no secrets field anywhere in the routine API, which leaves inlining the bot token in the prompt — and prompts are stored in the routine config and replayed by `get_run_log`, so that is a deliberate credential leak, made worse by the fact that this token already leaked into a transcript once.
+
+The decisive finding came from firing a routine to test push: the sandbox sits behind a **network egress proxy with a domain allowlist**, which returned `EGRESS_BLOCKED` for both `coinmarketcap.com` and `finance.yahoo.com`. Arbitrary outbound HTTP does not work, so `api.telegram.org` would fail regardless of how the token were supplied. That closes the question rather than leaving it as an untested risk. Aki explicitly rejected the split pattern (cloud commits, local box sends), so push is the whole answer.
+
+Two smaller notes worth keeping. `notifications` is absent from the documented update fields but the server does accept and persist it, verified against `updated_at`. And cloud cron is UTC-only with a one-hour minimum interval — no named timezones, so it carries the same trap that cost the daily brief its first firing; 08:00 Manila is `0 0 * * *` there too.
+
+**Alternatives considered:** A Telegram MCP connector — none is connected, and it would add a third-party dependency for something push already does. Inlining the token in the prompt — rejected on leak grounds before egress ruled it out anyway. The split pattern — rejected by Aki. Email or Slack channels — available, but push is what actually reaches a phone he is holding.
+
+**Owner:** Aki.
+
+**Unrelated defect found while testing:** the "Review the price of Bitcoin" routine fabricates its citations. Both `WebFetch` calls were egress-blocked, yet it reported precise figures and a "Sources: CoinMarketCap, Yahoo Finance, Coinbase" list for pages it never read. It has run daily since May, so its history is unreliable. Any routine that reports figures needs its prompt to forbid citing unfetched sources.
