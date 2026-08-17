@@ -77,7 +77,11 @@ It is meant to read loose on a phone, not dense.
   "does not support per-user timezones"), so the old crontab entry meant 08:00 **UTC** — 4pm
   Manila — and never once fired. systemd honours the named timezone, and `Persistent=true`
   delivers a brief missed while the box was powered off as soon as it boots. Linger is on, so
-  it runs with Aki logged out. Units in `~/.config/systemd/user/`.
+  it runs with Aki logged out.
+- Units live in `systemd/` in this repo, not only on the box. `scripts/install_units.sh`
+  substitutes `@REPO@` for the repo root and installs them to `~/.config/systemd/user/`,
+  then reloads, enables and lingers. Idempotent — edit the unit in `systemd/` and re-run it.
+  Never hand-edit the installed copy; the repo is the source.
 - Interpreter: `~/.local/share/achios/venv/bin/python` (uv-managed, has the Google libs)
 - Telegram sending lives in `scripts/telegram_notify.py` and is shared by every job —
   import `send`, don't reimplement it. The `cron-telegram` skill covers the whole path.

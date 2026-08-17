@@ -22,7 +22,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 
-- [ ] Set achibuntu BIOS to power on after AC loss — F10 at boot, it is batteryless so a mains blip kills it #infra !med
+- [ ] Get achibuntu a battery or a small UPS — it is batteryless, so any mains blip is an instant power-off. Its Insyde consumer BIOS has no AC-recovery setting (hp-bioscfg exposes 2 attributes), so firmware cannot fix this #infra !med
 - [ ] Confirm which ING team Aki is joining — Data/AI/Transformation vs Retail Tech, one message to Vanscell Nierra #career !high
 - [ ] Approach the DLSU school coordinator for the internship agreement signature #career !high
 - [ ] Fix `career-ops/config/profile.yml` — still says T1 starts 2026-08-03, feeds wrong availability into live applications #career !high

@@ -1,0 +1,13 @@
+[Unit]
+Description=achiOS daily brief -> Telegram
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# The script shells out to a bare `claude`, which a user unit's PATH does not include.
+Environment=PATH=%h/.npm-global/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/.local/share/achios/venv/bin/python @REPO@/scripts/daily_brief.py
+StandardOutput=append:%h/.local/state/achios/daily_brief.log
+StandardError=append:%h/.local/state/achios/daily_brief.log
+TimeoutStartSec=10min

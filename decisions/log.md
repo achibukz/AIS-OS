@@ -125,3 +125,19 @@ Fixing the schedule also surfaced a second, independent bug that the wrong sched
 **Owner:** Aki.
 
 **Still needs Aki at the keyboard:** the real fix for unattended power loss is in the BIOS, not Linux. On next reboot, enter setup (F10 on HP, BIOS F.31) and set AC power recovery / "after power loss" to **Power On**, so the box comes back by itself when mains returns. Logged in `tasks.md`.
+
+## 2026-08-17 — units live in the repo; achibuntu's firmware cannot auto-power-on
+
+**Decision:** The systemd units are version-controlled in `systemd/` and installed by `scripts/install_units.sh`, which substitutes `@REPO@` for the repo root and leaves `%h` for systemd to expand. `~/.config/systemd/user/` holds generated copies that are never hand-edited. Separately: the plan to fix unattended power loss in the BIOS is abandoned, and the fix is a battery or a small UPS instead.
+
+**Why:** The units encoded `/home/achibukz` five times and existed only on one box, so nothing in git described how the brief was scheduled — a rebuilt server would have lost it silently. `%h` costs nothing and removes the home-directory hardcoding; `@REPO@` needs the installer because the repo root is not derivable from `%h`. Verified by tearing the hand-written units down completely and reinstalling from the script, then reading back `ExecStart` to confirm the specifiers expanded rather than being taken literally — `StandardOutput=append:%h/…` was the doubtful one and it does expand.
+
+The BIOS reversal is the more important correction. The previous entry recommended setting AC power recovery in firmware; the evidence says that setting does not exist on this machine. It is an Insyde consumer BIOS (F.31, 2020) on a generic `HP Notebook`, SKU `T5R50PA#UUF`, chassis type 10. The `hp-bioscfg` driver is loaded and exposes exactly two attributes, `Sure_Start` and `pending_reboot`, where HP business hardware exposes dozens, and the firmware's WMI metadata contains no string matching AC recovery, auto-power-on or RTC wake. `/proc/acpi/wakeup` has no `RTC` entry either. Restore-on-AC-loss is a desktop and workstation feature: laptop firmware assumes a battery buffers power loss, so it is not offered. Ubuntu is irrelevant to the question — the setting is applied before any bootloader — but the option is not there to set.
+
+Also established that the box did not recover by itself on the 17th. It booted at 06:40:33 UTC and took a local TTY login at 06:42:55, class `user`, not SSH, so Aki was physically present and pressed the power button. There is no evidence of any automatic recovery path to build on.
+
+**Alternatives considered:** Leaving the units only on the box — how it worked until now, and the reason the schedule was undocumented. Hardcoding `/home/achibukz` in the committed unit — works today, but the same class of mistake was just cleaned out of the ported skills. Deriving the repo root from `%h/Code/GitHub/AIS-OS` and dropping the installer — fewer moving parts, but it silently breaks if the repo is ever cloned elsewhere, and the installer is nine lines. A system-level unit — needs the `~/.config/achios/` secrets and the npm-global `claude` reached across users for no benefit. Flashing modified firmware to add the missing setting — not worth the brick risk on the machine that runs his scheduled work. `rtcwake` — already rejected in the previous entry and the missing `RTC` wakeup entry now confirms it.
+
+**Owner:** Aki.
+
+**Operational note:** verifying the log-append path required a real run, so Aki received two identical briefs on the 17th. Any future unit change that needs end-to-end proof should be checked against `Result=success` and the log line count rather than by sending again, unless he is warned first.

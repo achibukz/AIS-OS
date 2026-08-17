@@ -34,7 +34,8 @@ obvious default — daily at the stated time, one message, no model.
 | Credentials | `~/.config/achios/telegram.env` | mode 600, outside the repo, never commit |
 | Python | `~/.local/share/achios/venv/bin/python` | uv-managed; has `requests` + the Google libs |
 | Google Calendar auth | `~/.config/achios/google_token*.json` | personal + work tokens, auto-refreshing |
-| Schedules | systemd **user** timers in `~/.config/systemd/user/` | `systemctl --user list-timers`. Not cron — see below |
+| Schedules | unit files in `systemd/`, installed by `scripts/install_units.sh` | systemd **user** timers. Not cron — see below |
+| Live units | `~/.config/systemd/user/` | generated copies. Edit `systemd/` and re-run the installer, never these |
 | Log dir | `~/.local/state/achios/` | one `<job>.log` per job |
 | Worked example | `scripts/daily_brief.py` | the fullest one; copy its shape |
 
@@ -127,7 +128,9 @@ systemd honours a named timezone directly, and — because this laptop is **batt
 dies outright on any mains blip — `Persistent=true` re-runs a job that was missed while the
 box was down, the moment it boots. Cron cannot do that. Both problems, one mechanism.
 
-Two files in `~/.config/systemd/user/`:
+Units are version-controlled in `systemd/` and installed by `scripts/install_units.sh`,
+which substitutes `@REPO@` for the repo root, expands nothing else, then reloads, enables
+and lingers. Add a job by dropping two files in `systemd/` and re-running it:
 
 ```ini
 # achios-<job>.service
@@ -161,16 +164,20 @@ WantedBy=timers.target
 ```
 
 ```bash
-systemctl --user daemon-reload
-systemctl --user enable --now achios-<job>.timer
-systemctl --user list-timers achios-<job>.timer   # confirm NEXT is the Manila time you meant
+./scripts/install_units.sh    # installs every unit in systemd/, then prints the timer table
 ```
+
+Confirm `NEXT` in that table is the Manila time you meant, converted to UTC. Use `%h` for
+anything under his home directory and `@REPO@` for anything in the repo, so the units carry
+no absolute paths — check they expanded with
+`systemctl --user show achios-<job>.service -p ExecStart`.
 
 Rules that keep these jobs alive:
 
 - **Check the calendar spec before trusting it**: `systemd-analyze calendar "08:00 Asia/Manila"`
   prints the next elapse in UTC. Read it and confirm it is the hour you meant.
-- **Absolute paths everywhere**, interpreter included. A user unit's environment is bare.
+- **No absolute paths in the committed unit** — `%h` for home, `@REPO@` for the repo. But
+  never rely on `PATH` inside the unit; name the interpreter in full via `%h`.
 - **Set `Environment=PATH=…`** if the script shells out to `claude` or any npm-global binary.
 - **`Persistent=true` on every timer.** The box loses power without warning; a missed brief
   should arrive late, not never.

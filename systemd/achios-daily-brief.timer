@@ -1,0 +1,13 @@
+[Unit]
+Description=achiOS daily brief at 08:00 Manila
+
+[Timer]
+# Named timezone, because cron on this box ignores CRON_TZ and would mean 08:00 UTC.
+OnCalendar=08:00 Asia/Manila
+# The box is batteryless, so mains loss kills it outright with no shutdown. Persistent
+# runs a brief missed while it was down as soon as it comes back up.
+Persistent=true
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target
