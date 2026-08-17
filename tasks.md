@@ -22,6 +22,9 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 
+- [ ] Reply to Rohde & Schwarz re: unsolicited application (email in work inbox, 2026-08-17) #career
+- [ ] Check GitHub CodeQL Analysis failure on career-ops main (9d8d3fa) #achios
+- [ ] Follow up on BPI account application notice in work inbox (2026-08-17) #finances
 - [ ] Maybe buy Codex — align its billing to the Claude subscription renewal so both land on the 29th #achios !low @2026-08-29
 - [ ] Put a battery back in achibuntu — the BAT0 slot is empty (`ACPI: battery: Slot [BAT0] (battery absent)`), so any mains blip is an instant power-off. Firmware supports one, and its Insyde BIOS has no AC-recovery setting, so a battery is the only fix. A UPS is the fallback #infra !med
 - [ ] Confirm which ING team Aki is joining — Data/AI/Transformation vs Retail Tech, one message to Vanscell Nierra #career !high
