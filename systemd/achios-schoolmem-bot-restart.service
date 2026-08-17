@@ -1,0 +1,10 @@
+[Unit]
+Description=Restart the schoolMem Telegram bot (daily, to cap context growth)
+
+[Service]
+Type=oneshot
+# A restart tears down the tmux session and runs schoolmem-bot.sh again, which
+# fast-forwards the vault before the new session opens. That is the whole point of
+# restarting rather than leaving one conversation running: context stops growing without
+# bound, and the bot picks up whatever Aki committed from the Mac overnight.
+ExecStart=/usr/bin/systemctl --user restart achios-schoolmem-bot.service

@@ -1,0 +1,13 @@
+[Unit]
+Description=Daily restart of the schoolMem Telegram bot
+
+[Timer]
+# 04:00 Manila — after any late-night use, before the 08:00 daily brief. Named timezone
+# because Ubuntu's cron ignores CRON_TZ; that trap cost the daily brief its first firing.
+OnCalendar=04:00 Asia/Manila
+# Deliberately NOT Persistent: a missed restart means the box was off, and boot already
+# starts a fresh session. Replaying it would restart a bot that is seconds old.
+Persistent=false
+
+[Install]
+WantedBy=timers.target

@@ -167,3 +167,31 @@ Two smaller notes worth keeping. `notifications` is absent from the documented u
 **Alternatives considered:** `git pull --rebase` everywhere (rewrites local commits unattended — the same reason `achimem_capture.py` aborts a conflicting rebase rather than resolving it); auto-stash before pulling (silently hides work he was mid-way through); a hardcoded repo list (a new clone would be silently skipped); including `~/.claude` as a root (skills dir has no remote, and plugin marketplaces are `/plugin`'s job).
 
 **Owner:** Aki.
+
+## 2026-08-17 — one Telegram bot per vault, not one bot for both
+
+**Decision:** schoolMem gets its own Telegram bot (`@schoMemBot`) and its own always-listening Claude Code session, separate from the achiOS bot. The plugin's `TELEGRAM_STATE_DIR` env var gives each instance its own token, allowlist and pairing state — achiOS on the default `~/.claude/channels/telegram`, schoolMem on `~/.claude/channels/telegram-schoolmem`. Each session is launched from its own repo so that repo's `CLAUDE.md` loads. Paired and confirmed working the same day.
+
+**Why:** The two vaults have different agents. schoolMem's `CLAUDE.md` makes the session a wiki agent bound to the raw→wiki provenance rules; achiOS's makes it Aki's operator. A single bot would have to hold both instruction sets at once and route by guesswork, and whichever repo it was launched from would win — silently applying the wrong rules to the other vault's content. Two bots means the routing decision is made by which chat he opens, which is unambiguous and needs no logic. The cost is a second always-on process and a second entry in every access list, which is the cheaper half of the trade.
+
+**Alternatives considered:** One bot switching context by keyword or command prefix (routing is a guess, and a misroute writes to the wrong vault under the wrong rules); one bot with both `CLAUDE.md` files loaded (doubles context on every message and leaves the provenance gate ambiguous); running schoolMem through the existing achiOS bot and having achiOS shell into the vault (loses the vault's own agent instructions entirely).
+
+**Owner:** Aki.
+
+## 2026-08-17 — the schoolMem bot is write-blocked from wiki/ by a hook, not by instruction
+
+**Decision:** The schoolMem Telegram bot runs unattended as a systemd user unit inside its own tmux server, on `sonnet`, with `--permission-mode bypassPermissions`, restarting daily at 04:00 Manila. It fast-forwards the vault before each start. It may read `wiki/` freely and may never write to it: `scripts/schoolmem_wiki_guard.py` is a PreToolUse hook that denies `Write`/`Edit`/`MultiEdit`/`NotebookEdit` by resolved path and the obvious mutating `Bash` shapes. Captures land in a new tracked `schoolMem/inbox/` for promotion by a real INGEST later.
+
+**Why:** Aki asked for bypass permissions and, in the same breath, that the bot never write to the wiki. Those are contradictory if the wiki ban is only a line in `CLAUDE.md` — bypass removes the gate, and what remains is the model choosing to obey an instruction, unattended, indefinitely. schoolMem's whole value is that a wiki page is trustworthy because a human was present when it was written, so that gate has to be mechanical. A PreToolUse hook is the mechanism, and it was verified rather than assumed: a real `claude -p --permission-mode bypassPermissions` run was told to write into `wiki/`, the hook denied it, and no file appeared. Permission mode and hooks are independent layers, which is the finding the design rests on.
+
+The wrapper arms the guard on every start and **exits rather than launching** if it cannot, because a bot that comes up unguarded with bypass permissions is worse than no bot. A failed `sync-repos` only warns — a stale vault gives poorer answers, but no bot at all is worse, and sync failures are usually transient network.
+
+tmux is a requirement, not a preference: `claude` detects the absent TTY under systemd and falls back to `--print`, which was confirmed by running it that way and watching it demand a prompt argument. The unit uses `tmux -L schoolmem` so it owns its own server and stopping the unit cannot take down an interactive tmux.
+
+`inbox/` is new and tracked on purpose. The vault's designed inbox is `raw/`, but `raw/` and `output/` are both gitignored and `raw/` does not exist on achibuntu at all, so a note captured from his phone would have been stranded on the server and never appeared in Obsidian on the Mac — which defeats the point of capturing from a phone.
+
+**Alternatives considered:** Trusting `CLAUDE.md` to hold the line under bypass (not a guarantee, just a hope); a narrower permission mode like `acceptEdits` (Aki chose bypass, and it would still not protect `wiki/` specifically while adding prompts nobody is there to answer); `chmod -R a-w wiki/` (blocks the owner as intended, but also blocks `git` fast-forwards that touch wiki files, breaking the daily sync); running the bot as a separate unix user with read-only `wiki/` (the genuinely airtight answer, and the one to reach for if the Bash heuristic ever proves insufficient — deferred as disproportionate today); `RuntimeMaxSec` + `Restart=always` instead of a restart timer (does not compose with the oneshot+tmux shape).
+
+**Known limit:** Bash under bypass is narrowed, not closed. The guard catches redirects, `rm`/`mv`/`cp`/`tee`/`sed -i`/`dd` and destructive `git` subcommands aimed at `wiki/`. A determined or unlucky shell construction can still get through. Stated plainly here so the guarantee is not overclaimed.
+
+**Owner:** Aki.

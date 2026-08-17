@@ -1,0 +1,25 @@
+[Unit]
+Description=schoolMem Telegram bot (Claude Code channel session)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# oneshot + RemainAfterExit because the real work is the tmux session ExecStart spawns.
+# tmux is not optional: `claude` falls back to --print when it has no TTY, so the channel
+# session needs a PTY that outlives the shell that started it.
+Type=oneshot
+RemainAfterExit=yes
+
+# A user unit's PATH has neither claude (.npm-global/bin) nor bun and sync-repos (.local/bin).
+Environment=PATH=%h/.local/bin:%h/.npm-global/bin:/usr/local/bin:/usr/bin:/bin
+
+# -L gives the bot its own tmux server, so stopping the unit can never take down an
+# interactive tmux Aki happens to have open.
+ExecStart=/usr/bin/tmux -L schoolmem new-session -d -s bot @REPO@/scripts/schoolmem-bot.sh
+ExecStop=/usr/bin/tmux -L schoolmem kill-server
+
+StandardOutput=append:%h/.local/state/achios/schoolmem_bot.log
+StandardError=append:%h/.local/state/achios/schoolmem_bot.log
+
+[Install]
+WantedBy=default.target

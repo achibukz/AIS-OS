@@ -176,6 +176,51 @@ Exit code is 1 if anything failed, so it composes into a larger startup script. 
 - Tests: `tests/test_sync_repos.py`. They build real repos in a tmpdir and assert the script
   never loses work — keep them passing.
 
+## schoolMem Telegram bot
+
+A second always-on Claude Code session answers schoolMem questions from Aki's phone, as
+`@schoMemBot`. Separate from the achiOS bot in every way that matters: own BotFather
+token, own allowlist, own vault as cwd so schoolMem's `CLAUDE.md` loads and it comes up
+as the wiki agent rather than as this operator.
+
+Two bots rather than one routing between them, because a misroute writes to the wrong
+vault under the wrong rules. Which chat he opens is the routing decision.
+
+**It may never write to `wiki/`.** The session runs `--permission-mode bypassPermissions`,
+so nothing else stands between the model and the vault, and schoolMem's provenance
+guarantee depends on wiki pages only ever being created with Aki present. That gate is
+therefore mechanical, not a line of instruction: `scripts/schoolmem_wiki_guard.py` is a
+PreToolUse hook that denies `Write`/`Edit`/`MultiEdit`/`NotebookEdit` by resolved path,
+plus the obvious mutating `Bash` shapes. Verified to fire under `bypassPermissions` — the
+permission mode and the hook layer are independent, which is the whole reason this works.
+
+- Captures go to `schoolMem/inbox/`, tracked by git so they reach the Mac. `raw/` and
+  `output/` are gitignored and would strand a note on the server. Promote from `inbox/`
+  with a real INGEST later, then delete the file.
+- Bash under bypass is narrowed by heuristic, not closed. A determined shell can still
+  reach `wiki/`. The real fix, if it ever matters, is running the bot as its own unix
+  user with read-only access to `wiki/` — deliberately not built yet.
+- `scripts/schoolmem-bot.sh` arms the guard, **fails closed** if it cannot, fast-forwards
+  the vault with `sync-repos`, then execs `claude`. A failed fetch warns and continues; a
+  missing guard aborts.
+- tmux is not optional. `claude` falls back to `--print` with no TTY, so the channel needs
+  a PTY. The unit starts `tmux -L schoolmem` — its own server, so stopping the unit can
+  never kill an interactive tmux Aki has open. Attach with
+  `tmux -L schoolmem attach -t bot`.
+- Restarts daily at 04:00 Manila (`achios-schoolmem-bot-restart.timer`). One conversation
+  running for days fills its context and degrades; the restart also picks up whatever he
+  committed from the Mac overnight. Not `Persistent` — a missed restart means the box was
+  off, and boot starts a fresh session anyway.
+- Model is `sonnet`. Never raise it; this answers school questions all day.
+- Secrets: `~/.claude/channels/telegram-schoolmem/.env`, mode 600. `TELEGRAM_STATE_DIR`
+  is what keeps the two bots' tokens and allowlists apart — **never run
+  `/telegram:configure` or `/telegram:access` for this bot from a session that lacks that
+  env var**, or it edits the achiOS bot instead.
+- Log: `~/.local/state/achios/schoolmem_bot.log`
+- Tests: `tests/test_schoolmem_wiki_guard.py`. They assert the guard denies traversal into
+  `wiki/`, allows `inbox/`, ignores lookalike siblings like `wiki-archive/`, and fails
+  closed on unparseable input. Keep them passing.
+
 ## Knowledge base
 
 **Who Aki is.** Third year BS CS (Software Technology) at DLSU-Manila. CGPA 3.029. Expected graduation August 2027. Strong QA background (GABAY QA Lead, UnboundMNL QA Engineer), full-stack work (AppToSync), distributed systems (DDBMS), ML/data (thesis + side projects). Genuine AI fluency — Claude Code, Gemini, Groq, prompt engineering, Anthropic certs. Goes by Aki. Curious, extroverted, action-oriented once the team is clear. Wants his CS work to actually help people — healthcare is the long-running answer.
