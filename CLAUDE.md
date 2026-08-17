@@ -22,10 +22,21 @@ Read `references/3ms-framework.md` once. It's how Aki thinks about AI work. Mind
 - `references/` — frameworks, voice samples, API guides as new tools get wired
 - `connections.md` — registry of every system achiOS can reach
 - `tasks.md` — the master task register (see **Task register** below)
+- `session-log.md` — chronological session journal of actions, decisions, and files touched
 - `decisions/log.md` — append-only record of decisions and why
 - `archives/` — old stuff. Don't delete. Move here.
 
 See `EXPANSIONS.md` for what to add as the system grows.
+
+## Mandatory Logging & State Preservation Rule
+
+Whenever we build, configure, change, or decide something in this repository, **you must automatically log it in the same turn without waiting for Aki to ask**:
+
+1. **`decisions/log.md`**: Record any architectural, infrastructure, or design decision (Decision, Why, Alternatives, Owner).
+2. **`session-log.md`**: Record the session goal, decisions, rejected approaches, and open items.
+3. **`tasks.md`**: Update task statuses immediately (`## Active` with `@YYYY-MM-DD` and calendar event if dated, or `## Done` with completion date).
+4. **`connections.md`**: Update when wiring new endpoints, crons, or integrations.
+
 
 ## Task register
 

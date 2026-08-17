@@ -1,0 +1,17 @@
+# achiOS Agent Operating Rules
+
+## 1. Mandatory Logging Rule (Zero Lost State)
+Whenever any configuration, script, scheduled job, integration, or architectural change is made:
+- **`decisions/log.md`**: Append any meaningful architectural decision (format: Decision, Why, Alternatives considered, Owner).
+- **`session-log.md`**: Append session summaries (What happened, Decisions, Rejected, Open threads).
+- **`tasks.md`**: Update task state immediately (move finished items to `## Done` with date, add new commitments to `## Active` with dates/priorities).
+- **`connections.md`**: Add any new integrations, tools, or API registries.
+
+## 2. Calendar Synchronization
+Whenever an active task carries a date or deadline:
+- Add the `@YYYY-MM-DD` tag to `tasks.md`.
+- Create the all-day event using `scripts/gcal_add.py "<Title>" <YYYY-MM-DD> --calendar <CalendarName>`.
+
+## 3. Secret Safety
+- Never print or echo raw bot tokens, API keys, or OAuth secrets into chat or logs.
+- Sensitive environment variables belong strictly in `~/.config/achios/` or `.env` files protected by `.gitignore`.
