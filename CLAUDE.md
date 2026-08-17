@@ -72,7 +72,12 @@ Layout rules worth keeping: blank line between every item, three newlines betwee
 sections, section headers are `EMOJI  TITLE` in caps, detail lines indent six spaces.
 It is meant to read loose on a phone, not dense.
 
-- Cron: `0 8 * * *` under `CRON_TZ=Asia/Manila` in Aki's user crontab. The box runs UTC.
+- Schedule: the systemd **user** timer `achios-daily-brief.timer`, not cron. `OnCalendar=08:00
+  Asia/Manila` with `Persistent=true`. Ubuntu's cron ignores `CRON_TZ` (see `man 5 crontab`:
+  "does not support per-user timezones"), so the old crontab entry meant 08:00 **UTC** — 4pm
+  Manila — and never once fired. systemd honours the named timezone, and `Persistent=true`
+  delivers a brief missed while the box was powered off as soon as it boots. Linger is on, so
+  it runs with Aki logged out. Units in `~/.config/systemd/user/`.
 - Interpreter: `~/.local/share/achios/venv/bin/python` (uv-managed, has the Google libs)
 - Telegram sending lives in `scripts/telegram_notify.py` and is shared by every job —
   import `send`, don't reimplement it. The `cron-telegram` skill covers the whole path.
@@ -80,7 +85,11 @@ It is meant to read loose on a phone, not dense.
   so no project `CLAUDE.md` and no achiMem capture hook loads. Tools and MCP are off.
 - Secrets: `~/.config/achios/` — `telegram.env` plus two Google OAuth token files. Mode 700.
   Isolated from Hermes on purpose; nothing here reads `~/.hermes`.
-- Log: `~/.local/state/achios/daily_brief.log`
+- Log: `~/.local/state/achios/daily_brief.log` (the unit appends both streams there)
+- Run it now: `systemctl --user start achios-daily-brief.service`. Next fire:
+  `systemctl --user list-timers achios-daily-brief.timer`
+- The box is **batteryless** — only `AC` under `/sys/class/power_supply/`. Mains loss is an
+  instant power-off with no shutdown sequence, which is why the timer must stay `Persistent`.
 - Preview: `daily_brief.py --dry-run` (`--raw` skips Sonnet, `--no-calendar` skips Google)
 - Re-pairing a bot: `daily_brief.py --find-chat-id` prints chat ids without echoing the token
 - Either message splits further at a blank line if it passes Telegram's 4096-char limit.

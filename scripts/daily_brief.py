@@ -18,6 +18,7 @@ import os
 import re
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -363,6 +364,13 @@ def polish_with_claude(brief: str) -> str | None:
         return None
     text = result.stdout.strip()
     return text or None
+
+
+def polish_all(messages: list[str]) -> list[str]:
+    """Polish every message at once. Any message whose call fails keeps its raw text."""
+    with ThreadPoolExecutor(max_workers=len(messages)) as pool:
+        polished = list(pool.map(polish_with_claude, messages))
+    return [new or raw for new, raw in zip(polished, messages)]
 
 
 def main() -> int:

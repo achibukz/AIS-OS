@@ -1,4 +1,5 @@
 import datetime as dt
+import time
 from zoneinfo import ZoneInfo
 
 import daily_brief as brief
@@ -213,3 +214,21 @@ class TestTasksMessage:
 
     def test_empty_register_says_so(self):
         assert "Nothing on the register. 🎉" in brief.tasks_message([], TODAY)
+
+
+class TestPolishAll:
+    def test_each_message_is_replaced_by_its_polished_text(self, monkeypatch):
+        monkeypatch.setattr(brief, "polish_with_claude", lambda m: m.upper())
+        assert brief.polish_all(["one", "two"]) == ["ONE", "TWO"]
+
+    def test_a_failed_call_falls_back_to_the_raw_message(self, monkeypatch):
+        monkeypatch.setattr(brief, "polish_with_claude", lambda m: None if m == "two" else m.upper())
+        assert brief.polish_all(["one", "two"]) == ["ONE", "two"]
+
+    def test_order_is_preserved_regardless_of_completion_order(self, monkeypatch):
+        def slow_first(message):
+            time.sleep(0.05 if message == "one" else 0)
+            return message.upper()
+
+        monkeypatch.setattr(brief, "polish_with_claude", slow_first)
+        assert brief.polish_all(["one", "two"]) == ["ONE", "TWO"]
