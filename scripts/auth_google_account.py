@@ -17,6 +17,9 @@ import os
 import sys
 from pathlib import Path
 
+# Allow HTTP for local oauth redirects
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
 # Automatically switch to achiOS venv if run with system python
 VENV_PYTHON = Path.home() / ".local" / "share" / "achios" / "venv" / "bin" / "python"
 if VENV_PYTHON.exists() and sys.executable != str(VENV_PYTHON):
