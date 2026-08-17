@@ -1,0 +1,15 @@
+[Unit]
+Description=achiOS Vault Inbox Auto-Sync (schoolMem/achiMem -> GitHub)
+After=network-online.target
+Wants=network-online.target
+OnFailure=achios-failure-alert@%n.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/achibukz/.local/share/achios/venv/bin/python /home/achibukz/Code/GitHub/AIS-OS/scripts/vault_inbox_sync.py
+StandardOutput=append:/home/achibukz/.local/state/achios/vault_sync.log
+StandardError=append:/home/achibukz/.local/state/achios/vault_sync.log
+Restart=no
+
+[Install]
+WantedBy=default.target

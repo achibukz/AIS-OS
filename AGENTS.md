@@ -184,6 +184,15 @@ It is meant to read loose on a phone, not dense.
 - Preview: `python scripts/email_digest.py --dry-run`
 - Run now: `systemctl --user start achios-email-digest.service`
 
+### Vault Inbox Sync
+
+`scripts/vault_inbox_sync.py` automatically sweeps, commits, and pushes new mobile captures from `schoolMem/inbox/` (and `achiMem/inbox/`) to GitHub:
+- Safety: Scoped strictly to watched directories (`inbox/`), with autostash rebase conflict protection
+- Schedule: `systemd/achios-vault-sync.timer` (runs every 15 minutes `*:00,15,30,45 Asia/Manila` with `Persistent=true`)
+- Log: `~/.local/state/achios/vault_sync.log`
+- Preview: `python scripts/vault_inbox_sync.py --dry-run`
+- Run now: `systemctl --user start achios-vault-sync.service`
+
 
 
 

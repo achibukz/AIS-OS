@@ -119,15 +119,17 @@ Decisions:
 - Added Midnight Evening Debrief (`scripts/evening_debrief.py` & `systemd/achios-evening-debrief.timer`) scheduled at 00:00 Manila time (<300 words, day accomplishments, failure status, and tomorrow's focus/schedule).
 - Added VIP Email & Action Triage (`scripts/email_digest.py` & `systemd/achios-email-digest.timer`) scheduled at 08:30 & 17:30 Manila time (filtering noise and surfacing recruiters, security alerts, and correspondence).
 - Refactored `scripts/daily_brief.py` into a fast, deterministic Python pipeline (zero LLM overhead, instant <1s execution, Google Calendar across DLSU/Personal/Work + top focus tasks with `---------------------------------` framing).
+- Implemented Vault Inbox Sync daemon (`scripts/vault_inbox_sync.py` & `systemd/achios-vault-sync.timer` every 15 mins) to automatically commit and push mobile Telegram captures in `schoolMem/inbox/` (and `achiMem/inbox/`) to GitHub with autostash rebase conflict protection.
 
 Rejected:
 - Standard cron for ETF digest — ignores `CRON_TZ` and lacks `Persistent=true` recovery.
 - Subprocess LLM CLI wrappers for daily brief — slow (10-30s), flaky on timeouts, and unnecessary when deterministic Python formatting provides cleaner structure.
+- Blind `git add -A` across vaults — risked staging `.pyc` or untracked scratch files outside `inbox/`.
 - Unsanitized journal logs in alerts — risked leaking bot tokens to Telegram.
 
 Open:
 - Automated `logrotate` for `~/.local/state/achios/*.log`.
-- Auto-sync/commit loop for `schoolMem/inbox/`.
+
 
 
 
