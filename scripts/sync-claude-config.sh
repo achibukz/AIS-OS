@@ -46,6 +46,11 @@ if [[ -f "$HOME/.config/ccstatusline/settings.json" ]]; then
   rsync -az $DRY "$HOME/.config/ccstatusline/settings.json" "$HOST:.config/ccstatusline/settings.json"
 fi
 
+# projects/ stays off the allowlist above — it holds session transcripts. Only the
+# memory/ subdirs go, and they need slug remapping and an index merge, so a helper
+# does it rather than another rsync line.
+"$(dirname "$0")/sync_claude_memory.py" ${DRY:+--dry-run} "$HOST"
+
 if ssh "$HOST" 'test -d ~/.hermes'; then
   ssh "$HOST" 'mkdir -p ~/.hermes/skills'
   for s in "${HERMES_SKILLS[@]}"; do
