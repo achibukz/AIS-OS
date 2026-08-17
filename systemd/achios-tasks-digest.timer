@@ -1,0 +1,14 @@
+[Unit]
+Description=achiOS Active Tasks Checkpoint at 11am, 3pm, 6pm, 9pm, 11pm Manila
+
+[Timer]
+OnCalendar=11:00 Asia/Manila
+OnCalendar=15:00 Asia/Manila
+OnCalendar=18:00 Asia/Manila
+OnCalendar=21:00 Asia/Manila
+OnCalendar=23:00 Asia/Manila
+Persistent=true
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

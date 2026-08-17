@@ -115,7 +115,7 @@ Decisions:
 - Multi-ETF digest (`scripts/voo_digest.py`) queries Yahoo Finance chart APIs for VOO, VXUS, and QQQM; scheduled at 04:30 (US market close buffer) and 08:00 (morning brief) Asia/Manila.
 - Initialized and published `achiAgy` private repository to GitHub (`achibukz/achiAgy`) with strict `.gitignore` protection for `.env*` secrets and dynamic sessions.
 - Added PDF generation and Telegram document delivery pipeline (`reportlab` + `sendDocument` in `scripts/generate_sample_pdf.py`).
-
+- Added Active Tasks Checkpoint (`scripts/tasks_digest.py` & `systemd/achios-tasks-digest.timer`) scheduled at 11am, 3pm, 6pm, 9pm, 11pm Manila time to `achinouncements`.
 
 Rejected:
 - Standard cron for ETF digest — ignores `CRON_TZ` and lacks `Persistent=true` recovery.
@@ -124,4 +124,5 @@ Rejected:
 Open:
 - Automated `logrotate` for `~/.local/state/achios/*.log`.
 - Auto-sync/commit loop for `schoolMem/inbox/`.
+
 

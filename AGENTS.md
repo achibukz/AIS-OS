@@ -158,6 +158,15 @@ It is meant to read loose on a phone, not dense.
 - Preview: `python scripts/voo_digest.py --dry-run`
 - Run now: `systemctl --user start achios-voo-digest.service`
 
+### Active Tasks Checkpoint
+
+`scripts/tasks_digest.py` sends an area-grouped, priority-sorted active tasks checkpoint from `tasks.md` to `achinouncements`:
+- Schedule: `systemd/achios-tasks-digest.timer` (set to `11:00`, `15:00`, `18:00`, `21:00`, `23:00` Asia/Manila with `Persistent=true`)
+- Log: `~/.local/state/achios/tasks_digest.log`
+- Preview: `python scripts/tasks_digest.py --dry-run`
+- Run now: `systemctl --user start achios-tasks-digest.service`
+
+
 ## Repo sync
 
 `sync-repos` brings every git repo on the box up to date in one command. Aki runs it when
