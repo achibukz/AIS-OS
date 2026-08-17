@@ -118,6 +118,7 @@ Decisions:
 - Added Active Tasks Checkpoint (`scripts/tasks_digest.py` & `systemd/achios-tasks-digest.timer`) scheduled at 11am, 3pm, 6pm, 9pm, 11pm Manila time to `achinouncements`.
 - Added Midnight Evening Debrief (`scripts/evening_debrief.py` & `systemd/achios-evening-debrief.timer`) scheduled at 00:00 Manila time (<300 words, day accomplishments, failure status, and tomorrow's focus/schedule).
 - Added VIP Email & Action Triage (`scripts/email_digest.py` & `systemd/achios-email-digest.timer`) scheduled at 08:30 & 17:30 Manila time (filtering noise and surfacing recruiters, security alerts, and correspondence).
+- Switched Daily Brief natural language rewriter in `scripts/daily_brief.py` from Claude Sonnet to Gemini (`agy -p`).
 
 Rejected:
 - Standard cron for ETF digest — ignores `CRON_TZ` and lacks `Persistent=true` recovery.
@@ -126,6 +127,7 @@ Rejected:
 Open:
 - Automated `logrotate` for `~/.local/state/achios/*.log`.
 - Auto-sync/commit loop for `schoolMem/inbox/`.
+
 
 
 

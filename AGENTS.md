@@ -131,9 +131,9 @@ It is meant to read loose on a phone, not dense.
 - Interpreter: `~/.local/share/achios/venv/bin/python` (uv-managed, has the Google libs)
 - Telegram sending lives in `scripts/telegram_notify.py` and is shared by every job —
   import `send`, don't reimplement it. The `cron-telegram` skill covers the whole path.
-- Model call: `claude -p --model claude-sonnet-5`, run from `~/.local/share/achios/llm`
-  so no project `CLAUDE.md` and no achiMem capture hook loads. Tools and MCP are off.
-- Secrets: `~/.config/achios/` — `telegram.env` plus two Google OAuth token files. Mode 700.
+- Model call: Gemini via `agy -p`, run from `~/.local/share/achios/llm`
+  so no project instruction file and no capture hook loads.
+- Secrets: `~/.config/achios/` — `telegram.env` plus Google OAuth token files (`google_token_{dlsu,work,}.json`). Mode 700.
   Isolated from Hermes on purpose; nothing here reads `~/.hermes`.
 - Log: `~/.local/state/achios/daily_brief.log` (the unit appends both streams there)
 - Run it now: `systemctl --user start achios-daily-brief.service`. Next fire:
@@ -145,7 +145,7 @@ It is meant to read loose on a phone, not dense.
 - The timer→service path is verified, not assumed: a drop-in was used to point `OnCalendar`
   two minutes out and `ExecStart` at `--dry-run`, and the timer activated the service on its
   own (`Result=success`). Use that trick to test a schedule without sending Aki a message.
-- Preview: `daily_brief.py --dry-run` (`--raw` skips Sonnet, `--no-calendar` skips Google)
+- Preview: `daily_brief.py --dry-run` (`--raw` skips Gemini pass, `--no-calendar` skips Google)
 - Re-pairing a bot: `daily_brief.py --find-chat-id` prints chat ids without echoing the token
 - Either message splits further at a blank line if it passes Telegram's 4096-char limit.
 - Tests: `tests/test_daily_brief.py`. Keep them passing when the format changes.
