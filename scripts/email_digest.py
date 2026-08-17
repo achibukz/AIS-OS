@@ -30,8 +30,10 @@ from telegram_notify import send
 
 CONFIG_DIR = Path.home() / ".config" / "achios"
 GOOGLE_TOKENS = [
-    (CONFIG_DIR / "google_token_work.json", "Work/Career"),
-    (CONFIG_DIR / "google_token.json", "Personal"),
+    (CONFIG_DIR / "google_token_dlsu.json", "🎓 DLSU School"),
+    (CONFIG_DIR / "google_token_work.json", "💼 Work / Career"),
+    (CONFIG_DIR / "google_token.json", "📬 Personal"),
+    (CONFIG_DIR / "google_token_main.json", "👤 Main Personal"),
 ]
 LOCAL_TZ = ZoneInfo("Asia/Manila")
 
