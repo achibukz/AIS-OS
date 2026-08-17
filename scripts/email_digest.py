@@ -166,7 +166,7 @@ def build_email_digest(items: list[EmailItem], noise_count: int) -> str:
 
     lines = [
         "---------------------------------",
-        "📬 Inbox VIP & Action Triage",
+        "📬 Email Debrief",
         f"🗓 {date_str}",
         "",
     ]

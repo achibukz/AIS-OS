@@ -175,7 +175,7 @@ It is meant to read loose on a phone, not dense.
 - Preview: `python scripts/evening_debrief.py --dry-run`
 - Run now: `systemctl --user start achios-evening-debrief.service`
 
-### VIP Email & Action Item Triage
+### Email Debrief
 
 `scripts/email_digest.py` queries authenticated Google inboxes, filters out marketing spam/blasts, and sends high-signal correspondence to `achinouncements`:
 - Content: Recruiter replies, bank security notices, GitHub workflow failures, and direct human messages

@@ -1,5 +1,5 @@
 [Unit]
-Description=achiOS VIP Email & Action Item Triage -> Telegram
+Description=achiOS Email Debrief -> Telegram
 After=network-online.target
 Wants=network-online.target
 OnFailure=achios-failure-alert@%n.service
