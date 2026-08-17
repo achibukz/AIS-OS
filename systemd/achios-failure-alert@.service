@@ -1,0 +1,12 @@
+[Unit]
+Description=Telegram Failure Alert for %i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+Environment=PATH=%h/.local/bin:%h/.npm-global/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/.local/share/achios/venv/bin/python @REPO@/scripts/service_failure_alert.py %i
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=2min

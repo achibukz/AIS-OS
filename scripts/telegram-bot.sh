@@ -79,7 +79,15 @@ log "launching claude ($BOT_MODEL, bypassPermissions, guard=${BOT_GUARD:-none})"
 
 export TELEGRAM_STATE_DIR="$BOT_STATE_DIR"
 
-exec claude \
+claude \
     --channels plugin:telegram@claude-plugins-official \
     --model "$BOT_MODEL" \
     --permission-mode bypassPermissions
+EXIT_CODE=$?
+
+log "Claude process exited with code $EXIT_CODE"
+if [ "$EXIT_CODE" -ne 0 ]; then
+    log "FATAL: Claude exited unexpectedly ($EXIT_CODE) — sending Telegram crash alert"
+    /home/achibukz/.local/share/achios/venv/bin/python "$BOT_CWD/scripts/service_failure_alert.py" "achios-${BOT_NAME}-bot.service" --reason "Claude exited with code $EXIT_CODE" || true
+fi
+exit "$EXIT_CODE"

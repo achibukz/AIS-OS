@@ -2,6 +2,7 @@
 Description=schoolMem Telegram bot (Claude Code channel session)
 After=network-online.target
 Wants=network-online.target
+OnFailure=achios-failure-alert@%n.service
 
 [Service]
 # oneshot + RemainAfterExit because the real work is the tmux session ExecStart spawns.

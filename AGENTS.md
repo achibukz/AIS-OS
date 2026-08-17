@@ -134,6 +134,14 @@ It is meant to read loose on a phone, not dense.
 - Either message splits further at a blank line if it passes Telegram's 4096-char limit.
 - Tests: `tests/test_daily_brief.py`. Keep them passing when the format changes.
 
+### ETF market digest (VOO, VXUS, QQQM)
+
+`scripts/voo_digest.py` sends a market and valuation briefing for core ETF holdings (VOO, VXUS, QQQM) to `achinouncements`:
+- Schedule: `systemd/achios-voo-digest.timer` (set to `04:30` [US market close] and `08:00` [morning brief] Asia/Manila with `Persistent=true`)
+- Log: `~/.local/state/achios/voo_digest.log`
+- Preview: `python scripts/voo_digest.py --dry-run`
+- Run now: `systemctl --user start achios-voo-digest.service`
+
 ## Repo sync
 
 `sync-repos` brings every git repo on the box up to date in one command. Aki runs it when

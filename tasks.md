@@ -22,6 +22,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 
+- [ ] Google One subscription renewal / end (₱1,100, Google AI Pro 5 TB) #finances !med @2026-10-14
 - [ ] Research whether the three Telegram bots (achiOS/Claude Code, Antigravity/Gemini, Hermes/Codex) can be made to discuss with each other and produce a combined decision or discussion output #achios !low
 - [ ] Reply to Rohde & Schwarz re: unsolicited application (email in work inbox, 2026-08-17) #career
 - [ ] Check GitHub CodeQL Analysis failure on career-ops main (9d8d3fa) #achios
@@ -39,7 +40,6 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Check `CLAUDE_MEM_EXCLUDED_PROJECTS` in the Mac's `~/.claude-mem/settings.json` — it was empty on achibuntu despite CLAUDE.md saying claude-mem is disabled here. That file sits outside `~/.claude/`, so `sync-claude-config.sh` never copies it #achios !med
 - [ ] Set the schoolMem bot to `dmPolicy: allowlist` — run `/telegram:access policy allowlist` inside the bot's own session (it must have `TELEGRAM_STATE_DIR` set, or it edits the achiOS bot instead). Still on `pairing`, so strangers who find `@schoMemBot` get a pairing code back #achios !med
 - [ ] Close the `inbox/` loop — the schoolMem bot writes captures to `schoolMem/inbox/` but nothing commits or pushes them, so they sit untracked on achibuntu and never reach Obsidian on the Mac. That was the entire reason `inbox/` is tracked rather than using gitignored `raw/`. Either the bot commits after each capture, or a timer sweeps and pushes #achios !high
-- [ ] Alert when a bot dies — if a session crashes mid-day the only symptom is silence, and Aki finds out by messaging and getting nothing. `OnFailure=` on both units pointing at a oneshot that calls `scripts/telegram_notify.py`. Note the dead bot cannot report its own death, so the notifier must use the shared `~/.config/achios/telegram.env` sender, not the bot's own channel #achios !med
 - [ ] Decide whether the achiOS bot should be blocked from `achiMem/wiki/` — the logging contract says unattended writes never reach the vault's wiki, and that rule is currently documented but unenforced on a bypass-permissions bot. `BOT_GUARD` already exists; it needs a guard script for that path and a decision about whether a Telegram-driven session counts as a human in the loop #achios !med
 - [ ] Think through the prompt-injection surface — a Telegram message drives an agent with bypass permissions and pre-authorised push. Anything Aki forwards or pastes (an email, a job posting, a webpage) is untrusted input reaching a tool-using agent. No mitigation today beyond the allowlist #achios !med
 - [ ] Rotate the bot logs — `~/.local/state/achios/{achios,schoolmem}_bot.log` are append-only with no rotation and grow for as long as the bots run #achios !low
@@ -52,5 +52,6 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Done
 
+- [x] Alert when a bot dies — `OnFailure=achios-failure-alert@%n.service` attached across all user services, pointing to `scripts/service_failure_alert.py` with sensitive token redaction; trap handler in bot launcher scripts sends immediate Telegram failure notice to achinouncements with journal logs #achios !med @2026-08-18
 - [x] Stand up a second Telegram bot for schoolMem — `@schoMemBot`, own token and allowlist via `TELEGRAM_STATE_DIR`, running on achibuntu under `tmux -L schoolmem` + `achios-schoolmem-bot.service`, restarting daily at 04:00 Manila. Sonnet, bypass permissions, but hard-blocked out of `wiki/` by a PreToolUse hook; captures land in the tracked `schoolMem/inbox/` #achios !med @2026-08-17
 - [x] Sync Claude Code memory to achibuntu — `scripts/sync_claude_memory.py`, called from `sync-claude-config.sh`. Remaps the path-derived project slug, sends only `memory/*.md` so session transcripts stay put, and unions `MEMORY.md` with no `--delete` so the server's own memories survive. Allowlisted to achiOS alone #achios !med @2026-08-17

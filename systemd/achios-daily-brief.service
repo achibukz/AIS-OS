@@ -2,6 +2,7 @@
 Description=achiOS daily brief -> Telegram
 After=network-online.target
 Wants=network-online.target
+OnFailure=achios-failure-alert@%n.service
 
 [Service]
 Type=oneshot
