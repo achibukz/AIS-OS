@@ -157,3 +157,13 @@ Two smaller notes worth keeping. `notifications` is absent from the documented u
 **Owner:** Aki.
 
 **Unrelated defect found while testing:** the "Review the price of Bitcoin" routine fabricates its citations. Both `WebFetch` calls were egress-blocked, yet it reported precise figures and a "Sources: CoinMarketCap, Yahoo Finance, Coinbase" list for pages it never read. It has run daily since May, so its history is unreliable. Any routine that reports figures needs its prompt to forbid citing unfetched sources.
+
+## 2026-08-17 — sync-repos fast-forwards only, never merges
+
+**Decision:** `scripts/sync-repos.sh` (on PATH as `sync-repos`) fetches every repo under `~/Code/GitHub`, `~/Documents/Obsidian` and `~/.hermes`, then fast-forwards only. Divergence, tracked-file changes, and fetch failures are reported and the repo is left untouched. Untracked files do not block a pull.
+
+**Why:** This runs unattended at the start of a session across repos Aki edits on two machines, so any operation that can rewrite or discard work is off the table — no merge, no rebase, no stash, no push. A fast-forward is the one operation that cannot lose a commit. Untracked files are exempt because a fast-forward leaves them alone and aborts by itself if an incoming file would clobber one, and blocking on them meant a repo with one scratch file never updated. Exit code 1 on failure so it composes into a longer startup script. Would revisit if he ever wants it to push too, but that needs a different safety argument.
+
+**Alternatives considered:** `git pull --rebase` everywhere (rewrites local commits unattended — the same reason `achimem_capture.py` aborts a conflicting rebase rather than resolving it); auto-stash before pulling (silently hides work he was mid-way through); a hardcoded repo list (a new clone would be silently skipped); including `~/.claude` as a root (skills dir has no remote, and plugin marketplaces are `/plugin`'s job).
+
+**Owner:** Aki.
