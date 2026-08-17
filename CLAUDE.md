@@ -140,9 +140,11 @@ It is meant to read loose on a phone, not dense.
 he opens the VM, before starting work. It is on `PATH` as `~/.local/bin/sync-repos`, a
 symlink to `scripts/sync-repos.sh` — edit the script, never the symlink.
 
-It scans `~/Code/GitHub`, `~/Documents/Obsidian` and `~/.hermes` four levels deep for `.git`.
-Pass roots as arguments to scan somewhere else instead. `~/.claude` is deliberately not a
-root: the skills dir has no remote, and plugin marketplaces are `/plugin`'s job.
+It scans `~/Code/GitHub` and `~/Documents/Obsidian` four levels deep for `.git` — **Aki's own
+repos only**. Pass roots as arguments to scan somewhere else instead. Two roots are deliberately
+excluded: `~/.hermes` (hermes-agent is NousResearch's, not his, and it is a shallow clone with a
+local edit that blocks every pull) and `~/.claude` (the skills dir has no remote, and plugin
+marketplaces are `/plugin`'s job).
 
 **It only ever fast-forwards.** No merge, no rebase, no stash, no push, nothing that can
 lose work. A repo it cannot fast-forward is reported and left exactly as it was:
@@ -160,18 +162,17 @@ Untracked files do **not** block a pull — a fast-forward leaves them alone and
 itself if an incoming file would clobber one. Only tracked changes hold a repo back.
 
 A shallow clone's counts are meaningless — its history is truncated, so nearly everything
-upstream reads as "behind" (`hermes-agent` reports 23,326 while being one day old). The
-fast-forward is still correct, so the line is tagged `(shallow, count inflated)` rather
-than suppressed.
+upstream reads as "behind". The fast-forward is still correct, so the line is tagged
+`(shallow, count inflated)` rather than suppressed. Nothing in the default roots is shallow;
+this exists for repos passed in by hand.
 
 Exit code is 1 if anything failed, so it composes into a larger startup script. Warnings
 (unpushed commits, uncommitted work) do not fail the run.
 
 - Auth is `gh`'s git credential helper, already configured globally. `GIT_TERMINAL_PROMPT=0`
   is exported so stale credentials fail fast instead of hanging on a password prompt.
-- Per-repo fetch timeout is 300s, `SYNC_REPOS_TIMEOUT` overrides. `hermes-agent`'s first
-  `--all` fetch took 12m36s and grew `.git` from 68 MB to 489 MB, because it pulls every tag.
-  That is done now; a full five-repo run takes 38s.
+- Per-repo fetch timeout is 300s, `SYNC_REPOS_TIMEOUT` overrides. A run over the four default
+  repos takes about 7s; nothing there is large.
 - Tests: `tests/test_sync_repos.py`. They build real repos in a tmpdir and assert the script
   never loses work — keep them passing.
 

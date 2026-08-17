@@ -2,10 +2,11 @@
 # Fetch and fast-forward every git repo under the known roots.
 set -uo pipefail
 
+# Aki's own repos only. Third-party clones (~/.hermes/hermes-agent) and
+# tool-managed ones (~/.claude plugin marketplaces) are not his to keep current.
 DEFAULT_ROOTS=(
   "$HOME/Code/GitHub"
   "$HOME/Documents/Obsidian"
-  "$HOME/.hermes"
 )
 
 FETCH_TIMEOUT=${SYNC_REPOS_TIMEOUT:-300}
