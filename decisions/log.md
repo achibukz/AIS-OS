@@ -231,3 +231,19 @@ A named state dir is reachable only when `TELEGRAM_STATE_DIR` is set, and only t
 **Residual risk:** nothing prevents a future `/telegram:configure` run from writing a token back into the default dir. If that happens the symptom returns exactly as before — silence, no error.
 
 **Owner:** Aki.
+
+---
+
+## 2026-08-18 — Systemd OnFailure crash alerts and multi-ETF digest
+
+**Decision:**
+1. Attached `OnFailure=achios-failure-alert@%n.service` across all systemd user units (`achios-bot`, `achios-schoolmem-bot`, `achi-agy`, `achios-daily-brief`, `achios-voo-digest`), invoking `scripts/service_failure_alert.py`.
+2. Added exit code traps in `scripts/telegram-bot.sh` and `achiAgy/scripts/run-bot.sh` so process crashes inside tmux trigger Telegram alerts to `achinouncements`.
+3. Created multi-ETF digest (`scripts/voo_digest.py`) tracking VOO, VXUS, and QQQM, scheduled twice daily at 04:30 (US market close) and 08:00 (morning brief) Asia/Manila.
+
+**Why:** A crashed bot or failed cron previously produced only silence. The `OnFailure` template unit guarantees immediate, automated notification with recent journal/file logs dispatched to `achinouncements` whenever any service aborts. Sensitive bot tokens and API keys are dynamically redacted with regex filters before reaching Telegram.
+
+**Alternatives considered:** Polling daemon for process status (wasteful CPU cycles; systemd's native `OnFailure` handles event-driven triggers instantly).
+
+**Owner:** Aki.
+

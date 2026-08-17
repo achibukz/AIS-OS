@@ -105,3 +105,21 @@ Rejected:
 
 Open:
 - Nothing stops a future `/telegram:configure` from writing a token back to the default dir.
+
+## 2026-08-18 01:45 [saved]
+Goal: Add automated multi-ETF market digest (VOO, VXUS, QQQM) and systemd failure alerts to Telegram.
+
+Decisions:
+- `OnFailure=achios-failure-alert@%n.service` attached across all user services, invoking `scripts/service_failure_alert.py` with sensitive token/key redaction.
+- Process traps added in `telegram-bot.sh` and `run-bot.sh` so unexpected non-zero exits inside tmux also trigger failure alerts.
+- Multi-ETF digest (`scripts/voo_digest.py`) queries Yahoo Finance chart APIs for VOO, VXUS, and QQQM; scheduled at 04:30 (US market close buffer) and 08:00 (morning brief) Asia/Manila.
+- Initialized and published `achiAgy` private repository to GitHub (`achibukz/achiAgy`) with strict `.gitignore` protection for `.env*` secrets and dynamic sessions.
+
+Rejected:
+- Standard cron for ETF digest — ignores `CRON_TZ` and lacks `Persistent=true` recovery.
+- Unsanitized journal logs in alerts — risked leaking bot tokens to Telegram.
+
+Open:
+- Automated `logrotate` for `~/.local/state/achios/*.log`.
+- Auto-sync/commit loop for `schoolMem/inbox/`.
+
