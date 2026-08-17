@@ -14,3 +14,11 @@ projects/achi/
 
 # AI assistant artifacts
 context-snapshot.json
+
+# Name collision, not intent. superpowers' track-edits hook auto-appends any of
+# project-map.md / session-log.md / state.md / known-issues.md here the moment one is
+# edited. Ours are real tracked files, and .gitignore does not apply to tracked files,
+# so these two lines change nothing — they exist only to stop the hook re-adding them
+# and dirtying the diff every session. If either is ever untracked, use `git add -f`.
+state.md
+session-log.md
