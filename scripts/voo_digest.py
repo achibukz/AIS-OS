@@ -83,6 +83,7 @@ def build_digest(results: list[tuple[str, dict]]) -> str:
     divider = "---------------------------------"
 
     lines = [
+        divider,
         "📊 ETF Market Digest",
         f"🗓 {date_str}",
         divider,

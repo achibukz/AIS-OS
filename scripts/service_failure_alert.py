@@ -85,6 +85,7 @@ def build_alert_message(service_name: str, reason: str = "") -> str:
         logs = logs[-1500:]
 
     lines = [
+        divider,
         "🚨 SYSTEM ALERT: Service Failure Detected",
         divider,
         f"🗓 Time: {date_str}",
@@ -101,6 +102,7 @@ def build_alert_message(service_name: str, reason: str = "") -> str:
         logs,
         divider,
         f"💡 Check status: `systemctl --user status {service_name}`",
+        divider,
     ])
 
     return "\n".join(lines)
