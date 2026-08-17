@@ -134,6 +134,41 @@ It is meant to read loose on a phone, not dense.
 - Either message splits further at a blank line if it passes Telegram's 4096-char limit.
 - Tests: `tests/test_daily_brief.py`. Keep them passing when the format changes.
 
+## Repo sync
+
+`sync-repos` brings every git repo on the box up to date in one command. Aki runs it when
+he opens the VM, before starting work. It is on `PATH` as `~/.local/bin/sync-repos`, a
+symlink to `scripts/sync-repos.sh` — edit the script, never the symlink.
+
+It scans `~/Code/GitHub`, `~/Documents/Obsidian` and `~/.hermes` four levels deep for `.git`.
+Pass roots as arguments to scan somewhere else instead. `~/.claude` is deliberately not a
+root: the skills dir has no remote, and plugin marketplaces are `/plugin`'s job.
+
+**It only ever fast-forwards.** No merge, no rebase, no stash, no push, nothing that can
+lose work. A repo it cannot fast-forward is reported and left exactly as it was:
+
+| Report | Meaning |
+|---|---|
+| `pulled N` | fast-forwarded N commits |
+| `up to date` | nothing to do |
+| `held back` | commits waiting, but tracked files are modified — commit or stash first |
+| `DIVERGED` | local and remote both moved — Aki resolves it by hand |
+| `FETCH FAILED` / `PULL FAILED` | network, credentials, or a colliding untracked file |
+| `skipped` / `fetched` | no remote, no upstream, or detached HEAD |
+
+Untracked files do **not** block a pull — a fast-forward leaves them alone and aborts by
+itself if an incoming file would clobber one. Only tracked changes hold a repo back.
+
+Exit code is 1 if anything failed, so it composes into a larger startup script. Warnings
+(unpushed commits, uncommitted work) do not fail the run.
+
+- Auth is `gh`'s git credential helper, already configured globally. `GIT_TERMINAL_PROMPT=0`
+  is exported so stale credentials fail fast instead of hanging on a password prompt.
+- Per-repo fetch timeout is 300s, `SYNC_REPOS_TIMEOUT` overrides. `hermes-agent` is a ~100 MB
+  clone and its first fetch on this connection runs into minutes; incremental ones are quick.
+- Tests: `tests/test_sync_repos.py`. They build real repos in a tmpdir and assert the script
+  never loses work — keep them passing.
+
 ## Knowledge base
 
 **Who Aki is.** Third year BS CS (Software Technology) at DLSU-Manila. CGPA 3.029. Expected graduation August 2027. Strong QA background (GABAY QA Lead, UnboundMNL QA Engineer), full-stack work (AppToSync), distributed systems (DDBMS), ML/data (thesis + side projects). Genuine AI fluency — Claude Code, Gemini, Groq, prompt engineering, Anthropic certs. Goes by Aki. Curious, extroverted, action-oriented once the team is clear. Wants his CS work to actually help people — healthcare is the long-running answer.
