@@ -107,45 +107,35 @@ Open:
 - Nothing stops a future `/telegram:configure` from writing a token back to the default dir.
 
 ## 2026-08-18 01:45 [saved]
-Goal: Add automated multi-ETF market digest (VOO, VXUS, QQQM) and systemd failure alerts to Telegram.
+Goal: Add ETF digest, systemd failure alerts, and several new Telegram debrief crons.
 
 Decisions:
-- `OnFailure=achios-failure-alert@%n.service` attached across all user services, invoking `scripts/service_failure_alert.py` with sensitive token/key redaction.
-- Process traps added in `telegram-bot.sh` and `run-bot.sh` so unexpected non-zero exits inside tmux also trigger failure alerts.
-- Multi-ETF digest (`scripts/voo_digest.py`) queries Yahoo Finance chart APIs for VOO, VXUS, and QQQM; scheduled at 04:30 (US market close buffer) and 08:00 (morning brief) Asia/Manila.
-- Initialized and published `achiAgy` private repository to GitHub (`achibukz/achiAgy`) with strict `.gitignore` protection for `.env*` secrets and dynamic sessions.
-- Added PDF generation and Telegram document delivery pipeline (`reportlab` + `sendDocument` in `scripts/generate_sample_pdf.py`).
-- Added Active Tasks Checkpoint (`scripts/tasks_digest.py` & `systemd/achios-tasks-digest.timer`) scheduled at 11am, 3pm, 6pm, 9pm, 11pm Manila time to `achinouncements`.
-- Added Midnight Evening Debrief (`scripts/evening_debrief.py` & `systemd/achios-evening-debrief.timer`) scheduled at 00:00 Manila time (<300 words, day accomplishments, failure status, and tomorrow's focus/schedule).
-- Added VIP Email & Action Triage (`scripts/email_digest.py` & `systemd/achios-email-digest.timer`) scheduled at 08:30 & 17:30 Manila time (filtering noise and surfacing recruiters, security alerts, and correspondence).
-- Refactored `scripts/daily_brief.py` into a fast, deterministic Python pipeline (zero LLM overhead, instant <1s execution, Google Calendar across DLSU/Personal/Work + top focus tasks with `---------------------------------` framing).
-- Implemented Vault Inbox Sync daemon (`scripts/vault_inbox_sync.py` & `systemd/achios-vault-sync.timer` every 15 mins) to automatically commit and push mobile Telegram captures in `schoolMem/inbox/` (and `achiMem/inbox/`) to GitHub with autostash rebase conflict protection.
-- Built Universal Telegram Database (`achiMem/tgdb/` & `scripts/tgdb_logger.py`) archiving sanitized, structured conversation notes across all 4 Telegram bots (`@achiOSClaudeBot`, `@schoMemBot`, `@achiAgyBot`, `@schoMemAGYBot`) with 15-min automated GitHub vault sync.
-- Added Universal Transcript Exporter (`scripts/export_transcripts.py`) parsing both Claude Code project logs (`~/.claude/projects/`) and Antigravity CLI brain logs (`~/.gemini/antigravity-cli/brain/`) for complete cross-platform session archiving.
+- `OnFailure=achios-failure-alert@%n.service` on all user services, with token/key redaction.
+- `voo_digest.py` (VOO/VXUS/QQQM) at 04:30 + 08:00 Manila; timer-based, not cron.
+- New crons: tasks digest, evening debrief, VIP email triage — each its own script+timer, sent to `achinouncements`.
+- `daily_brief.py` refactored to deterministic Python (no LLM call, <1s).
+- Vault inbox sync daemon (15 min) auto-commits mobile captures with rebase conflict protection.
+- Published `achiAgy` repo; added PDF delivery pipeline; added Telegram conversation archive (`tgdb`) and cross-platform transcript exporter.
 
 Rejected:
-- Standard cron for ETF digest — ignores `CRON_TZ` and lacks `Persistent=true` recovery.
-- Subprocess LLM CLI wrappers for daily brief — slow (10-30s), flaky on timeouts, and unnecessary when deterministic Python formatting provides cleaner structure.
-- Blind `git add -A` across vaults — risked staging `.pyc` or untracked scratch files outside `inbox/`.
+- Cron over systemd timers — ignores `CRON_TZ`, no `Persistent=true` recovery.
+- LLM subprocess for daily brief — slow/flaky vs. deterministic formatting.
+- Blind `git add -A` across vaults — risks staging scratch files outside `inbox/`.
+
 ## 2026-08-18 20:10 [saved]
-Goal: Set up CasaOS dashboard tools, build Google Sheets DLSU Schedule Planner, and schedule ID 123 2nd DL enrollment appointment.
+Goal: CasaOS dashboard setup, DLSU schedule planner, ID 123 enlistment appointment.
 
 Decisions:
-- CasaOS Dashboard active on `achibuntu` (Tailscale `100.106.210.38` & LAN `172.20.10.4`); Code-Server mapped to port `8085` and Filebrowser on `8082`.
-- Solved VS Code Webview ServiceWorker blocking on HTTP via Chrome flag `chrome://flags/#unsafely-treat-insecure-origin-as-secure` with `cert: false` in `config.yaml`.
-- Created live DLSU Term 1 Schedule Planner in Google Sheets (`1qqaTvcyz40JvyTDyT8MXiOEjPVh57PAL96jb_967BJ4`) using Google Sheets v4 API with 15-minute timetable grids (7:30 AM – 6:00 PM), merged class blocks, and color-coded rooms/professors.
-- Parsed all Archers Hub offerings: Core (`CCINOV8`, `STDISCM`, `THS-ST2`), Priority Electives (`STSP002`, `DATA100`, `DATA103`, `SOLLDV2`), GE (`GELITPH`, `GERPHIS`, `GESTSOC`), and Reference Electives.
-- Modeled Golden 14-Unit Load (Option A): 100% Online Tuesday + Single Friday On-Campus block (9:15 AM – 4:00 PM), preserving Mon/Wed/Thu/Sat (4 full free workdays) for ING Retail Tech internship.
-- Added exact ID 123 2nd DL Enrollment appointment to `DLSU` Google Calendar for Tuesday, August 25, 2026 at 11:30 AM – 12:30 PM (Asia/Manila).
-- Rescheduled Codex evaluation to October 29, 2026 (`!low` on `Personal` Google Calendar).
+- CasaOS live on achibuntu; Code-Server :8085, Filebrowser :8082. Webview ServiceWorker blocker fixed via Chrome insecure-origin flag, not self-signed certs.
+- DLSU Term 1 planner built in Google Sheets (`1qqaTvcyz40JvyTDyT8MXiOEjPVh57PAL96jb_967BJ4`).
+- Golden 14-unit load: online Tuesday + one Friday on-campus block, keeping Mon/Wed/Thu/Sat free for the ING internship.
+- ID 123 2nd DL enrollment added to `DLSU` calendar, Tue 2026-08-25 11:30-12:30. Codex eval rescheduled to 2026-10-29.
 
 Rejected:
-- Native Obsidian streaming for daily deep work — browser video streaming has ~20-40ms lag compared to native Mac app with local Git sync.
-- Self-signed IP HTTPS certificates for Code-Server — browser blocks ServiceWorkers on self-signed IP certs; Chrome insecure origin flag is cleaner and 100% reliable.
-- Monday/Thursday electives (`HCI2000`) — introduces extra campus travel days that conflict with full-day ING internship hours.
+- Monday/Thursday electives (`HCI2000`) — extra campus days conflict with internship hours.
 
 Open:
-- Finalize elective selection (`STSP002` vs `DATA103` vs `DATA100` vs `SOLLDV2`) and GE section on Sunday Aug 23 ahead of Tuesday Aug 25 enlistment.
+- Finalize elective (`STSP002`/`DATA103`/`DATA100`/`SOLLDV2`) and GE section by Sun 2026-08-23, ahead of Tue enlistment.
 
 
 
