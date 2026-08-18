@@ -22,7 +22,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 
-- [ ] Order DLSU Good Moral Certificate via Google Form (https://docs.google.com/forms/d/e/1FAIpQLSdFmzf_8-UN141Umm117qhwiWXA4ZugN0gY3KwYwH-oyalLCg/viewform) #school !high @2026-08-19
+- [ ] Order DLSU Good Moral Certificate for ING onboarding via Google Form (https://docs.google.com/forms/d/e/1FAIpQLSdFmzf_8-UN141Umm117qhwiWXA4ZugN0gY3KwYwH-oyalLCg/viewform) #career #school !high @2026-08-19
 - [ ] Create proposed schedule for Term 1 (AY2627-T1) by checking offered subjects in Archers Hub #school !high
 - [ ] Go to a BPI branch and ask for an alternative on how to create a new BPI SaveUp account (avoiding traditional bank account) following the notice in work inbox #finances !high
 - [ ] Approach the DLSU school coordinator for the internship agreement signature #career !high
