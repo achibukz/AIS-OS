@@ -22,7 +22,9 @@ import requests
 # Add scripts directory to sys.path to import telegram_notify
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
-from telegram_notify import send
+from telegram_notify import CONFIG_DIR, send
+
+FINANCE_ENV = CONFIG_DIR / "telegram_finance.env"
 
 TICKERS = [
     ("VOO", "🇺🇸 VOO (Vanguard S&P 500)"),
@@ -142,8 +144,11 @@ def main() -> int:
         print(digest)
         return 0
 
+    env_target = FINANCE_ENV if FINANCE_ENV.exists() else None
+    if env_target:
+        print(f"Using finance bot credentials from {FINANCE_ENV}...")
     print("Sending digest to Telegram...")
-    count = send(digest)
+    count = send(digest, env_path=env_target)
     print(f"Successfully sent {count} message(s) to Telegram.")
     return 0
 

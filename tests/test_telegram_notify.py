@@ -31,12 +31,17 @@ class TestReadEnv:
 
 
 class TestLoadConfig:
-    def test_environment_overrides_the_env_file(self, tmp_path, monkeypatch):
+    def test_env_file_takes_precedence_over_ambient_env(self, tmp_path, monkeypatch):
         env = tmp_path / "telegram.env"
         env.write_text("TELEGRAM_BOT_TOKEN=from_file\nTELEGRAM_CHAT_ID=1\n")
         monkeypatch.setattr(tg, "TELEGRAM_ENV", env)
         monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "from_env")
-        assert tg.load_config() == ("from_env", "1")
+        assert tg.load_config() == ("from_file", "1")
+
+    def test_custom_env_path_is_supported(self, tmp_path):
+        custom_env = tmp_path / "custom_finance.env"
+        custom_env.write_text("TELEGRAM_BOT_TOKEN=finance_token\nTELEGRAM_CHAT_ID=999\n")
+        assert tg.load_config(env_path=custom_env) == ("finance_token", "999")
 
     def test_missing_credentials_exit_with_the_config_path(self, tmp_path, monkeypatch):
         monkeypatch.setattr(tg, "TELEGRAM_ENV", tmp_path / "nope.env")

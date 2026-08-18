@@ -21,9 +21,10 @@ TELEGRAM_ENV = CONFIG_DIR / "telegram.env"
 TELEGRAM_LIMIT = 4096
 
 
-def read_env() -> dict[str, str]:
+def read_env(env_path: Path | str | None = None) -> dict[str, str]:
+    target = Path(env_path) if env_path else TELEGRAM_ENV
     try:
-        raw = TELEGRAM_ENV.read_text(encoding="utf-8", errors="replace")
+        raw = target.read_text(encoding="utf-8", errors="replace")
     except OSError:
         return {}
     return dict(
@@ -36,13 +37,14 @@ def read_env() -> dict[str, str]:
     )
 
 
-def load_config() -> tuple[str, str]:
-    """Bot token and chat id. Prioritizes ~/.config/achios/telegram.env to avoid parent daemon env hijacking."""
-    values = read_env()
+def load_config(env_path: Path | str | None = None) -> tuple[str, str]:
+    """Bot token and chat id. Prioritizes the env file to avoid parent daemon env hijacking."""
+    target = Path(env_path) if env_path else TELEGRAM_ENV
+    values = read_env(target)
     token = values.get("TELEGRAM_BOT_TOKEN") or os.environ.get("TELEGRAM_BOT_TOKEN", "")
     chat_id = values.get("TELEGRAM_CHAT_ID") or os.environ.get("TELEGRAM_CHAT_ID", "")
     if not token or not chat_id:
-        raise SystemExit(f"Missing TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID. Fill in {TELEGRAM_ENV}")
+        raise SystemExit(f"Missing TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID. Fill in {target}")
     return token, chat_id
 
 
@@ -67,14 +69,14 @@ def split_messages(message: str, limit: int = TELEGRAM_LIMIT) -> list[str]:
     return chunks
 
 
-def send(*messages: str) -> int:
+def send(*messages: str, env_path: Path | str | None = None) -> int:
     """Send each message, splitting any that exceed Telegram's limit.
 
     Returns the number of Telegram messages actually sent.
     """
     import requests
 
-    token, chat_id = load_config()
+    token, chat_id = load_config(env_path=env_path)
     parts = [part for message in messages for part in split_messages(message)]
     for part in parts:
         response = requests.post(
