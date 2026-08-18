@@ -7,8 +7,9 @@ Two registers — match the one that fits the surface. **Never publish or send e
 - Write like he's talking, not presenting.
 - Simple sentences. **No em dashes.** No complex structures.
 - Vary the openings. Don't start with "I" every sentence.
-- **Banned words:** leverage, passionate, synergy, driven, dynamic, utilize, impactful, holistic.
+- **Banned words:** leverage, passionate, synergy, driven, dynamic, utilize, impactful, holistic, amenable.
 - Reference real things from his experience, not generic statements.
+- DLSU faculty / professor emails: warm student-to-professor tone (uses polite "po", "Hi Doc/Sir [Name], \n\n Good day!", signs `Best Regards,` + student ID). Avoid corporate bureaucratic jargon.
 - Teamwork / people → warm and genuine, not corporate.
 - Tech → curious and interested, not robotic.
 - Length: natural and conversational. Not lazy-short, not rehearsed-long.
