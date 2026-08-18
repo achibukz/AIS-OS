@@ -1,11 +1,13 @@
 [Unit]
-Description=achiOS Email Debrief at 8:30am and 5:30pm Manila
+Description=achiOS Email Debrief at 8:30am, 5:30pm, and 9:00pm Manila
 
 [Timer]
 OnCalendar=08:30 Asia/Manila
 OnCalendar=17:30 Asia/Manila
+OnCalendar=21:00 Asia/Manila
 Persistent=true
 AccuracySec=1min
 
 [Install]
 WantedBy=timers.target
+

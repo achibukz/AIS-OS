@@ -179,10 +179,11 @@ It is meant to read loose on a phone, not dense.
 
 `scripts/email_digest.py` queries authenticated Google inboxes, filters out marketing spam/blasts, and sends high-signal correspondence to `achinouncements`:
 - Content: Recruiter replies, bank security notices, GitHub workflow failures, and direct human messages
-- Schedule: `systemd/achios-email-digest.timer` (set to `08:30` and `17:30` Asia/Manila with `Persistent=true`)
+- Schedule: `systemd/achios-email-digest.timer` (set to `08:30`, `17:30`, and `21:00` Asia/Manila with `Persistent=true`)
 - Log: `~/.local/state/achios/email_digest.log`
 - Preview: `python scripts/email_digest.py --dry-run`
 - Run now: `systemctl --user start achios-email-digest.service`
+
 
 ### Vault Inbox & tgdb Sync
 
