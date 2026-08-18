@@ -27,7 +27,7 @@ Six identities Aki uses to talk about these bots. Verified against each `getMe` 
 | schoolMem AGY | `@schoMemAGYBot` | agy (Google Antigravity) | schoolMem vault | Two-way chat via `achiAgy` | live, built 2026-08-17 |
 | achinouncements | `@achiOSBot` | Claude Code (cron only) | AIS-OS `scripts/telegram_notify.py` | One-way: daily brief + scheduled/cron jobs | live |
 | achiFinance | Dedicated bot | Python (`voo_digest.py`) | AIS-OS | One-way: ETF market digests (VOO, VXUS, QQQM) via `telegram_finance.env` | live |
-| achiSchoNounce | `@achiSchoNounceBot` | Python (`email_digest.py`) | schoolMem / DLSU | One-way: DLSU academic emails & school announcements via `telegram_school.env` | live |
+| achiSchoNounce | `@achiSchooNounceBot` | Python (`email_digest.py`) | schoolMem / DLSU | One-way: DLSU academic emails & school announcements via `telegram_school.env` | live |
 | achiHermes | not yet created | Codex (planned) | Hermes agent | Hermes bot, to be powered by Codex once he has a subscription | planned |
 
 `achiAgy` (`~/Code/GitHub/achiAgy`) is a separate repo from AIS-OS that wraps `agy` for
