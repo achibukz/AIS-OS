@@ -586,3 +586,32 @@ A named state dir is reachable only when `TELEGRAM_STATE_DIR` is set, and only t
 
 **Domain:** `general`
 **Owner:** Aki.
+
+## 2026-08-19 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: Our new connections so that in the future all school related will be in achiSchoolNouncements
+
+**Why:** Harvested from dialogue session `2026-08-19-achiagyosbot-1d047ee7.md`:
+> "ok take note of our new connections so that in the future all school related will be in achiSchoolNouncements"
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-19 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: Medium priority
+
+**Why:** Harvested from dialogue session `2026-08-19-achiagyosbot-1d047ee7.md`:
+> "can you take note medium priority"
+
+**Domain:** `tasks`
+**Owner:** Aki.
+
+## 2026-08-19 — Bash Interpolation Safeguard & Live Market Data Verification
+
+**Decision:** Scripts and CLI commands dispatching currency and financial cards to Telegram must never pass raw dollar signs (`$710`, `$-0.38`) inside double-quoted bash strings, as bash parameter interpolation expands them to empty strings or option flags (`$-` -> `hBc`). Scripts must be written to standalone Python files or pass single-quoted literal payloads. Furthermore, market digests must always be generated from live query data with explicit date verification.
+
+**Why:** Prevents formatting corruption and ensures 100% price accuracy across automated and manual Telegram broadcasts.
+
+**Domain:** `infra`
+**Owner:** Aki.

@@ -61,3 +61,7 @@ Whenever an active task carries a date or deadline:
 - **2026-08-19 (general):** Operational directive: Our changes
 - **2026-08-19 (notifications):** Operational directive: All school and DLSU-related announcements and email debriefs must strictly route to `@achiSchooNounceBot` (credentials in `~/.config/achios/telegram_school.env`), keeping `@schoMemBot` purely for two-way interactive queries.
 - **2026-08-19 (notifications):** Operational directive: All finance and ETF market digests (VOO, VXUS, QQQM) must strictly route to `@achiETFBot` (credentials in `~/.config/achios/telegram_finance.env`).
+- **2026-08-19 (general):** Operational directive: Our new connections so that in the future all school related will be in achiSchoolNouncements
+- **2026-08-19 (tasks):** Operational directive: Medium priority
+- **2026-08-19 (shell/formatting):** Operational directive: Never pass strings containing currency symbols or raw dollar signs (`$710`, `$-0.38`) inside double-quoted bash strings; bash variable interpolation eats or corrupts them (`$7` -> empty, `$-` -> `hBc`). Use dedicated Python script files or single-quoted literals.
+- **2026-08-19 (data/accuracy):** Operational directive: Always query live API sources and cross-verify dates before broadcasting market digests to prevent stale day-over-day price replication.
