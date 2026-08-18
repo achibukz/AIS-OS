@@ -269,18 +269,32 @@ def parse_antigravity_transcript(
         title = clean_title(first_prompt, fallback="Antigravity Session")
         takeaways, tasks = extract_takeaways_and_tasks(messages)
 
+        # Antigravity CLI Telegram sessions belong to @achiAgyOSBot
+        bot_name = "@achiAgyOSBot"
+        domain = "antigravity"
+
+        raw_transcript_text = "\n".join(lines)
+        if "gem-3.7" in raw_transcript_text or "gemini-3.7" in raw_transcript_text or "Gemini 3.7" in raw_transcript_text:
+            engine = "Gemini 3.7 Flash"
+        elif "gemini-2.5" in raw_transcript_text or "Gemini 2.5" in raw_transcript_text:
+            engine = "Gemini 2.5 Pro / Flash"
+        else:
+            engine = "Gemini 3.7 Flash"
+
         summary = f"Antigravity session covering {title}."
         if takeaways:
             summary = f"{title}. Key outcome: {takeaways[0]}"
 
         meta = {
             "title": title,
-            "bot": "@achiAgyBot",
-            "engine": "Gemini 2.5 Pro / Flash",
+            "bot": bot_name,
+            "engine": engine,
             "summary": summary,
             "tags": ["tgdb", "antigravity", "pair-programming", "achios"],
             "timestamp": start_ts or dt.datetime.now(LOCAL_TZ),
         }
+
+
 
         return meta, messages, takeaways, tasks
 

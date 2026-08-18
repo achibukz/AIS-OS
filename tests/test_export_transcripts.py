@@ -76,9 +76,11 @@ def test_parse_antigravity_transcript(tmp_path):
     meta, messages, takeaways, tasks = parsed
 
     assert meta["title"] == "How do I test tgdb?"
-    assert meta["bot"] == "@achiAgyBot"
+    assert meta["bot"] == "@achiAgyOSBot"
+    assert meta["engine"] == "Gemini 3.7 Flash"
     assert len(messages) == 2
     assert messages[0]["role"] == "user"
     assert messages[0]["content"] == "How do I test tgdb?"
     assert messages[1]["role"] == "assistant"
     assert messages[1]["content"] == "You can run pytest tests/test_tgdb_logger.py."
+
