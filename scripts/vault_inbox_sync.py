@@ -147,7 +147,19 @@ def main() -> int:
     except Exception as e:
         print(f"Warning: Transcript export skipped: {e}", file=sys.stderr)
 
+    # 2. Harvest user corrections from tgdb into .agentrules and decisions/log.md
+    try:
+        from extract_corrections import scan_vault_tgdb, apply_corrections
+        corrections = scan_vault_tgdb(days_lookback=1)
+        if corrections:
+            count, summaries = apply_corrections(corrections, dry_run=args.dry_run)
+            if count > 0:
+                print(f"[corrections] {'[DRY RUN] ' if args.dry_run else ''}Harvested {count} new correction rule(s).")
+    except Exception as e:
+        print(f"Warning: Correction harvesting skipped: {e}", file=sys.stderr)
+
     overall_success = True
+
     for vault in VAULTS:
         if not vault["path"].exists():
             continue

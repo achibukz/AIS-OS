@@ -188,6 +188,40 @@ def check_failures_today() -> list[str]:
     return failures
 
 
+def get_corrections_today(concluding_date: dt.date) -> list[str]:
+    """Retrieve user corrections and self-learning rules harvested today."""
+    date_str = concluding_date.isoformat()
+    corrections: list[str] = []
+
+    # 1. Check decisions/log.md for today's harvested decisions
+    decisions_path = SCRIPT_DIR.parent / "decisions" / "log.md"
+    if decisions_path.exists():
+        try:
+            content = decisions_path.read_text(encoding="utf-8", errors="replace")
+            pattern = rf"##\s+{re.escape(date_str)}\s+—\s+User Correction Harvested[^\n]*\n\n\*\*Decision:\*\*\s*([^\n]+)"
+            for match in re.findall(pattern, content):
+                clean = match.strip()
+                if clean and clean not in corrections:
+                    corrections.append(clean)
+        except Exception:
+            pass
+
+    # 2. If none in decisions/log.md, scan live tgdb for today's directives
+    if not corrections:
+        try:
+            from extract_corrections import scan_vault_tgdb
+            items = scan_vault_tgdb(days_lookback=1)
+            for item in items:
+                if item.date_str == date_str:
+                    c_text = f"({item.domain}) {item.rule_text}"
+                    if c_text not in corrections:
+                        corrections.append(c_text)
+        except Exception:
+            pass
+
+    return corrections[:4]
+
+
 def build_evening_debrief(concluding_date: dt.date) -> str:
     tomorrow = concluding_date + dt.timedelta(days=1)
     date_label = concluding_date.strftime("%b %d, %Y")
@@ -196,6 +230,7 @@ def build_evening_debrief(concluding_date: dt.date) -> str:
     done_today, due_tomorrow, high_active = get_tasks_data(concluding_date)
     tomorrow_events = fetch_tomorrow_events(tomorrow)
     failures = check_failures_today()
+    corrections_today = get_corrections_today(concluding_date)
 
     lines = [
         "---------------------------------",
@@ -214,7 +249,14 @@ def build_evening_debrief(concluding_date: dt.date) -> str:
         lines.append("🍃 Quiet day. No major status changes recorded today.")
         lines.append("")
 
-    # 2. Failures & Fixes
+    # 2. Self-Learning & Rules Harvested
+    if corrections_today:
+        lines.append("🧠 SELF-LEARNED & RULES HARVESTED:")
+        for c in corrections_today:
+            lines.append(f"• {c}")
+        lines.append("")
+
+    # 3. Failures & Fixes
     if failures:
         lines.append("⚠️ INCIDENTS & FIXES:")
         for f in failures:
@@ -224,8 +266,9 @@ def build_evening_debrief(concluding_date: dt.date) -> str:
         lines.append("🟢 Systems: All services and background timers operational.")
         lines.append("")
 
-    # 3. Tomorrow's Focus
+    # 4. Tomorrow's Focus
     lines.append(f"🎯 TOMORROW'S FOCUS ({tomorrow_label}):")
+
     
     focus_items = []
     if due_tomorrow:
