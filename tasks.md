@@ -36,7 +36,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] DLSU Term 1 (AY2627-T1) Enrollment via Archers Hub / Animo.sys — ID 123 2nd DL timeslot 11:30 AM - 12:30 PM #school !high @2026-08-25
 - [ ] Finalize proposed schedule for Term 1 (CCINOV8, STDISCM, THS-ST2, STELEC4, and GE: GERPHIS/GESTSOC/GELITPH) in [Google Sheets](https://docs.google.com/spreadsheets/d/1qqaTvcyz40JvyTDyT8MXiOEjPVh57PAL96jb_967BJ4) ahead of Aug 25 enrollment #school !high @2026-08-23
 - [ ] Go to a BPI branch and ask for an alternative on how to create a new BPI SaveUp account (avoiding traditional bank account) following the notice in work inbox #finances !high
-- [ ] Research collaboration architectures & multi-developer setup for Asa (OS-agnostic subagent orchestrator supporting Antigravity, Claude Code, and Codex) #collab #agents #infra !high
+- [ ] Research multi-developer collaboration setup & architecture to build Asa (an OS-agnostic AI product with an orchestrator supporting AGY, Claude, and Codex) #collab #agents #career !high
 - [ ] Build achiOS Curator & Log Rotation daemon (user-level `logrotate` for `~/.local/state/achios/*.log` and state pruning timer) #achios !med
 - [ ] Implement Dynamic CLI Skill Synthesizer (auto-packaging complex workflows into documented Python CLI scripts with `--help` and `--dry-run`) #achios !med
 - [ ] Create System Crash Reflection & Self-Healing Playbook (logging service failures and validated fixes to `references/troubleshooting-recipes.md`) #achios !med
