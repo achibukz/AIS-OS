@@ -558,3 +558,12 @@ A named state dir is reachable only when `TELEGRAM_STATE_DIR` is set, and only t
 
 **Domain:** `general`
 **Owner:** Aki.
+
+## 2026-08-19 — Dedicated Finance Bot & Multi-Bot Notification Support
+
+**Decision:** Extended `telegram_notify.py` to support custom credential environment files via `env_path: Path | str | None = None`. Updated `voo_digest.py` to route ETF market digests (VOO, VXUS, QQQM) to a dedicated finance bot configured at `~/.config/achios/telegram_finance.env`, while falling back gracefully to `telegram.env` if the custom file is absent.
+
+**Why:** Aki separated financial and market notifications from general system announcements (`@achiOSBot`). Adding optional `env_path` parameter support across `read_env()`, `load_config()`, and `send()` enables multi-bot dispatch without duplicating Telegram API sending logic or splitting message routines.
+
+**Domain:** `infra`
+**Owner:** Aki.
