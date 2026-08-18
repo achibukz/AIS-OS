@@ -37,13 +37,14 @@ def read_env() -> dict[str, str]:
 
 
 def load_config() -> tuple[str, str]:
-    """Bot token and chat id. Environment wins so a job can override per-run."""
+    """Bot token and chat id. Prioritizes ~/.config/achios/telegram.env to avoid parent daemon env hijacking."""
     values = read_env()
-    token = os.environ.get("TELEGRAM_BOT_TOKEN") or values.get("TELEGRAM_BOT_TOKEN", "")
-    chat_id = os.environ.get("TELEGRAM_CHAT_ID") or values.get("TELEGRAM_CHAT_ID", "")
+    token = values.get("TELEGRAM_BOT_TOKEN") or os.environ.get("TELEGRAM_BOT_TOKEN", "")
+    chat_id = values.get("TELEGRAM_CHAT_ID") or os.environ.get("TELEGRAM_CHAT_ID", "")
     if not token or not chat_id:
         raise SystemExit(f"Missing TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID. Fill in {TELEGRAM_ENV}")
     return token, chat_id
+
 
 
 def split_messages(message: str, limit: int = TELEGRAM_LIMIT) -> list[str]:
