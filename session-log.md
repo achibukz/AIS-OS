@@ -134,13 +134,24 @@ Decisions:
 Rejected:
 - Monday/Thursday electives (`HCI2000`) — extra campus days conflict with internship hours.
 
+## 2026-08-19 05:50 [saved]
+Goal: Bot separation (Finance + School), SSH Termius setup, ETF schedule optimization, and weekly performance recap cron.
+
+Decisions:
+- Isolated one-way bots: `@achiETFBot` via `telegram_finance.env` (market digests) and `@achiSchooNounceBot` via `telegram_school.env` (DLSU school email debriefs), keeping `@achiOSBot` for general briefings and `@schoMemBot` for interactive queries.
+- Parametrized `telegram_notify.py` (`env_path` parameter) across `read_env`, `load_config`, and `send` to support multi-bot dispatch.
+- Re-tuned ETF schedule (`voo_digest.py`): 08:00 AM Manila (Morning close review) and 10:00 PM Manila (Evening open pulse, 30m after US open).
+- Built dedicated Sunday 6:00 PM Weekly ETF Performance Recap (`scripts/etf_weekly_digest.py` & `systemd/achios-etf-weekly-digest.timer`) computing 5-day net moves ($/%), weekly high/low ranges, and 1-year returns.
+- Connected iPhone Termius to achibuntu via Tailscale (`100.106.210.38:22`).
+- Fixed bash variable interpolation bug by enforcing script-file payloads rather than double-quoted shell string interpolation.
+
+Rejected:
+- Duplicate 4:30 AM & 8:00 AM morning pings — redundant as market is closed throughout both windows.
+- Merging school announcements into two-way `@schoMemBot` — keeps interactive query context clean.
+
 Open:
-- Finalize elective (`STSP002`/`DATA103`/`DATA100`/`SOLLDV2`) and GE section by Sun 2026-08-23, ahead of Tue enlistment.
-
-
-
-
-
-
+- Finalize elective and GE section by Sun 2026-08-23 ahead of Tue Aug 25 enrollment.
+- Improve email digest noise filtering & formatting (`!med` in tasks.md).
+- Research multi-developer collaboration setup for Asa (`!high` in tasks.md).
 
 
