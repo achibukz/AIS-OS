@@ -22,6 +22,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 
+- [ ] Create proposed schedule for Term 1 (AY2627-T1) by checking offered subjects in Archers Hub #school !high
 - [ ] Go to a BPI branch and ask for an alternative on how to create a new BPI SaveUp account (avoiding traditional bank account) following the notice in work inbox #finances !high
 - [ ] Approach the DLSU school coordinator for the internship agreement signature #career !high
 - [ ] Install and evaluate CasaOS dashboard for browser-based monitoring and file management (`curl -fsSL https://get.casaos.io | sudo bash`) #infra #achios !high
