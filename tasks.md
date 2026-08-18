@@ -22,11 +22,13 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 
+- [ ] Complete & e-sign ING Onboarding Packet (Offer Letter, 2 Privacy Notices, Intern Info Sheet with 3 character references) + School ID to Vanscell Nierra by EOD #career !high @2026-08-20
 - [ ] Order DLSU Good Moral Certificate for ING onboarding via Google Form (https://docs.google.com/forms/d/e/1FAIpQLSdFmzf_8-UN141Umm117qhwiWXA4ZugN0gY3KwYwH-oyalLCg/viewform) #career #school !high @2026-08-19
+- [ ] Prepare follow-up ING requirements (Fit-to-Work Medical Cert, Scanned Birth Cert, BPI Account proof) #career !high
+- [ ] Have 5-month ING Internship Agreement Form signed by Aki, parent/guardian, and DLSU coordinator (notarization follows) #career !high
 - [ ] DLSU Term 1 (AY2627-T1) Enrollment via Archers Hub / Animo.sys — ID 123 2nd DL timeslot 11:30 AM - 12:30 PM #school !high @2026-08-25
 - [ ] Finalize proposed schedule for Term 1 (CCINOV8, STDISCM, THS-ST2, STELEC4, and GE: GERPHIS/GESTSOC/GELITPH) in [Google Sheets](https://docs.google.com/spreadsheets/d/1qqaTvcyz40JvyTDyT8MXiOEjPVh57PAL96jb_967BJ4) ahead of Aug 25 enrollment #school !high @2026-08-23
 - [ ] Go to a BPI branch and ask for an alternative on how to create a new BPI SaveUp account (avoiding traditional bank account) following the notice in work inbox #finances !high
-- [ ] Approach the DLSU school coordinator for the internship agreement signature #career !high
 - [ ] Build Autonomous Correction Harvester (`scripts/extract_corrections.py` to detect user corrections in `tgdb/` and auto-update `.agentrules` & `decisions/log.md`) #achios !med
 - [ ] Build achiOS Curator & Log Rotation daemon (user-level `logrotate` for `~/.local/state/achios/*.log` and state pruning timer) #achios !med
 - [ ] Implement Dynamic CLI Skill Synthesizer (auto-packaging complex workflows into documented Python CLI scripts with `--help` and `--dry-run`) #achios !med
