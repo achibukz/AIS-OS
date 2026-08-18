@@ -22,10 +22,16 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 
-- [ ] Complete & e-sign ING Onboarding Packet (Offer Letter, 2 Privacy Notices, Intern Info Sheet with 3 character references) + School ID to Vanscell Nierra by EOD #career !high @2026-08-20
+- [ ] E-sign ING Offer Letter #career !high @2026-08-20
+- [ ] E-sign ING Privacy Notice for Applicants #career !high @2026-08-20
+- [ ] E-sign ING Privacy Notice for Employees #career !high @2026-08-20
+- [ ] Fill out ING Intern Information Sheet (complete 3 faculty/mentor character references, leave gov IDs blank) #career !high @2026-08-20
+- [ ] Prepare copy of DLSU School ID (scanned/clear photo) for ING submission #career #school !high @2026-08-20
 - [ ] Order DLSU Good Moral Certificate for ING onboarding via Google Form (https://docs.google.com/forms/d/e/1FAIpQLSdFmzf_8-UN141Umm117qhwiWXA4ZugN0gY3KwYwH-oyalLCg/viewform) #career #school !high @2026-08-19
-- [ ] Prepare follow-up ING requirements (Fit-to-Work Medical Cert, Scanned Birth Cert, BPI Account proof) #career !high
-- [ ] Have 5-month ING Internship Agreement Form signed by Aki, parent/guardian, and DLSU coordinator (notarization follows) #career !high
+- [ ] Undergo Physical Exam and obtain "Fit to Work" Medical Certificate for ING #career !high
+- [ ] Prepare scanned copy of PSA Birth Certificate for ING #career !high
+- [ ] Open/fund BPI SaveUp or bank account and obtain proof reflecting account number for ING #finances #career !high
+- [ ] Complete 5-month ING Internship Agreement Form (signatures: Aki, Parent/Guardian, DLSU coordinator, then notarize) #career #school !high
 - [ ] DLSU Term 1 (AY2627-T1) Enrollment via Archers Hub / Animo.sys — ID 123 2nd DL timeslot 11:30 AM - 12:30 PM #school !high @2026-08-25
 - [ ] Finalize proposed schedule for Term 1 (CCINOV8, STDISCM, THS-ST2, STELEC4, and GE: GERPHIS/GESTSOC/GELITPH) in [Google Sheets](https://docs.google.com/spreadsheets/d/1qqaTvcyz40JvyTDyT8MXiOEjPVh57PAL96jb_967BJ4) ahead of Aug 25 enrollment #school !high @2026-08-23
 - [ ] Go to a BPI branch and ask for an alternative on how to create a new BPI SaveUp account (avoiding traditional bank account) following the notice in work inbox #finances !high
