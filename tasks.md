@@ -26,7 +26,6 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Create proposed schedule for Term 1 (AY2627-T1) by checking offered subjects in Archers Hub #school !high
 - [ ] Go to a BPI branch and ask for an alternative on how to create a new BPI SaveUp account (avoiding traditional bank account) following the notice in work inbox #finances !high
 - [ ] Approach the DLSU school coordinator for the internship agreement signature #career !high
-- [ ] Install and evaluate CasaOS dashboard for browser-based monitoring and file management (`curl -fsSL https://get.casaos.io | sudo bash`) #infra #achios !high
 - [ ] Build Autonomous Correction Harvester (`scripts/extract_corrections.py` to detect user corrections in `tgdb/` and auto-update `.agentrules` & `decisions/log.md`) #achios !med
 - [ ] Build achiOS Curator & Log Rotation daemon (user-level `logrotate` for `~/.local/state/achios/*.log` and state pruning timer) #achios !med
 - [ ] Implement Dynamic CLI Skill Synthesizer (auto-packaging complex workflows into documented Python CLI scripts with `--help` and `--dry-run`) #achios !med
@@ -53,6 +52,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Done
 
+- [x] Install and evaluate CasaOS dashboard for browser-based monitoring and file management — Configured with Filebrowser, Code-Server, and Tailscale remote access #infra #achios !high @2026-08-18
 - [x] Check GitHub CodeQL Analysis failure on career-ops main — Removed all GitHub Actions workflows from career-ops so no automated CI/CD runs or sends notifications #achios @2026-08-18
 - [x] Confirm which ING team Aki is joining — Role confirmed as Retail Tech (voluntarily accepted, Oct 2026 – Mar 2027) #career !high @2026-08-18
 - [x] Fix `career-ops/config/profile.yml` — Updated T1 start date to 2026-09-03 and committed to career-ops main #career !high @2026-08-18
