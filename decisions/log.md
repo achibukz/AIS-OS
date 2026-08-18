@@ -247,3 +247,292 @@ A named state dir is reachable only when `TELEGRAM_STATE_DIR` is set, and only t
 
 **Owner:** Aki.
 
+## 2026-08-17 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: All the tasks that i said we have to do. update the claude md for this also
+
+**Why:** Harvested from dialogue session `2026-08-17-achiosclaudebot-6197eed2.md`:
+> "U: for the active tasks. i want you to create a new md file in our AchiOS where we will take note all the tasks that i said we have to do. update the claude md for this also"
+
+**Domain:** `tasks`
+**Owner:** Aki.
+
+## 2026-08-17 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: To make this cron job to be only sonnet
+
+**Why:** Harvested from dialogue session `2026-08-17-achiosclaudebot-6197eed2.md`:
+> "You can fix the formatting first in the python script then you can give this output to the llm again and format it better and make it more human like. Take note to make this cron job to be only sonnet"
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-17 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: This connection and i want you to make a skill that if i want to make a cron and connect it to telegram. So for example i say i want this task or make a cron where you will chat about x or search something about x at 1pm. You will call this skill so that you know how to call telegram and how to create a cron in our server. Commit everything after.
+
+**Why:** Harvested from dialogue session `2026-08-17-achiosclaudebot-6197eed2.md`:
+> "U: i want you to take note of this connection and i want you to make a skill that if i want to make a cron and connect it to telegram. So for example i say i want this task or make a cron where you will chat about x or search something about x at 1pm. You will call this skill so that you know how to call telegram and how to create a cron in our server. Commit everything after."
+
+**Domain:** `voice`
+**Owner:** Aki.
+
+## 2026-08-17 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: For future commits
+
+**Why:** Harvested from dialogue session `2026-08-17-achiosclaudebot-6197eed2.md`:
+> "U: i give you the rights to push it so take note for future commits"
+
+**Domain:** `logging`
+**Owner:** Aki.
+
+## 2026-08-17 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: For future commits. this is for the achibuntu only so the server
+
+**Why:** Harvested from dialogue session `2026-08-17-achiosclaudebot-6197eed2.md`:
+> "U: i give you the rights to push it so take note for future commits. this is for the achibuntu only so the server"
+
+**Domain:** `logging`
+**Owner:** Aki.
+
+## 2026-08-17 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: When i ask you to add to my tasks you know where to put it and if there is a deadline or date that i suggested. add it to my gcal
+
+**Why:** Harvested from dialogue session `2026-08-17-achiosclaudebot-628b87f0.md`:
+> "can you add to my tasks: Maybe buy Codex on the same day of my subscription for claude so august 29. update my gcal and active tasks for that. and then i want you to take note when i ask you to add to my tasks you know where to put it and if there is a deadline or date that i suggested. add it to my gcal"
+
+**Domain:** `tasks`
+**Owner:** Aki.
+
+## 2026-08-17 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: This emails on our tasks ill look into it in another date
+
+**Why:** Harvested from dialogue session `2026-08-17-achiosclaudebot-917fd38f.md`:
+> "take note of this emails on our tasks ill look into it in another date"
+
+**Domain:** `voice`
+**Owner:** Aki.
+
+## 2026-08-17 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: A task or research i wanna do. i now have telegram chat bots for claude code, antigravity(gemini) and hermes(codex). lets research if we can make them
+
+**Why:** Harvested from dialogue session `2026-08-17-achiosclaudebot-917fd38f.md`:
+> "can you take note of a task or research i wanna do. i now have telegram chat bots for claude code, antigravity(gemini) and hermes(codex). lets research if we can make them"
+
+**Domain:** `tasks`
+**Owner:** Aki.
+
+## 2026-08-17 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: All the tmux commands that we can do now for both claude and agy.
+
+**Why:** Harvested from dialogue session `2026-08-17-achiosclaudebot-917fd38f.md`:
+> "can you take note of all the tmux commands that we can do now for both claude and agy."
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-17 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: This in our connections.md and commit and push everything after:
+
+**Why:** Harvested from dialogue session `2026-08-17-achiosclaudebot-917fd38f.md`:
+> "ok so take note of this in our connections.md and commit and push everything after:"
+
+**Domain:** `logging`
+**Owner:** Aki.
+
+## 2026-08-17 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: This connection that we can do telegram with claude code through channels
+
+**Why:** Harvested from dialogue session `2026-08-17-achiosclaudebot-ec36a38d.md`:
+> "ok take note of this connection that we can do telegram with claude code through channels"
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-17 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: SchoolMem bot is working already
+
+**Why:** Harvested from dialogue session `2026-08-17-achiosclaudebot-ec36a38d.md`:
+> "ok take note that schoolMem bot is working already"
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-17 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: The things we did and commit everything, update tasks
+
+**Why:** Harvested from dialogue session `2026-08-17-achiosclaudebot-ec36a38d.md`:
+> "take note of the things we did and commit everything, update tasks"
+
+**Domain:** `tasks`
+**Owner:** Aki.
+
+## 2026-08-17 — User Correction Harvested (preference)
+
+**Decision:** Formatting override: Change 'name of tmux' to 'achios rather than operator'
+
+**Why:** Harvested from dialogue session `2026-08-17-achiosclaudebot-ec36a38d.md`:
+> "change the name of tmux to achios rather than operator"
+
+**Domain:** `voice`
+**Owner:** Aki.
+
+## 2026-08-17 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: The tasks needed to improve for this telegram bot. so that i will look into it later. take note and commit everything and that is all
+
+**Why:** Harvested from dialogue session `2026-08-17-achiosclaudebot-ec36a38d.md`:
+> "change the name of tmux to achios rather than operator. then take note of the tasks needed to improve for this telegram bot. so that i will look into it later. take note and commit everything and that is all"
+
+**Domain:** `tasks`
+**Owner:** Aki.
+
+## 2026-08-18 — User Correction Harvested (preference)
+
+**Decision:** Formatting override: Change 'name of the cron' to 'just Email Debrief.'
+
+**Why:** Harvested from dialogue session `2026-08-18-achiagyosbot-1f76cc5e.md`:
+> "change the name of the cron to just Email Debrief."
+
+**Domain:** `voice`
+**Owner:** Aki.
+
+## 2026-08-18 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: Remove anything related to laguna since im manila campus.
+
+**Why:** Harvested from dialogue session `2026-08-18-achiagyosbot-1f76cc5e.md`:
+> "2. for dlsu, make sure to remove anything related to laguna since im manila campus."
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-18 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: What we discussed
+
+**Why:** Harvested from dialogue session `2026-08-18-achiagyosbot-1f76cc5e.md`:
+> "ok create the implementation plan. take note of what we discussed"
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-18 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: I have to order my good moral tomorrow so update my gcal and tasks. this is high prio
+
+**Why:** Harvested from dialogue session `2026-08-18-achiagyosbot-1f76cc5e.md`:
+> "take note i have to order my good moral tomorrow so update my gcal and tasks. this is high prio"
+
+**Domain:** `tasks`
+**Owner:** Aki.
+
+## 2026-08-18 — User Correction Harvested (preference)
+
+**Decision:** Formatting override: Change 'calendar' to 'ing not dlsu'
+
+**Why:** Harvested from dialogue session `2026-08-18-achiagyosbot-1f76cc5e.md`:
+> "change the calendar to ing not dlsu"
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-18 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: I have my enrollment on august 24 put it on dlsu calendar
+
+**Why:** Harvested from dialogue session `2026-08-18-achiagyosbot-1f76cc5e.md`:
+> "take note i have my enrollment on august 24 put it on dlsu calendar"
+
+**Domain:** `tasks`
+**Owner:** Aki.
+
+## 2026-08-18 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: For our GEs we have
+
+**Why:** Harvested from dialogue session `2026-08-18-achiagyosbot-1f76cc5e.md`:
+> "can you take note for our GEs we have"
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-18 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: All the things we did. like logs and commit everything
+
+**Why:** Harvested from dialogue session `2026-08-18-achiagyosbot-1f76cc5e.md`:
+> "ok take note of all the things we did. like logs and commit everything"
+
+**Domain:** `logging`
+**Owner:** Aki.
+
+## 2026-08-18 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: I have to get a med cert in an outside clinic. make it medium priority
+
+**Why:** Harvested from dialogue session `2026-08-18-achiagyosbot-c30583e7.md`:
+> "so take note that i have to get a med cert in an outside clinic. make it medium priority"
+
+**Domain:** `tasks`
+**Owner:** Aki.
+
+## 2026-08-18 — User Correction Harvested (preference)
+
+**Decision:** Formatting override: Change 'subject' to 'Abram Aki Bukuhan than Abram Bukuhan'
+
+**Why:** Harvested from dialogue session `2026-08-18-achiagyosbot-c30583e7.md`:
+> "change the subject to Abram Aki Bukuhan than Abram Bukuhan"
+
+**Domain:** `voice`
+**Owner:** Aki.
+
+## 2026-08-18 — User Correction Harvested (style)
+
+**Decision:** Voice register adjustment: can you make it less formal like this:
+
+**Why:** Harvested from dialogue session `2026-08-18-achiagyosbot-c30583e7.md`:
+> "can you make it less formal like this:"
+
+**Domain:** `voice`
+**Owner:** Aki.
+
+## 2026-08-18 — User Correction Harvested (style)
+
+**Decision:** Voice register adjustment: take note on how we changed the email to fit the formalities and make it more casual a lil bit
+
+**Why:** Harvested from dialogue session `2026-08-18-achiagyosbot-c30583e7.md`:
+> "take note on how we changed the email to fit the formalities and make it more casual a lil bit"
+
+**Domain:** `voice`
+**Owner:** Aki.
+
+## 2026-08-18 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: I did the schedule send. it will be sent to them at 8am tom
+
+**Why:** Harvested from dialogue session `2026-08-18-achiagyosbot-c30583e7.md`:
+> "ok take note i did the schedule send. it will be sent to them at 8am tom"
+
+**Domain:** `tasks`
+**Owner:** Aki.
+
+## 2026-08-18 — User Correction Harvested (preference)
+
+**Decision:** Formatting override: Change 'here either — the edit was a plain-text append' to '`tasks.md` (three new task lines), no code or behavior touched. Nothing to act on.'
+
+**Why:** Harvested from dialogue session `2026-08-18-achiosclaudebot-8cf74f52.md`:
+> "A: No test-relevant change here either — the edit was a plain-text append to `tasks.md` (three new task lines), no code or behavior touched. Nothing to act on."
+
+**Domain:** `general`
+**Owner:** Aki.

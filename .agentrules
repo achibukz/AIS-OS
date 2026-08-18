@@ -20,3 +20,33 @@ Whenever an active task carries a date or deadline:
 - **Do NOT edit `CLAUDE.md`**: `CLAUDE.md` is reserved exclusively for Claude Code.
 - Antigravity / `agy` reads and updates **`AGENTS.md`** and **`.agentrules`** only.
 
+## 5. Harvested User Preferences & Corrections
+- **2026-08-17 (tasks):** Operational directive: All the tasks that i said we have to do. update the claude md for this also
+- **2026-08-17 (general):** Operational directive: To make this cron job to be only sonnet
+- **2026-08-17 (voice):** Operational directive: This connection and i want you to make a skill that if i want to make a cron and connect it to telegram. So for example i say i want this task or make a cron where you will chat about x or search something about x at 1pm. You will call this skill so that you know how to call telegram and how to create a cron in our server. Commit everything after.
+- **2026-08-17 (logging):** Operational directive: For future commits
+- **2026-08-17 (logging):** Operational directive: For future commits. this is for the achibuntu only so the server
+- **2026-08-17 (tasks):** Operational directive: When i ask you to add to my tasks you know where to put it and if there is a deadline or date that i suggested. add it to my gcal
+- **2026-08-17 (voice):** Operational directive: This emails on our tasks ill look into it in another date
+- **2026-08-17 (tasks):** Operational directive: A task or research i wanna do. i now have telegram chat bots for claude code, antigravity(gemini) and hermes(codex). lets research if we can make them
+- **2026-08-17 (general):** Operational directive: All the tmux commands that we can do now for both claude and agy.
+- **2026-08-17 (logging):** Operational directive: This in our connections.md and commit and push everything after:
+- **2026-08-17 (general):** Operational directive: This connection that we can do telegram with claude code through channels
+- **2026-08-17 (general):** Operational directive: SchoolMem bot is working already
+- **2026-08-17 (tasks):** Operational directive: The things we did and commit everything, update tasks
+- **2026-08-17 (voice):** Formatting override: Change 'name of tmux' to 'achios rather than operator'
+- **2026-08-17 (tasks):** Operational directive: The tasks needed to improve for this telegram bot. so that i will look into it later. take note and commit everything and that is all
+- **2026-08-18 (voice):** Formatting override: Change 'name of the cron' to 'just Email Debrief.'
+- **2026-08-18 (general):** Operational directive: Remove anything related to laguna since im manila campus.
+- **2026-08-18 (general):** Operational directive: What we discussed
+- **2026-08-18 (tasks):** Operational directive: I have to order my good moral tomorrow so update my gcal and tasks. this is high prio
+- **2026-08-18 (general):** Formatting override: Change 'calendar' to 'ing not dlsu'
+- **2026-08-18 (tasks):** Operational directive: I have my enrollment on august 24 put it on dlsu calendar
+- **2026-08-18 (general):** Operational directive: For our GEs we have
+- **2026-08-18 (logging):** Operational directive: All the things we did. like logs and commit everything
+- **2026-08-18 (tasks):** Operational directive: I have to get a med cert in an outside clinic. make it medium priority
+- **2026-08-18 (voice):** Formatting override: Change 'subject' to 'Abram Aki Bukuhan than Abram Bukuhan'
+- **2026-08-18 (voice):** Voice register adjustment: can you make it less formal like this:
+- **2026-08-18 (voice):** Voice register adjustment: take note on how we changed the email to fit the formalities and make it more casual a lil bit
+- **2026-08-18 (tasks):** Operational directive: I did the schedule send. it will be sent to them at 8am tom
+- **2026-08-18 (general):** Formatting override: Change 'here either — the edit was a plain-text append' to '`tasks.md` (three new task lines), no code or behavior touched. Nothing to act on.'
