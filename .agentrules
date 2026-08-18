@@ -58,3 +58,6 @@ Whenever an active task carries a date or deadline:
 
 ## 5. Harvested User Preferences & Corrections
 - **2026-08-18 (general):** Operational directive: What happened to not make the same mistake
+- **2026-08-19 (general):** Operational directive: Our changes
+- **2026-08-19 (notifications):** Operational directive: All school and DLSU-related announcements and email debriefs must strictly route to `@achiSchooNounceBot` (credentials in `~/.config/achios/telegram_school.env`), keeping `@schoMemBot` purely for two-way interactive queries.
+- **2026-08-19 (notifications):** Operational directive: All finance and ETF market digests (VOO, VXUS, QQQM) must strictly route to `@achiETFBot` (credentials in `~/.config/achios/telegram_finance.env`).

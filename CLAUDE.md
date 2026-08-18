@@ -203,8 +203,14 @@ wrong rules — which chat he opens *is* the routing decision.
 
 | Bot | Unit / tmux | cwd | Writes |
 |---|---|---|---|
-| achiOS | `achios-bot`, `tmux -L achios` | this repo | **read + write**, no guard |
+| achiOS `@achiOSClaudeBot` | `achios-bot`, `tmux -L achios` | this repo | **read + write**, no guard |
 | schoolMem `@schoMemBot` | `achios-schoolmem-bot`, `tmux -L schoolmem` | the vault | everything **except `wiki/`** |
+
+### One-way Notification & Cron Bots
+Three dedicated one-way bots isolate scheduled briefings from pair-programming chats:
+- **`achinouncements` (`@achiOSBot`):** Credentials in `~/.config/achios/telegram.env`. Receives daily briefs (08:00), evening debriefs (00:00), Work/Career email debriefs, and system failure alerts.
+- **`achiSchooNounce` (`@achiSchooNounceBot`):** Credentials in `~/.config/achios/telegram_school.env`. Receives all DLSU school email debriefs and academic announcements. (Keeps `@schoMemBot` clean for two-way interactive queries).
+- **`achiFinance` (`@achiETFBot`):** Credentials in `~/.config/achios/telegram_finance.env`. Receives daily ETF market digests (VOO, VXUS, QQQM) at 04:30 and 08:00 Manila.
 
 Both run `scripts/telegram-bot.sh`, configured by `BOT_NAME` / `BOT_CWD` /
 `BOT_STATE_DIR` / `BOT_GUARD` / `BOT_MODEL` set in each unit. One script, because the two
