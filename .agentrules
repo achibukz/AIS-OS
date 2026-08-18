@@ -20,7 +20,12 @@ Whenever an active task carries a date or deadline:
 - **Do NOT edit `CLAUDE.md`**: `CLAUDE.md` is reserved exclusively for Claude Code.
 - Antigravity / `agy` reads and updates **`AGENTS.md`** and **`.agentrules`** only.
 
-## 5. Harvested User Preferences & Corrections
+## 5. Telegram Bot & Notification Routing Isolation
+- **System Notifications Route Strictly via `@achiOSBot`**: All scheduled digests, briefs, and alerts must use credentials loaded from `~/.config/achios/telegram.env` (`@achiOSBot`).
+- **Do Not Inherit Daemon Process Tokens**: Scripts (`telegram_notify.py`) must prioritize `~/.config/achios/telegram.env` values rather than relying on ambient `TELEGRAM_BOT_TOKEN` in the process environment, preventing tasks spawned inside `@achiAgyOSBot` or `@achiOSClaudeBot` from hijacking notification dispatches.
+
+## 6. Harvested User Preferences & Corrections
+
 - **2026-08-17 (tasks):** Operational directive: All the tasks that i said we have to do. update the claude md for this also
 - **2026-08-17 (general):** Operational directive: To make this cron job to be only sonnet
 - **2026-08-17 (voice):** Operational directive: This connection and i want you to make a skill that if i want to make a cron and connect it to telegram. So for example i say i want this task or make a cron where you will chat about x or search something about x at 1pm. You will call this skill so that you know how to call telegram and how to create a cron in our server. Commit everything after.

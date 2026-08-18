@@ -536,3 +536,16 @@ A named state dir is reachable only when `TELEGRAM_STATE_DIR` is set, and only t
 
 **Domain:** `general`
 **Owner:** Aki.
+
+---
+
+## 2026-08-18 — Telegram Notification Token Precedence & Routing Isolation
+
+**Decision:** `telegram_notify.load_config()` must strictly prioritize credentials defined in `~/.config/achios/telegram.env` (`@achiOSBot`) over ambient process environment variables (`os.environ["TELEGRAM_BOT_TOKEN"]`).
+
+**Why:** When scheduled scripts (e.g. `evening_debrief.py`, `voo_digest.py`) or manual tests are executed interactively by an AI agent running inside a pair-programming bot daemon (such as `achiAgy` on `@achiAgyOSBot` or Claude on `@achiOSClaudeBot`), the parent daemon exports its own `TELEGRAM_BOT_TOKEN` into the subshell environment. If environment variables take precedence, system briefings and failure alerts get hijacked and delivered into the active pair-programming chat rather than to the dedicated `@achiOSBot` (`achinoucements`) chat. Prioritizing `telegram.env` enforces strict routing isolation.
+
+**Alternatives considered:** Unsetting `TELEGRAM_BOT_TOKEN` in every subshell before running scripts (fragile and easily forgotten in new scripts; fixing it at the common `telegram_notify.py` entrypoint protects all callers permanently).
+
+**Owner:** Aki.
+
