@@ -188,12 +188,22 @@ It is meant to read loose on a phone, not dense.
 ### Vault Inbox & tgdb Sync
 
 `scripts/vault_inbox_sync.py` automatically sweeps, commits, and pushes new mobile captures from `schoolMem/inbox/`, `achiMem/inbox/`, and sanitized session notes from `achiMem/tgdb/` to GitHub:
-- Universal Coverage: Archives conversations across `@achiOSClaudeBot`, `@schoMemBot`, `@achiAgyBot`, and `@schoMemAGYBot`
+- Universal Coverage: Archives conversations across `@achiOSClaudeBot`, `@schoMemBot`, `@achiAgyOSBot`, and `@schoMemAGYBot`
 - Safety: Regex secret sanitization (`sk-ant-*`, `AIzaSy*`, `bot<token>`), scoped strictly to watched directories (`inbox`, `tgdb`), with autostash rebase conflict protection
 - Schedule: `systemd/achios-vault-sync.timer` (runs every 15 minutes `*:00,15,30,45 Asia/Manila` with `Persistent=true`)
 - Log: `~/.local/state/achios/vault_sync.log`
 - Preview: `python scripts/vault_inbox_sync.py --dry-run`
 - Run now: `systemctl --user start achios-vault-sync.service`
+
+### Autonomous Correction Harvester
+
+`scripts/extract_corrections.py` detects explicit user corrections, directives, banned words, and style preferences across Telegram dialogue transcripts in `achiMem/tgdb/`:
+- Heuristics: Identifies directive triggers (`take note`, `make sure`, `never use`, `don't say`, `change X to Y`, `less formal`)
+- Deduplication: Compares candidate rules against `.agentrules`, `references/voice.md`, and `decisions/log.md` before applying
+- Output: Appends formal architectural records to `decisions/log.md` and active operational rules to `.agentrules`
+- Preview: `python scripts/extract_corrections.py --dry-run`
+- Run: `python scripts/extract_corrections.py`
+
 
 
 
