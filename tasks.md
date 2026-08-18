@@ -40,7 +40,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Put a battery back in achibuntu — the BAT0 slot is empty (`ACPI: battery: Slot [BAT0] (battery absent)`), so any mains blip is an instant power-off. Firmware supports one, and its Insyde BIOS has no AC-recovery setting, so a battery is the only fix. A UPS is the fallback #infra !low
 - [ ] Mount the 1 TB HDD at `/srv` and set up restic or borg backups for both vaults #achios !low
 - [ ] Research whether the three Telegram bots (achiOS/Claude Code, Antigravity/Gemini, Hermes/Codex) can be made to discuss with each other and produce a combined decision or discussion output #achios !low
-- [ ] Maybe buy Codex — align its billing to the Claude subscription renewal so both land on the 29th #achios !low @2026-08-29
+- [ ] Maybe buy Codex — align its billing to the Claude subscription renewal once ING internship / thesis workload ramps up #achios !low @2026-10-29
 - [ ] Run `ADD TERM` for `AY2627-T1` in schoolMem once enlistment lands #school !low @2026-09-03
 - [ ] Fix stale skill descriptions — `thesis-script-writer` and `thesis-humanizer` reference C3-LMM and MicroTok-PH, which match neither vault #achios !low
 - [ ] Rotate the bot logs — `~/.local/state/achios/{achios,schoolmem}_bot.log` are append-only with no rotation and grow for as long as the bots run #achios !low
