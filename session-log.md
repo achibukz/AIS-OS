@@ -127,10 +127,25 @@ Rejected:
 - Standard cron for ETF digest — ignores `CRON_TZ` and lacks `Persistent=true` recovery.
 - Subprocess LLM CLI wrappers for daily brief — slow (10-30s), flaky on timeouts, and unnecessary when deterministic Python formatting provides cleaner structure.
 - Blind `git add -A` across vaults — risked staging `.pyc` or untracked scratch files outside `inbox/`.
-- Unsanitized journal logs in alerts — risked leaking bot tokens to Telegram.
+## 2026-08-18 20:10 [saved]
+Goal: Set up CasaOS dashboard tools, build Google Sheets DLSU Schedule Planner, and schedule ID 123 2nd DL enrollment appointment.
+
+Decisions:
+- CasaOS Dashboard active on `achibuntu` (Tailscale `100.106.210.38` & LAN `172.20.10.4`); Code-Server mapped to port `8085` and Filebrowser on `8082`.
+- Solved VS Code Webview ServiceWorker blocking on HTTP via Chrome flag `chrome://flags/#unsafely-treat-insecure-origin-as-secure` with `cert: false` in `config.yaml`.
+- Created live DLSU Term 1 Schedule Planner in Google Sheets (`1qqaTvcyz40JvyTDyT8MXiOEjPVh57PAL96jb_967BJ4`) using Google Sheets v4 API with 15-minute timetable grids (7:30 AM – 6:00 PM), merged class blocks, and color-coded rooms/professors.
+- Parsed all Archers Hub offerings: Core (`CCINOV8`, `STDISCM`, `THS-ST2`), Priority Electives (`STSP002`, `DATA100`, `DATA103`, `SOLLDV2`), GE (`GELITPH`, `GERPHIS`, `GESTSOC`), and Reference Electives.
+- Modeled Golden 14-Unit Load (Option A): 100% Online Tuesday + Single Friday On-Campus block (9:15 AM – 4:00 PM), preserving Mon/Wed/Thu/Sat (4 full free workdays) for ING Retail Tech internship.
+- Added exact ID 123 2nd DL Enrollment appointment to `DLSU` Google Calendar for Tuesday, August 25, 2026 at 11:30 AM – 12:30 PM (Asia/Manila).
+- Rescheduled Codex evaluation to October 29, 2026 (`!low` on `Personal` Google Calendar).
+
+Rejected:
+- Native Obsidian streaming for daily deep work — browser video streaming has ~20-40ms lag compared to native Mac app with local Git sync.
+- Self-signed IP HTTPS certificates for Code-Server — browser blocks ServiceWorkers on self-signed IP certs; Chrome insecure origin flag is cleaner and 100% reliable.
+- Monday/Thursday electives (`HCI2000`) — introduces extra campus travel days that conflict with full-day ING internship hours.
 
 Open:
-- Automated `logrotate` for `~/.local/state/achios/*.log`.
+- Finalize elective selection (`STSP002` vs `DATA103` vs `DATA100` vs `SOLLDV2`) and GE section on Sunday Aug 23 ahead of Tuesday Aug 25 enlistment.
 
 
 
