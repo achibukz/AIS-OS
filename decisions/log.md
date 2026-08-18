@@ -567,3 +567,22 @@ A named state dir is reachable only when `TELEGRAM_STATE_DIR` is set, and only t
 
 **Domain:** `infra`
 **Owner:** Aki.
+
+## 2026-08-19 — School Announcements Bot (@achiSchoNounceBot) Separation
+
+**Decision:** Configured `scripts/email_digest.py` to route DLSU school email debriefs to `@achiSchoNounceBot` using credentials from `~/.config/achios/telegram_school.env`, preserving `@schoMemBot` purely for two-way interactive schoolMem querying.
+
+**Why:** Separating school announcements into a dedicated one-way bot keeps `@schoMemBot`'s interactive session clean and isolates academic notifications from personal/work briefings.
+
+**Domain:** `school`
+**Owner:** Aki.
+
+## 2026-08-19 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: Our changes
+
+**Why:** Harvested from dialogue session `2026-08-19-achiagyosbot-1d047ee7.md`:
+> "ok it worked properly. take note of our changes"
+
+**Domain:** `general`
+**Owner:** Aki.

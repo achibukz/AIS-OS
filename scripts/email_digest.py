@@ -37,11 +37,13 @@ ACCOUNT_CONFIGS = [
         "id": "dlsu",
         "title": "🎓 DLSU School Email",
         "tokens": [CONFIG_DIR / "google_token_dlsu.json"],
+        "env_file": CONFIG_DIR / "telegram_school.env",
     },
     {
         "id": "work",
         "title": "💼 Work / Career Email",
         "tokens": [CONFIG_DIR / "google_token_work.json"],
+        "env_file": None,
     },
 ]
 
@@ -234,20 +236,24 @@ def main() -> int:
 
         items, noise_count = fetch_account_emails(existing_tokens)
         msg = build_account_message(acc["title"], items, noise_count)
-        messages_to_send.append((acc["title"], msg))
+        messages_to_send.append((acc["title"], msg, acc.get("env_file")))
 
     if args.dry_run:
-        print("=== DRY RUN (3 Separate Messages) ===\n")
-        for title, msg in messages_to_send:
-            print(f"--- [MESSAGE FOR {title}] ---")
+        print("=== DRY RUN (Separate Messages) ===\n")
+        for title, msg, env_file in messages_to_send:
+            dest = f" -> {env_file.name}" if env_file and env_file.exists() else " -> default telegram.env"
+            print(f"--- [MESSAGE FOR {title}{dest}] ---")
             print(msg)
             print("\n" + "="*40 + "\n")
         return 0
 
     print(f"[{dt.datetime.now().isoformat()}] Sending {len(messages_to_send)} email debrief messages to Telegram...")
     total_sent = 0
-    for title, msg in messages_to_send:
-        sent_count = send(msg)
+    for title, msg, env_file in messages_to_send:
+        env_target = env_file if env_file and env_file.exists() else None
+        if env_target:
+            print(f"Using dedicated credentials from {env_target} for {title}...")
+        sent_count = send(msg, env_path=env_target)
         total_sent += sent_count
         time.sleep(0.5)  # Slight pause between messages for clean delivery
 
