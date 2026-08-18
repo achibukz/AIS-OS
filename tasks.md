@@ -25,6 +25,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] E-sign ING Offer Letter #career !high @2026-08-20
 - [ ] E-sign ING Privacy Notice for Applicants #career !high @2026-08-20
 - [ ] E-sign ING Privacy Notice for Employees #career !high @2026-08-20
+- [ ] Monitor replies from character references (Doc Jordan Deja, Doc Briane Samson, Sir Aris Pulumbarit; scheduled send 8:00 AM) #career #school !high @2026-08-19
 - [ ] Fill out ING Intern Information Sheet (complete 3 faculty/mentor character references, leave gov IDs blank) #career !high @2026-08-20
 - [ ] Prepare copy of DLSU School ID (scanned/clear photo) for ING submission #career #school !high @2026-08-20
 - [ ] Order DLSU Good Moral Certificate for ING onboarding via Google Form (https://docs.google.com/forms/d/e/1FAIpQLSdFmzf_8-UN141Umm117qhwiWXA4ZugN0gY3KwYwH-oyalLCg/viewform) #career #school !high @2026-08-19
