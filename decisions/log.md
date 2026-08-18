@@ -549,3 +549,12 @@ A named state dir is reachable only when `TELEGRAM_STATE_DIR` is set, and only t
 
 **Owner:** Aki.
 
+## 2026-08-18 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: What happened to not make the same mistake
+
+**Why:** Harvested from dialogue session `2026-08-18-achiagyosbot-c30583e7.md`:
+> "ok it worked properly now. take note of what happened to not make the same mistake"
+
+**Domain:** `general`
+**Owner:** Aki.
