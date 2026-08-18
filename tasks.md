@@ -24,7 +24,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 - [ ] Order DLSU Good Moral Certificate for ING onboarding via Google Form (https://docs.google.com/forms/d/e/1FAIpQLSdFmzf_8-UN141Umm117qhwiWXA4ZugN0gY3KwYwH-oyalLCg/viewform) #career #school !high @2026-08-19
 - [ ] DLSU Term 1 (AY2627-T1) Enrollment via Archers Hub / Animo.sys #school !high @2026-08-24
-- [ ] Create proposed schedule for Term 1 (AY2627-T1) by checking offered subjects in Archers Hub to prepare for Aug 24 enrollment #school !high @2026-08-23
+- [ ] Finalize proposed schedule for Term 1 (CCINOV8, STDISCM, THS-ST2, STELEC4, and GE: GERPHIS/GESTSOC/GELITPH) in [Google Sheets](https://docs.google.com/spreadsheets/d/1qqaTvcyz40JvyTDyT8MXiOEjPVh57PAL96jb_967BJ4) ahead of Aug 24 enrollment #school !high @2026-08-23
 - [ ] Go to a BPI branch and ask for an alternative on how to create a new BPI SaveUp account (avoiding traditional bank account) following the notice in work inbox #finances !high
 - [ ] Approach the DLSU school coordinator for the internship agreement signature #career !high
 - [ ] Build Autonomous Correction Harvester (`scripts/extract_corrections.py` to detect user corrections in `tgdb/` and auto-update `.agentrules` & `decisions/log.md`) #achios !med
