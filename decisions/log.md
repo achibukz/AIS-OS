@@ -615,3 +615,24 @@ A named state dir is reachable only when `TELEGRAM_STATE_DIR` is set, and only t
 
 **Domain:** `infra`
 **Owner:** Aki.
+
+## 2026-08-19 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: The mistakes you did. so that you wont repeat it again
+
+**Why:** Harvested from dialogue session `2026-08-19-achiagyosbot-1d047ee7.md`:
+> "oki thank you now its all fixed. take note of the mistakes you did. so that you wont repeat it again"
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-19 — ETF Schedule Optimization (8am/10pm Daily + Sunday 6pm Weekly Recap)
+
+**Decision:** Re-tuned ETF market timing:
+1. `voo_digest.py` (`achios-voo-digest.timer`): Fires at **08:00 AM Manila** (Morning Market Close Summary) and **10:00 PM Manila** (Evening Market Opening Pulse, 30m after US market open).
+2. `etf_weekly_digest.py` (`achios-etf-weekly-digest.timer`): Dedicated weekly performance recap firing every **Sunday at 18:00 Manila (6:00 PM)**, calculating 5-day net price movements ($ and %), weekly high/low trading ranges, 1-year returns, and overall market trend indicator.
+
+**Why:** Replaced redundant 4:30 AM/8:00 AM duplicate pings with actionable trading cycle milestones (Morning review + Evening open pulse), and provided a specialized high-level portfolio wrap-up during Sunday evening planning.
+
+**Domain:** `finances`
+**Owner:** Aki.

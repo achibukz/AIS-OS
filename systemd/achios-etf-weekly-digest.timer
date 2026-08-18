@@ -1,0 +1,10 @@
+[Unit]
+Description=achiOS Weekly ETF Performance Recap (VOO, VXUS, QQQM) every Sunday at 18:00 Manila
+
+[Timer]
+OnCalendar=Sun *-*-* 18:00:00 Asia/Manila
+Persistent=true
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

@@ -1,9 +1,9 @@
 [Unit]
-Description=achiOS ETF market digest (VOO, VXUS, QQQM) at 04:30 and 08:00 Manila
+Description=achiOS ETF market digest (VOO, VXUS, QQQM) at 08:00 and 22:00 Manila
 
 [Timer]
-OnCalendar=04:30 Asia/Manila
 OnCalendar=08:00 Asia/Manila
+OnCalendar=22:00 Asia/Manila
 Persistent=true
 AccuracySec=1min
 
