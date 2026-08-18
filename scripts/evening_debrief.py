@@ -222,7 +222,7 @@ def get_corrections_today(concluding_date: dt.date) -> list[str]:
     return corrections[:4]
 
 
-def build_evening_debrief(concluding_date: dt.date) -> str:
+def build_evening_debrief(concluding_date: dt.date) -> tuple[str, str | None]:
     tomorrow = concluding_date + dt.timedelta(days=1)
     date_label = concluding_date.strftime("%b %d, %Y")
     tomorrow_label = tomorrow.strftime("%A, %b %d")
@@ -232,6 +232,7 @@ def build_evening_debrief(concluding_date: dt.date) -> str:
     failures = check_failures_today()
     corrections_today = get_corrections_today(concluding_date)
 
+    # 1. Main Debrief Message
     lines = [
         "---------------------------------",
         "🌙 Evening Debrief",
@@ -239,7 +240,7 @@ def build_evening_debrief(concluding_date: dt.date) -> str:
         "",
     ]
 
-    # 1. Accomplishments / What happened
+    # Accomplishments / What happened
     if done_today:
         lines.append("✅ COMPLETED TODAY:")
         for item in done_today[:5]:
@@ -249,14 +250,7 @@ def build_evening_debrief(concluding_date: dt.date) -> str:
         lines.append("🍃 Quiet day. No major status changes recorded today.")
         lines.append("")
 
-    # 2. Self-Learning & Rules Harvested
-    if corrections_today:
-        lines.append("🧠 SELF-LEARNED & RULES HARVESTED:")
-        for c in corrections_today:
-            lines.append(f"• {c}")
-        lines.append("")
-
-    # 3. Failures & Fixes
+    # Failures & Fixes
     if failures:
         lines.append("⚠️ INCIDENTS & FIXES:")
         for f in failures:
@@ -266,10 +260,9 @@ def build_evening_debrief(concluding_date: dt.date) -> str:
         lines.append("🟢 Systems: All services and background timers operational.")
         lines.append("")
 
-    # 4. Tomorrow's Focus
+    # Tomorrow's Focus
     lines.append(f"🎯 TOMORROW'S FOCUS ({tomorrow_label}):")
 
-    
     focus_items = []
     if due_tomorrow:
         for t in due_tomorrow:
@@ -288,8 +281,23 @@ def build_evening_debrief(concluding_date: dt.date) -> str:
     lines.extend(focus_items[:6])
     lines.append("")
     lines.append("Rest well! 🌙")
+    main_message = "\n".join(lines).strip()
 
-    return "\n".join(lines).strip()
+    # 2. Self-Learning & Rules Harvested (Separate Second Message)
+    rules_message = None
+    if corrections_today:
+        r_lines = [
+            "---------------------------------",
+            "🧠 Self-Learning & Harvested Rules",
+            f"🗓 Concluded: {date_label}",
+            "",
+            "Rules & directives distilled into .agentrules today:",
+        ]
+        for c in corrections_today:
+            r_lines.append(f"• {c}")
+        rules_message = "\n".join(r_lines).strip()
+
+    return main_message, rules_message
 
 
 def main() -> int:
@@ -305,18 +313,27 @@ def main() -> int:
     # If running around midnight (e.g. 00:00 to 02:00), the concluding day is yesterday
     concluding_date = (now - dt.timedelta(hours=2)).date() if now.hour < 3 else now.date()
 
-    debrief = build_evening_debrief(concluding_date)
+    main_msg, rules_msg = build_evening_debrief(concluding_date)
 
     if args.dry_run:
-        print("=== DRY RUN (Not sending) ===")
-        print(debrief)
+        print("=== DRY RUN: Message 1 (Main Debrief) ===")
+        print(main_msg)
+        if rules_msg:
+            print("\n=== DRY RUN: Message 2 (Self-Learning & Harvested Rules) ===")
+            print(rules_msg)
         return 0
 
     print(f"[{dt.datetime.now().isoformat()}] Sending evening debrief to Telegram...")
-    count = send(debrief)
+    count = send(main_msg)
+    if rules_msg:
+        import time
+        time.sleep(1)  # small pause so messages arrive in sequence
+        count += send(rules_msg)
+
     print(f"Successfully sent {count} message(s) to Telegram.")
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
