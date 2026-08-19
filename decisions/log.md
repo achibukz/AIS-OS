@@ -697,3 +697,14 @@ A named state dir is reachable only when `TELEGRAM_STATE_DIR` is set, and only t
 
 **Owner:** Aki.
 
+## 2026-08-19 — User Correction Harvested (preference)
+
+**Decision:** Operational directive: Email Debrief must strictly query unread emails (`is:unread`); never include emails that have already been opened/read by Aki, even if sent by VIPs or recruiters like Vanscell/ING.
+
+**Why:** Harvested from direct instruction:
+> "for vanscell dont do that if it was read by me already dont put in the announcement."
+
+**Domain:** `notifications`
+**Owner:** Aki.
+
+

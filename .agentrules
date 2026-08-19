@@ -69,4 +69,6 @@ Whenever an active task carries a date or deadline:
 - **2026-08-19 (general):** Operational directive: Everything that we did
 - **2026-08-19 (general):** Operational directive: Bug for achiagy and learn for now that you cannot do that so that it wont happen again
 - **2026-08-19 (tasks):** Operational directive: The bug in achiagy so write a md file document so that we can fix it sometime and put it on our tasks and put it in low priority
-- **2026-08-19 (logging):** Operational directive: This and commit everything. learn from the mistakes that we did and update what needs to be updated
+- [x] Improve email digest filtering, classification rules, and message formatting (`scripts/email_digest.py`) — Implemented hybrid noise filtering + LLM synthesis cards with DLSU faculty/suspension and ING context #achios !med @2026-08-19
+- **2026-08-19 (general):** Formatting override: Change 'task' to 'also wait for austin's reply'
+- **2026-08-19 (notifications/email):** Operational directive: Email Debrief must strictly surface unread emails only (`is:unread`); never include emails that have already been opened/read by Aki, even if sent by VIPs or recruiters like Vanscell/ING.
