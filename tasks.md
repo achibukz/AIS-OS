@@ -26,7 +26,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] E-sign ING Offer Letter #career !high @2026-08-20
 - [ ] E-sign ING Privacy Notice for Applicants #career !high @2026-08-20
 - [ ] E-sign ING Privacy Notice for Employees #career !high @2026-08-20
-- [ ] Monitor replies from character references (Doc Briane Samson ✅, Sir Aris Pulumbarit ✅, awaiting Doc Jordan Deja) #career #school !high @2026-08-19
+- [ ] Monitor replies from character references (Doc Briane Samson ✅, Sir Aris Pulumbarit ✅, awaiting Doc Jordan Deja / Sir Ryan Austin Fernandez) #career #school !high @2026-08-19
 - [ ] Fill out ING Intern Information Sheet (complete 3 faculty/mentor character references, leave gov IDs blank) #career !high @2026-08-20
 - [ ] Prepare copy of DLSU School ID (scanned/clear photo) for ING submission #career #school !high @2026-08-20
 - [ ] Follow up / Pick up DLSU Good Moral Certificate (CGMC) once release notification arrives (8-10 working days, event set on DLSU Calendar) #career #school !high @2026-09-02
