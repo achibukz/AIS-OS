@@ -169,6 +169,16 @@ Decisions:
 - Standardized `/tasks` output format across Antigravity and achiOS agents: 4-tier structured layout (Immediate Deadlines, DLSU Academics, Career/Finances, Systems & Engineering) with markdown checkboxes and file links.
 - Updated `AGENTS.md`, `.agentrules`, and `decisions/log.md`.
 
+## 2026-08-19 22:05 [saved]
+Goal: Schedule Google One subscription cancellation and Google AI Pro Student discount purchase.
+
+Decisions:
+- Created Google Calendar events on `Personal` calendar:
+  - 2026-10-13: Cancel current Google One subscription
+  - 2026-10-14: Subscribe to Google AI Pro Student Discount (₱275/mo via SheerID)
+- Added low-priority tasks to `tasks.md` with dates @2026-10-13 and @2026-10-14.
+
+
 
 
 

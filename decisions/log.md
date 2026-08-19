@@ -791,3 +791,13 @@ Format with interactive checkboxes (`- [ ] **Title:** details`) and links to `ta
 **Domain:** `tasks`
 **Owner:** Aki.
 
+## 2026-08-19 — Google One Student Plan Transition Plan (₱275/mo)
+
+**Decision:** Schedule cancellation of current Google One subscription on 2026-10-13 and transition to Google AI Pro Student Plan (₱275/mo, 75% off for up to 4 years via DLSU SheerID verification) on 2026-10-14 when current plan cycle concludes. Added all-day events to `Personal` calendar.
+
+**Why:** Maximizes current paid period while locking in the ₱275/mo student discount before the 2026-12-31 campaign cut-off.
+
+**Domain:** `finances`
+**Owner:** Aki.
+
+
