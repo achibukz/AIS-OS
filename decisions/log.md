@@ -707,4 +707,12 @@ A named state dir is reachable only when `TELEGRAM_STATE_DIR` is set, and only t
 **Domain:** `notifications`
 **Owner:** Aki.
 
+## 2026-08-19 — User Correction Harvested (directive)
 
+**Decision:** Operational directive: How i reply on this
+
+**Why:** Harvested from dialogue session `2026-08-19-achiagyosbot-c2222b73.md`:
+> "ight take note on how i reply on this"
+
+**Domain:** `general`
+**Owner:** Aki.
