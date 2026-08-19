@@ -28,7 +28,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Monitor replies from character references (Doc Briane Samson ✅, Sir Aris Pulumbarit ✅, awaiting Doc Jordan Deja) #career #school !high @2026-08-19
 - [ ] Fill out ING Intern Information Sheet (complete 3 faculty/mentor character references, leave gov IDs blank) #career !high @2026-08-20
 - [ ] Prepare copy of DLSU School ID (scanned/clear photo) for ING submission #career #school !high @2026-08-20
-- [ ] Order DLSU Good Moral Certificate for ING onboarding via Google Form (https://docs.google.com/forms/d/e/1FAIpQLSdFmzf_8-UN141Umm117qhwiWXA4ZugN0gY3KwYwH-oyalLCg/viewform) #career #school !high @2026-08-19
+- [ ] Follow up / Pick up DLSU Good Moral Certificate (CGMC) once release notification arrives (8-10 working days, event set on DLSU Calendar) #career #school !high @2026-09-02
 - [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
 - [ ] Prepare scanned copy of PSA Birth Certificate for ING #career !high
 - [ ] Open/fund BPI SaveUp or bank account and obtain proof reflecting account number for ING #finances #career !high
@@ -63,6 +63,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Done
 
+- [x] Order DLSU Good Moral Certificate for ING onboarding via Google Form #career #school !high @2026-08-19
 - [x] Build Autonomous Correction Harvester (`scripts/extract_corrections.py` to detect user corrections in `tgdb/` and auto-update `.agentrules` & `decisions/log.md`) #achios !med @2026-08-18
 - [x] Install and evaluate CasaOS dashboard for browser-based monitoring and file management — Configured with Filebrowser, Code-Server, and Tailscale remote access #infra #achios !high @2026-08-18
 
