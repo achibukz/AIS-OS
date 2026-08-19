@@ -140,6 +140,32 @@ class TestCategorization:
         )
         assert item == "priority"
 
+    def test_categorizes_vanscell_ing_email_as_priority(self):
+        item = ed.categorize_email(
+            from_hdr='"Nierra, Vanscell" <vanscell.nierra@ing.com>',
+            subject="Internship Offer Letter Access Details",
+            snippet="Please see attached instructions for your ING offer letter access.",
+            account_type="work",
+        )
+        assert item == "priority"
+
+    def test_github_pr_not_noise_despite_unsubscribe_footer(self):
+        assert ed.is_noise(
+            from_hdr="Anthony Andrei Tan <notifications@github.com>",
+            subject="Re: [achibukz/opus-subagents] Add an install path for a new collaborator (PR #1)",
+            snippet="@anthonyandrei requested your review on: achibukz/opus-subagents#1. — Reply to this email directly, view it on GitHub, or unsubscribe.",
+            account_type="work",
+        ) is False
+
+    def test_categorizes_github_pr_review_as_priority(self):
+        item = ed.categorize_email(
+            from_hdr="Anthony Andrei Tan <notifications@github.com>",
+            subject="Re: [achibukz/opus-subagents] Add an install path for a new collaborator (PR #1)",
+            snippet="@anthonyandrei requested your review on: achibukz/opus-subagents#1.",
+            account_type="work",
+        )
+        assert item == "priority"
+
     def test_categorizes_security_alerts_as_priority(self):
         item = ed.categorize_email(
             from_hdr="Tonik Bank Security <security@tonikbank.com>",

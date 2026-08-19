@@ -170,6 +170,14 @@ def is_noise(from_hdr: str, subject: str, snippet: str, account_type: str = "gen
     """Detect if an email is marketing noise, automated job blast, or routine unneeded HDA."""
     combined = f"{from_hdr} {subject} {snippet}".lower()
 
+    # 0. Whitelist active GitHub developer notifications (PRs, reviews, collaborator invites, mentions)
+    is_github_dev = "github" in combined and any(k in combined for k in [
+        "pull request", "pr #", "requested your review", "review requested", "collaborator",
+        "issue #", "assigned", "mentioned in", "commented on", "[achibukz/",
+    ])
+    if is_github_dev:
+        return False
+
     # 1. Check general noise patterns
     for pat in GENERAL_IGNORE_PATTERNS:
         if re.search(pat, combined):
@@ -230,8 +238,8 @@ def categorize_email(from_hdr: str, subject: str, snippet: str, account_type: st
 
     # --- WORK / CAREER ACCOUNT ---
     if account_type == "work":
-        # 1. High Priority & VIP: ING Hubs Philippines, recruiters, interview invites, critical security
-        is_ing = any(k in combined for k in ["ing hubs", "ing hub", "retail tech", "ing bank", "@ing.com"])
+        # 1. High Priority & VIP: ING Hubs Philippines, recruiters, interview invites, critical security, GitHub collaborator PR reviews
+        is_ing = any(k in combined for k in ["ing hubs", "ing hub", "retail tech", "ing bank", "@ing.com", "vanscell", "nierra"])
         is_recruiter = any(k in combined for k in [
             "interview", "offer", "assessment", "application status", "recruiter", "invitation to interview",
             "next steps", "technical test", "take-home", "hiring manager",
@@ -240,11 +248,14 @@ def categorize_email(from_hdr: str, subject: str, snippet: str, account_type: st
             "security alert", "unauthorized", "password reset", "verification code", "failed login",
             "action required", "breach", "critical alert", "security update is live",
         ])
+        is_github_collab_action = "github" in combined and any(k in combined for k in [
+            "requested your review", "review requested", "collaborator", "pull request", "pr #", "assigned",
+        ])
 
-        if is_ing or is_recruiter or is_critical_security:
+        if is_ing or is_recruiter or is_critical_security or is_github_collab_action:
             return "priority"
 
-        # 2. Work & Recruiting: Direct human messages & networking
+        # 2. Work & Recruiting: Direct human messages & general GitHub/LinkedIn activity
         if "linkedin" in from_hdr.lower() or "application" in combined or "github" in combined:
             return "work_recruiting"
 
