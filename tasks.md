@@ -22,6 +22,8 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 
+- [ ] Run deep research, market analysis, and statistic gathering on GCash ImaGnation pitch with Claude Opus #hackathon #research #achigcash !high @2026-08-20
+- [ ] Ingest and synthesize GCash ImaGnation team meeting transcripts (`Transcripts/GCASH MEETING.md` & `notes.md`) with Claude Opus into achiGcash #hackathon #achigcash !high @2026-08-20
 - [ ] Draft business case & submit video pitch for GCash ImaGnation Innovation Challenge #hackathon #projects !high @2026-08-24
 - [ ] Run full system architecture audit with Claude Opus on everything built/modified across achiOS, achiAgy, TGDB, crons, auto-learning, and notifications using docs/2026-08-20-system-architecture-audit.md #audit #achios #achiagy !high @2026-08-20
 - [ ] E-sign ING Offer Letter #career !high @2026-08-20
