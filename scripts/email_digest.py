@@ -156,6 +156,13 @@ def sanitize_text(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def clean_title(text: str) -> str:
+    """Clean redundant course brackets like [1253_PEDFOUR_Z10] from titles."""
+    text = sanitize_text(text)
+    text = re.sub(r"\[(MERGED_)?\d+_[\w-]+\]\s*(- )?", "", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
 def clean_sender(raw: str) -> str:
     """Extract clean display name or email from 'Name <email>' format."""
     raw = sanitize_text(raw)
@@ -323,11 +330,12 @@ def fetch_account_emails(token_paths: list[Path], account_type: str = "general")
                     continue
 
                 category = categorize_email(from_hdr, subject, snippet, account_type=account_type)
-                sender = clean_sender(from_hdr)
+                sender = clean_title(clean_sender(from_hdr))
+                clean_subj = clean_title(subject)
                 actionable.append(
                     EmailItem(
                         sender=sender,
-                        subject=subject,
+                        subject=clean_subj,
                         snippet=snippet[:250].strip(),
                         category=category,
                         date_str=date_hdr,
@@ -382,10 +390,11 @@ For each item, format strictly as:
 
 Rules:
 1. Indent the summary line exactly 6 spaces under each bullet.
-2. Filter out any remaining pure spam, marketing, or routine noise that slipped through.
-3. If an email is routine or low priority (like ITEO evaluation or Canvas announcement), place it under {sec2_header} or 📬 UPDATES & GENERAL rather than HIGH PRIORITY.
-4. Output ONLY the sections and bullets. Do not include markdown preamble, conversational filler, or greeting.
-5. If all items were filtered out as noise, output exactly: INBOX_CLEAR
+2. Clean noisy Canvas/AnimoSpace raw course codes (e.g. format `[1253_PEDFOUR_Z10] - TEAM GAMES OR DANCE` neatly as `PEDFOUR (Team Games or Dance)` or `PEDFOUR`).
+3. Filter out any remaining pure spam, marketing, or routine noise that slipped through.
+4. If an email is routine or low priority (like ITEO evaluation or Canvas announcement), place it under {sec2_header} or 📬 UPDATES & GENERAL rather than HIGH PRIORITY.
+5. Output ONLY the sections and bullets. Do not include markdown preamble, conversational filler, or greeting.
+6. If all items were filtered out as noise, output exactly: INBOX_CLEAR
 """
 
     try:
