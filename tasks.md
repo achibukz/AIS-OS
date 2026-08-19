@@ -22,6 +22,8 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 
+- [ ] Form 5-member team & register for GCash ImaGnation Innovation Challenge (bit.ly/ImaGnationRegistration2026) #hackathon #projects !high @2026-08-21
+- [ ] Draft business case & submit video pitch for GCash ImaGnation Innovation Challenge #hackathon #projects !high @2026-08-24
 - [ ] Run full system architecture audit with Claude Opus on everything built/modified across achiOS, achiAgy, TGDB, crons, auto-learning, and notifications using docs/2026-08-20-system-architecture-audit.md #audit #achios #achiagy !high @2026-08-20
 - [ ] E-sign ING Offer Letter #career !high @2026-08-20
 - [ ] E-sign ING Privacy Notice for Applicants #career !high @2026-08-20
