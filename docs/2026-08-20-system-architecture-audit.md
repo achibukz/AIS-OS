@@ -90,23 +90,42 @@ All background operations run as systemd user services (`systemctl --user`) back
 
 ---
 
-## 4. `achiAgy` — Dedicated Google Antigravity CLI Telegram Daemon
+## 4. `achiAgy` — Dedicated Google Antigravity CLI Telegram Daemon (Major Project)
 
-Built from scratch in Python to bridge the interactive Google Antigravity (`agy`) CLI with Telegram.
+**Repository:** [`Code/GitHub/achiAgy`](file:///home/achibukz/Code/GitHub/achiAgy) (Branch: `master`)  
+**Creator / Initial Author:** Antigravity AI (Gemini 3.7 Flash)  
+**Core Purpose:** Bridges the terminal-based Google Antigravity (`agy`) CLI into an asynchronous, fully interactive Telegram bot with persistent project switching, rich tmux TUI observability, responsive formatting, and mobile push notifications.
 
-* **Architecture:**
-  * **Terminal UI Console (`src/tui.py`):** Runs inside tmux (`pts/11`) rendering live thought reasoning, tool call diffs, timing metrics, and step checkpoints.
-  * **Session Manager (`src/session_manager.py`):** Maintains project-scoped conversations (`/project AIS-OS`, `/project achiAgy`, `/cd <path>`).
-  * **Dot-Slash Command Interceptor:** Supports fast terminal shortcuts (`./new`, `./context`, `./usage`, `./projects`, `./status`, `./bypass`, `./cancel`).
-  * **Process Supervisor (`scripts/run-bot.sh`):** Handles clean shutdown (`stop_running()`), graceful exit code `42`, and automatic reload loop to prevent HTTP 409 Conflict polling locks.
-  * **Single-Message Delivery Protocol:** Confines interim tool spam to the tmux TUI; sends only the final complete answer to Telegram with standard push alerts.
-* **Key Files:**
-  * [`achiAgy/src/bot.py`](file:///home/achibukz/Code/GitHub/achiAgy/src/bot.py)
-  * [`achiAgy/src/agy_client.py`](file:///home/achibukz/Code/GitHub/achiAgy/src/agy_client.py)
-  * [`achiAgy/src/session_manager.py`](file:///home/achibukz/Code/GitHub/achiAgy/src/session_manager.py)
-  * [`achiAgy/src/formatters.py`](file:///home/achibukz/Code/GitHub/achiAgy/src/formatters.py)
-  * [`achiAgy/src/tui.py`](file:///home/achibukz/Code/GitHub/achiAgy/src/tui.py)
-  * [`achiAgy/scripts/run-bot.sh`](file:///home/achibukz/Code/GitHub/achiAgy/scripts/run-bot.sh)
+### A. Module & File Architecture
+* **`src/bot.py` (Main Telegram Event Controller):**
+  * Handlers for commands: `/start`, `/help`, `/project [name]`, `/projects` (interactive menu), `/cd <path>`, `/pwd`, `/ls`, `/context` (or `/ctx`), `/usage` (or `/limits`), `/new` (or `/reset`/`/clear`), `/auto` (or `/bypass`), `/model`, `/effort`, `/status`, `/cancel`, `/restart` (or `/reload`).
+  * Intercepts terminal-style dot-slash shortcuts (`./new`, `./context`, `./usage`, `./projects`, `./status`, `./cd`, `./pwd`, `./bypass`, `./cancel`, `./restart`) for rapid mobile typing.
+  * Photo and Document handling: downloads images and code files to `attachments/`, injecting structured context tokens (`[User attached image/file: ...]`) into the agent prompt.
+* **`src/agy_client.py` (Antigravity CLI Subprocess & Event Engine):**
+  * Spawns and supervises the underlying `agy` process in non-blocking async loops.
+  * Parses event streams in real time: `thought` (reasoning blocks), `tool_start` & `tool_done` (tool execution, arguments, and stdout/stderr outputs), `checkpoint` milestones, `text_delta` (streaming chunks), and `result` (final payload with monotonic duration and token usage).
+* **`src/session_manager.py` (Persistent Session & Workspace Registry):**
+  * Manages state per Telegram chat ID (`~/.local/state/achi-agy/sessions.json`).
+  * Tracks active project paths (`/home/achibukz/Code/GitHub/AIS-OS`, `achiAgy`, `career-ops`, etc.), active models (`gemini-3.7-flash`, `gemini-pro`, etc.), reasoning effort levels, auto-approve policies, and cumulative token metrics (input/output tokens, turns, and cost estimations).
+* **`src/formatters.py` (HTML & Mobile Presentation Engine):**
+  * Sanitizes raw model markdown into Telegram-compliant HTML (`<b>`, `<i>`, `<code>`, `<pre>`).
+  * **Intelligent Table-to-Card Converter:** Converts wide multi-column markdown tables (which break or truncate on mobile Telegram screens) into vertically stacked key-value cards with emoji separators.
+  * Chunking engine (`split_message_chunks_html`) splitting long outputs at sentence/block boundaries without breaking open HTML tags.
+  * Stats footer generator (`format_stats_footer_html`) displaying duration, token throughput, and model badges.
+* **`src/tui.py` (Rich Tmux Terminal Console):**
+  * Renders a live terminal console in tmux (`pts/11`) using Rich tables, panels, and syntax highlighting.
+  * Confines verbose tool logs, diffs, parameters, and inner agent reasoning to the tmux screen so mobile Telegram chats remain clean and noise-free.
+* **`scripts/run-bot.sh` (Process Supervisor & Hot-Reload Loop):**
+  * Supervises daemon execution inside tmux.
+  * Gracefully captures exit code `42` (triggered by `/restart` or `/reload`), reloads Python modules, and prevents HTTP 409 Conflict polling race conditions.
+* **`scripts/attach.sh` & `scripts/peek.sh`:**
+  * Quick scripts to attach to or peek at the active bot tmux pane from any SSH terminal.
+
+### B. Dedicated Opus Audit Directives for `achiAgy`:
+1. **Concurrency & Task Locking:** Review `active_tasks` locking in `bot.py` to ensure long-running background tasks cannot leak or block concurrent slash commands.
+2. **Subprocess Resilience:** Audit `agy_client.py` for potential zombie processes, buffer overflows on giant tool outputs, and SIGINT/SIGKILL cleanup handling.
+3. **Session Persistence & Headroom Alerts:** Evaluate whether session state in `sessions.json` should persist in SQLite and whether proactive context window alerts (e.g. at 60% capacity) are cleanly triggered.
+4. **HTML Parser Edge Cases:** Inspect `formatters.py` for edge cases in unclosed code tags or deeply nested markdown lists.
 
 ---
 
