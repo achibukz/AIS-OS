@@ -179,11 +179,12 @@ Decisions:
 - Added low-priority tasks to `tasks.md` with dates @2026-10-13 and @2026-10-14.
 
 ## 2026-08-19 22:42 [saved]
-Goal: Refine Asa architectural vision and task scope.
+Goal: Refine Asa architectural vision and task scope with Telegram integration.
 
 Decisions:
 - Updated Asa task scope in `tasks.md` to define Asa as a universal, bidirectional multi-agent orchestrator connecting Claude Code, Antigravity (AGY), and Codex.
-- Supports cross-agent subagent delegation: Opus orchestrating AGY/Codex, Codex orchestrating AGY/Opus, and vice versa.
+- Added native Telegram integration to Asa: build a Telegram Gateway & Interactive Channel enabling tri-agent dispatch, cross-model consensus discussion, and subagent supervision from mobile.
+
 
 
 
