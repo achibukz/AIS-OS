@@ -39,7 +39,6 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Go to a BPI branch and ask for an alternative on how to create a new BPI SaveUp account (avoiding traditional bank account) following the notice in work inbox #finances !high
 - [ ] Research multi-developer collaboration setup & architecture to build Asa (an OS-agnostic AI product with an orchestrator supporting AGY, Claude, and Codex) #collab #agents #career !high
 - [ ] Build achiOS Curator & Log Rotation daemon (user-level `logrotate` for `~/.local/state/achios/*.log` and state pruning timer) #achios !med
-- [ ] Improve email digest filtering, classification rules, and message formatting (`scripts/email_digest.py`) #achios !med
 - [ ] Implement Dynamic CLI Skill Synthesizer (auto-packaging complex workflows into documented Python CLI scripts with `--help` and `--dry-run`) #achios !med
 - [ ] Create System Crash Reflection & Self-Healing Playbook (logging service failures and validated fixes to `references/troubleshooting-recipes.md`) #achios !med
 - [ ] Reply to Rohde & Schwarz re: unsolicited application (email in work inbox, 2026-08-17) #career
@@ -64,6 +63,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Done
 
+- [x] Improve email digest filtering, classification rules, and message formatting (`scripts/email_digest.py`) — Implemented hybrid noise filtering + LLM synthesis cards with DLSU faculty/suspension and ING context #achios !med @2026-08-19
 - [x] Order DLSU Good Moral Certificate for ING onboarding via Google Form #career #school !high @2026-08-19
 - [x] Build Autonomous Correction Harvester (`scripts/extract_corrections.py` to detect user corrections in `tgdb/` and auto-update `.agentrules` & `decisions/log.md`) #achios !med @2026-08-18
 - [x] Install and evaluate CasaOS dashboard for browser-based monitoring and file management — Configured with Filebrowser, Code-Server, and Tailscale remote access #infra #achios !high @2026-08-18

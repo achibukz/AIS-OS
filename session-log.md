@@ -143,13 +143,24 @@ Decisions:
 - Termius on iPhone connected to achibuntu via Tailscale.
 - Fixed a bash interpolation bug by using script-file payloads instead of quoted string interpolation.
 
+## 2026-08-19 18:20 [saved]
+Goal: Upgrade email digest cron with smart VIP context, noise filtering, and LLM synthesis cards.
+
+Decisions:
+- Hybrid triage pipeline: Heuristic filtering strips routine AM/PM HDAs, LinkedIn/Indeed job blasts, promo marketing, and Laguna-only notices before passing to LLM (`agy -p` in `~/.local/share/achios/llm`).
+- Structured 3-tier clean cards: `⚡ HIGH PRIORITY & VIP`, `📚 COURSES & ACADEMICS` / `💼 WORK & RECRUITING`, and `📬 UPDATES & GENERAL`.
+- Embedded key personal context: Dr. Briane Samson (thesis), recommendation letter replies, Manila suspensions/typhoon advisories, ING Retail Tech internship onboarding, and critical bank/security alerts.
+- Personal email scanning enabled for high-value financial/security alerts only, staying completely silent when clean.
+- Deterministic fallback builder ensures reliable message formatting if LLM times out or is offline.
+- Created full test suite in `tests/test_email_digest.py` (19 passing unit tests).
+
 Rejected:
-- Duplicate 04:30/08:00 morning pings — market closed throughout both.
-- Merging school announcements into two-way `@schoMemBot` — keeps its context clean.
+- Raw subject-only lists — lacked context on actions needed.
+- LLM-only unconstrained parsing — too slow and wasted tokens on generic spam.
 
 Open:
 - Finalize elective/GE section by 2026-08-23, ahead of 2026-08-25 enrollment.
-- Improve email digest noise filtering (`!med`).
 - Research multi-dev collab setup for Asa (`!high`).
+
 
 

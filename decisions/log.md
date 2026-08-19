@@ -676,3 +676,24 @@ A named state dir is reachable only when `TELEGRAM_STATE_DIR` is set, and only t
 
 **Domain:** `logging`
 **Owner:** Aki.
+
+## 2026-08-19 — User Correction Harvested (preference)
+
+**Decision:** Formatting override: Change 'task' to 'also wait for austin's reply'
+
+**Why:** Harvested from dialogue session `2026-08-19-achiagyosbot-c2222b73.md`:
+> "you didnt update the task to also wait for austin's reply"
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-19 — Contextual Email Debrief Synthesis & Noise Filtering
+
+**Decision:** Revamped `scripts/email_digest.py` into a hybrid architecture: aggressive heuristic noise filtering (routine PM/AM HDAs with no emergency/suspension, LinkedIn/Indeed automated job blasts, marketing, and Laguna-only notices) followed by an LLM synthesis pass (`agy -p` in `~/.local/share/achios/llm`) with a deterministic fallback. Messages are formatted with contextual 3-tier headers (`⚡ HIGH PRIORITY & VIP`, `📚 COURSES & ACADEMICS` / `💼 WORK & RECRUITING`, `📬 UPDATES & GENERAL`) and indented 1-line action takeaways. Personal account is scanned for critical security/banking alerts and stays silent when clean.
+
+**Why:** The previous script surfaced raw subjects indiscriminately, falsely tagging routine HDAs, Grammarly, and automated LinkedIn spam as priority while burying high-signal professor recommendation replies, Manila campus class suspensions, and ING internship onboarding details.
+
+**Alternatives considered:** LLM-only pipeline (higher token latency/cost on pure spam), purely deterministic regex keyword matching (misses nuanced action takeaways and contextual synthesis).
+
+**Owner:** Aki.
+
