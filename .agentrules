@@ -65,3 +65,8 @@ Whenever an active task carries a date or deadline:
 - **2026-08-19 (tasks):** Operational directive: Medium priority
 - **2026-08-19 (shell/formatting):** Operational directive: Never pass strings containing currency symbols or raw dollar signs (`$710`, `$-0.38`) inside double-quoted bash strings; bash variable interpolation eats or corrupts them (`$7` -> empty, `$-` -> `hBc`). Use dedicated Python script files or single-quoted literals.
 - **2026-08-19 (data/accuracy):** Operational directive: Always query live API sources and cross-verify dates before broadcasting market digests to prevent stale day-over-day price replication.
+- **2026-08-19 (general):** Operational directive: The mistakes you did. so that you wont repeat it again
+- **2026-08-19 (general):** Operational directive: Everything that we did
+- **2026-08-19 (general):** Operational directive: Bug for achiagy and learn for now that you cannot do that so that it wont happen again
+- **2026-08-19 (tasks):** Operational directive: The bug in achiagy so write a md file document so that we can fix it sometime and put it on our tasks and put it in low priority
+- **2026-08-19 (logging):** Operational directive: This and commit everything. learn from the mistakes that we did and update what needs to be updated

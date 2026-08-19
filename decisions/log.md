@@ -636,3 +636,43 @@ A named state dir is reachable only when `TELEGRAM_STATE_DIR` is set, and only t
 
 **Domain:** `finances`
 **Owner:** Aki.
+
+## 2026-08-19 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: Everything that we did
+
+**Why:** Harvested from dialogue session `2026-08-19-achiagyosbot-1d047ee7.md`:
+> "oki take note on everything that we did"
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-19 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: Bug for achiagy and learn for now that you cannot do that so that it wont happen again
+
+**Why:** Harvested from dialogue session `2026-08-19-achiagyosbot-e4ea00db.md`:
+> "ok take note of that bug for achiagy and learn for now that you cannot do that so that it wont happen again"
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-19 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: The bug in achiagy so write a md file document so that we can fix it sometime and put it on our tasks and put it in low priority
+
+**Why:** Harvested from dialogue session `2026-08-19-achiagyosbot-e4ea00db.md`:
+> "you can just create like a cron for 5pm and then delete the cron. take note of the bug in achiagy so write a md file document so that we can fix it sometime and put it on our tasks and put it in low priority"
+
+**Domain:** `tasks`
+**Owner:** Aki.
+
+## 2026-08-19 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: This and commit everything. learn from the mistakes that we did and update what needs to be updated
+
+**Why:** Harvested from dialogue session `2026-08-19-achiagyosbot-4aa1c617.md`:
+> "take note of this and commit everything. learn from the mistakes that we did and update what needs to be updated"
+
+**Domain:** `logging`
+**Owner:** Aki.

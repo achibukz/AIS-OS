@@ -135,23 +135,21 @@ Rejected:
 - Monday/Thursday electives (`HCI2000`) — extra campus days conflict with internship hours.
 
 ## 2026-08-19 05:50 [saved]
-Goal: Bot separation (Finance + School), SSH Termius setup, ETF schedule optimization, and weekly performance recap cron.
+Goal: Bot separation (Finance + School), SSH Termius setup, ETF schedule optimization, weekly recap cron.
 
 Decisions:
-- Isolated one-way bots: `@achiETFBot` via `telegram_finance.env` (market digests) and `@achiSchooNounceBot` via `telegram_school.env` (DLSU school email debriefs), keeping `@achiOSBot` for general briefings and `@schoMemBot` for interactive queries.
-- Parametrized `telegram_notify.py` (`env_path` parameter) across `read_env`, `load_config`, and `send` to support multi-bot dispatch.
-- Re-tuned ETF schedule (`voo_digest.py`): 08:00 AM Manila (Morning close review) and 10:00 PM Manila (Evening open pulse, 30m after US open).
-- Built dedicated Sunday 6:00 PM Weekly ETF Performance Recap (`scripts/etf_weekly_digest.py` & `systemd/achios-etf-weekly-digest.timer`) computing 5-day net moves ($/%), weekly high/low ranges, and 1-year returns.
-- Connected iPhone Termius to achibuntu via Tailscale (`100.106.210.38:22`).
-- Fixed bash variable interpolation bug by enforcing script-file payloads rather than double-quoted shell string interpolation.
+- Split one-way bots by domain: `@achiETFBot` (market digests), `@achiSchooNounceBot` (DLSU email), keeping `@achiOSBot`/`@schoMemBot` as before. `telegram_notify.py` parametrized with `env_path` to support this.
+- Re-tuned ETF schedule to 08:00 + 22:00 Manila; added Sunday 18:00 weekly ETF recap.
+- Termius on iPhone connected to achibuntu via Tailscale.
+- Fixed a bash interpolation bug by using script-file payloads instead of quoted string interpolation.
 
 Rejected:
-- Duplicate 4:30 AM & 8:00 AM morning pings — redundant as market is closed throughout both windows.
-- Merging school announcements into two-way `@schoMemBot` — keeps interactive query context clean.
+- Duplicate 04:30/08:00 morning pings — market closed throughout both.
+- Merging school announcements into two-way `@schoMemBot` — keeps its context clean.
 
 Open:
-- Finalize elective and GE section by Sun 2026-08-23 ahead of Tue Aug 25 enrollment.
-- Improve email digest noise filtering & formatting (`!med` in tasks.md).
-- Research multi-developer collaboration setup for Asa (`!high` in tasks.md).
+- Finalize elective/GE section by 2026-08-23, ahead of 2026-08-25 enrollment.
+- Improve email digest noise filtering (`!med`).
+- Research multi-dev collab setup for Asa (`!high`).
 
 
