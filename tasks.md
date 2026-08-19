@@ -29,9 +29,8 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] E-sign ING Offer Letter #career !high @2026-08-20
 - [ ] E-sign ING Privacy Notice for Applicants #career !high @2026-08-20
 - [ ] E-sign ING Privacy Notice for Employees #career !high @2026-08-20
-- [ ] Monitor replies from character references (Doc Briane Samson ✅, Sir Aris Pulumbarit ✅, awaiting Doc Jordan Deja / Sir Ryan Austin Fernandez) #career #school !high @2026-08-19
-- [ ] Fill out ING Intern Information Sheet (complete 3 faculty/mentor character references, leave gov IDs blank) #career !high @2026-08-20
-- [ ] Prepare copy of DLSU School ID (scanned/clear photo) for ING submission #career #school !high @2026-08-20
+- [ ] Fill out ING Intern Information Sheet (using 3 confirmed references: Doc Briane Samson, Sir Aris Pulumbarit, Doc Jordan Deja; leave gov IDs blank) #career !high @2026-08-20
+- [ ] Prepare copy of DLSU School ID (scanned/clear photo) for ING submission #career !high @2026-08-20
 - [ ] Follow up / Pick up DLSU Good Moral Certificate (CGMC) once release notification arrives (8-10 working days, event set on DLSU Calendar) #career #school !high @2026-09-02
 - [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
 - [ ] Prepare scanned copy of PSA Birth Certificate for ING #career !high
@@ -66,6 +65,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Done
 
+- [x] Monitor replies from character references (Doc Briane Samson ✅, Sir Aris Pulumbarit ✅, Doc Jordan Deja ✅) — All 3 faculty references confirmed for ING onboarding packet #career #school !high @2026-08-19
 - [x] Form 5-member team & register for GCash ImaGnation Innovation Challenge — Team "Mamdani Administration" registered via official portal #hackathon #projects !high @2026-08-19
 - [x] Improve email digest filtering, classification rules, and message formatting (`scripts/email_digest.py`) — Implemented hybrid noise filtering + LLM synthesis cards with DLSU faculty/suspension and ING context #achios !med @2026-08-19
 - [x] Order DLSU Good Moral Certificate for ING onboarding via Google Form #career #school !high @2026-08-19
