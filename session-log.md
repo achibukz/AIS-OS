@@ -160,7 +160,7 @@ Rejected:
 
 Open:
 - Finalize elective/GE section by 2026-08-23, ahead of 2026-08-25 enrollment.
-- Research multi-dev collab setup for Asa (`!high`).
+- Research & design Asa as universal bidirectional multi-agent orchestrator (Claude Opus, AGY, Codex) (`!high`).
 
 ## 2026-08-19 17:53 [saved]
 Goal: Configure /tasks structured formatting convention.
@@ -177,6 +177,14 @@ Decisions:
   - 2026-10-13: Cancel current Google One subscription
   - 2026-10-14: Subscribe to Google AI Pro Student Discount (₱275/mo via SheerID)
 - Added low-priority tasks to `tasks.md` with dates @2026-10-13 and @2026-10-14.
+
+## 2026-08-19 22:42 [saved]
+Goal: Refine Asa architectural vision and task scope.
+
+Decisions:
+- Updated Asa task scope in `tasks.md` to define Asa as a universal, bidirectional multi-agent orchestrator connecting Claude Code, Antigravity (AGY), and Codex.
+- Supports cross-agent subagent delegation: Opus orchestrating AGY/Codex, Codex orchestrating AGY/Opus, and vice versa.
+
 
 
 
