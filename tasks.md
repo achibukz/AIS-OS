@@ -22,6 +22,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 
+- [ ] Run full system architecture audit with Claude Opus on everything built/modified across achiOS, achiAgy, TGDB, crons, auto-learning, and notifications using docs/2026-08-20-system-architecture-audit.md #audit #achios #achiagy !high @2026-08-20
 - [ ] E-sign ING Offer Letter #career !high @2026-08-20
 - [ ] E-sign ING Privacy Notice for Applicants #career !high @2026-08-20
 - [ ] E-sign ING Privacy Notice for Employees #career !high @2026-08-20
