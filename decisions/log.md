@@ -716,3 +716,43 @@ A named state dir is reachable only when `TELEGRAM_STATE_DIR` is set, and only t
 
 **Domain:** `general`
 **Owner:** Aki.
+
+## 2026-08-19 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: This email and put it in a md file in the transcript folder: Dear ImaGnation Registrant,
+
+**Why:** Harvested from dialogue session `2026-08-19-achiagyosbot-c2222b73.md`:
+> "take note of this email and put it in a md file in the transcript folder: Dear ImaGnation Registrant,"
+
+**Domain:** `voice`
+**Owner:** Aki.
+
+## 2026-08-19 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: Submit all necessary files through bit.ly/ImaGnation2026-TeamPitch no later than 6:00 PM, August 24, 2026 (Monday). Only submit once for your team.
+
+**Why:** Harvested from dialogue session `2026-08-19-achiagyosbot-c2222b73.md`:
+> "Make sure to submit all necessary files through bit.ly/ImaGnation2026-TeamPitch no later than 6:00 PM, August 24, 2026 (Monday). Only submit once for your team."
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-19 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: This information provided by the organizers of the ImaGnation 2026: GCash Innovation Challenge is strictly confidential. You are advised not to share this information with anyone outside the designated participants and team members involved in the challenge.
+
+**Why:** Harvested from dialogue session `2026-08-19-achiagyosbot-c2222b73.md`:
+> "IMPORTANT NOTE: Please remember that this information provided by the organizers of the ImaGnation 2026: GCash Innovation Challenge is strictly confidential. You are advised not to share this information with anyone outside the designated participants and team members involved in the challenge."
+
+**Domain:** `voice`
+**Owner:** Aki.
+
+## 2026-08-19 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: The deadline: ImaGnation 2026 Pitch Submission Form
+
+**Why:** Harvested from dialogue session `2026-08-19-achiagyosbot-c2222b73.md`:
+> "Take note of the deadline: ImaGnation 2026 Pitch Submission Form"
+
+**Domain:** `tasks`
+**Owner:** Aki.
