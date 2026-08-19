@@ -185,6 +185,19 @@ Decisions:
 - Updated Asa task scope in `tasks.md` to define Asa as a universal, bidirectional multi-agent orchestrator connecting Claude Code, Antigravity (AGY), and Codex.
 - Added native Telegram integration to Asa: build a Telegram Gateway & Interactive Channel enabling tri-agent dispatch, cross-model consensus discussion, and subagent supervision from mobile.
 
+## 2026-08-19 23:05 [saved]
+Goal: Audit achiAgy with Claude Opus and apply critical reliability & UX fixes via TDD.
+
+Decisions:
+- Dispatched dual Claude Opus 4.6 (Thinking) subagents to audit systems reliability and Telegram UX.
+- Fixed `session_manager.py` token metrics: stopped sliding-context accumulation (fixed bogus 1.65B token metric), added `peak_context_tokens` tracking, and prevented double turn-counting via `set_conversation_id()`.
+- Added rich `MODEL_REGISTRY` in `config.py` with exact token context and output bounds.
+- Added native Telegram autocomplete menu (`set_my_commands` in `post_init`) with 15 direct commands.
+- Implemented proactive context health alerts at ≥75% (warning) and ≥90% (critical).
+- Added stripped plaintext fallback on Telegram HTML `BadRequest` errors.
+- Verified with 12 passing unit tests in `tests/` and deployed to `achi-agy.service`.
+
+
 
 
 
