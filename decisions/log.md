@@ -756,3 +756,38 @@ A named state dir is reachable only when `TELEGRAM_STATE_DIR` is set, and only t
 
 **Domain:** `tasks`
 **Owner:** Aki.
+
+## 2026-08-19 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: For the pitch submission form we need a pitch title
+
+**Why:** Harvested from dialogue session `2026-08-19-achiagyosbot-c2222b73.md`:
+> "Take note for the pitch submission form we need a pitch title"
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-19 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: When i have my claude reset: I want to do deep research analysis and market analysis on our pitch, and everything that is needed, search statistics for it and everything with opus. high priority
+
+**Why:** Harvested from dialogue session `2026-08-19-achiagyosbot-c2222b73.md`:
+> "Take note when i have my claude reset: I want to do deep research analysis and market analysis on our pitch, and everything that is needed, search statistics for it and everything with opus. high priority"
+
+**Domain:** `tasks`
+**Owner:** Aki.
+
+## 2026-08-19 — /tasks Structured Format Established
+
+**Decision:** When Aki invokes `/tasks` or queries his tasks, always use the 4-tier structured format:
+1. 🔥 **Immediate Deadlines** (grouped by timeline/urgency)
+2. 🎓 **DLSU Academics & Enrollment**
+3. 💼 **Career & Finances Next Steps**
+4. 🛠️ **Systems & Engineering (achiOS / Asa / achiAgy)**
+Format with interactive checkboxes (`- [ ] **Title:** details`) and links to `tasks.md`.
+
+**Why:** User confirmed preference for clean categorized view with markdown checkboxes over raw parsing or unformatted dumps.
+
+**Domain:** `tasks`
+**Owner:** Aki.
+

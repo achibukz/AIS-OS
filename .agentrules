@@ -77,3 +77,6 @@ Whenever an active task carries a date or deadline:
 - **2026-08-19 (general):** Operational directive: Submit all necessary files through bit.ly/ImaGnation2026-TeamPitch no later than 6:00 PM, August 24, 2026 (Monday). Only submit once for your team.
 - **2026-08-19 (voice):** Operational directive: This information provided by the organizers of the ImaGnation 2026: GCash Innovation Challenge is strictly confidential. You are advised not to share this information with anyone outside the designated participants and team members involved in the challenge.
 - **2026-08-19 (tasks):** Operational directive: The deadline: ImaGnation 2026 Pitch Submission Form
+- **2026-08-19 (general):** Operational directive: For the pitch submission form we need a pitch title
+- **2026-08-19 (tasks):** Operational directive: When i have my claude reset: I want to do deep research analysis and market analysis on our pitch, and everything that is needed, search statistics for it and everything with opus. high priority
+- **2026-08-19 (tasks/formatting):** Operational directive: When Aki invokes `/tasks` or asks for tasks, use the structured categorized format: Immediate Deadlines (grouped by timeline), DLSU Academics & Enrollment, Career & Finances Next Steps, and Systems & Engineering (achiOS/Asa/achiAgy) with markdown checkboxes (`- [ ] **Title:** details`) and file links.

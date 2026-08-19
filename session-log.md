@@ -162,5 +162,13 @@ Open:
 - Finalize elective/GE section by 2026-08-23, ahead of 2026-08-25 enrollment.
 - Research multi-dev collab setup for Asa (`!high`).
 
+## 2026-08-19 17:53 [saved]
+Goal: Configure /tasks structured formatting convention.
+
+Decisions:
+- Standardized `/tasks` output format across Antigravity and achiOS agents: 4-tier structured layout (Immediate Deadlines, DLSU Academics, Career/Finances, Systems & Engineering) with markdown checkboxes and file links.
+- Updated `AGENTS.md`, `.agentrules`, and `decisions/log.md`.
+
+
 
 
