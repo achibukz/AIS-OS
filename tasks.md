@@ -26,10 +26,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Ingest and synthesize GCash ImaGnation team meeting transcripts (`Transcripts/GCASH MEETING.md` & `notes.md`) with Claude Opus into achiGcash #hackathon #achigcash !high @2026-08-20
 - [ ] Draft business case & submit video pitch for GCash ImaGnation Innovation Challenge #hackathon #projects !high @2026-08-24
 - [ ] Run full system architecture audit with Claude Opus across achiOS daemons, achiAgy, crons, and notification routing per docs/2026-08-20-system-architecture-audit.md #audit #achios #achiagy !high @2026-08-20
-- [ ] E-sign ING Offer Letter #career !high @2026-08-20
-- [ ] E-sign ING Privacy Notice for Applicants #career !high @2026-08-20
-- [ ] E-sign ING Privacy Notice for Employees #career !high @2026-08-20
-- [ ] Fill out ING Intern Information Sheet (using 3 confirmed references: Doc Briane Samson, Sir Aris Pulumbarit, Doc Jordan Deja; leave gov IDs blank) #career !high @2026-08-20
+
 - [ ] Prepare copy of DLSU School ID (scanned/clear photo) for ING submission #career !high @2026-08-20
 - [ ] Follow up / Pick up DLSU Good Moral Certificate (CGMC) once release notification arrives (8-10 working days, event set on DLSU Calendar) #career #school !high @2026-09-02
 - [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
@@ -67,6 +64,11 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [~] Pull the power cord on achibuntu to test unattended boot recovery — blocked until a battery is installed. BAT0 is absent and the BIOS has no "Restore on AC Power Loss", so pulling the cord today just hard-kills it #achios !low
 
 ## Done
+
+- [x] E-sign ING Offer Letter #career !high @2026-08-20
+- [x] E-sign ING Privacy Notice for Applicants #career !high @2026-08-20
+- [x] E-sign ING Privacy Notice for Employees #career !high @2026-08-20
+- [x] Fill out ING Intern Information Sheet (using 3 confirmed references: Doc Briane Samson, Sir Aris Pulumbarit, Doc Jordan Deja; leave gov IDs blank) #career !high @2026-08-20
 
 - [x] Run system architecture audit on Universal TGDB Vault Archive & Exporter with Claude Opus per docs/2026-08-18-feature-audit-tgdb-and-correction-harvester.md — Audited transcript exporter, TGDB logger, secret sanitization, intermediate tool/XML stripping, bot identity detection, and Obsidian vault note formatting #audit #tgdb #achios !high @2026-08-20
 - [x] Implement Hermes-inspired Self-Learning Loop for achiAgy and achiOS per docs/superpowers/plans/2026-08-19-self-learning-loop-implementation.md — Created MemoryEngine with 2.5k-char budget per file, CLI mutations, /learn authoring engine, harvester routing to MEMORY.md/USER.md/.agentrules/decisions, and 25 passing unit tests; merged to main/master #achiagy #achios !high @2026-08-20
