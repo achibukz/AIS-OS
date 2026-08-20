@@ -913,3 +913,14 @@ Format with interactive checkboxes (`- [ ] **Title:** details`) and links to `ta
 **Domain:** `general`
 **Target Store:** `memory`
 **Owner:** Aki.
+
+## 2026-08-20 — User Correction Harvested (style)
+
+**Decision:** Voice register adjustment: Voice register adjustment: Voice register adjustment: - can you make it less formal like this:
+
+**Why:** Harvested from dialogue session `2026-08-20-achiagyosbot-6d9138cf.md`:
+> "Voice register adjustment: Voice register adjustment: - can you make it less formal like this:"
+
+**Domain:** `voice`
+**Target Store:** `memory`
+**Owner:** Aki.
