@@ -88,3 +88,41 @@ class TestStats:
         s = ll.stats(path=ledger)
         assert s["written"] == 1
         assert s["rejected"] == 1
+
+
+class TestExternalWrites:
+    """The agy model writes to memory directly via the memory_engine CLI, bypassing
+    the gate. Those writes are recorded so the trial audit sees every change, but
+    they must not consume the loop's daily budget or the model could starve it."""
+
+    def test_external_write_is_recorded_as_written(self, ledger):
+        rid = ll.record_external_write("Never use bullet points.", "add", "memory", path=ledger)
+        record = ll.latest(rid, path=ledger)
+        assert record["state"] == "written"
+        assert record["source"] == ll.SOURCE_CLI
+        assert record["rule"] == "Never use bullet points."
+        assert record["action"] == "add"
+        assert record["target"] == "memory"
+
+    def test_external_writes_do_not_consume_the_loop_budget(self, ledger):
+        for i in range(5):
+            ll.record_external_write(f"Rule number {i}.", "add", "memory", path=ledger)
+        assert ll.writes_today(path=ledger) == 0
+
+    def test_loop_writes_still_count(self, ledger):
+        rid = ll.append_candidate(914, "never use leverage", 1, path=ledger)
+        ll.mark_written(rid, "Never use 'leverage'.", "add", "memory", path=ledger)
+        ll.record_external_write("Something else entirely.", "add", "user", path=ledger)
+        assert ll.writes_today(path=ledger) == 1
+
+    def test_external_writes_are_never_pending(self, ledger):
+        ll.record_external_write("Never use bullet points.", "add", "memory", path=ledger)
+        assert ll.pending(914, path=ledger) == []
+
+    def test_stats_counts_external_writes_separately(self, ledger):
+        rid = ll.append_candidate(914, "never use leverage", 1, path=ledger)
+        ll.mark_written(rid, "Never use 'leverage'.", "add", "memory", path=ledger)
+        ll.record_external_write("Never use bullet points.", "add", "memory", path=ledger)
+        s = ll.stats(path=ledger)
+        assert s["written"] == 2
+        assert s["external"] == 1

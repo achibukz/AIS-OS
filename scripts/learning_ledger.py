@@ -30,6 +30,9 @@ except ImportError:  # pragma: no cover - POSIX only in practice
 LOCAL_TZ = ZoneInfo("Asia/Manila")
 DEFAULT_PATH = Path.home() / ".local" / "state" / "achios" / "learning_ledger.jsonl"
 
+SOURCE_LOOP = "loop"
+SOURCE_CLI = "cli"
+
 PENDING = "pending"
 WRITTEN = "written"
 REJECTED = "rejected"
@@ -120,6 +123,37 @@ def append_candidate(
             "rule": None,
             "action": None,
             "target": None,
+            "source": SOURCE_LOOP,
+        },
+        path,
+    )
+    return record_id
+
+
+def record_external_write(
+    rule: str,
+    action: str,
+    target: str,
+    path: Optional[Path] = None,
+) -> str:
+    """Record a write made outside the loop — the agy model calling the
+    memory_engine CLI. Logged so the trial audit sees every change to memory, but
+    tagged SOURCE_CLI so it does not consume the loop's daily write budget."""
+    record_id = uuid.uuid4().hex
+    _append(
+        {
+            "id": record_id,
+            "ts": datetime.now(LOCAL_TZ).isoformat(),
+            "chat_id": None,
+            "turn_index": None,
+            "raw": rule,
+            "state": WRITTEN,
+            "verdict": None,
+            "reason": "external",
+            "rule": rule,
+            "action": action,
+            "target": target,
+            "source": SOURCE_CLI,
         },
         path,
     )
@@ -191,14 +225,18 @@ def writes_today(path: Optional[Path] = None) -> int:
     return sum(
         1
         for record in _latest_by_id(path).values()
-        if record.get("state") == WRITTEN and str(record.get("ts", "")).startswith(today)
+        if record.get("state") == WRITTEN
+        and record.get("source", SOURCE_LOOP) == SOURCE_LOOP
+        and str(record.get("ts", "")).startswith(today)
     )
 
 
 def stats(path: Optional[Path] = None) -> dict[str, int]:
-    counts: dict[str, int] = {PENDING: 0, WRITTEN: 0, REJECTED: 0, FAILED: 0}
+    counts: dict[str, int] = {PENDING: 0, WRITTEN: 0, REJECTED: 0, FAILED: 0, "external": 0}
     for record in _latest_by_id(path).values():
         state = record.get("state")
         if state in counts:
             counts[state] += 1
+        if record.get("source") == SOURCE_CLI:
+            counts["external"] += 1
     return counts
