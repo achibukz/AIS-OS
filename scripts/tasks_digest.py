@@ -37,6 +37,7 @@ PRIORITY_RE = re.compile(r"!(high|med|low)\b")
 AREA_RE = re.compile(r"#([A-Za-z0-9][\w-]*)")
 FENCE_RE = re.compile(r"^\s*```")
 LINK_RE = re.compile(r"\[\[([^\]|]+)(?:\|[^\]]*)?\]\]")
+MD_LINK_RE = re.compile(r"\[([^\[\]]+)\]\([^\)]+\)")
 BOLD_RE = re.compile(r"\*\*(.+?)\*\*")
 CODE_RE = re.compile(r"`([^`]+)`")
 
@@ -58,6 +59,7 @@ class Task:
 
 def strip_markup(text: str) -> str:
     text = LINK_RE.sub(r"\1", text)
+    text = MD_LINK_RE.sub(r"\1", text)
     text = BOLD_RE.sub(r"\1", text)
     text = CODE_RE.sub(r"\1", text)
     return re.sub(r"\s+", " ", text).strip()
