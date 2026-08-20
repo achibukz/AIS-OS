@@ -1,5 +1,26 @@
 # Session Log
 
+## 2026-08-20 19:10 [saved]
+Goal: Kill the v1 harvester and write the v2 implementation plan.
+
+Decisions:
+- Removed the harvest stage from `vault_inbox_sync.py`; verified by MEMORY.md checksum
+  unchanged across a full non-dry run, not by inspection.
+- Smoke-tested the plan's own code before committing; caught `MemoryEngine(storage_dir=)`
+  (not `memory_path=`) and a UTC-vs-Manila date bug that silently disabled the daily write cap.
+- Plan orders archive+purge and live verification last — verification needs a clean baseline.
+- Loop gets `add` and `replace` but never `remove`; autonomous deletion of a hand-written rule
+  is the wrong risk during an unsupervised trial.
+
+Rejected:
+- Scrubbing the 6 poisoned tgdb notes — inert now, not worth rewriting vault history.
+- Trusting plan code without running it — two real defects were only found by running it.
+
+Open:
+- Plan not yet executed; 8 tasks, subagent-driven.
+- Day-7 trial audit due 2026-08-27.
+
+
 ## 2026-08-20 18:40 [saved]
 Goal: Design self-learning loop v2 to replace the self-amplifying regex harvester.
 
@@ -240,6 +261,30 @@ Goal: Refine Asa architectural vision and task scope with Telegram integration.
 Decisions:
 - Updated Asa task scope in `tasks.md` to define Asa as a universal, bidirectional multi-agent orchestrator connecting Claude Code, Antigravity (AGY), and Codex.
 - Added native Telegram integration to Asa: build a Telegram Gateway & Interactive Channel enabling tri-agent dispatch, cross-model consensus discussion, and subagent supervision from mobile.
+
+## 2026-08-19 23:05 [saved]
+Goal: Audit achiAgy with Claude Opus and apply critical reliability & UX fixes via TDD.
+
+Decisions:
+- Dispatched dual Claude Opus 4.6 (Thinking) subagents to audit systems reliability and Telegram UX.
+- Fixed `session_manager.py` token metrics: stopped sliding-context accumulation (fixed bogus 1.65B token metric), added `peak_context_tokens` tracking, and prevented double turn-counting via `set_conversation_id()`.
+- Added rich `MODEL_REGISTRY` in `config.py` with exact token context and output bounds.
+- Added native Telegram autocomplete menu (`set_my_commands` in `post_init`) with 15 direct commands.
+- Implemented proactive context health alerts at ≥75% (warning) and ≥90% (critical).
+- Added stripped plaintext fallback on Telegram HTML `BadRequest` errors.
+## 2026-08-19 23:12 [saved] [superseded by 2026-08-20]
+Goal: Audit TGDB, correction harvester, and self-learning loop.
+
+Decisions:
+- Root cause called as "overly permissive regex". **Superseded 2026-08-20: regexes were a
+  symptom.** The harvester read tgdb notes built from agy's brain log, which stores the prompt
+  with MEMORY.md prepended, so it ingested its own output. Tightening regexes could not fix it.
+- Formalized model allocation: Opus audits and drafts plans, Gemini 3.7 Flash executes.
+- Cleaned polluted `.agentrules` and `decisions/log.md` entries.
+
+Rejected: relying on regex tightening alone — the loop re-formed within a day.
+
+Open: superseded by the v2 spec; see 2026-08-20 entries.
 
 ## 2026-08-19 23:05 [saved]
 Goal: Audit achiAgy with Claude Opus and apply critical reliability & UX fixes via TDD.
