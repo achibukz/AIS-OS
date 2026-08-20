@@ -5,7 +5,7 @@ under "Carried forward" — the still-open items were preserved, the completed o
 
 ## Current Goal
 
-Self-learning loop v2: design approved, spec written, **plan written**. Ready to execute.
+Self-learning loop v2: **executing the plan. Resume at Task 1 — fresh start, nothing implemented yet.**
 
 ## Plan Status
 
@@ -21,6 +21,29 @@ Task order: 1 ledger → 2 gate prefilter → 3 gate classify → 4 review orche
 5 wire into bot.py → 6 delete extract_corrections → 7 archive+purge → 8 deploy+verify.
 Tasks 7 and 8 must come last: purging before the new loop is deployed is safe now that v1
 is dead, but the live verification in Task 8 depends on Task 7's clean baseline.
+
+## Resume instructions (if context was compacted)
+
+Read `docs/superpowers/plans/2026-08-20-self-learning-loop-v2.md` and execute from
+**Task 1**. No task has been started. Use `subagent-driven-development`.
+
+Facts the plan relies on but does not spell out:
+- AIS-OS interpreter: `~/.local/share/achios/venv/bin/python`. achiAgy: `.venv/bin/python`
+  in its own repo. Do not use system `python3` for achiAgy — pytest is not installed there.
+- `tests/conftest.py` already puts `scripts/` on `sys.path`; AIS-OS tests use bare
+  `import learning_ledger`, not `from scripts...`.
+- `achiAgy/src/bot.py` lines 27-29 already insert AIS-OS `scripts/` onto `sys.path` for
+  `tgdb_logger`; `background_review.py` reuses that pattern.
+- `MemoryEngine(storage_dir=..., char_limit=...)` — NOT `memory_path=`/`user_path=`.
+  Call `init_storage()` after constructing in tests.
+- `MemoryEngine.add(text=..., target=...)` raises `MemoryBudgetError` on overflow.
+- The insertion point in `bot.py` is the `elif event.event_type == "result":` branch,
+  after the `for chunk in chunks:` send loop, before the Context Health Auto-Alert block.
+- Baseline test counts before starting: AIS-OS 181 passed / 44 failed (all 44 are the
+  pre-existing `test_daily_brief.py` `parse_tasks` rename failures — NOT caused by this
+  work, do not try to fix them). achiAgy 43 passed.
+- The box runs UTC; records are stamped Asia/Manila. Never use `date.today()` for
+  day-boundary logic.
 
 ## Evidence
 
