@@ -1,5 +1,22 @@
 # Session Log
 
+## 2026-08-20 17:00 [saved]
+Goal: Full Opus audit of achiOS + achiAGY — architecture, what works, what is broken, and the fix list.
+
+Decisions:
+- Audited the **live server**, not just the repos: systemd state, journald, running processes, tmux panes, on-disk state. Where `docs/2026-08-20-system-architecture-audit.md` (Gemini's manifest) and the server disagreed, the server won.
+- Held to the model allocation rule: `agy`/Gemini did mechanical extraction only; all analysis and conclusions are Opus's. Aki corrected mid-session when the first dispatch handed judgment to agy.
+- Found the `/asa` skill is **broken** — `SKILL.md` documents an `asa` CLI that exists nowhere on the box. The first dispatch silently no-op'd because stderr was swallowed. Fell back to driving `agy -p` directly.
+- 13 findings written to `docs/2026-08-20-opus-audit-achios-achiagy.md`, 3 of them P0, all reproduced rather than inferred.
+- Ten remediation tasks added to `tasks.md`, sequenced so idempotency lands before retry (otherwise `Restart=on-failure` spams duplicate digests).
+- Deliberately made **no code changes** — Aki asked for an audit and a fix list, not a fix run.
+
+Open items:
+- 4 jobs still sitting in `failed` state; `systemctl --user reset-failed` not run yet.
+- `@achiOSBot` token is in journald in cleartext and still needs rotating.
+- Dated the ten new tasks as a proposed sequence but did **not** create calendar events, because those dates are mine, not Aki's. Needs his confirmation before they go to `Personal`.
+
+
 ## 2026-08-17 03:45 [saved]
 Goal: Turn the old HP laptop into a headless Hermes/Claude Code agent host.
 

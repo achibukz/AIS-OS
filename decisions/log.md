@@ -924,3 +924,30 @@ Format with interactive checkboxes (`- [ ] **Title:** details`) and links to `ta
 **Domain:** `voice`
 **Target Store:** `memory`
 **Owner:** Aki.
+
+
+## 2026-08-20 — Shared concerns must cross the AIS-OS / achiAgy repo boundary
+
+**Decision:** The three concerns that keep breaking — sending to Telegram, writing to a
+protected path, and persisting state — get one implementation that both repos import,
+rather than one per bridge. `telegram_notify.py` already states this rule for sending
+("Import it rather than re-implementing the send"); `achiAgy` never inherited it because
+it was built as a separate repo. Extending the rule across the repo boundary is the change.
+
+**Why:** The 2026-08-20 audit found the same defect class repeated per component: two
+independent Telegram send paths with different chunking and escaping; a `wiki/` guard that
+exists for the Claude bot and not the agy one; token accounting fixed for `input_tokens`
+and left broken for its two neighbours; `sessions.json` living in two places, one stale.
+Each was fixed once and did not propagate. A fifth bridge would reintroduce all of them.
+
+**Alternatives considered:** (a) Merge achiAgy into AIS-OS — rejected, the runtimes and
+dependency sets are genuinely different and the split is not the problem. (b) Fix each
+site individually — rejected, that is what produced the current state. (c) Leave it,
+single-user system — rejected specifically because of P0-3: the vault's anti-hallucination
+guarantee is currently false, and "one guard per runtime" is what made it false.
+
+**Owner:** Aki. Sequenced in `tasks.md` after the P0 fixes.
+
+**What would change my mind:** if achiAgy turns out to be short-lived — if the agy bridge
+is an experiment Aki expects to retire once Claude Code's own mobile story improves, then
+a shared core is premature and the right move is just the path guard.

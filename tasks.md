@@ -22,6 +22,16 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 
+- [ ] Fix achiAgy crash: add `import re` to src/bot.py (HTML fallback always NameErrors, loses whole response) #achios #achiagy !high @2026-08-21
+- [ ] Add retry + backoff + token redaction to scripts/telegram_notify.py and Restart=on-failure to all scheduled units (4 jobs died on a DNS blip today) #achios !high @2026-08-21
+- [ ] Give the failure alerter a store-and-forward channel so a network outage cannot silence it #achios !high @2026-08-22
+- [ ] Stop the agy schoolMem bot writing to schoolMem/wiki/ — scope it to inbox/, then build a real path guard #achios #schoolmem !high @2026-08-22
+- [ ] Add concurrency guard in achiAgy so a second Telegram message cannot spawn a second agy process and orphan /cancel #achios #achiagy !med @2026-08-23
+- [ ] Fix tests/test_daily_brief.py — parse_tasks was renamed parse_active_tasks, 44 tests dead #achios !med @2026-08-23
+- [ ] Install achi-agy-schoolmem.service (running unmanaged, dies on next power cut) #achios #achiagy !med @2026-08-23
+- [ ] Fix achiAgy output/thinking token accumulation — /usage is 246x wrong #achios #achiagy !med @2026-08-24
+- [ ] Rotate @achiOSBot Telegram token (leaked into journald in cleartext) and chmod 600 achiAgy/.env* #achios !med @2026-08-22
+- [ ] Document achiAgy in CLAUDE.md and correct the bots table + connections.md schoolMem AGY status #achios !low @2026-08-25
 - [ ] Run deep research, market analysis, and statistic gathering on GCash ImaGnation pitch with Claude Opus #hackathon #research #achigcash !high @2026-08-20
 - [ ] Ingest and synthesize GCash ImaGnation team meeting transcripts (`Transcripts/GCASH MEETING.md` & `notes.md`) with Claude Opus into achiGcash #hackathon #achigcash !high @2026-08-20
 - [ ] Draft business case & submit video pitch for GCash ImaGnation Innovation Challenge #hackathon #projects !high @2026-08-24
