@@ -457,3 +457,26 @@ precision and recall figures wrong, because the ledger cannot see those writes.
   the audit honest.
 
 **Owner:** Aki to choose before the 2026-08-27 audit, since the audit's numbers depend on it.
+
+## 2026-08-21 — CLAUDE.md and AGENTS.md resynced to the built system
+
+**Decision:** Both instruction files now document the v2 self-learning loop, achiAgy, the
+one-way notification bots, and the telegram_notify retry/redaction contract, plus a Future
+work section pointing at `docs/ROADMAP.md`.
+
+**Why:** AGENTS.md still described `extract_corrections.py` as live infrastructure a day
+after it was deleted, and CLAUDE.md had never mentioned achiAgy at all — an always-on bot
+with write access to this repo and pre-authorised push. An agent reading either file would
+have been working from a false map.
+
+The self-learning section deliberately explains *why v1 died* rather than only what v2 does.
+The failure mode was subtle and architectural, and an agent that does not understand it could
+reintroduce it in one refactor by collapsing `prompt` and `full_prompt`.
+
+**Alternatives:** Keeping one file and symlinking the other was rejected — the Agent
+Separation Rule exists because agy maintains AGENTS.md and must not touch CLAUDE.md, and a
+symlink erases that boundary. Trimming both to a short index was rejected too: the
+non-obvious operational facts here are the whole value, and they are not recoverable from
+the code.
+
+**Owner:** Aki. Revisit after the 2026-08-27 audit, when the second-writer question resolves.
