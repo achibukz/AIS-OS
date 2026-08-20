@@ -26,7 +26,6 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Ingest and synthesize GCash ImaGnation team meeting transcripts (`Transcripts/GCASH MEETING.md` & `notes.md`) with Claude Opus into achiGcash #hackathon #achigcash !high @2026-08-20
 - [ ] Draft business case & submit video pitch for GCash ImaGnation Innovation Challenge #hackathon #projects !high @2026-08-24
 - [ ] Run full system architecture audit with Claude Opus on everything built/modified across achiOS, achiAgy, TGDB, crons, auto-learning, and notifications using docs/2026-08-20-system-architecture-audit.md #audit #achios #achiagy !high @2026-08-20
-- [ ] Implement Hermes-inspired Self-Learning Loop for achiAgy and achiOS per docs/superpowers/plans/2026-08-19-self-learning-loop-implementation.md #achiagy #achios !high @2026-08-20
 - [ ] E-sign ING Offer Letter #career !high @2026-08-20
 - [ ] E-sign ING Privacy Notice for Applicants #career !high @2026-08-20
 - [ ] E-sign ING Privacy Notice for Employees #career !high @2026-08-20
@@ -69,6 +68,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Done
 
+- [x] Implement Hermes-inspired Self-Learning Loop for achiAgy and achiOS per docs/superpowers/plans/2026-08-19-self-learning-loop-implementation.md — Created MemoryEngine with 2.5k-char budget per file, CLI mutations, /learn authoring engine, harvester routing to MEMORY.md/USER.md/.agentrules/decisions, and 25 passing unit tests; merged to main/master #achiagy #achios !high @2026-08-20
 - [x] Monitor replies from character references (Doc Briane Samson ✅, Sir Aris Pulumbarit ✅, Doc Jordan Deja ✅) — All 3 faculty references confirmed for ING onboarding packet #career #school !high @2026-08-19
 - [x] Form 5-member team & register for GCash ImaGnation Innovation Challenge — Team "Mamdani Administration" registered via official portal #hackathon #projects !high @2026-08-19
 - [x] Improve email digest filtering, classification rules, and message formatting (`scripts/email_digest.py`) — Implemented hybrid noise filtering + LLM synthesis cards with DLSU faculty/suspension and ING context #achios !med @2026-08-19
