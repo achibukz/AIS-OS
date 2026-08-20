@@ -35,3 +35,16 @@ Whenever an active task carries a date or deadline:
 - **2026-08-19 (data/accuracy):** Always query live API sources and cross-verify dates before broadcasting market digests to prevent stale day-over-day price replication.
 - **2026-08-19 (notifications/email):** Email Debrief must strictly surface unread emails only (`is:unread`); never include emails that have already been opened/read by Aki, even if sent by VIPs or recruiters like Vanscell/ING.
 - **2026-08-19 (tasks/formatting):** When Aki invokes `/tasks` or asks for tasks, use the structured categorized format: Immediate Deadlines (grouped by timeline), DLSU Academics & Enrollment, Career & Finances Next Steps, and Systems & Engineering (achiOS/Asa/achiAgy) with markdown checkboxes (`- [ ] **Title:** details`) and file links.
+
+## 5. Harvested User Preferences & Corrections
+- **2026-08-20 (tasks):** Operational directive: This im planning to buy this at the end of our google one subscription which is on oct 14 so. create a calendar to cancel my current subscription on october 13. at the same time create a calendar or proposal to buy google ai pro for 275 pesos. put this in my tasks low prio
+- **2026-08-20 (general):** Operational directive: Do test driven development and testing to make sure. we are not making bad code. use the superpowers skill executng plans
+- **2026-08-20 (general):** Operational directive: When it comes to auditing and creating feature plans we should use claude opus but for execution we use gemini 3.7 flash
+- **2026-08-20 (voice):** Voice register adjustment: Keep responses concise, humble, candid, and direct; use Taglish for reasoning and English for conclusions; avoid corporate buzzwords.
+- **2026-08-20 (tools):** Never attach `ArtifactMetadata` when creating repository or project files; `ArtifactMetadata` is strictly restricted by Antigravity cortex to `<appDataDir>/brain/<conversation-id>/`. Use Python script execution or standard file tools for repository code.
+- **2026-08-20 (voice):** Voice register adjustment: - can you make it less formal like this:
+- **2026-08-20 (voice):** Voice register adjustment: Voice register adjustment: - can you make it less formal like this:
+- **2026-08-20 (general):** Formatting override: Change '60h 9m' to 'xd xh xm'
+- **2026-08-20 (voice):** Voice register adjustment: Voice register adjustment: Voice register adjustment: - can you make it less formal like this:
+- **2026-08-21 (voice):** Voice register adjustment: 1. can you make it less formal like this:
+- **2026-08-21 (voice):** Voice register adjustment: 4. Voice register adjustment: - can you make it less formal like this:
