@@ -195,12 +195,14 @@ Decisions:
 - Added native Telegram autocomplete menu (`set_my_commands` in `post_init`) with 15 direct commands.
 - Implemented proactive context health alerts at ≥75% (warning) and ≥90% (critical).
 - Added stripped plaintext fallback on Telegram HTML `BadRequest` errors.
-- Verified with 12 passing unit tests in `tests/` and deployed to `achi-agy.service`.
+## 2026-08-19 23:12 [saved]
+Goal: Audit TGDB vault archive, correction harvester, and self-learning loop (`docs/2026-08-18-feature-audit-tgdb-and-correction-harvester.md`).
 
-
-
-
-
-
-
-
+Decisions:
+- Audited `scripts/extract_corrections.py`, `scripts/export_transcripts.py`, `scripts/vault_inbox_sync.py`, and `scripts/evening_debrief.py`.
+- Identified root cause of broken self-learning loop: overly permissive regex (`take note`, `make sure`, `change X to Y`) ingesting conversational task requests and file edit instructions as permanent `.agentrules`.
+- Identified transcript exporter gaps: missing OpenAI keys in secret redactor, missing `<thought>`/`<thinking>` and case-insensitive tags in Claude cleaner, and trailing uncommitted AIS-OS changes in `vault_inbox_sync.py`.
+- Cleaned up `.agentrules` and `decisions/log.md` to remove polluted conversational task entries.
+- Formalized AI Model Allocation rule: Claude Opus for auditing and feature plan drafting; Gemini 3.7 Flash for execution, tool runs, and code implementation.
+- Audited NousResearch Hermes Agent self-learning loop (`agent/learn_prompt.py`, `learning_graph.py`, `learning_mutations.py`, `memory_tool.py`).
+- Produced Superpowers-grade implementation plan (`docs/superpowers/plans/2026-08-19-self-learning-loop-implementation.md`) detailing the dual-track memory/skill architecture, budget compaction, `/learn` authoring engine, and test suites ready for Gemini 3.7 Flash execution.

@@ -24,59 +24,20 @@ Whenever an active task carries a date or deadline:
 - **System Notifications Route Strictly via `@achiOSBot`**: All scheduled digests, briefs, and alerts must use credentials loaded from `~/.config/achios/telegram.env` (`@achiOSBot`).
 - **Do Not Inherit Daemon Process Tokens**: Scripts (`telegram_notify.py`) must prioritize `~/.config/achios/telegram.env` values rather than relying on ambient `TELEGRAM_BOT_TOKEN` in the process environment, preventing tasks spawned inside `@achiAgyOSBot` or `@achiOSClaudeBot` from hijacking notification dispatches.
 
-## 6. Harvested User Preferences & Corrections
+### 6. AI Model Allocation & Workstream Roles
+- **Auditing & Architecture Planning:** Use **Claude Opus** (or Claude 3.5 Sonnet / flagship reasoning) for code auditing, feature plan drafting, architectural reviews, and high-level strategy.
+- **Execution & Implementation:** Use **Gemini 3.7 Flash** (via Antigravity / agy) for fast execution, code changes, tool calls, debugging runs, and script builds.
 
-- **2026-08-17 (tasks):** Operational directive: All the tasks that i said we have to do. update the claude md for this also
-- **2026-08-17 (general):** Operational directive: To make this cron job to be only sonnet
-- **2026-08-17 (voice):** Operational directive: This connection and i want you to make a skill that if i want to make a cron and connect it to telegram. So for example i say i want this task or make a cron where you will chat about x or search something about x at 1pm. You will call this skill so that you know how to call telegram and how to create a cron in our server. Commit everything after.
-- **2026-08-17 (logging):** Operational directive: For future commits
-- **2026-08-17 (logging):** Operational directive: For future commits. this is for the achibuntu only so the server
-- **2026-08-17 (tasks):** Operational directive: When i ask you to add to my tasks you know where to put it and if there is a deadline or date that i suggested. add it to my gcal
-- **2026-08-17 (voice):** Operational directive: This emails on our tasks ill look into it in another date
-- **2026-08-17 (tasks):** Operational directive: A task or research i wanna do. i now have telegram chat bots for claude code, antigravity(gemini) and hermes(codex). lets research if we can make them
-- **2026-08-17 (general):** Operational directive: All the tmux commands that we can do now for both claude and agy.
-- **2026-08-17 (logging):** Operational directive: This in our connections.md and commit and push everything after:
-- **2026-08-17 (general):** Operational directive: This connection that we can do telegram with claude code through channels
-- **2026-08-17 (general):** Operational directive: SchoolMem bot is working already
-- **2026-08-17 (tasks):** Operational directive: The things we did and commit everything, update tasks
-- **2026-08-17 (voice):** Formatting override: Change 'name of tmux' to 'achios rather than operator'
-- **2026-08-17 (tasks):** Operational directive: The tasks needed to improve for this telegram bot. so that i will look into it later. take note and commit everything and that is all
-- **2026-08-18 (voice):** Formatting override: Change 'name of the cron' to 'just Email Debrief.'
-- **2026-08-18 (general):** Operational directive: Remove anything related to laguna since im manila campus.
-- **2026-08-18 (general):** Operational directive: What we discussed
-- **2026-08-18 (tasks):** Operational directive: I have to order my good moral tomorrow so update my gcal and tasks. this is high prio
-- **2026-08-18 (general):** Formatting override: Change 'calendar' to 'ing not dlsu'
-- **2026-08-18 (tasks):** Operational directive: I have my enrollment on august 24 put it on dlsu calendar
-- **2026-08-18 (general):** Operational directive: For our GEs we have
-- **2026-08-18 (logging):** Operational directive: All the things we did. like logs and commit everything
-- **2026-08-18 (tasks):** Operational directive: I have to get a med cert in an outside clinic. make it medium priority
-- **2026-08-18 (voice):** Formatting override: Change 'subject' to 'Abram Aki Bukuhan than Abram Bukuhan'
-- **2026-08-18 (voice):** Voice register adjustment: can you make it less formal like this:
-- **2026-08-18 (voice):** Voice register adjustment: take note on how we changed the email to fit the formalities and make it more casual a lil bit
-- **2026-08-18 (tasks):** Operational directive: I did the schedule send. it will be sent to them at 8am tom
-- **2026-08-18 (general):** Formatting override: Change 'here either — the edit was a plain-text append' to '`tasks.md` (three new task lines), no code or behavior touched. Nothing to act on.'
+## 7. Verified Operational Directives & Preferences
+- **2026-08-19 (notifications):** All school and DLSU-related announcements and email debriefs must strictly route to `@achiSchooNounceBot` (credentials in `~/.config/achios/telegram_school.env`), keeping `@schoMemBot` purely for two-way interactive queries.
+- **2026-08-19 (notifications):** All finance and ETF market digests (VOO, VXUS, QQQM) must strictly route to `@achiETFBot` (credentials in `~/.config/achios/telegram_finance.env`).
+- **2026-08-19 (shell/formatting):** Never pass strings containing currency symbols or raw dollar signs (`$710`, `$-0.38`) inside double-quoted bash strings; bash variable interpolation eats or corrupts them (`$7` -> empty, `$-` -> `hBc`). Use dedicated Python script files or single-quoted literals.
+- **2026-08-19 (data/accuracy):** Always query live API sources and cross-verify dates before broadcasting market digests to prevent stale day-over-day price replication.
+- **2026-08-19 (notifications/email):** Email Debrief must strictly surface unread emails only (`is:unread`); never include emails that have already been opened/read by Aki, even if sent by VIPs or recruiters like Vanscell/ING.
+- **2026-08-19 (tasks/formatting):** When Aki invokes `/tasks` or asks for tasks, use the structured categorized format: Immediate Deadlines (grouped by timeline), DLSU Academics & Enrollment, Career & Finances Next Steps, and Systems & Engineering (achiOS/Asa/achiAgy) with markdown checkboxes (`- [ ] **Title:** details`) and file links.
 
 ## 5. Harvested User Preferences & Corrections
-- **2026-08-18 (general):** Operational directive: What happened to not make the same mistake
-- **2026-08-19 (general):** Operational directive: Our changes
-- **2026-08-19 (notifications):** Operational directive: All school and DLSU-related announcements and email debriefs must strictly route to `@achiSchooNounceBot` (credentials in `~/.config/achios/telegram_school.env`), keeping `@schoMemBot` purely for two-way interactive queries.
-- **2026-08-19 (notifications):** Operational directive: All finance and ETF market digests (VOO, VXUS, QQQM) must strictly route to `@achiETFBot` (credentials in `~/.config/achios/telegram_finance.env`).
-- **2026-08-19 (general):** Operational directive: Our new connections so that in the future all school related will be in achiSchoolNouncements
-- **2026-08-19 (tasks):** Operational directive: Medium priority
-- **2026-08-19 (shell/formatting):** Operational directive: Never pass strings containing currency symbols or raw dollar signs (`$710`, `$-0.38`) inside double-quoted bash strings; bash variable interpolation eats or corrupts them (`$7` -> empty, `$-` -> `hBc`). Use dedicated Python script files or single-quoted literals.
-- **2026-08-19 (data/accuracy):** Operational directive: Always query live API sources and cross-verify dates before broadcasting market digests to prevent stale day-over-day price replication.
-- **2026-08-19 (general):** Operational directive: The mistakes you did. so that you wont repeat it again
-- **2026-08-19 (general):** Operational directive: Everything that we did
-- **2026-08-19 (general):** Operational directive: Bug for achiagy and learn for now that you cannot do that so that it wont happen again
-- **2026-08-19 (tasks):** Operational directive: The bug in achiagy so write a md file document so that we can fix it sometime and put it on our tasks and put it in low priority
-- [x] Improve email digest filtering, classification rules, and message formatting (`scripts/email_digest.py`) — Implemented hybrid noise filtering + LLM synthesis cards with DLSU faculty/suspension and ING context #achios !med @2026-08-19
-- **2026-08-19 (general):** Formatting override: Change 'task' to 'also wait for austin's reply'
-- **2026-08-19 (notifications/email):** Operational directive: Email Debrief must strictly surface unread emails only (`is:unread`); never include emails that have already been opened/read by Aki, even if sent by VIPs or recruiters like Vanscell/ING.
-- **2026-08-19 (general):** Operational directive: How i reply on this
-- **2026-08-19 (voice):** Operational directive: This email and put it in a md file in the transcript folder: Dear ImaGnation Registrant,
-- **2026-08-19 (general):** Operational directive: Submit all necessary files through bit.ly/ImaGnation2026-TeamPitch no later than 6:00 PM, August 24, 2026 (Monday). Only submit once for your team.
-- **2026-08-19 (voice):** Operational directive: This information provided by the organizers of the ImaGnation 2026: GCash Innovation Challenge is strictly confidential. You are advised not to share this information with anyone outside the designated participants and team members involved in the challenge.
-- **2026-08-19 (tasks):** Operational directive: The deadline: ImaGnation 2026 Pitch Submission Form
-- **2026-08-19 (general):** Operational directive: For the pitch submission form we need a pitch title
-- **2026-08-19 (tasks):** Operational directive: When i have my claude reset: I want to do deep research analysis and market analysis on our pitch, and everything that is needed, search statistics for it and everything with opus. high priority
-- **2026-08-19 (tasks/formatting):** Operational directive: When Aki invokes `/tasks` or asks for tasks, use the structured categorized format: Immediate Deadlines (grouped by timeline), DLSU Academics & Enrollment, Career & Finances Next Steps, and Systems & Engineering (achiOS/Asa/achiAgy) with markdown checkboxes (`- [ ] **Title:** details`) and file links.
+- **2026-08-20 (tasks):** Operational directive: This im planning to buy this at the end of our google one subscription which is on oct 14 so. create a calendar to cancel my current subscription on october 13. at the same time create a calendar or proposal to buy google ai pro for 275 pesos. put this in my tasks low prio
+- **2026-08-20 (general):** Operational directive: Do test driven development and testing to make sure. we are not making bad code. use the superpowers skill executng plans
+- **2026-08-20 (general):** Operational directive: When it comes to auditing and creating feature plans we should use claude opus but for execution we use gemini 3.7 flash
+- **2026-08-20 (voice):** Voice register adjustment: - can you make it less formal like this:

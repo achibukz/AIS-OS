@@ -800,4 +800,54 @@ Format with interactive checkboxes (`- [ ] **Title:** details`) and links to `ta
 **Domain:** `finances`
 **Owner:** Aki.
 
+## 2026-08-19 — AI Model Allocation: Claude Opus for Auditing/Planning vs Gemini 3.7 Flash for Execution
 
+**Decision:** Formally split agent workload roles across model architectures:
+1. **Auditing, Code Reviews, & Feature Planning:** Use **Claude Opus** (or Claude 3.5 Sonnet / flagship deep reasoning models) for exhaustive codebase audits, gap analysis, and system architecture planning.
+2. **Execution, Tool Runs, & Code Implementation:** Use **Gemini 3.7 Flash** (via Antigravity / `agy`) for rapid implementation, file editing, tool calling, unit test runs, and background tasks.
+
+**Why:** Claude Opus excels at high-level reasoning, identifying edge cases, architectural gaps, and synthesizing complex multi-file plans without hallucinating constraints; Gemini 3.7 Flash provides lightning-fast speed, low latency, and efficient tool calling for implementing code changes and running execution loops.
+
+**Domain:** `architecture`
+**Owner:** Aki.
+
+## 2026-08-20 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: This im planning to buy this at the end of our google one subscription which is on oct 14 so. create a calendar to cancel my current subscription on october 13. at the same time create a calendar or proposal to buy google ai pro for 275 pesos. put this in my tasks low prio
+
+**Why:** Harvested from dialogue session `2026-08-20-achiagyosbot-5117b42c.md`:
+> "ok take note of this im planning to buy this at the end of our google one subscription which is on oct 14 so. create a calendar to cancel my current subscription on october 13. at the same time create a calendar or proposal to buy google ai pro for 275 pesos. put this in my tasks low prio"
+
+**Domain:** `tasks`
+**Owner:** Aki.
+
+## 2026-08-20 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: Do test driven development and testing to make sure. we are not making bad code. use the superpowers skill executng plans
+
+**Why:** Harvested from dialogue session `2026-08-20-achiagyosbot-5117b42c.md`:
+> "apply all the critical findings and bud discovered. also the high leverage telegram ux wins. implement it incrementally in achiagy. make sure to do test driven development and testing to make sure. we are not making bad code. use the superpowers skill executng plans"
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-20 — User Correction Harvested (directive)
+
+**Decision:** Operational directive: When it comes to auditing and creating feature plans we should use claude opus but for execution we use gemini 3.7 flash
+
+**Why:** Harvested from dialogue session `2026-08-20-achiagyosbot-e37e08cd.md`:
+> "can you make agy claude opus subagents to audit 2026-08-18-feature-audit-tgdb-and-correction-harvester.md. to see the mistakes that we did. You can also check the logs. I think the self learning loop is broken. can we take note when it comes to auditing and creating feature plans we should use claude opus but for execution we use gemini 3.7 flash"
+
+**Domain:** `general`
+**Owner:** Aki.
+
+## 2026-08-20 — User Correction Harvested (style)
+
+**Decision:** Voice register adjustment: - can you make it less formal like this:
+
+**Why:** Harvested from dialogue session `2026-08-20-achiagyosbot-0a70b889.md`:
+> "- can you make it less formal like this:"
+
+**Domain:** `voice`
+**Target Store:** `memory`
+**Owner:** Aki.

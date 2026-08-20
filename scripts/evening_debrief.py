@@ -189,7 +189,7 @@ def check_failures_today() -> list[str]:
 
 
 def get_corrections_today(concluding_date: dt.date) -> list[str]:
-    """Retrieve user corrections and self-learning rules harvested today."""
+    """Retrieve verified user corrections and self-learning rules explicitly committed today."""
     date_str = concluding_date.isoformat()
     corrections: list[str] = []
 
@@ -206,16 +206,16 @@ def get_corrections_today(concluding_date: dt.date) -> list[str]:
         except Exception:
             pass
 
-    # 2. If none in decisions/log.md, scan live tgdb for today's directives
-    if not corrections:
+    # 2. Check .agentrules for today's explicitly committed entries
+    agentrules_path = SCRIPT_DIR.parent / ".agentrules"
+    if agentrules_path.exists():
         try:
-            from extract_corrections import scan_vault_tgdb
-            items = scan_vault_tgdb(days_lookback=1)
-            for item in items:
-                if item.date_str == date_str:
-                    c_text = f"({item.domain}) {item.rule_text}"
-                    if c_text not in corrections:
-                        corrections.append(c_text)
+            content = agentrules_path.read_text(encoding="utf-8", errors="replace")
+            pattern = rf"-\s+\*\*{re.escape(date_str)}\s+\([^)]+\):\*\*\s+([^\n]+)"
+            for match in re.findall(pattern, content):
+                clean = match.strip()
+                if clean and clean not in corrections:
+                    corrections.append(clean)
         except Exception:
             pass
 

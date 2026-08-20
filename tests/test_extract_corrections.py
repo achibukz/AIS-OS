@@ -106,7 +106,25 @@ def test_apply_corrections_dry_run(tmp_path):
         trigger_type="banned_word",
         rule_text="Banned word: unapproved",
         domain="voice",
+        target="memory",
     )
     count, summaries = apply_corrections([item], dry_run=True)
     assert count == 1
     assert len(summaries) == 1
+
+
+def test_ignore_subscription_cancellation(tmp_path):
+    sample_path = tmp_path / "2026-08-18-billing.md"
+    sample_text = """---
+title: "Billing note"
+date: 2026-08-18 20:00
+---
+
+> **Aki:** take note of this Google One subscription cancellation and refund receipt
+>
+> **@achiAgyOSBot:** Noted your subscription cancellation.
+"""
+    corrections = extract_corrections_from_text(sample_text, sample_path)
+    # Must be filtered out as ephemeral receipt / subscription cancellation
+    assert len(corrections) == 0
+
