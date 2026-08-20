@@ -951,3 +951,30 @@ guarantee is currently false, and "one guard per runtime" is what made it false.
 **What would change my mind:** if achiAgy turns out to be short-lived — if the agy bridge
 is an experiment Aki expects to retire once Claude Code's own mobile story improves, then
 a shared core is premature and the right move is just the path guard.
+
+
+## 2026-08-20 — Automated memory writes require a model gate, not a regex
+
+**Decision:** No unattended process may write to `MEMORY.md`, `USER.md`, `.agentrules`, or
+`decisions/log.md` on the strength of a regex match alone. A model call must classify each
+candidate as a durable preference or a one-off before it is persisted, and the harvester's
+own output shape is never a valid input to itself.
+
+**Why:** The 2026-08-20 audit found `extract_corrections.py` running every 15 minutes,
+re-ingesting the memory that achiAgy injects into each prompt, and writing it back with a
+doubled prefix each pass. Three generations reached `MEMORY.md` and 54 of 86 entries in
+`decisions/log.md` are now machine noise. The file's own docstring claims an LLM gating
+filter; none was ever implemented. A regex cannot tell "I prefer X" from "buy X on Oct 14",
+and both are now permanent operating rules.
+
+**Alternatives considered:** (a) Tighten the regexes — rejected, that was tried on 08-19 and
+the loop re-formed within a day; the failure is structural, not a pattern-quality problem.
+(b) Drop the harvester and rely on `/learn` alone, which is what Hermes does — genuinely
+tempting and still the fallback if the gate proves unreliable, but it gives up passive
+capture entirely. (c) Keep regex as a *candidate generator* and gate on a cheap batched
+Haiku call — chosen, because it keeps passive capture while putting judgment in the loop.
+
+**Owner:** Aki. Sequenced in `tasks.md`: cut the recursion first, then clean, then gate.
+
+**What would change my mind:** if the gate's false-positive rate stays high after a week of
+dry runs, delete the harvester and keep `/learn` only. Hermes ships without one for a reason.

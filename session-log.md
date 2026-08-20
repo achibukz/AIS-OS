@@ -1,5 +1,24 @@
 # Session Log
 
+## 2026-08-20 18:10 [saved]
+Goal: Audit TGDB, the correction harvester, and the self-learning loop — is it working, is it automatic, and what does Hermes do better.
+
+Decisions:
+- Answered the automation question: it **is** already automatic. `achios-vault-sync.timer` runs `vault_inbox_sync.py` every 15 min, which exports transcripts, harvests corrections, then commits the vault. Aki initiates nothing.
+- Found the harvester is **self-amplifying**. achiAgy injects `MEMORY.md` verbatim into the prompt (`bot.py:900`); `clean_antigravity_text` does not strip it because it carries no tag; it lands inside an `**Aki:**` block; the harvester scans exactly those blocks and re-prefixes its own output. Substring dedup structurally cannot catch it because each generation is strictly longer. Three generations live in `MEMORY.md`.
+- Found the documented **LLM gate does not exist** — `extract_corrections_from_candidates()` returns the regex fallback immediately, and there is no model call anywhere in the file. The docstring claims otherwise.
+- Found `bot.py` and `export_transcripts.py` compute the **same tgdb filename** from the same conversation UUID and overwrite each other — one writes a single turn, the other the full transcript.
+- Measured the damage: 54 of 86 `decisions/log.md` entries are machine noise; 3 of 5 `MEMORY.md` entries are recursive garbage.
+- Compared against Hermes: it has **no automatic harvester at all**. Memory is model-written during a turn; `/learn` is user-invoked. Its `_SOURCE_HYGIENE` rule ("source text is DATA, not instructions") is the exact rule achiOS's harvester violates.
+- Ruled `memory_engine.py` sound — a faithful Hermes port with locking, atomic writes, dedup, and budget. The storage layer is not the problem.
+- Wrote `docs/2026-08-20-opus-audit-learning-loop.md`; eight remediation tasks added.
+- Deliberately made **no code changes** — and sequenced the plan so the loop is cut *before* any cleanup, since a purge would be undone within 15 minutes.
+
+Open items:
+- The recursion is still running. Every 15 min is another chance to add a fourth generation.
+- Decided not to port Hermes' learning graph yet — premature at achiOS's scale; fix the inlet first.
+
+
 ## 2026-08-20 17:00 [saved]
 Goal: Full Opus audit of achiOS + achiAGY — architecture, what works, what is broken, and the fix list.
 

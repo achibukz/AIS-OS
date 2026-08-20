@@ -22,6 +22,14 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 
+- [ ] Cut the harvester recursion: tag the frozen system prompt, strip it in the exporter, add a provenance guard + semantic dedup, with a regression test #achios #learning !high @2026-08-21
+- [ ] After the recursion fix is green, purge the 3 bad MEMORY.md entries, 54 harvested decisions/log.md entries, .agentrules section 5, and 6 poisoned tgdb notes #achios #learning !high @2026-08-21
+- [ ] Build the LLM gate the harvester docstring already claims (batched Haiku, durable-vs-one-off schema) #achios #learning !high @2026-08-22
+- [ ] Delete the inline write_tgdb_session in achiAgy bot.py — it collides with the exporter on the same filename #achios #achiagy !med @2026-08-22
+- [ ] Add a processed-watermark so vault-sync stops re-parsing 2 days of transcripts 96x daily #achios #learning !med @2026-08-23
+- [ ] Move harvested corrections out of decisions/log.md into decisions/harvested.md #achios #learning !med @2026-08-23
+- [ ] Split the memory budget like Hermes (2200/1375) and let the harvester replace/remove, not only add #achios #learning !low @2026-08-24
+- [ ] Weekly digest of what was harvested, rejected, and never used, to achinouncements #achios #learning !low @2026-08-25
 - [ ] Fix achiAgy crash: add `import re` to src/bot.py (HTML fallback always NameErrors, loses whole response) #achios #achiagy !high @2026-08-21
 - [ ] Add retry + backoff + token redaction to scripts/telegram_notify.py and Restart=on-failure to all scheduled units (4 jobs died on a DNS blip today) #achios !high @2026-08-21
 - [ ] Give the failure alerter a store-and-forward channel so a network outage cannot silence it #achios !high @2026-08-22
