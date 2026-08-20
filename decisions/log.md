@@ -841,13 +841,42 @@ Format with interactive checkboxes (`- [ ] **Title:** details`) and links to `ta
 **Domain:** `general`
 **Owner:** Aki.
 
-## 2026-08-20 — User Correction Harvested (style)
+## 2026-08-20 — Voice Register Adjustment
 
-**Decision:** Voice register adjustment: - can you make it less formal like this:
+**Decision:** Keep responses concise, humble, candid, and direct; use Taglish for reasoning and English for conclusions; avoid corporate buzzwords.
 
-**Why:** Harvested from dialogue session `2026-08-20-achiagyosbot-0a70b889.md`:
-> "- can you make it less formal like this:"
+**Why:** User requested less formal communication style aligned with natural voice profile.
 
 **Domain:** `voice`
+**Target Store:** `memory`
+**Owner:** Aki.
+
+## 2026-08-20 — Antigravity Stream Error Propagation & Quota Limit Surfacing
+
+**Decision:** Captured `error` from `result` and `error_message` events in `AgyClient` so when a model hits individual quota or rate limits (e.g. Claude Opus 5-hour limit), the Telegram daemon renders a clear error banner with reset countdowns instead of silently completing with an empty message.
+
+**Why:** Prevents silent failures and gives immediate visibility into backend quota exhaustion.
+
+**Domain:** `achiagy`
+**Target Store:** `memory`
+**Owner:** Aki.
+
+## 2026-08-20 — Antigravity Models & Quota Live Dashboard in /usage
+
+**Decision:** Connected `/usage` command to `https://cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary` and Google OAuth userinfo to display live account email, Gemini Models weekly/5h limits, Claude/GPT Models weekly/5h limits, progress bars, and countdowns formatted as `Xd Xh Xm`.
+
+**Why:** Mirrors the Antigravity CLI `/usage` modal directly inside Telegram for effortless quota monitoring.
+
+**Domain:** `achiagy`
+**Target Store:** `memory`
+**Owner:** Aki.
+
+## 2026-08-20 — Hermes Dual-Track Self-Learning Engine Deployment & TGDB Audit
+
+**Decision:** Deployed `MemoryEngine` in `src/memory_engine.py` with 2.5k character budgeting, atomic writes, and CRUD mutations for `~/.config/achios/MEMORY.md` and `USER.md`. Connected `/learn` authoring prompt and updated `extract_corrections.py` to route to memory, `.agentrules`, and `decisions/log.md`. Verified TGDB archive and exporter with 29 passing unit tests in `achiAgy` and 61 passing tests in `AIS-OS`.
+
+**Why:** Fulfills the self-learning loop plan while preserving prefix cache safety and eliminating noisy conversational rule pollution.
+
+**Domain:** `architecture`
 **Target Store:** `memory`
 **Owner:** Aki.
