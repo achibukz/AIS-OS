@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "properties": {
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "index": {"type": "integer"},
+          "verdict": {"type": "string", "enum": ["durable", "one_off"]},
+          "rule": {"type": "string"},
+          "reason": {"type": "string"},
+          "target": {"type": "string", "enum": ["memory", "user"]}
+        },
+        "required": ["index", "verdict", "rule", "reason", "target"]
+      }
+    }
+  },
+  "required": ["rules"]
+}
