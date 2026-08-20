@@ -431,3 +431,29 @@ Haiku call — chosen, because it keeps passive capture while putting judgment i
 
 **What would change my mind:** if the gate's false-positive rate stays high after a week of
 dry runs, delete the harvester and keep `/learn` only. Hermes ships without one for a reason.
+
+## 2026-08-21 — Two writers reach declarative memory, only one is audited
+
+**Decision:** Recorded as an open finding, not yet resolved. Flagged during the Task 8
+live test of self-learning loop v2.
+
+**What happened:** The live test passed, but `MEMORY.md` gained an entry the loop never
+wrote. Bot log shows the agy model called `memory_engine.py add --target memory` itself
+at 18:03:46, 105 seconds before the turn-10 review fired and wrote its own version to
+`USER.md`. Same preference, two files, two phrasings.
+
+**Why it matters:** `build_frozen_system_prompt()` exposes a `manage_memory` tool
+(`achiAgy/src/bot.py:164-167`), so the model can write to memory at will. That path has
+no ledger record, no gate classification, no rate cap, and no provenance guard — it
+bypasses every control v2 was built to provide. It also makes the 2026-08-27 audit's
+precision and recall figures wrong, because the ledger cannot see those writes.
+
+**Alternatives:**
+- Remove `manage_memory` from the system prompt. Single writer, fully auditable, but
+  `/learn` depends on it and "remember this" would no longer take effect immediately.
+- Instruct the model not to write unprompted. Unenforced, and the audit stays blind.
+- Record every write in the ledger inside the `memory_engine.py` CLI entrypoint, so any
+  writer is logged regardless of origin. Preferred: keeps both paths working and makes
+  the audit honest.
+
+**Owner:** Aki to choose before the 2026-08-27 audit, since the audit's numbers depend on it.
