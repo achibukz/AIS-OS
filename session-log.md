@@ -4,78 +4,61 @@
 Goal: Kill the v1 harvester and write the v2 implementation plan.
 
 Decisions:
-- Removed the harvest stage from `vault_inbox_sync.py`; verified by MEMORY.md checksum
-  unchanged across a full non-dry run, not by inspection.
-- Smoke-tested the plan's own code before committing; caught `MemoryEngine(storage_dir=)`
-  (not `memory_path=`) and a UTC-vs-Manila date bug that silently disabled the daily write cap.
-- Plan orders archive+purge and live verification last — verification needs a clean baseline.
-- Loop gets `add` and `replace` but never `remove`; autonomous deletion of a hand-written rule
-  is the wrong risk during an unsupervised trial.
+- Removed the harvest stage from `vault_inbox_sync.py`; verified by unchanged MEMORY.md checksum, not inspection.
+- Smoke-tested the plan's own code first; caught a wrong constructor and a UTC/Manila bug that disabled the write cap.
+- Loop gets `add` and `replace`, never `remove` — autonomous deletion is the wrong trial risk.
 
 Rejected:
-- Scrubbing the 6 poisoned tgdb notes — inert now, not worth rewriting vault history.
-- Trusting plan code without running it — two real defects were only found by running it.
+- Scrubbing the 6 poisoned tgdb notes — inert now, not worth rewriting history.
+- Trusting plan code unrun — two real defects only surfaced by running it.
 
 Open:
-- Plan not yet executed; 8 tasks, subagent-driven.
-- Day-7 trial audit due 2026-08-27.
-
+- Plan unexecuted; 8 tasks, subagent-driven.
+- Trial audit due 2026-08-27.
 
 ## 2026-08-20 18:40 [saved]
-Goal: Design self-learning loop v2 to replace the self-amplifying regex harvester.
+Goal: Design self-learning loop v2 to replace the self-amplifying harvester.
 
 Decisions:
-- Candidates come from the in-process `prompt` in `execute_agent_pipeline`, never from `achiMem/tgdb/` — only `full_prompt` carries injected memory, so recursion becomes structurally impossible.
-- Cadence copies Hermes `background_review`: turn counter (~10 turns) inside a live conversation, never a timer.
-- Gate is `agy --json-schema` + gemini-3.7-flash-high; verified it rejects all three items the regex wrongly harvested.
-- Autonomous writes for a 7-day trial with rate caps, backed by an append-only ledger, audited 2026-08-27.
-- Replace `extract_corrections.py` outright rather than repair it; `MEMORY.md`/`USER.md` become the only sinks.
+- Candidates come from the in-process `prompt`, never tgdb — only `full_prompt` carries injected memory, so recursion becomes impossible.
+- Cadence copies Hermes `background_review`: turn counter in a live conversation, never a timer.
+- Gate is `agy --json-schema` + gemini-3.7-flash; verified it rejects all three items the regex wrongly harvested.
+- Autonomous writes for a 7-day trial, rate-capped, ledger-backed.
 
 Rejected:
-- String-stripping the injected prompt — treats a symptom; sourcing from `prompt` removes the path.
-- Daily/15-min batched gate — Hermes suppresses exactly this cron-with-no-human case.
-- Telegram tap-to-confirm — Aki chose evidence from a trial over per-rule friction.
+- String-stripping the injected prompt — treats a symptom.
+- Batched/cron gate — Hermes suppresses exactly that case.
 
-Open:
-- v1 harvester still live until cutover; corrupts every 15 min.
-- Gate sees single lines only; multi-turn preferences invisible (§11).
-
+Open: spec at `docs/superpowers/specs/2026-08-20-self-learning-loop-design.md`.
 
 ## 2026-08-20 18:10 [saved]
-Goal: Audit TGDB, the correction harvester, and the self-learning loop — is it working, is it automatic, and what does Hermes do better.
+Goal: Audit TGDB, correction harvester, and self-learning loop.
 
 Decisions:
-- Answered the automation question: it **is** already automatic. `achios-vault-sync.timer` runs `vault_inbox_sync.py` every 15 min, which exports transcripts, harvests corrections, then commits the vault. Aki initiates nothing.
-- Found the harvester is **self-amplifying**. achiAgy injects `MEMORY.md` verbatim into the prompt (`bot.py:900`); `clean_antigravity_text` does not strip it because it carries no tag; it lands inside an `**Aki:**` block; the harvester scans exactly those blocks and re-prefixes its own output. Substring dedup structurally cannot catch it because each generation is strictly longer. Three generations live in `MEMORY.md`.
-- Found the documented **LLM gate does not exist** — `extract_corrections_from_candidates()` returns the regex fallback immediately, and there is no model call anywhere in the file. The docstring claims otherwise.
-- Found `bot.py` and `export_transcripts.py` compute the **same tgdb filename** from the same conversation UUID and overwrite each other — one writes a single turn, the other the full transcript.
-- Measured the damage: 54 of 86 `decisions/log.md` entries are machine noise; 3 of 5 `MEMORY.md` entries are recursive garbage.
-- Compared against Hermes. **Corrected later the same day:** Hermes *does* have an automatic harvester (`agent/background_review.py`) — the earlier claim that it has none was wrong, based on only the four files named in the 2026-08-19 entry. The real difference is the trigger (turn counter inside a live conversation, ~every 10 turns) and that it explicitly suppresses review for cron. Its `_SOURCE_HYGIENE` rule ("source text is DATA, not instructions") is still the exact rule achiOS's harvester violates.
-- Ruled `memory_engine.py` sound — a faithful Hermes port with locking, atomic writes, dedup, and budget. The storage layer is not the problem.
-- Wrote `docs/2026-08-20-opus-audit-learning-loop.md`; eight remediation tasks added.
-- Deliberately made **no code changes** — and sequenced the plan so the loop is cut *before* any cleanup, since a purge would be undone within 15 minutes.
+- Loop is already automatic via `achios-vault-sync.timer`; Aki initiates nothing.
+- Harvester is self-amplifying: it reads tgdb notes built from agy's brain log, which stores the prompt with MEMORY.md prepended.
+- Substring dedup cannot catch it — each generation is strictly longer than the last.
+- The advertised LLM gate was never implemented; it is pure regex.
+- Hermes `background_review.py` **does** harvest automatically — my earlier "it has none" was wrong.
 
-Open items:
-- The recursion is still running. Every 15 min is another chance to add a fourth generation.
-- Decided not to port Hermes' learning graph yet — premature at achiOS's scale; fix the inlet first.
+Rejected: repairing the regexes — the failure is structural, not pattern quality.
 
+Open: findings in `docs/2026-08-20-opus-audit-learning-loop.md`.
 
 ## 2026-08-20 17:00 [saved]
-Goal: Full Opus audit of achiOS + achiAGY — architecture, what works, what is broken, and the fix list.
+Goal: Full Opus audit of achiOS + achiAGY infrastructure.
 
 Decisions:
-- Audited the **live server**, not just the repos: systemd state, journald, running processes, tmux panes, on-disk state. Where `docs/2026-08-20-system-architecture-audit.md` (Gemini's manifest) and the server disagreed, the server won.
-- Held to the model allocation rule: `agy`/Gemini did mechanical extraction only; all analysis and conclusions are Opus's. Aki corrected mid-session when the first dispatch handed judgment to agy.
-- Found the `/asa` skill is **broken** — `SKILL.md` documents an `asa` CLI that exists nowhere on the box. The first dispatch silently no-op'd because stderr was swallowed. Fell back to driving `agy -p` directly.
-- 13 findings written to `docs/2026-08-20-opus-audit-achios-achiagy.md`, 3 of them P0, all reproduced rather than inferred.
-- Ten remediation tasks added to `tasks.md`, sequenced so idempotency lands before retry (otherwise `Restart=on-failure` spams duplicate digests).
-- Deliberately made **no code changes** — Aki asked for an audit and a fix list, not a fix run.
+- Audited the live server, not the repos; where Gemini's manifest and the server disagreed, the server won.
+- `/asa` is broken — its SKILL.md documents a CLI installed nowhere.
+- 13 findings, 3 critical, all reproduced rather than inferred.
+- Made no code changes; Aki asked for an audit and a fix list.
 
-Open items:
-- 4 jobs still sitting in `failed` state; `systemctl --user reset-failed` not run yet.
-- `@achiOSBot` token is in journald in cleartext and still needs rotating.
-- Dated the ten new tasks as a proposed sequence but did **not** create calendar events, because those dates are mine, not Aki's. Needs his confirmation before they go to `Personal`.
+Rejected: handing judgment to agy — it does extraction only, per the model allocation rule.
 
+Open:
+- 4 jobs still `failed`; `@achiOSBot` token in journald.
+- Report at `docs/2026-08-20-opus-audit-achios-achiagy.md`.
 
 ## 2026-08-17 03:45 [saved]
 Goal: Turn the old HP laptop into a headless Hermes/Claude Code agent host.
