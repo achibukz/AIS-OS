@@ -269,34 +269,12 @@ Rejected: relying on regex tightening alone — the loop re-formed within a day.
 
 Open: superseded by the v2 spec; see 2026-08-20 entries.
 
-## 2026-08-19 23:05 [saved]
-Goal: Audit achiAgy with Claude Opus and apply critical reliability & UX fixes via TDD.
-
-Decisions:
-- Dispatched dual Claude Opus 4.6 (Thinking) subagents to audit systems reliability and Telegram UX.
-- Fixed `session_manager.py` token metrics: stopped sliding-context accumulation (fixed bogus 1.65B token metric), added `peak_context_tokens` tracking, and prevented double turn-counting via `set_conversation_id()`.
-- Added rich `MODEL_REGISTRY` in `config.py` with exact token context and output bounds.
-- Added native Telegram autocomplete menu (`set_my_commands` in `post_init`) with 15 direct commands.
-- Implemented proactive context health alerts at ≥75% (warning) and ≥90% (critical).
-- Added stripped plaintext fallback on Telegram HTML `BadRequest` errors.
-## 2026-08-19 23:12 [saved] [superseded by 2026-08-20]
-Goal: Audit TGDB vault archive, correction harvester, and self-learning loop (`docs/2026-08-18-feature-audit-tgdb-and-correction-harvester.md`).
-
-Decisions:
-- Audited `scripts/extract_corrections.py`, `scripts/export_transcripts.py`, `scripts/vault_inbox_sync.py`, and `scripts/evening_debrief.py`.
-- Identified root cause of broken self-learning loop: overly permissive regex (`take note`, `make sure`, `change X to Y`) ingesting conversational task requests and file edit instructions as permanent `.agentrules`. **[Superseded 2026-08-20: the regexes were a symptom. The root cause is architectural — the harvester reads tgdb notes built from agy's brain log, which stores the prompt *with* MEMORY.md prepended, so it ingests its own output. Tightening regexes cannot fix this and did not.]**
-- Identified transcript exporter gaps: missing OpenAI keys in secret redactor, missing `<thought>`/`<thinking>` and case-insensitive tags in Claude cleaner, and trailing uncommitted AIS-OS changes in `vault_inbox_sync.py`.
-- Cleaned up `.agentrules` and `decisions/log.md` to remove polluted conversational task entries.
-- Formalized AI Model Allocation rule: Claude Opus for auditing and feature plan drafting; Gemini 3.7 Flash for execution, tool runs, and code implementation.
-- Audited NousResearch Hermes Agent self-learning loop (`agent/learn_prompt.py`, `learning_graph.py`, `learning_mutations.py`, `memory_tool.py`).
-- Produced Superpowers-grade implementation plan (`docs/superpowers/plans/2026-08-19-self-learning-loop-implementation.md`) detailing the dual-track memory/skill architecture, budget compaction, `/learn` authoring engine, and test suites ready for Gemini 3.7 Flash execution.
 ## 2026-08-20 08:42 [saved]
-Goal: Merge self-learning engine into main/master, fix model stream error handling, and implement live Antigravity Models & Quota in /usage.
+Goal: Ship self-learning engine plus live Antigravity quota in /usage.
 
 Decisions:
-- Merged all self-learning loop and TGDB features into `main` (`AIS-OS`) and `master` (`achiAgy`); verified all 29 tests in `achiAgy` and 61 tests in `AIS-OS`.
-- Fixed Antigravity CLI event streaming in `src/agy_client.py` and `src/bot.py` to capture and surface backend error events (e.g. Opus 5-hour quota exhaustion) rather than silently completing.
-- Built live Antigravity backend quota connector in `src/quota.py`, querying `https://cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary` and Google OAuth userinfo.
-- Redesigned `/usage` command output to display live progress bars, exact percentages, and relative refresh countdowns formatted as `Xd Xh Xm` across Gemini and Claude/GPT model groups.
-- Marked Hermes Self-Learning Loop implementation and TGDB architecture audit done in `tasks.md`.
-- Restarted `achi-agy.service` and confirmed live Telegram operation.
+- Surface backend error events from the Antigravity stream instead of completing silently — quota exhaustion had looked like success.
+- Query `cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary` for live quota rather than estimating from local counters.
+- `/usage` renders progress bars and refresh countdowns; raw numbers were unreadable on a phone.
+
+Rejected: inferring quota from local token tallies — drifts from the backend.
