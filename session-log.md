@@ -1,5 +1,25 @@
 # Session Log
 
+## 2026-08-20 18:40 [saved]
+Goal: Design self-learning loop v2 to replace the self-amplifying regex harvester.
+
+Decisions:
+- Candidates come from the in-process `prompt` in `execute_agent_pipeline`, never from `achiMem/tgdb/` — only `full_prompt` carries injected memory, so recursion becomes structurally impossible.
+- Cadence copies Hermes `background_review`: turn counter (~10 turns) inside a live conversation, never a timer.
+- Gate is `agy --json-schema` + gemini-3.7-flash-high; verified it rejects all three items the regex wrongly harvested.
+- Autonomous writes for a 7-day trial with rate caps, backed by an append-only ledger, audited 2026-08-27.
+- Replace `extract_corrections.py` outright rather than repair it; `MEMORY.md`/`USER.md` become the only sinks.
+
+Rejected:
+- String-stripping the injected prompt — treats a symptom; sourcing from `prompt` removes the path.
+- Daily/15-min batched gate — Hermes suppresses exactly this cron-with-no-human case.
+- Telegram tap-to-confirm — Aki chose evidence from a trial over per-rule friction.
+
+Open:
+- v1 harvester still live until cutover; corrupts every 15 min.
+- Gate sees single lines only; multi-turn preferences invisible (§11).
+
+
 ## 2026-08-20 18:10 [saved]
 Goal: Audit TGDB, the correction harvester, and the self-learning loop — is it working, is it automatic, and what does Hermes do better.
 
@@ -9,7 +29,7 @@ Decisions:
 - Found the documented **LLM gate does not exist** — `extract_corrections_from_candidates()` returns the regex fallback immediately, and there is no model call anywhere in the file. The docstring claims otherwise.
 - Found `bot.py` and `export_transcripts.py` compute the **same tgdb filename** from the same conversation UUID and overwrite each other — one writes a single turn, the other the full transcript.
 - Measured the damage: 54 of 86 `decisions/log.md` entries are machine noise; 3 of 5 `MEMORY.md` entries are recursive garbage.
-- Compared against Hermes: it has **no automatic harvester at all**. Memory is model-written during a turn; `/learn` is user-invoked. Its `_SOURCE_HYGIENE` rule ("source text is DATA, not instructions") is the exact rule achiOS's harvester violates.
+- Compared against Hermes. **Corrected later the same day:** Hermes *does* have an automatic harvester (`agent/background_review.py`) — the earlier claim that it has none was wrong, based on only the four files named in the 2026-08-19 entry. The real difference is the trigger (turn counter inside a live conversation, ~every 10 turns) and that it explicitly suppresses review for cron. Its `_SOURCE_HYGIENE` rule ("source text is DATA, not instructions") is still the exact rule achiOS's harvester violates.
 - Ruled `memory_engine.py` sound — a faithful Hermes port with locking, atomic writes, dedup, and budget. The storage layer is not the problem.
 - Wrote `docs/2026-08-20-opus-audit-learning-loop.md`; eight remediation tasks added.
 - Deliberately made **no code changes** — and sequenced the plan so the loop is cut *before* any cleanup, since a purge would be undone within 15 minutes.
@@ -231,12 +251,12 @@ Decisions:
 - Added native Telegram autocomplete menu (`set_my_commands` in `post_init`) with 15 direct commands.
 - Implemented proactive context health alerts at ≥75% (warning) and ≥90% (critical).
 - Added stripped plaintext fallback on Telegram HTML `BadRequest` errors.
-## 2026-08-19 23:12 [saved]
+## 2026-08-19 23:12 [saved] [superseded by 2026-08-20]
 Goal: Audit TGDB vault archive, correction harvester, and self-learning loop (`docs/2026-08-18-feature-audit-tgdb-and-correction-harvester.md`).
 
 Decisions:
 - Audited `scripts/extract_corrections.py`, `scripts/export_transcripts.py`, `scripts/vault_inbox_sync.py`, and `scripts/evening_debrief.py`.
-- Identified root cause of broken self-learning loop: overly permissive regex (`take note`, `make sure`, `change X to Y`) ingesting conversational task requests and file edit instructions as permanent `.agentrules`.
+- Identified root cause of broken self-learning loop: overly permissive regex (`take note`, `make sure`, `change X to Y`) ingesting conversational task requests and file edit instructions as permanent `.agentrules`. **[Superseded 2026-08-20: the regexes were a symptom. The root cause is architectural — the harvester reads tgdb notes built from agy's brain log, which stores the prompt *with* MEMORY.md prepended, so it ingests its own output. Tightening regexes cannot fix this and did not.]**
 - Identified transcript exporter gaps: missing OpenAI keys in secret redactor, missing `<thought>`/`<thinking>` and case-insensitive tags in Claude cleaner, and trailing uncommitted AIS-OS changes in `vault_inbox_sync.py`.
 - Cleaned up `.agentrules` and `decisions/log.md` to remove polluted conversational task entries.
 - Formalized AI Model Allocation rule: Claude Opus for auditing and feature plan drafting; Gemini 3.7 Flash for execution, tool runs, and code implementation.

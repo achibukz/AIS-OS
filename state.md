@@ -1,93 +1,63 @@
 # State
 
+_Updated 2026-08-20 18:40. Previous state (server buildout Phase 8, 2026-08-17) is summarised
+under "Carried forward" — the still-open items were preserved, the completed ones dropped._
+
 ## Current Goal
-`achibuntu` (HP 14-ac137TX) is live as a headless agent host. Finishing Phase 8 verification
-of `achiMem/output/2026-08-16-linux-server-buildout.md`.
+
+Self-learning loop v2: design approved, spec written, plan not yet written.
 
 ## Plan Status
-Runbook Phases 0–7 complete. **Phase 8 (prove it works) is 1 of 4:**
-- [x] Message the bot from the phone and get a reply
-- [ ] Ask it to read a file from a vault
-- [ ] Schedule a one-off cron job, confirm delivery to Telegram
-- [~] **Pull the power cord** — blocked, not pending. No battery is fitted, so this cannot pass
-      as written (see Open Issues)
+
+Spec at `docs/superpowers/specs/2026-08-20-self-learning-loop-design.md` — **approved by Aki**.
+
+Next step: invoke `writing-plans` for the task breakdown. Implementation is Gemini 3.7 Flash's
+job per `.agentrules` §6; Opus wrote the design.
+
+Cutover order in the spec (§10) is non-negotiable:
+1. Tests green
+2. Delete harvest stage from `vault_inbox_sync.py` (lines 150-159)
+3. **Then** archive + purge the v1 data
+4. Deploy `background_review`, restart `achi-agy.service`
+5. 10-turn live verification via Telegram
 
 ## Evidence
-- Gateway: `active`, ~104 MB, lingering user systemd unit, `✓ telegram connected` at 19:51:04
-- Model: OpenRouter `nvidia/nemotron-3-ultra-550b-a55b:free`, ₱0/month
-- Reach: Tailscale `achibuntu` / `100.106.210.38`; SSH alias + key auth working
-- `achimem_capture.py`: 51 tests pass; verified against a real two-clone git fixture, not just mocks
-- Wiki written and pushed (`892bf20`): new `achibuntu` page, 4 open questions closed
+
+- `agy --json-schema` works. Verified: gemini-3.7-flash-high correctly returned `one_off` for
+  "can you make it less formal like this:", "buy google ai pro on october 14", and the
+  recursive `"Voice register adjustment: Voice register adjustment: …"` line, and `durable`
+  for "never use the word leverage in my emails".
+- Cost of one gate call: 20,836 input tokens, ~7s. agy's own system prompt dominates, so cost
+  is per-call not per-candidate.
+- `prompt` and `full_prompt` are separate variables in `execute_agent_pipeline`; only
+  `full_prompt` receives the frozen memory. This is what makes v2's approach work.
+- Hermes cadence: `_memory_nudge_interval = 10` (`agent_init.py:1744`); review suppressed for
+  cron at `turn_finalizer.py:788`.
+- Live damage from v1: 3 of 5 `MEMORY.md` entries recursive; 54 of 86 `decisions/log.md`
+  entries machine-generated.
 
 ## Open Issues
-- **Brownout survival is already answered, and the answer is no.** There is no battery in the
-  box at all — the kernel reports `ACPI: battery: Slot [BAT0] (battery absent)` and only `AC`
-  appears under `/sys/class/power_supply/`. With no battery and no BIOS "Restore on AC Power
-  Loss", mains loss is an instant power-off and the box stays off until someone presses the
-  button. Fitting a battery is the fix; `Persistent=true` on the timers is the mitigation.
-- **1 TB HDD unattached.** Intended for `/srv` as a restic/borg target; both vaults are currently
-  protected only by their git remotes.
-- **career-ops data unreachable on the server** — `cv.md`, `applications.md`, `profile.yml` are
-  gitignored, so recruiter replies degrade there. Deferred because password SSH was open; that
-  objection is now gone, so it can be revisited.
-- Codex is the intended eventual model. Verify the plan tier permits third-party harnesses
-  **before** subscribing — the Anthropic Pro/Max mistake has the same shape.
+
+- **The v1 harvester is still running.** Every 15 minutes is another chance to add a fourth
+  generation. Offered Aki a standalone two-line fix (delete the harvest stage now, ahead of
+  the full plan); no answer yet.
+- Ten P0/P1 fixes from the infra audit (`docs/2026-08-20-opus-audit-achios-achiagy.md`) are in
+  `tasks.md` and untouched. `import re` in `achiAgy/src/bot.py` is a one-line crash fix.
+- 4 systemd units still in `failed` state; `systemctl --user reset-failed` not run.
+- `@achiOSBot` token is in journald in cleartext, not yet rotated.
+- Ten tasks added today carry dates I chose, not Aki. No calendar events created for them —
+  needs his confirmation before they go to `Personal`.
 
 ## Waiting on Aki
-- **schoolMem bot is still `dmPolicy: pairing`.** Strangers who find `@schoMemBot` get a pairing
-  code back. Fix is `/telegram:access policy allowlist` run *inside the bot's own session* — that
-  skill resolves `TELEGRAM_STATE_DIR` from the environment, so running it anywhere else writes to
-  the empty default dir. Aki is already in `allowFrom`, so this locks nothing out.
 
-## Done since last save (2026-08-17)
-- **achiOS bot's silence diagnosed and fixed.** It was not "down" — the telegram plugin is
-  enabled globally, so *every* Claude Code session on the box spawned its `server.ts`, which
-  defaults to `~/.claude/channels/telegram/`, SIGTERMs whatever `bot.pid` names and claims the
-  token's single `getUpdates` slot. An ordinary session polls but cannot inject (`Channel
-  notifications skipped: not in --channels list`), so messages were fetched, acked and dropped
-  with no error anywhere Aki could see. State moved to `~/.claude/channels/telegram-achios/`,
-  which is only reachable with `TELEGRAM_STATE_DIR` set. Unit, `CLAUDE.md` and a regression test
-  updated; 16 telegram-bot tests pass; both pollers verified alive on separate dirs. Cost: every
-  ordinary session now shows the telegram MCP server as failed to connect.
-- **schoolMem Telegram bot** — `@schoMemBot`, second channel session, own token and allowlist via
-  `TELEGRAM_STATE_DIR=~/.claude/channels/telegram-schoolmem`, launched from the vault so
-  schoolMem's own `CLAUDE.md` loads. Runs `sonnet` with `bypassPermissions` under
-  `tmux -L schoolmem`, restarting daily at 04:00 Manila and fast-forwarding the vault first.
-  `scripts/schoolmem_wiki_guard.py` is a PreToolUse hook that hard-denies writes into `wiki/`;
-  the wrapper arms it every start and refuses to launch without it. 26 guard tests, 164 total,
-  all pass. Captures land in the new tracked `schoolMem/inbox/`. Full rationale in
-  `decisions/log.md`. **Live since 2026-08-17 12:28** — unit `active`, bot server up, pane
-  confirms Sonnet 5 + bypass permissions, vault synced clean. Pairing is one-time and already
-  done: his id persists in `access.json`, so restarts and reboots need no new code.
-- **`sync-repos` ships** — `scripts/sync-repos.sh`, symlinked to `~/.local/bin/sync-repos`. Aki
-  runs it when he opens the VM. Scans `~/Code/GitHub`, `~/Documents/Obsidian`, `~/.hermes` and
-  fast-forwards only; `held back` / `DIVERGED` / `FETCH FAILED` are reported and the repo left
-  untouched. 11 tests build real repos in a tmpdir and assert no work is lost. Caveat:
-  `hermes-agent`'s first fetch on this connection has run past 20 minutes and 227 MB, so it will
-  report a timeout until that completes — `SYNC_REPOS_TIMEOUT` overrides the 300s default.
-- **Claude Code memory now reaches achibuntu** — `scripts/sync_claude_memory.py`, called from
-  `sync-claude-config.sh`. The two machines each kept their own `~/.claude/projects/*/memory`
-  and had never exchanged anything, so Mac-side rules did not bind the box that runs
-  unattended. Not a plain rsync: the project dir is a slug of the repo's absolute path so the
-  `$HOME` prefix is remapped, `projects/` also holds session transcripts so only `memory/*.md`
-  is sent, and `MEMORY.md` is unioned with no `--delete` so the server's own memories survive.
-  Allowlisted to achiOS alone — schoolMem's memory carries Aki's student ID, and Hermes reads
-  whatever lands there unsupervised. 17 new tests; verified idempotent against the live box.
-- **SSH hardened** — key-only, root login off, `sshd_config.d/01-hardening.conf`. Tailscale SSH
-  enabled first as an independent fallback. Verified via the LAN IP.
-- **`hermes` PATH fixed** — `~/.local/bin` moved above `.bashrc`'s non-interactive guard. Note
-  the gateway's systemd unit already had its own correct `PATH`, so Hermes' internal cron was
-  never affected; this only fixed `ssh host 'cmd'`, scripts, and system cron.
-- **Four skills ported** to `~/.hermes/skills/`, and `sync-claude-config.sh` now pushes to both
-  `~/.claude/skills` and `~/.hermes/skills`.
-- **Access guide written** — `achiMem/output/2026-08-17-achibuntu-access-guide.md`, including
-  the add-a-device procedure.
-- **Bun installed on achibuntu** (1.3.14, `~/.bun/bin/bun`, symlinked into `~/.local/bin`).
-  The official `bun.sh/install` script needs `unzip`, which the box lacks and which needs sudo,
-  so the release zip was fetched from GitHub and extracted with Python instead. Same binary.
-  This was silently breaking claude-mem's `bun-runner.js` on every SessionStart.
-- **claude-mem was never actually excluded from this repo on achibuntu.** `CLAUDE.md` says it is
-  disabled here, but `CLAUDE_MEM_EXCLUDED_PROJECTS` in `~/.claude-mem/settings.json` was empty and
-  the db already held 9 observations and 1 session summary tagged `AIS-OS`. The exclusion lives
-  outside `~/.claude/`, so `sync-claude-config.sh`'s allowlist never carried it over from the Mac.
-  Now set to `AIS-OS` on this box. Check the Mac's copy matches.
+- Review the spec, then approve moving to `writing-plans`.
+- Whether to kill the v1 harvester now or wait for the full cutover.
+- Whether the dated tasks should become calendar events.
+
+## Carried forward (from 2026-08-17 buildout)
+
+- `achibuntu` is live and healthy; runbook Phases 0-7 complete.
+- Phase 8 "pull the power cord" is **blocked, not pending** — no battery is fitted, so mains
+  loss is an instant power-off. This is why every timer needs `Persistent=true`. Already
+  recorded permanently in `CLAUDE.md`; kept here only because the check can never pass as
+  written.
