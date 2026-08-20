@@ -42,3 +42,6 @@ Whenever an active task carries a date or deadline:
 - **2026-08-20 (general):** Operational directive: When it comes to auditing and creating feature plans we should use claude opus but for execution we use gemini 3.7 flash
 - **2026-08-20 (voice):** Voice register adjustment: Keep responses concise, humble, candid, and direct; use Taglish for reasoning and English for conclusions; avoid corporate buzzwords.
 - **2026-08-20 (tools):** Never attach `ArtifactMetadata` when creating repository or project files; `ArtifactMetadata` is strictly restricted by Antigravity cortex to `<appDataDir>/brain/<conversation-id>/`. Use Python script execution or standard file tools for repository code.
+- **2026-08-20 (voice):** Voice register adjustment: - can you make it less formal like this:
+- **2026-08-20 (voice):** Voice register adjustment: Voice register adjustment: - can you make it less formal like this:
+- **2026-08-20 (general):** Formatting override: Change '60h 9m' to 'xd xh xm'

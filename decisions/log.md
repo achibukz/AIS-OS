@@ -880,3 +880,36 @@ Format with interactive checkboxes (`- [ ] **Title:** details`) and links to `ta
 **Domain:** `architecture`
 **Target Store:** `memory`
 **Owner:** Aki.
+
+## 2026-08-20 — User Correction Harvested (style)
+
+**Decision:** Voice register adjustment: - can you make it less formal like this:
+
+**Why:** Harvested from dialogue session `2026-08-20-achiagyosbot-0a70b889.md`:
+> "- can you make it less formal like this:"
+
+**Domain:** `voice`
+**Target Store:** `memory`
+**Owner:** Aki.
+
+## 2026-08-20 — User Correction Harvested (style)
+
+**Decision:** Voice register adjustment: Voice register adjustment: - can you make it less formal like this:
+
+**Why:** Harvested from dialogue session `2026-08-20-achiagyosbot-458aef82.md`:
+> "Voice register adjustment: - can you make it less formal like this:"
+
+**Domain:** `voice`
+**Target Store:** `memory`
+**Owner:** Aki.
+
+## 2026-08-20 — User Correction Harvested (preference)
+
+**Decision:** Formatting override: Change '60h 9m' to 'xd xh xm'
+
+**Why:** Harvested from dialogue session `2026-08-20-achiagyosbot-458aef82.md`:
+> "can you change the 60h 9m to xd xh xm"
+
+**Domain:** `general`
+**Target Store:** `memory`
+**Owner:** Aki.
