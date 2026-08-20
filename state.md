@@ -1,27 +1,32 @@
 # State
 
-_Updated 2026-08-21 02:05 Manila. Previous state (server buildout Phase 8, 2026-08-17) is summarised
+_Updated 2026-08-21 02:40 Manila. Previous state (server buildout Phase 8, 2026-08-17) is summarised
 under "Carried forward" — the still-open items were preserved, the completed ones dropped._
 
 ## Current Goal
 
-Self-learning loop v2: **all 8 tasks implemented and committed.** Live on the box.
-Remaining: Task 8 steps 2-4 (a real Telegram turn test) need Aki at his phone.
+Self-learning loop v2 is **done, deployed, and verified live**. Trial week runs to the
+2026-08-27 audit. No active build task.
 
 ## Plan Status
 
-Plan: `docs/superpowers/plans/2026-08-20-self-learning-loop-v2.md` — Tasks 1-8 done.
-Commits: `add9695` ledger, `603ec71` prefilter, `bc1c1ba` gate, `e997a25` v1 deleted,
-`e7a3238` archive+purge, `8521a9a` audit scheduled (AIS-OS); `93a206a` review
-orchestration, `d28a413` turn wiring (achiAgy).
+Plan `docs/superpowers/plans/2026-08-20-self-learning-loop-v2.md` — all 8 tasks complete,
+Task 8 live test **passed 2026-08-21**: capture, turn-10 trigger, gate, and write all
+worked; filler messages correctly ignored.
 
-Tests: AIS-OS 209 passed / 44 pre-existing failures. achiAgy 59 passed.
-`achi-agy.service` restarted and polling.
+Test procedure and how to read the output: `docs/2026-08-21-self-learning-loop-test-guide.md`.
+Future work, ranked: `docs/ROADMAP.md`.
 
-**Open verification:** Task 8 steps 2-4 — send ~10 messages to `@achiAgyOSBot`
-including one real preference, then check `learning_ledger.stats()` and
-`~/.config/achios/MEMORY.md`. Substituted a sandboxed end-to-end run against the
-real agy gate, which passed; the live-turn path itself is still unexercised.
+Also shipped this session, outside the plan:
+- `3bc7870` achiAgy `import re` — the HTML send fallback always raised NameError.
+- `eeb8729` + `23fce8f` CLI writes recorded in the ledger as `source: cli`, excluded
+  from the loop's daily budget.
+- `c9cb99f` telegram_notify retry/backoff plus token redaction, and
+  `Restart=on-failure` on the six Telegram units. `systemctl --user reset-failed` run,
+  0 failed units.
+
+Tests: AIS-OS 224 passed / 44 pre-existing failures. achiAgy 67 passed.
+Both repos clean and pushed. `MEMORY.md` 207 chars, `USER.md` 1706 of 2500.
 
 ## Evidence
 
@@ -40,26 +45,26 @@ real agy gate, which passed; the live-turn path itself is still unexercised.
 
 ## Open Issues
 
-- **Recall gap:** the prefilter only fires on trigger phrases, so a durable *fact*
-  ("my thesis adviser is Briane Paul V. Samson") is dropped before the gate sees it.
-  Verified 2026-08-21. This is the recall question for the day-7 audit.
-- **No dedup:** the same preference stated twice writes two near-identical entries.
-  Self-corrects at the budget ceiling via `replace`, but wastes budget.
-- `ledger._transition` silently no-ops on an unknown id, leaving a candidate pending
-  and re-billed at each review. Only reachable if the ledger is truncated mid-flight.
-- No ledger rotation; `_latest_by_id` parses the whole file per call.
-- `memory_gate._default_runner` passes candidate text via argv, so it is briefly
-  visible in `ps`.
-- Ten P0/P1 fixes from the infra audit are in `tasks.md` and untouched.
-  `import re` in `achiAgy/src/bot.py:860` is a one-line fix for a guaranteed crash.
-- 4 systemd units still `failed`; `systemctl --user reset-failed` not run.
-- `@achiOSBot` token is in journald in cleartext, not yet rotated.
-- 44 pre-existing `test_daily_brief.py` failures (`parse_tasks` rename).
+Ranked detail lives in `docs/ROADMAP.md`. The load-bearing ones:
+
+- **Second memory writer is logged but ungated.** The agy model writes via the
+  memory_engine CLI with no gate and no cap. The gate governs one of two paths in.
+- **Recall gap.** Capture fires only on ~21 trigger phrases, so durable *facts*
+  ("my thesis adviser is Briane Paul V. Samson") are never captured.
+- **Failure alerts still share the network path they report on.** Retry helps; a long
+  outage still loses the alarm. Store-and-forward is the real fix.
+- `@achiOSBot` token still in journald cleartext from before the redaction fix; not
+  rotated. `achiAgy/.env*` perms not tightened.
+- 44 `test_daily_brief.py` failures (`parse_tasks` → `parse_active_tasks` rename), so
+  the most user-visible component has no working regression net.
+- `USER.md` at 1706/2500: at the ceiling the loop replaces the *oldest* entry, which is
+  the Identity line.
+- No concurrency guard in achiAgy; the loop now mutates session state from that path.
 
 ## Waiting on Aki
 
-- Run Task 8 steps 2-4: a live Telegram turn test against `@achiAgyOSBot`.
 - Whether the dated tasks from the infra audit should become calendar events.
+- Which roadmap item to take next. Items 1 and 2 are the high-value ones.
 
 ## Carried forward (from 2026-08-17 buildout)
 
