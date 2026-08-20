@@ -27,7 +27,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Draft business case & submit video pitch for GCash ImaGnation Innovation Challenge #hackathon #projects !high @2026-08-24
 - [ ] Run full system architecture audit with Claude Opus across achiOS daemons, achiAgy, crons, and notification routing per docs/2026-08-20-system-architecture-audit.md #audit #achios #achiagy !high @2026-08-20
 
-- [ ] Prepare copy of DLSU School ID (scanned/clear photo) for ING submission #career !high @2026-08-20
+- [ ] Reply to Sir Austin Fernandez's email re: character reference #school #career !high @2026-08-20
 - [ ] Follow up / Pick up DLSU Good Moral Certificate (CGMC) once release notification arrives (8-10 working days, event set on DLSU Calendar) #career #school !high @2026-09-02
 - [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
 - [ ] Prepare scanned copy of PSA Birth Certificate for ING #career !high
@@ -69,6 +69,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [x] E-sign ING Privacy Notice for Applicants #career !high @2026-08-20
 - [x] E-sign ING Privacy Notice for Employees #career !high @2026-08-20
 - [x] Fill out ING Intern Information Sheet (using 3 confirmed references: Doc Briane Samson, Sir Aris Pulumbarit, Doc Jordan Deja; leave gov IDs blank) #career !high @2026-08-20
+- [x] Prepare copy of DLSU School ID (scanned/clear photo) for ING submission #career !high @2026-08-20
 
 - [x] Run system architecture audit on Universal TGDB Vault Archive & Exporter with Claude Opus per docs/2026-08-18-feature-audit-tgdb-and-correction-harvester.md — Audited transcript exporter, TGDB logger, secret sanitization, intermediate tool/XML stripping, bot identity detection, and Obsidian vault note formatting #audit #tgdb #achios !high @2026-08-20
 - [x] Implement Hermes-inspired Self-Learning Loop for achiAgy and achiOS per docs/superpowers/plans/2026-08-19-self-learning-loop-implementation.md — Created MemoryEngine with 2.5k-char budget per file, CLI mutations, /learn authoring engine, harvester routing to MEMORY.md/USER.md/.agentrules/decisions, and 25 passing unit tests; merged to main/master #achiagy #achios !high @2026-08-20
