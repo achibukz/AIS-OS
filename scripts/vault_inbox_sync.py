@@ -147,16 +147,12 @@ def main() -> int:
     except Exception as e:
         print(f"Warning: Transcript export skipped: {e}", file=sys.stderr)
 
-    # 2. Harvest user corrections from tgdb into .agentrules and decisions/log.md
-    try:
-        from extract_corrections import scan_vault_tgdb, apply_corrections
-        corrections = scan_vault_tgdb(days_lookback=1)
-        if corrections:
-            count, summaries = apply_corrections(corrections, dry_run=args.dry_run)
-            if count > 0:
-                print(f"[corrections] {'[DRY RUN] ' if args.dry_run else ''}Harvested {count} new correction rule(s).")
-    except Exception as e:
-        print(f"Warning: Correction harvesting skipped: {e}", file=sys.stderr)
+    # Correction harvesting was removed 2026-08-20. It read the tgdb notes this
+    # function writes, and those are built from agy's brain log, which stores the
+    # prompt with MEMORY.md already prepended — so it harvested its own output and
+    # re-prefixed it every pass. Replacement is specced in
+    # docs/superpowers/specs/2026-08-20-self-learning-loop-design.md and sources
+    # candidates from the live turn instead, where injected memory cannot reach it.
 
     overall_success = True
 
