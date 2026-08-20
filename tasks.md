@@ -39,12 +39,10 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Fix achiAgy output/thinking token accumulation — /usage is 246x wrong #achios #achiagy !med @2026-08-24
 - [ ] Rotate @achiOSBot Telegram token (leaked into journald in cleartext) and chmod 600 achiAgy/.env* #achios !med @2026-08-22
 - [ ] Document achiAgy in CLAUDE.md and correct the bots table + connections.md schoolMem AGY status #achios !low @2026-08-25
-- [ ] Run deep research, market analysis, and statistic gathering on GCash ImaGnation pitch with Claude Opus #hackathon #research #achigcash !high @2026-08-20
-- [ ] Ingest and synthesize GCash ImaGnation team meeting transcripts (`Transcripts/GCASH MEETING.md` & `notes.md`) with Claude Opus into achiGcash #hackathon #achigcash !high @2026-08-20
+- [ ] Run deep research, market analysis, and statistic gathering on GCash ImaGnation pitch with Claude Opus #hackathon #research #achigcash !high @2026-08-22
+- [ ] Ingest and synthesize GCash ImaGnation team meeting transcripts (`Transcripts/GCASH MEETING.md` & `notes.md`) with Claude Opus into achiGcash #hackathon #achigcash !high @2026-08-22
 - [ ] Draft business case & submit video pitch for GCash ImaGnation Innovation Challenge #hackathon #projects !high @2026-08-24
 - [ ] Run full system architecture audit with Claude Opus across achiOS daemons, achiAgy, crons, and notification routing per docs/2026-08-20-system-architecture-audit.md #audit #achios #achiagy !high @2026-08-20
-
-- [ ] Reply to Sir Austin Fernandez's email re: character reference #school #career !high @2026-08-20
 - [ ] Follow up / Pick up DLSU Good Moral Certificate (CGMC) once release notification arrives (8-10 working days, event set on DLSU Calendar) #career #school !high @2026-09-02
 - [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
 - [ ] Prepare scanned copy of PSA Birth Certificate for ING #career !high
@@ -81,6 +79,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [~] Pull the power cord on achibuntu to test unattended boot recovery — blocked until a battery is installed. BAT0 is absent and the BIOS has no "Restore on AC Power Loss", so pulling the cord today just hard-kills it #achios !low
 
 ## Done
+- [x] Reply to Sir Austin Fernandez's email re: character reference #school #career !high @2026-08-20  (done 2026-08-20)
 - [x] Cut the harvester recursion: tag the frozen system prompt, strip it in the exporter, add a provenance guard + semantic dedup, with a regression test #achios #learning !high @2026-08-21  (done 2026-08-21)
 - [x] After the recursion fix is green, purge the 3 bad MEMORY.md entries, 54 harvested decisions/log.md entries, .agentrules section 5, and 6 poisoned tgdb notes #achios #learning !high @2026-08-21  (done 2026-08-21)
 - [x] Fix achiAgy crash: add `import re` to src/bot.py (HTML fallback always NameErrors, loses whole response) #achios #achiagy !high @2026-08-21  (done 2026-08-21)
