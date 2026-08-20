@@ -31,7 +31,9 @@ note.md policy: ~/note.md is strictly for raw braindumps...
 
 Three generations of the same non-rule, each one a prefix longer than the last. Two of the five entries are real. The memory budget is 2,500 characters and this is already consuming half of the 502 in use.
 
-**What Hermes does differently, in one sentence:** Hermes has no automatic harvester at all — memory is written only by the model, deliberately, during a turn, and `/learn` is user-invoked. The regex harvester is a component Hermes deliberately does not have, and it is the component that is failing here.
+**What Hermes does differently, in one sentence:** Hermes reviews memory **on a turn counter inside a live conversation** (`background_review.py`, every ~10 turns) and explicitly *suppresses* that review for cron sessions, because a review with no human in the loop costs ~30K tokens per event and buys nothing. achiOS does the inverse — clock-driven, every 15 minutes, always outside a conversation.
+
+> **Correction (2026-08-20, same day):** an earlier revision of this document stated that Hermes has no automatic harvester at all. That was wrong — it was based on the four files named in the prior session log (`learn_prompt.py`, `learning_graph.py`, `learning_mutations.py`, `memory_tool.py`) and missed `agent/background_review.py`. Hermes *does* write memory automatically. The real difference is the trigger and the safety model, corrected throughout section 5.
 
 ---
 
@@ -255,8 +257,11 @@ I read Hermes' implementation specifically for this. The differences that matter
 
 | | Hermes | achiOS today |
 |---|---|---|
-| **Who decides what to remember** | The model, deliberately, calling the `memory` tool mid-turn | Regex, unattended, every 15 min |
-| **Automatic transcript harvester** | **Does not exist** | The core of the loop |
+| **Who decides what to remember** | A forked agent replaying the turn, calling the `memory` tool | Regex, no judgment, unattended |
+| **Automatic review trigger** | Turn counter, ~every 10 turns, inside a live conversation | Wall clock, every 15 min, outside any conversation |
+| **Review during cron / no human present** | **Explicitly suppressed** (`skip_background_review`) | This is the only mode achiOS has |
+| **Safety model for autonomous writes** | Runtime tool whitelist — memory/skill tools only, everything else denied at dispatch | None |
+| **Cold-model cost control** | Same model: full replay (warm cache). Cheaper model: compact digest | Full re-parse of 2 days of transcripts, 96×/day |
 | **`/learn` trigger** | User only (CLI, gateway, dashboard) | User only ✓ |
 | **Untrusted-source handling** | Explicit `_SOURCE_HYGIENE` block in every prompt | None |
 | **Budgets** | Split: MEMORY 2200, USER 1375 | Single 2500 for both |
@@ -271,6 +276,8 @@ The single most transferable idea is Hermes' `_SOURCE_HYGIENE` rule, embedded ve
 That is *precisely* the rule achiOS's harvester violates. It reads its own injected memory out of a transcript and carries it forward as if you had said it. Hermes wrote that rule down because the same failure is obvious once you have seen it.
 
 The second idea worth taking: **Hermes' memory is bounded and curated by a model that can see the whole store**, so it can *replace* and *remove*, not only *add*. achiOS's harvester only ever calls `action="add"` (`extract_corrections.py` sets `action="add"` on every branch). A store that can only grow will always drift toward noise.
+
+The third idea, and the one that resolves the cost problem: **Hermes ties review to conversation volume, not to the clock.** `turn_finalizer.py:788` suppresses the review for cron precisely because "cron sessions have no human-in-the-loop benefit from the review." achiOS's 15-minute timer is that suppressed case, running as the primary mode.
 
 **What NOT to copy:** don't add Hermes' learning graph yet. It is valuable at Hermes' scale of skills; at achiOS's current scale it is premature. Fix the inlet first.
 

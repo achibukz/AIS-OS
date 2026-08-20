@@ -978,3 +978,25 @@ Haiku call — chosen, because it keeps passive capture while putting judgment i
 
 **What would change my mind:** if the gate's false-positive rate stays high after a week of
 dry runs, delete the harvester and keep `/learn` only. Hermes ships without one for a reason.
+
+## 2026-08-21 — User Correction Harvested (style)
+
+**Decision:** Voice register adjustment: 1. can you make it less formal like this:
+
+**Why:** Harvested from dialogue session `2026-08-21-achiagyosbot-a74feca5.md`:
+> "1. can you make it less formal like this:"
+
+**Domain:** `voice`
+**Target Store:** `memory`
+**Owner:** Aki.
+
+## 2026-08-21 — User Correction Harvested (style)
+
+**Decision:** Voice register adjustment: 4. Voice register adjustment: - can you make it less formal like this:
+
+**Why:** Harvested from dialogue session `2026-08-21-achiagyosbot-a74feca5.md`:
+> "4. Voice register adjustment: - can you make it less formal like this:"
+
+**Domain:** `voice`
+**Target Store:** `memory`
+**Owner:** Aki.
