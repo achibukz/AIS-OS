@@ -4,10 +4,9 @@ Written 2026-08-21. Covers Task 8 steps 2 to 4 of
 `docs/superpowers/plans/2026-08-20-self-learning-loop-v2.md`, the part that needs you
 on your phone.
 
-Everything else in the plan is done and verified. What is still unproven is the live
-path: a real Telegram turn reaching `capture_candidate`, the turn counter tripping at
-ten, and the review writing to memory. A sandboxed run already proved the chain works
-against the real gate. This proves the wiring.
+**First run passed on 2026-08-21.** Capture, the turn-10 trigger, and the write all
+worked, and the filler messages were correctly ignored. Keep this as the procedure for
+re-testing after any change to the loop, and as the reference for reading its output.
 
 ## What you are testing
 
@@ -84,6 +83,25 @@ for name in ("MEMORY.md", "USER.md"):
 EOF
 ```
 
+### There are two writers, and the ledger sees both
+
+The review loop is not the only thing that writes to memory. The agy model has a
+`manage_memory` tool and uses it on its own, often within seconds of you stating a
+preference, well before the turn-10 review fires. Found during the first live test on
+2026-08-21, when the same preference landed in both files in two different wordings.
+
+Since 2026-08-21 those writes are recorded too, tagged `source: cli`, and `stats()`
+reports them under `external`. They deliberately do **not** count against the loop's
+daily write budget, otherwise the model could starve the loop by writing on its own.
+
+So when you read the output:
+
+- `source=loop` (or missing, on records written before that date) came from the review
+  loop and went through the gate.
+- `source=cli` came from the model writing directly. No gate, no rate cap.
+- Seeing the same preference twice, once from each, is expected until this is resolved.
+  Tracked in `tasks.md` and `decisions/log.md`.
+
 ### What a pass looks like
 
 The bullet-points line appears as `written`, with a rule along the lines of
@@ -142,8 +160,8 @@ for the 2026-08-27 audit.
 
 ### One thing to watch on the budget
 
-As of 2026-08-21, `USER.md` holds 1667 of its 2500 characters and `MEMORY.md` holds 207.
-There is room, so this will not bite during the trial.
+As of 2026-08-21, after the first live test, `USER.md` holds 1706 of its 2500 characters
+and `MEMORY.md` holds 207. There is room, so this will not bite during the trial.
 
 It matters later. When a write would exceed the budget, the loop does not give up. It
 replaces the **oldest** entry to make room. In `USER.md` the oldest entry is your Identity
@@ -198,6 +216,8 @@ the four questions on 2026-08-27 are:
    recall. Compare against `achiMem/tgdb/` for the week.
 3. How many gate calls fired, and what did the week cost at roughly 20k tokens each?
 4. Did any write need reverting?
+5. How many writes came from `source: cli` rather than the loop? If the model is doing
+   most of the writing on its own, the gate is not really the thing governing memory.
 
 Then decide: leave it autonomous, add a Telegram confirmation step before each write, or
 fall back to `/learn` only.

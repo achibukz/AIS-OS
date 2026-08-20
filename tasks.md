@@ -23,7 +23,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 ## Active
 - [ ] Audit the self-learning trial: read the ledger, score precision and recall, decide autonomous vs Telegram-confirm #achios #learning !high @2026-08-27
 - [ ] Prune USER.md before it hits the 2500-char ceiling: at the limit the loop replaces the oldest entry, which is the Identity line #achios #learning !med @2026-08-27
-- [~] Decide how to handle the second memory writer: the agy model calls manage_memory directly, bypassing the ledger, gate and rate caps #achios #learning !high @2026-08-27
+- [x] Decide how to handle the second memory writer: CLI writes now logged as source=cli, excluded from the loop budget #achios #learning !high @2026-08-21
 
 - [ ] Cut the harvester recursion: tag the frozen system prompt, strip it in the exporter, add a provenance guard + semantic dedup, with a regression test #achios #learning !high @2026-08-21
 - [ ] After the recursion fix is green, purge the 3 bad MEMORY.md entries, 54 harvested decisions/log.md entries, .agentrules section 5, and 6 poisoned tgdb notes #achios #learning !high @2026-08-21
