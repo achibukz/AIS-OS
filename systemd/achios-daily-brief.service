@@ -3,6 +3,8 @@ Description=achiOS daily brief -> Telegram
 After=network-online.target
 Wants=network-online.target
 OnFailure=achios-failure-alert@%n.service
+StartLimitIntervalSec=1h
+StartLimitBurst=3
 
 [Service]
 Type=oneshot
@@ -12,3 +14,5 @@ ExecStart=%h/.local/share/achios/venv/bin/python @REPO@/scripts/daily_brief.py
 StandardOutput=append:%h/.local/state/achios/daily_brief.log
 StandardError=append:%h/.local/state/achios/daily_brief.log
 TimeoutStartSec=10min
+Restart=on-failure
+RestartSec=5min

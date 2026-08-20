@@ -3,6 +3,8 @@ Description=achiOS Weekly ETF Performance Recap -> Telegram (achiFinance)
 After=network-online.target
 Wants=network-online.target
 OnFailure=achios-failure-alert@%n.service
+StartLimitIntervalSec=1h
+StartLimitBurst=3
 
 [Service]
 Type=oneshot
@@ -11,3 +13,5 @@ ExecStart=%h/.local/share/achios/venv/bin/python /home/achibukz/Code/GitHub/AIS-
 StandardOutput=append:%h/.local/state/achios/etf_weekly_digest.log
 StandardError=append:%h/.local/state/achios/etf_weekly_digest.log
 TimeoutStartSec=5min
+Restart=on-failure
+RestartSec=5min
