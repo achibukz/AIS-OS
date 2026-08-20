@@ -51,7 +51,7 @@
 
 **Does NOT cover:** The ledger records candidate *text* verbatim, including anything Aki typed. It applies no secret redaction — unlike `tgdb_logger.py`, which does. This is acceptable because the ledger lives at `~/.local/state/achios/` (mode 700 parent) and is never committed or synced. If the ledger ever moves into a repo or vault, redaction becomes mandatory first.
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```python
 # tests/test_learning_ledger.py
@@ -147,12 +147,12 @@ class TestStats:
         assert s["rejected"] == 1
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd ~/Code/GitHub/AIS-OS && ~/.local/share/achios/venv/bin/python -m pytest tests/test_learning_ledger.py -q`
 Expected: FAIL with `ModuleNotFoundError: No module named 'learning_ledger'`
 
-- [ ] **Step 3: Implement minimal change**
+- [x] **Step 3: Implement minimal change**
 
 ```python
 #!/usr/bin/env python3
@@ -361,12 +361,12 @@ def stats(path: Optional[Path] = None) -> dict[str, int]:
     return counts
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `cd ~/Code/GitHub/AIS-OS && ~/.local/share/achios/venv/bin/python -m pytest tests/test_learning_ledger.py -q`
 Expected: PASS, 11 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/learning_ledger.py tests/test_learning_ledger.py
@@ -389,7 +389,7 @@ for the 2026-08-27 trial audit."
 
 **Does NOT cover:** The provenance guard matches only the four rule prefixes v1 produced. It will not catch a future prefix if someone adds a new rule shape without updating `RULE_PREFIXES`. This is defence in depth only — Task 5's sourcing from `prompt` is the actual fix, and the guard exists so a future refactor that reintroduces a transcript path fails closed rather than silently recursing.
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```python
 # tests/test_memory_gate.py
@@ -458,12 +458,12 @@ class TestRuleValidation:
         )
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd ~/Code/GitHub/AIS-OS && ~/.local/share/achios/venv/bin/python -m pytest tests/test_memory_gate.py -q`
 Expected: FAIL with `ModuleNotFoundError: No module named 'memory_gate'`
 
-- [ ] **Step 3: Implement minimal change**
+- [x] **Step 3: Implement minimal change**
 
 ```python
 #!/usr/bin/env python3
@@ -538,12 +538,12 @@ def validate_rule(rule: str) -> bool:
     return True
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `cd ~/Code/GitHub/AIS-OS && ~/.local/share/achios/venv/bin/python -m pytest tests/test_memory_gate.py -q`
 Expected: PASS, 14 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/memory_gate.py tests/test_memory_gate.py
@@ -568,7 +568,7 @@ closed instead of recursing."
 
 **Does NOT cover:** Classification treats each candidate line in isolation. A preference stated across two turns ("that's too formal" → "more like how I write in Messenger") will not be recognised. This is spec §11, deliberately deferred to the day-7 audit. It also does not handle non-English input; candidates in Taglish are passed through and the model handles them as best it can, untested.
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```python
 # append to tests/test_memory_gate.py
@@ -679,12 +679,12 @@ class TestPromptHygiene:
         assert "1. beta" in prompt
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd ~/Code/GitHub/AIS-OS && ~/.local/share/achios/venv/bin/python -m pytest tests/test_memory_gate.py -q`
 Expected: FAIL with `AttributeError: module 'memory_gate' has no attribute 'classify'`
 
-- [ ] **Step 3: Implement minimal change**
+- [x] **Step 3: Implement minimal change**
 
 First create `config/memory_gate_schema.json`:
 
@@ -851,12 +851,12 @@ def classify(
     return verdicts
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `cd ~/Code/GitHub/AIS-OS && ~/.local/share/achios/venv/bin/python -m pytest tests/test_memory_gate.py -q`
 Expected: PASS, 25 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/memory_gate.py config/memory_gate_schema.json tests/test_memory_gate.py
@@ -880,7 +880,7 @@ records pending for the next review."
 
 **Does NOT cover:** The daily write cap counts writes across all chats, not per chat, so one busy chat can exhaust the other's budget. With a single user this is not a real scenario. It also does not cover `remove` — the loop can add and replace but never deletes a memory on its own, deliberately, because autonomous deletion of a rule Aki wrote by hand is not something the trial should risk.
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```python
 # achiAgy/tests/test_background_review.py
@@ -1010,12 +1010,12 @@ class TestReview:
         assert "budget_full" in reasons
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd ~/Code/GitHub/achiAgy && .venv/bin/python -m pytest tests/test_background_review.py -q`
 Expected: FAIL with `ImportError: cannot import name 'background_review' from 'src'`
 
-- [ ] **Step 3: Implement minimal change**
+- [x] **Step 3: Implement minimal change**
 
 ```python
 """Background memory review — the turn-triggered half of the self-learning loop.
@@ -1123,12 +1123,12 @@ def _run_review(chat_id, engine, ledger_path, classifier) -> int:
     return written
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `cd ~/Code/GitHub/achiAgy && .venv/bin/python -m pytest tests/test_background_review.py -q`
 Expected: PASS, 8 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd ~/Code/GitHub/achiAgy
@@ -1154,7 +1154,7 @@ verdicts recorded as rejected rather than silently dropped."
 
 **Does NOT cover:** The trigger fires only for turns that reach the `result` event in `execute_agent_pipeline`. A turn that errors out, is cancelled, or times out increments nothing and captures no candidate — a preference stated in a turn that then failed is lost. Accepted: a failed turn is usually retried by Aki anyway, which captures it on the retry.
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```python
 # append to achiAgy/tests/test_background_review.py
@@ -1217,12 +1217,12 @@ class TestSessionField:
         assert state.turns_since_review == 0
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd ~/Code/GitHub/achiAgy && .venv/bin/python -m pytest tests/test_background_review.py -q`
 Expected: FAIL with `AttributeError: module 'src.background_review' has no attribute 'capture_candidate'`
 
-- [ ] **Step 3: Implement minimal change**
+- [x] **Step 3: Implement minimal change**
 
 Append to `achiAgy/src/background_review.py`:
 
@@ -1294,12 +1294,12 @@ In `execute_agent_pipeline`, in the `elif event.event_type == "result":` branch,
                 session_mgr._save()
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `cd ~/Code/GitHub/achiAgy && .venv/bin/python -m pytest tests/ -q`
 Expected: PASS, 59 passed (43 existing + 8 from Task 4 + 8 new)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd ~/Code/GitHub/achiAgy
@@ -1326,7 +1326,7 @@ never a timer. ACHIOS_REVIEW_INTERVAL=0 disables it with no redeploy."
 
 **Does NOT cover:** Nothing else imports these — verified below before deleting rather than assumed.
 
-- [ ] **Step 1: Verify nothing still imports it**
+- [x] **Step 1: Verify nothing still imports it**
 
 Run:
 ```bash
@@ -1334,19 +1334,19 @@ cd ~/Code/GitHub/AIS-OS && grep -rn "extract_corrections" --include=*.py --inclu
 ```
 Expected: no output. If anything appears, stop and resolve it before deleting.
 
-- [ ] **Step 2: Delete both files**
+- [x] **Step 2: Delete both files**
 
 ```bash
 cd ~/Code/GitHub/AIS-OS
 git rm scripts/extract_corrections.py tests/test_extract_corrections.py
 ```
 
-- [ ] **Step 3: Run the full suite**
+- [x] **Step 3: Run the full suite**
 
 Run: `cd ~/Code/GitHub/AIS-OS && ~/.local/share/achios/venv/bin/python -m pytest tests/ -q`
 Expected: PASS except the 44 pre-existing `test_daily_brief.py` failures from the `parse_tasks` → `parse_active_tasks` rename, which are unrelated to this plan and tracked separately in `tasks.md`. No new failures.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git commit -m "chore(learning): delete the v1 correction harvester
@@ -1367,7 +1367,7 @@ memory_gate.py in Task 2. Nothing imports it any more."
 
 **Does NOT cover:** This does not clean the 6 poisoned `achiMem/tgdb/` notes. Those are now inert — nothing reads tgdb for learning any more (Task 5 sources from the live turn), so the poisoned text is harmless historical record. Cleaning it would rewrite vault history for no functional gain. Left deliberately.
 
-- [ ] **Step 1: Archive before touching anything**
+- [x] **Step 1: Archive before touching anything**
 
 ```bash
 cd ~/Code/GitHub/AIS-OS
@@ -1379,7 +1379,7 @@ ls -la archives/2026-08-20-harvester-rollback/
 ```
 Expected: three `.bak` files present and non-empty.
 
-- [ ] **Step 2: Purge the recursive MEMORY.md entries**
+- [x] **Step 2: Purge the recursive MEMORY.md entries**
 
 ```bash
 ~/.local/share/achios/venv/bin/python - <<'EOF'
@@ -1395,7 +1395,7 @@ EOF
 ```
 Expected: `kept 2 of 5 entries`, listing the `Formatting override: Change '60h 9m'…` and `note.md policy:…` entries.
 
-- [ ] **Step 3: Strip harvested entries from decisions/log.md**
+- [x] **Step 3: Strip harvested entries from decisions/log.md**
 
 ```bash
 ~/.local/share/achios/venv/bin/python - <<'EOF'
@@ -1412,7 +1412,7 @@ EOF
 ```
 Expected: `removed 54 harvested entries`
 
-- [ ] **Step 4: Remove the duplicate .agentrules section**
+- [x] **Step 4: Remove the duplicate .agentrules section**
 
 Delete the entire `## 5. Harvested User Preferences & Corrections` section and every bullet under it (the last section in the file, containing the `Voice register adjustment: Voice register adjustment:` lines and the google-one subscription line). Leave `## 5. Telegram Bot & Notification Routing Isolation` — the numbering collision is why the harvested section must be the one removed.
 
@@ -1422,7 +1422,7 @@ grep -c "^## 5\." .agentrules   # expect 1
 grep -c "Voice register adjustment" .agentrules   # expect 0
 ```
 
-- [ ] **Step 5: Verify memory is clean and stable**
+- [x] **Step 5: Verify memory is clean and stable**
 
 ```bash
 cat ~/.config/achios/MEMORY.md
@@ -1430,7 +1430,7 @@ grep -c "User Correction Harvested" decisions/log.md   # expect 0
 ```
 Expected: two entries in MEMORY.md, neither starting with `Voice register adjustment`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add archives/ decisions/log.md .agentrules
@@ -1456,7 +1456,7 @@ learning any more, so they are inert historical record."
 
 **Does NOT cover:** Verification exercises the achiAgy path only. Nothing verifies that Claude Code sessions are *not* learned from, because that is the accepted limitation in spec §9, not a behaviour to test.
 
-- [ ] **Step 1: Restart the daemon**
+- [x] **Step 1: Restart the daemon**
 
 ```bash
 systemctl --user restart achi-agy.service
@@ -1491,14 +1491,14 @@ cat ~/.config/achios/MEMORY.md
 ```
 Expected: the two entries kept in Task 7, plus the new bullet-points rule. Nothing beginning `Voice register adjustment`.
 
-- [ ] **Step 5: Confirm no timer path can reach the loop**
+- [x] **Step 5: Confirm no timer path can reach the loop**
 
 ```bash
 grep -rn "background_review\|memory_gate\|learning_ledger" ~/Code/GitHub/AIS-OS/systemd/ ~/.config/systemd/user/ 2>/dev/null
 ```
 Expected: no output. The loop must be reachable only from a live turn.
 
-- [ ] **Step 6: Schedule the day-7 audit**
+- [x] **Step 6: Schedule the day-7 audit**
 
 ```bash
 cd ~/Code/GitHub/AIS-OS
@@ -1510,7 +1510,7 @@ Add to `tasks.md` under `## Active`:
 - [ ] Audit the self-learning trial: read the ledger, score precision and recall, decide autonomous vs Telegram-confirm #achios #learning !high @2026-08-27
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add tasks.md
