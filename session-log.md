@@ -278,3 +278,20 @@ Decisions:
 - `/usage` renders progress bars and refresh countdowns; raw numbers were unreadable on a phone.
 
 Rejected: inferring quota from local token tallies — drifts from the backend.
+
+## 2026-08-21 02:40 [saved]
+Goal: Ship self-learning loop v2, verify it live, and fix the reliability gaps it exposed.
+
+Decisions:
+- Loop sources candidates from the raw `prompt`, never `full_prompt` — the latter carries the frozen MEMORY.md, which is what made v1 recursive. Pinned by a test.
+- Trigger on a turn counter, not a timer, so no cron path can reach the loop.
+- CLI writes logged as `source: cli` but excluded from the loop's daily budget, or the model could starve it.
+- Retry only what a retry can fix: network, 429, 5xx. Other 4xx fail immediately.
+- Redact the token from every error string; `requests` puts the URL in exceptions and that is how it reached journald.
+
+Rejected:
+- Tightening v1's regexes — the recursion was architectural, not a regex bug.
+- Deleting the poisoned tgdb notes — inert now, rewriting vault history buys nothing.
+- `Restart=always` on oneshot units — systemd forbids it, and it would mask real failures.
+
+Open: second writer is logged but ungated; capture misses plain facts. See `docs/ROADMAP.md`.
