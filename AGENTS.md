@@ -137,6 +137,14 @@ It is meant to read loose on a phone, not dense.
 - Interpreter: `~/.local/share/achios/venv/bin/python` (uv-managed, has the Google libs)
 - Telegram sending lives in `scripts/telegram_notify.py` and is shared by every job —
   import `send`, don't reimplement it. The `cron-telegram` skill covers the whole path.
+  `send()` retries network errors, 429 and 5xx with growing backoff, honouring Telegram's
+  `retry_after`; other 4xx fail immediately because the request itself is wrong. Every error
+  string is passed through `redact()` first — `requests` puts the request URL in its
+  exceptions and that URL carries the bot token, which is how the token reached journald in
+  cleartext on 2026-08-20. Scheduled units carry `Restart=on-failure` with `RestartSec=5min`,
+  bounded by `StartLimitBurst=3` per hour. **The failure-alert units still deliver over the
+  same network path as the job they report on**, so a long outage loses the alarm too;
+  store-and-forward is `docs/ROADMAP.md` item 3.
 - Model call: Gemini via `agy -p`, run from `~/.local/share/achios/llm`
   so no project instruction file and no capture hook loads.
 - Secrets: `~/.config/achios/` — `telegram.env` plus Google OAuth token files (`google_token_{dlsu,work,}.json`). Mode 700.
@@ -201,16 +209,49 @@ It is meant to read loose on a phone, not dense.
 - Preview: `python scripts/vault_inbox_sync.py --dry-run`
 - Run now: `systemctl --user start achios-vault-sync.service`
 
-### Autonomous Correction Harvester
+### Self-learning loop
 
-`scripts/extract_corrections.py` detects explicit user corrections, directives, banned words, and style preferences across Telegram dialogue transcripts in `achiMem/tgdb/`:
-- Heuristics: Identifies directive triggers (`take note`, `make sure`, `never use`, `don't say`, `change X to Y`, `less formal`)
-- Deduplication: Compares candidate rules against `.agentrules`, `references/voice.md`, and `decisions/log.md` before applying
-- Output: Appends formal architectural records to `decisions/log.md` and active operational rules to `.agentrules`
-- Preview: `python scripts/extract_corrections.py --dry-run`
-- Run: `python scripts/extract_corrections.py`
+The bot learns Aki's standing preferences from ordinary conversation. Rebuilt 2026-08-20
+after v1 was found to be feeding on its own output; the design doc is
+`docs/superpowers/specs/2026-08-20-self-learning-loop-design.md`.
 
+**Why v1 died, because the same mistake is easy to repeat.** v1 harvested rules out of the
+`achiMem/tgdb/` transcript notes. Those notes are built from agy's brain log, which stores
+the prompt *with* `MEMORY.md` already prepended — so every pass re-ingested the rules it had
+written last pass and prefixed them again. `MEMORY.md` filled with
+`Voice register adjustment: Voice register adjustment: …`. Tightening the regexes could not
+fix it and did not; the fault was where the text came from, not how it was matched.
 
+**How v2 avoids it.** Candidates come from the raw `prompt` variable inside
+`execute_agent_pipeline`, never `full_prompt`. Only `full_prompt` carries the frozen memory,
+so injected text cannot reach the loop. `achiAgy/tests/test_background_review.py` fails if
+that ever changes — do not "simplify" the two variables into one.
+
+| Piece | Path | Job |
+|---|---|---|
+| Ledger | `scripts/learning_ledger.py` | Append-only JSONL audit trail. Never mutates; a state change appends a new record with the same id and readers take the latest. |
+| Gate | `scripts/memory_gate.py` | Prefilter, provenance guard, and classification via `agy` with `--json-schema`. Decides only; writes nothing. |
+| Schema | `config/memory_gate_schema.json` | Enforced response shape. |
+| Review | `achiAgy/src/background_review.py` | Orchestrates ledger → gate → memory engine. Capability-constrained by importing nothing else that writes. |
+
+- **Turn-triggered, never scheduled.** Fires every `REVIEW_INTERVAL` turns (10) from inside a
+  live turn. No systemd timer may ever reach it — a cron path is what made v1 self-amplifying.
+- Kill switch with no redeploy: `ACHIOS_REVIEW_INTERVAL=0`, then restart `achi-agy.service`.
+- Caps: 3 writes per review, 10 per day, 25 candidates per gate call. One gate call costs
+  roughly 20k input tokens and ~7s, and that cost is per *call*, not per candidate — which is
+  why the prefilter can afford to be generous.
+- Model is `gemini-3.7-flash-high`. Never raise it; this runs all day.
+- Ledger lives at `~/.local/state/achios/learning_ledger.jsonl`, outside any repo or vault. It
+  stores raw text with no redaction, which is only acceptable while it stays there.
+- **Two writers reach memory.** The loop is one. The agy model is the other — it calls
+  `manage_memory` from the frozen system prompt whenever it likes. Those writes are recorded
+  as `source: cli` and deliberately excluded from the loop's daily budget, or the model could
+  starve it. They are visible but not gated; see `docs/ROADMAP.md` item 1.
+- **Known limitation.** Capture fires only on trigger phrases, so a durable *fact* with no
+  trigger word is never captured at all. This is the recall question for the trial audit.
+- Testing procedure and how to read the output: `docs/2026-08-21-self-learning-loop-test-guide.md`
+- Tests: `tests/test_learning_ledger.py`, `tests/test_memory_gate.py`,
+  `achiAgy/tests/test_background_review.py`.
 
 
 
@@ -258,14 +299,46 @@ Exit code is 1 if anything failed, so it composes into a larger startup script. 
 
 ## Telegram bots
 
-Two always-on Claude Code sessions answer Aki from his phone. One bot per repo rather
+Three always-on sessions answer Aki from his phone. One bot per repo rather
 than one routing between them, because a misroute writes to the wrong place under the
 wrong rules — which chat he opens *is* the routing decision.
 
-| Bot | Unit / tmux | cwd | Writes |
-|---|---|---|---|
-| achiOS | `achios-bot`, `tmux -L achios` | this repo | **read + write**, no guard |
-| schoolMem `@schoMemBot` | `achios-schoolmem-bot`, `tmux -L schoolmem` | the vault | everything **except `wiki/`** |
+| Bot | Engine | Unit / tmux | cwd | Writes |
+|---|---|---|---|---|
+| achiOS `@achiOSClaudeBot` | Claude Code | `achios-bot`, `tmux -L achios` | this repo | **read + write**, no guard |
+| schoolMem `@schoMemBot` | Claude Code | `achios-schoolmem-bot`, `tmux -L schoolmem` | the vault | everything **except `wiki/`** |
+| achiOS AGY `@achiAgyOSBot` | `agy` (Antigravity) | `achi-agy`, `tmux -L achiagy` | this repo | **read + write**, no guard |
+
+The agy bridge is a different codebase with different rules — see **achiAgy** below. Its unit
+is templated in that repo's own `systemd/`, not in this one. `achi-agy-schoolmem.service`
+exists there but is **not installed**; the vault has no agy bot today.
+
+Both run `scripts/telegram-bot.sh`, configured by `BOT_NAME` / `BOT_CWD` /
+`BOT_STATE_DIR` / `BOT_GUARD` / `BOT_MODEL` set in each unit. One script, because the two
+bots differ only in configuration. Both are `sonnet` on `--permission-mode
+bypassPermissions`; both fast-forward their repo with `sync-repos` before launching; both
+restart daily (schoolMem 04:00 Manila, achiOS 04:10, staggered so one uplink is not
+doing two fetches at once).
+
+**Pairing is one-time.** The 6-character code only captures Aki's numeric Telegram id
+into `access.json`, which persists across restarts and reboots. A new session needs no
+new code. What does *not* persist is the conversation — a restarted bot remembers nothing
+beyond what reached a file.
+
+**The achiOS bot reads and writes.** Editing `tasks.md`, adding calendar events, and
+committing are the job, not a hazard. Its blast radius is genuinely wider than
+schoolMem's, and push to `origin` is pre-authorised on this box — so a Telegram message
+can reach GitHub. That is intended; know it.
+
+The `achiMem/wiki/` rule in **Logging contract** still stands and is *not* mechanically
+enforced on the achiOS bot. If unattended wiki writes ever become a real worry, point
+`BOT_GUARD` at a guard for that path — the plumbing already exists.
+
+### One-way Notification & Cron Bots
+Three dedicated one-way bots isolate scheduled briefings from pair-programming chats:
+- **`achinouncements` (`@achiOSBot`):** Credentials in `~/.config/achios/telegram.env`. Receives daily briefs (08:00), evening debriefs (00:00), Work/Career email debriefs, and system failure alerts.
+- **`achiSchooNounce` (`@achiSchooNounceBot`):** Credentials in `~/.config/achios/telegram_school.env`. Receives all DLSU school email debriefs and academic announcements. (Keeps `@schoMemBot` clean for two-way interactive queries).
+- **`achiFinance` (`@achiETFBot`):** Credentials in `~/.config/achios/telegram_finance.env`. Receives daily ETF market digests (VOO, VXUS, QQQM) at 04:30 and 08:00 Manila.
 
 Both run `scripts/telegram-bot.sh`, configured by `BOT_NAME` / `BOT_CWD` /
 `BOT_STATE_DIR` / `BOT_GUARD` / `BOT_MODEL` set in each unit. One script, because the two
@@ -338,6 +411,48 @@ permission mode and the hook layer are independent, which is the whole reason th
 - Tests: `tests/test_telegram_bot.py` (wrapper config, fail-closed guard install) and
   `tests/test_schoolmem_wiki_guard.py` (denies traversal into `wiki/`, allows `inbox/`,
   ignores lookalike siblings like `wiki-archive/`, fails closed on bad input).
+
+## achiAgy — the Antigravity Telegram bridge
+
+`~/Code/GitHub/achiAgy` is a separate repo (branch `master`, remote `origin`) running Google
+Antigravity's `agy` CLI as a Telegram bot. It is not a Claude Code session and does not use
+`scripts/telegram-bot.sh`.
+
+- Unit `achi-agy.service`, tmux server `-L achiagy`, session `bot`. Look without touching:
+  `tmux -L achiagy capture-pane -p -t bot | tail -30`.
+- Model `gemini-3.7-flash-high`, auto-approve on. Its cwd is this repo, so it edits achiOS.
+- Interpreter is achiAgy's own `.venv/bin/python`. The AIS-OS venv does not have its deps.
+- `src/bot.py` inserts `~/Code/GitHub/AIS-OS/scripts` onto `sys.path`, which is how it reaches
+  `tgdb_logger` and `learning_ledger`. New shared code goes in AIS-OS `scripts/`, not copied.
+- Declarative memory is `~/.config/achios/{MEMORY.md,USER.md}`, `\n§\n` separated, hard 2500-char
+  budget per file, managed by `src/memory_engine.py`. **At the ceiling a write replaces the
+  oldest entry** — in `USER.md` that is the Identity line. Watch the budget.
+- `build_frozen_system_prompt()` injects both files once per conversation for prefix caching.
+  This is the text that must never find its way back into the learning loop.
+
+## Future work
+
+Ranked, with what is wrong today and how you would know a fix worked:
+**`docs/ROADMAP.md`**. Read it before proposing new infrastructure — several obvious ideas
+are listed there as deliberately *not* being done, with reasons.
+
+### Asa — planned multi-agent orchestrator
+
+Not built. Scoped 2026-08-19, tracked in `tasks.md`.
+
+Asa is meant to be a universal, bidirectional orchestrator across Claude Code, Antigravity
+(`agy`), and Codex, with a Telegram gateway for tri-agent dispatch, cross-model consensus,
+and subagent supervision from Aki's phone. The current `asa` skill at `~/.claude/skills/asa`
+documents a CLI that **does not exist on this box** — invoking it fails with "command not
+found", and a dispatch that swallows stderr will report success while doing nothing. Treat
+the skill as a design sketch, not a working tool, until the CLI is actually built.
+
+Today the working substitute is driving `agy -p` directly for parallel grunt work. Model
+allocation stands: **Opus audits and drafts plans, Gemini 3.7 Flash executes.** Do not invert
+it — agy is for mechanical extraction and implementation, not for judgment calls.
+
+`agy` and `codex` are installed on achibuntu as of 2026-08-17. `agy` is authenticated; `codex`
+login is deferred pending a subscription.
 
 ## Knowledge base
 
