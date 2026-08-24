@@ -344,7 +344,7 @@ From `journalctl --user`:
 
 ```
 Failed to send Telegram alert: HTTPSConnectionPool(host='api.telegram.org', port=443):
-Max retries exceeded with url: /bot8725294836:AAFyEDmLBcTS-vlaMb66JcpVYnPCEKYX1dQ/sendMessage
+Max retries exceeded with url: /bot<TELEGRAM_BOT_TOKEN_REDACTED>/sendMessage
 ```
 
 `requests` embeds the token in the URL path, and the exception string carries it into the log. The token for `@achiOSBot` is now in the journal in cleartext, readable by anything that can read the user journal, and it will persist for the journal's retention period.

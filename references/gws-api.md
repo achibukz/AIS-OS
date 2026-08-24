@@ -1,11 +1,14 @@
 # gws — Google Workspace CLI
 
-Binary on Mac: `/opt/homebrew/bin/gws`. Shape: `gws <service> <resource> [sub-resource] <method> --params '<JSON>' [--json '<body>']`.
+Binary on Mac: `/opt/homebrew/bin/gws`.
+Binary on Linux (Achibuntu): `~/.npm-global/bin/gws` (`npm install -g @googleworkspace/cli`).
+Shape: `gws <service> <resource> [sub-resource] <method> --params '<JSON>' [--json '<body>']`.
 Services in use here: `gmail`, `calendar`.
 
-## Hermes Linux route
+## Linux (Achibuntu) setup
 
-On the Linux Hermes host, `gws` is not installed, but Hermes Google Workspace OAuth is wired and live through two token files:
+`gws` is installed and verified across all four accounts under `~/.config/gws-*` using `GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file`.
+Hermes Google Workspace OAuth is also wired and live through token files:
 
 - `~/.hermes/google_token.json` — personal token, currently `akibukuhan10@gmail.com`; sees Gala, Personal, Bdayy, DLSU, Job (reader), CSOPESY, PEDFOUR, STCLOUD, STSP001, THS-ST1, Canvas import, LSCS, and DLSU primary as free/busy.
 - `~/.hermes/gws-work/google_token.json` — work token, `akibukzwork@gmail.com`; sees Job as primary/owner plus ING, Family, Holidays PH, and shared school calendars.
@@ -43,21 +46,42 @@ gws gmail users messages list --params '{"userId": "me", "q": "is:unread", "maxR
 
 The bare `~/.config/gws` dir is the old single-account setup. Don't add to it.
 
-## Re-authenticating (Aki has to do this — browser flow)
+## Re-authenticating (Run on Mac, then SCP to Linux)
 
-All three are logged in as of 2026-08-10. If one expires:
+When OAuth tokens expire, authenticate all 4 accounts on your Mac, then push the config directories to Achibuntu in one go:
 
+### 1. Main Account (`aki.bukz12@gmail.com`)
 ```bash
 GOOGLE_WORKSPACE_CLI_CONFIG_DIR=$HOME/.config/gws-main \
 GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file \
 gws auth login --services=gmail,calendar
 ```
 
-Use `--services=` with the `=`, not `-s value` — a wrapped terminal line splits the value
-off and zsh runs it as its own command. Add `--readonly` if only reads are wanted.
+### 2. Personal & School Calendar (`akibukuhan10@gmail.com`)
+```bash
+GOOGLE_WORKSPACE_CLI_CONFIG_DIR=$HOME/.config/gws-personal \
+GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file \
+gws auth login --services=gmail,calendar
+```
 
-The OAuth client lives in GCP project `achiclaude` (`client_secret.json`, copied into each
-config dir), owned by akibukzwork. Two things had to be true before non-owner accounts
+### 3. Work & Job Calendar (`akibukzwork@gmail.com`)
+```bash
+GOOGLE_WORKSPACE_CLI_CONFIG_DIR=$HOME/.config/gws-work \
+GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file \
+gws auth login --services=gmail,calendar
+```
+
+### 4. DLSU School Mail (`abram_bukuhan@dlsu.edu.ph`)
+```bash
+GOOGLE_WORKSPACE_CLI_CONFIG_DIR=$HOME/.config/gws-dlsu \
+GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file \
+gws auth login --services=gmail,calendar
+```
+
+### 5. Push to Achibuntu
+```bash
+scp -r ~/.config/gws-* achibukz@achibuntu:~/.config/
+```
 worked, and both are now done:
 
 1. **Consent screen published to Production.** In Testing, refresh tokens expire after 7

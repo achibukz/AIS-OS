@@ -42,8 +42,8 @@ def get_recent_logs(service_name: str, max_lines: int = 8) -> str:
         "achios-schoolmem-bot": Path.home() / ".local" / "state" / "achios" / "schoolmem_bot.log",
         "achios-daily-brief": Path.home() / ".local" / "state" / "achios" / "daily_brief.log",
         "achios-voo-digest": Path.home() / ".local" / "state" / "achios" / "voo_digest.log",
-        "achi-agy": Path.home() / "Code" / "GitHub" / "achiAgy" / "achi_agy.log",
-        "achi-agy-schoolmem": Path.home() / "Code" / "GitHub" / "achiAgy" / "achiagy.log",
+        "achi-agy": Path.home() / "Code" / "GitHub" / "achiAgy" / "achiagy.log",
+        "achi-agy-schoolmem": Path.home() / ".local" / "state" / "achiagy-schoolmem" / "bot.log",
     }
 
     log_path = log_map.get(raw_unit)

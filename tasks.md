@@ -21,22 +21,19 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
-- [ ] Have Claude Code review [docs/2026-08-23-asa-research-retrospective-startups-and-qa.md](file:///home/achibukz/Code/GitHub/asa/docs/2026-08-23-asa-research-retrospective-startups-and-qa.md) in `asa` to update the orchestrator loop, SKILL.md, and enforce mandatory alethea fact-checking #agents #asa #arch !high @2026-08-24
-- [ ] Complete the implementation of the new architecture of Asa #agents #collab #arch !high @2026-08-22
-- [ ] Implement shared task_engine.py, native achiAgy /tasks handler, concurrency guards, and systemd fixes per [2026-08-21-tasks-and-systemd-architecture-audit.md](file:///home/achibukz/Code/GitHub/AIS-OS/docs/2026-08-21-tasks-and-systemd-architecture-audit.md) #achios #achiagy !high @2026-08-22
-- [ ] Create 3-slide pitch deck for GCash ImaGnation Challenge using Andrei's Figma mockups and research debrief #hackathon #projects !high @2026-08-23
-- [ ] Record 1-min 30-sec video pitch for GCash ImaGnation Challenge (exactly 90s, MP4) #hackathon #projects !high @2026-08-24
-- [ ] Submit GCash ImaGnation Phase 1 entry via Google Form (3-slide PDF, 90s MP4, 5x CVs + Enrolment proofs) #hackathon #projects !high @2026-08-24
-- [ ] Research Hermes Kanban Architecture for Asa Milestone 5 (`kanban_db.py`, atomic claims, worker locks) #agents #collab #arch !high @2026-08-22
+- [ ] Build Google Sheets Schedule Planner skill for Claude Code / achiOS based on Hermes OAuth and Sheets v4 API spec in [docs/2026-08-24-google-sheets-schedule-planner-skill-spec.md](file:///home/achibukz/Code/GitHub/AIS-OS/docs/2026-08-24-google-sheets-schedule-planner-skill-spec.md) #skills #automation #achios !high @2026-08-25
+- [ ] Audit Hermes research retrospective and orchestrator findings with Claude Code in asa [docs/reports/2026-08-24-hermes-research-and-orchestrator-audit.md](file:///home/achibukz/Code/GitHub/asa/docs/reports/2026-08-24-hermes-research-and-orchestrator-audit.md) #asa #audit !high @2026-08-25
+- [ ] Benchmark Althea fact-checking on gemini-3.1-pro-high vs gemini-3.7-flash-high across claim granularity, latency, and tool fidelity in asa #asa #eval #benchmark !med @2026-08-26
+- [ ] Implement active heartbeat polling loop in asa orchestrator to prevent streaming inactivity timeouts #asa #arch !high @2026-08-25
+- [ ] Update achiAgy/src/bot.py to push intermediate orchestrator milestone summaries to Telegram during long multi-agent runs #achiagy #telegram !med @2026-08-26
+- [ ] Execute the new implementation plan created with Claude Code #asa #arch !med
 - [ ] Follow up / Pick up DLSU Good Moral Certificate (CGMC) once release notification arrives (8-10 working days, event set on DLSU Calendar) #career #school !high @2026-09-02
 - [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
 - [ ] Open/fund BPI SaveUp or bank account and obtain proof reflecting account number for ING #finances #career !high
 - [ ] Complete 5-month ING Internship Agreement Form (signatures: Aki, Parent/Guardian, DLSU coordinator, then notarize) #career #school !high
 - [ ] DLSU Term 1 (AY2627-T1) Enrollment via Archers Hub / Animo.sys — ID 123 2nd DL timeslot 11:30 AM - 12:30 PM #school !high @2026-08-25
-- [ ] Finalize proposed schedule for Term 1 (CCINOV8, STDISCM, THS-ST2, STELEC4, GE) in [Google Sheets](https://docs.google.com/spreadsheets/d/1qqaTvcyz40JvyTDyT8MXiOEjPVh57PAL96jb_967BJ4) ahead of Aug 25 enrollment #school !high @2026-08-23
 - [ ] Go to a BPI branch and ask for an alternative on how to create a new BPI SaveUp account (avoiding traditional bank account) following the notice in work inbox #finances !high
 - [ ] Rotate `@achiOSBot` Telegram token via BotFather (GitHub Secret Scanning alert #2), update `~/.config/achios/telegram.env`, and push redaction in `docs/2026-08-20-opus-audit-achios-achiagy.md` #security #achios !high @2026-08-21
-- [ ] Research Hermes agent response style and communication dynamics to update achiOS prompt architecture, reducing wordiness and text-heavy replies #achios #research #learning !high @2026-08-22
 - [ ] Reapply for a BPI SaveUp account — the 2026-08-15 application was closed for being unfunded. Required initial deposit is Php 1 and monthly ADB is Php 0, so the deadline is the risk, not the amount. Fund it the day the account number lands #finances !med
 - [ ] Maybe buy Codex — align its billing to the Claude subscription renewal once ING internship / thesis workload ramps up #achios !low @2026-10-29
 - [ ] Cancel current Google One subscription ahead of renewal #finances #personal !low @2026-10-13
@@ -46,6 +43,15 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 ## Blocked
 
 ## Done
+- [x] Research Hermes Kanban Architecture for Asa Milestone 5 (`kanban_db.py`, atomic claims, worker locks) #agents #collab #arch !high @2026-08-22  (done 2026-08-24)
+- [x] Research Hermes agent response style and communication dynamics to update achiOS prompt architecture, reducing wordiness and text-heavy replies #achios #research #learning !high @2026-08-22  (done 2026-08-24)
+- [x] Submit GCash ImaGnation Phase 1 entry via Google Form (3-slide PDF, 90s MP4, 5x CVs + Enrolment proofs) #hackathon #projects !high @2026-08-24  (done 2026-08-24)
+- [x] Record 1-min 30-sec video pitch for GCash ImaGnation Challenge (exactly 90s, MP4) #hackathon #projects !high @2026-08-24  (done 2026-08-24)
+- [x] Create 3-slide pitch deck for GCash ImaGnation Challenge using Andrei's Figma mockups and research debrief #hackathon #projects !high @2026-08-23  (done 2026-08-24)
+- [x] Finalize proposed schedule for Term 1 (CCINOV8, STDISCM, THS-ST2, STELEC4, GE) in [Google Sheets](https://docs.google.com/spreadsheets/d/1qqaTvcyz40JvyTDyT8MXiOEjPVh57PAL96jb_967BJ4) ahead of Aug 25 enrollment — Locked 14u plan (STDISCM S04, CCINOV8 S02, STSP002 S30A, GELITPH Z20), ported Hanielle (18u) & Lui (14u) schedules with master overview #school !high @2026-08-23  (done 2026-08-24)
+- [x] Have Claude Code review [docs/2026-08-23-asa-research-retrospective-startups-and-qa.md](file:///home/achibukz/Code/GitHub/asa/docs/2026-08-23-asa-research-retrospective-startups-and-qa.md) in `asa` to update the orchestrator loop, SKILL.md, and enforce mandatory alethea fact-checking #agents #asa #arch !high @2026-08-24  (done 2026-08-24)
+- [x] Complete the implementation of the new architecture of Asa #agents #collab #arch !high @2026-08-22  (done 2026-08-24)
+- [x] Implement shared task_engine.py, native achiAgy /tasks handler, concurrency guards, and systemd fixes per [2026-08-21-tasks-and-systemd-architecture-audit.md](file:///home/achibukz/Code/GitHub/AIS-OS/docs/2026-08-21-tasks-and-systemd-architecture-audit.md) #achios #achiagy !high @2026-08-22  (done 2026-08-24)
 - [x] Name subagents with actual names #agents #achios #learning !med  (done 2026-08-22)
 - [x] Prepare and send scanned copy of PSA Birth Certificate for ING #career !high  (done 2026-08-22)
 - [x] Run deep research, market analysis, and primary source verification on GCash ImaGnation pitch; compile consolidated 23-page Research Dossier PDF #hackathon #research #mamdanigcash !high @2026-08-21  (done 2026-08-21)
