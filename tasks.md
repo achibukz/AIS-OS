@@ -17,10 +17,14 @@ the parser skips the line.
 - `#area` optional, one or more. Free-form: `#thesis`, `#career`, `#achios`, `#school`
 - `!high` `!med` `!low` optional. Missing means `!med`
 - `@YYYY-MM-DD` optional due date. Overdue and due-today are called out in the brief
+- Research inquiries must be paired with an entry in [research.md](file:///home/achibukz/Code/GitHub/AIS-OS/research.md) detailing lenses and deliverable, linked via anchor.
 
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Build YouTube transcript extraction and structured ingestion workflow in Asa to generate dedicated video learning pages and update achiMem knowledge (secondary to Sciel/achiMem fixes) #asa #workflows #achimem #automation !med
+- [ ] Audit and refine ~/.config/achios/USER.md and MEMORY.md with Claude Code to optimize structure, conciseness, and 2,500-char budget utilization #achios #memory #audit !high
+- [ ] Research Syncthing and real-time file sync setups between Achibuntu and MacBook Air to eliminate manual git pull/fetch workflows per [research.md#4-continuous-bi-directional-file-synchronization-across-achibuntu-and-macos-syncthing-vs-alternatives](file:///home/achibukz/Code/GitHub/AIS-OS/research.md#4-continuous-bi-directional-file-synchronization-across-achibuntu-and-macos-syncthing-vs-alternatives) #infra #tooling #achios !med
 - [ ] Audit and plan integration of Matt Pocock workflows (Wayfinder, Grilling, Codebase Design) with asa SCAN/STORM research pipeline in Claude Code per [docs/2026-08-24-matt-pocock-workflow-integration-and-wayfinder-asa-audit.md](file:///home/achibukz/Code/GitHub/AIS-OS/docs/2026-08-24-matt-pocock-workflow-integration-and-wayfinder-asa-audit.md) #achios #asa #workflows #audit !med @2026-08-26
 - [ ] Build Google Sheets Schedule Planner skill for Claude Code / achiOS based on Hermes OAuth and Sheets v4 API spec in [docs/2026-08-24-google-sheets-schedule-planner-skill-spec.md](file:///home/achibukz/Code/GitHub/AIS-OS/docs/2026-08-24-google-sheets-schedule-planner-skill-spec.md) #skills #automation #achios !high @2026-08-25
 - [ ] Audit Hermes research retrospective and orchestrator findings with Claude Code in asa [docs/reports/2026-08-24-hermes-research-and-orchestrator-audit.md](file:///home/achibukz/Code/GitHub/asa/docs/reports/2026-08-24-hermes-research-and-orchestrator-audit.md) #asa #audit !high @2026-08-25
