@@ -22,6 +22,7 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Update Asa research workflow to mandate an exhaustive sources and citations appendix at the end of all generated markdown files and deliverables #asa #workflows #research !high
 - [ ] Build YouTube transcript extraction and structured ingestion workflow in Asa to generate dedicated video learning pages and update achiMem knowledge (secondary to Sciel/achiMem fixes) #asa #workflows #achimem #automation !med
 - [ ] Audit and refine ~/.config/achios/USER.md and MEMORY.md with Claude Code to optimize structure, conciseness, and 2,500-char budget utilization #achios #memory #audit !high
 - [ ] Research Syncthing and real-time file sync setups between Achibuntu and MacBook Air to eliminate manual git pull/fetch workflows per [research.md#4-continuous-bi-directional-file-synchronization-across-achibuntu-and-macos-syncthing-vs-alternatives](file:///home/achibukz/Code/GitHub/AIS-OS/research.md#4-continuous-bi-directional-file-synchronization-across-achibuntu-and-macos-syncthing-vs-alternatives) #infra #tooling #achios !med
