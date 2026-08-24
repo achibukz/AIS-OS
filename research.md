@@ -45,24 +45,9 @@
   - *Multimodal Fusion:* Cross-attention vs early concatenation for temporal video embeddings, audio transcripts, and metadata.
 - **Deliverable:** Literature review and baseline experimental matrix for Software Technology thesis.
 
-### 5. Distributed Consensus & Fault Tolerance in Edge/Constrained Node Clusters
-- **Research Question:** How do modern lightweight consensus algorithms (Raft variants, SQLite WAL replication via LiteFS/rqlite) perform on heterogeneous, intermittent edge networks (e.g. local Mac + headless home server over Tailscale)?
-- **Inquiry Lenses:**
-  - *Network Partitions:* Handling high-latency or intermittent connectivity without split-brain state corruption.
-  - *Resource Overhead:* Memory and CPU footprints of consensus protocols on low-power consumer hardware (Intel Skylake / ARM).
-- **Deliverable:** Architectural primer and study notes for STDISCM (Distributed Systems).
-
 ---
 
 ## 💼 Career, Tax & Regulatory Intelligence
-
-### 6. Philippine Tax & Labor Framework for Voluntary Corporate Internships
-- **Research Question:** What are the exact tax obligations, statutory exemptions, and labor standards governing monthly allowances (e.g. ₱15,000/mo) for voluntary, non-academic corporate student internships in the Philippines?
-- **Inquiry Lenses:**
-  - *Tax Status:* Applicability of withholding tax on compensation vs non-taxable allowance under the TRAIN Law / NIRC, and whether companies issue BIR Form 2316 or 2307.
-  - *Statutory Coverage:* SSS, PhilHealth, and Pag-IBIG applicability for voluntary interns vs standard employees under DOLE DO 149-16 and CHED CMO 104 guidelines.
-  - *Corporate Offboarding:* Portability of corporate HMO benefits and transition traps when entering full-time roles.
-- **Deliverable:** Practical tax and statutory compliance guide for tech interns in Philippine multinational hubs.
 
 ---
 
@@ -76,9 +61,3 @@
   - *Frictionless Routing:* Free clearinghouse hubs (e.g. GoTyme free InstaPay transfers) for zero-fee capital rotation.
 - **Deliverable:** Quantitative allocation strategy and monthly capital rotation cheat sheet.
 
-### 8. NFC Mobile Payments & Apple Pay Rollout in the Philippine Banking Ecosystem
-- **Research Question:** What is the current regulatory landscape (BSP QR Ph mandates, NFC tokenization standards) and timeline for Apple Pay / Google Wallet merchant adoption among major Philippine banks (BPI, BDO, Maya)?
-- **Inquiry Lenses:**
-  - *Infrastructure Readiness:* POS terminal EMV contactless adoption rates across Metro Manila retail merchants.
-  - *Interchange & Fee Structure:* How Apple's fee model impacts local card issuers and what regulatory milestones remain.
-- **Deliverable:** Market intelligence brief on the trajectory of contactless mobile payments in the Philippines.
