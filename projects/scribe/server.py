@@ -8,10 +8,20 @@ import uuid
 from pathlib import Path
 
 import uvicorn
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
+from pydantic import BaseModel
 
-from core import group_segments, output_path, parse_segment, render_markdown, whisper_error
+from core import (
+    download_youtube_audio,
+    fetch_youtube_metadata,
+    group_segments,
+    is_youtube_url,
+    output_path,
+    parse_segment,
+    render_markdown,
+    whisper_error,
+)
 
 ROOT = Path(__file__).parent
 UPLOADS = ROOT / "uploads"
@@ -25,6 +35,10 @@ job_order: list[str] = []
 work_queue: queue.Queue[str] = queue.Queue()
 listeners: list[asyncio.Queue] = []
 loop: asyncio.AbstractEventLoop | None = None
+
+
+class YouTubeRequest(BaseModel):
+    url: str
 
 
 def whisper_binary() -> str:
@@ -65,12 +79,25 @@ def probe_duration(path: Path) -> float:
 
 def transcribe(jid: str):
     job = jobs[jid]
-    src = Path(job["upload_path"])
-    wav = src.with_suffix(".16k.wav")
-    errlog = src.with_suffix(".err.log")
+    url = job.get("url")
+    src = None
+    wav = None
+    errlog = None
     try:
+        if url:
+            update(jid, status="downloading")
+            src, meta = download_youtube_audio(url, UPLOADS, jid)
+            update(jid, name=meta.get("title", job["name"]), upload_path=str(src))
+            duration = meta.get("duration") or probe_duration(src)
+            job["uploader"] = meta.get("uploader", "")
+        else:
+            src = Path(job["upload_path"])
+            duration = probe_duration(src)
+
+        wav = src.with_suffix(".16k.wav")
+        errlog = src.with_suffix(".err.log")
+
         update(jid, status="extracting")
-        duration = probe_duration(src)
         subprocess.run(
             ["ffmpeg", "-y", "-v", "error", "-i", str(src),
              "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", str(wav)],
@@ -95,8 +122,17 @@ def transcribe(jid: str):
             raise RuntimeError("no speech found in file")
 
         dest = output_path(OUTPUTS, job["name"])
-        dest.write_text(render_markdown(job["name"], duration, group_segments(segments)))
-        src.unlink(missing_ok=True)
+        body = group_segments(segments)
+        md = render_markdown(
+            job["name"],
+            duration,
+            body,
+            url=url,
+            channel=job.get("uploader"),
+        )
+        dest.write_text(md)
+        if src and src.exists():
+            src.unlink(missing_ok=True)
         update(jid, status="done", progress=1.0, output=dest.name)
     except subprocess.CalledProcessError as e:
         detail = (e.stderr or b"").decode() if isinstance(e.stderr, bytes) else (e.stderr or "")
@@ -104,8 +140,12 @@ def transcribe(jid: str):
     except Exception as e:
         update(jid, status="error", error=str(e))
     finally:
-        wav.unlink(missing_ok=True)
-        errlog.unlink(missing_ok=True)
+        if wav:
+            wav.unlink(missing_ok=True)
+        if errlog:
+            errlog.unlink(missing_ok=True)
+        if src and src.exists() and jobs[jid]["status"] == "done":
+            src.unlink(missing_ok=True)
 
 
 def worker():
@@ -144,6 +184,33 @@ async def create_jobs(files: list[UploadFile]):
     broadcast()
     for jid in created:
         work_queue.put(jid)
+    return snapshot()
+
+
+@app.post("/api/youtube")
+async def create_youtube_job(payload: YouTubeRequest):
+    raw_url = payload.url.strip()
+    if not raw_url or not is_youtube_url(raw_url):
+        raise HTTPException(status_code=400, detail="Invalid YouTube URL")
+
+    jid = uuid.uuid4().hex[:8]
+    try:
+        meta = fetch_youtube_metadata(raw_url)
+        title = meta.get("title") or raw_url
+    except Exception:
+        title = raw_url
+
+    jobs[jid] = {
+        "id": jid,
+        "name": title,
+        "status": "queued",
+        "progress": 0.0,
+        "url": raw_url,
+        "upload_path": None,
+    }
+    job_order.append(jid)
+    broadcast()
+    work_queue.put(jid)
     return snapshot()
 
 

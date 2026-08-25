@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import html
+import json
 import os
 import re
 import subprocess
@@ -37,12 +38,14 @@ from telegram_notify import send
 CONFIG_DIR = Path.home() / ".config" / "achios"
 LLM_DIR = Path.home() / ".local" / "share" / "achios" / "llm"
 LOCAL_TZ = ZoneInfo("Asia/Manila")
+GWS_BIN = Path.home() / ".npm-global" / "bin" / "gws"
 
 ACCOUNT_CONFIGS = [
     {
         "id": "dlsu",
         "type": "school",
         "title": "🎓 DLSU School Email",
+        "gws_profile": "dlsu",
         "tokens": [CONFIG_DIR / "google_token_dlsu.json"],
         "env_file": CONFIG_DIR / "telegram_school.env",
     },
@@ -50,6 +53,7 @@ ACCOUNT_CONFIGS = [
         "id": "work",
         "type": "work",
         "title": "💼 Work / Career Email",
+        "gws_profile": "work",
         "tokens": [CONFIG_DIR / "google_token_work.json"],
         "env_file": None,
     },
@@ -57,6 +61,7 @@ ACCOUNT_CONFIGS = [
         "id": "personal",
         "type": "personal",
         "title": "📬 Personal & Security Alerts",
+        "gws_profile": "personal",
         "tokens": [CONFIG_DIR / "google_token.json"],
         "env_file": None,
     },
@@ -281,70 +286,144 @@ def categorize_email(from_hdr: str, subject: str, snippet: str, account_type: st
     return "general"
 
 
-def fetch_account_emails(token_paths: list[Path], account_type: str = "general") -> tuple[list[EmailItem], int]:
-    """Fetch unread actionable emails for a specific account."""
-    from google.auth.transport.requests import Request
-    from google.oauth2.credentials import Credentials
-    from googleapiclient.discovery import build
-
+def fetch_account_emails(token_paths: list[Path], account_type: str = "general", gws_profile: str | None = None) -> tuple[list[EmailItem], int, str | None]:
+    """Fetch unread actionable emails for a specific account via gws or direct token."""
     actionable: list[EmailItem] = []
     filtered_noise_count = 0
+    fetch_error: str | None = None
 
-    for token_path in token_paths:
-        if not token_path.exists():
-            continue
-
-        try:
-            creds = Credentials.from_authorized_user_file(str(token_path))
-            if creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-                token_path.write_text(creds.to_json(), encoding="utf-8")
-
-            service = build("gmail", "v1", credentials=creds, cache_discovery=False)
-
-            # Query unread messages in inbox from last 2 days
-            query = "in:inbox is:unread newer_than:2d"
-            res = service.users().messages().list(userId="me", q=query, maxResults=25).execute()
-            messages = res.get("messages", [])
-
-            for m in messages:
-                msg = (
-                    service.users()
-                    .messages()
-                    .get(
-                        userId="me",
-                        id=m["id"],
-                        format="metadata",
-                        metadataHeaders=["From", "Subject", "Date"],
-                    )
-                    .execute()
+    # 1. Try fetching via gws CLI first
+    if GWS_BIN.exists() and gws_profile:
+        cfg_dir = Path.home() / ".config" / f"gws-{gws_profile}"
+        if cfg_dir.exists():
+            env = {**os.environ, "GOOGLE_WORKSPACE_CLI_CONFIG_DIR": str(cfg_dir), "KEYRING_BACKEND": "file"}
+            try:
+                res = subprocess.run(
+                    [
+                        str(GWS_BIN), "gmail", "users", "messages", "list",
+                        "--params", json.dumps({"userId": "me", "q": "in:inbox is:unread newer_than:2d", "maxResults": 25})
+                    ],
+                    env=env,
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
                 )
-                headers = {h["name"]: h["value"] for h in msg.get("payload", {}).get("headers", [])}
-                from_hdr = sanitize_text(headers.get("From", "Unknown"))
-                subject = sanitize_text(headers.get("Subject", "(No Subject)"))
-                date_hdr = sanitize_text(headers.get("Date", ""))
-                snippet = sanitize_text(msg.get("snippet", ""))
+                if res.returncode == 0 and res.stdout.strip():
+                    stdout_clean = res.stdout[res.stdout.find("{"):] if "{" in res.stdout else res.stdout
+                    data = json.loads(stdout_clean)
+                    messages = data.get("messages", [])
+                    for m in messages:
+                        mid = m["id"]
+                        res_m = subprocess.run(
+                            [
+                                str(GWS_BIN), "gmail", "users", "messages", "get",
+                                "--params", json.dumps({
+                                    "userId": "me",
+                                    "id": mid,
+                                    "format": "metadata",
+                                    "metadataHeaders": ["From", "Subject", "Date"]
+                                })
+                            ],
+                            env=env,
+                            capture_output=True,
+                            text=True,
+                            timeout=10,
+                        )
+                        if res_m.returncode == 0 and res_m.stdout.strip():
+                            m_clean = res_m.stdout[res_m.stdout.find("{"):] if "{" in res_m.stdout else res_m.stdout
+                            msg_data = json.loads(m_clean)
+                            headers = {h["name"]: h["value"] for h in msg_data.get("payload", {}).get("headers", [])}
+                            from_hdr = sanitize_text(headers.get("From", "Unknown"))
+                            subject = sanitize_text(headers.get("Subject", "(No Subject)"))
+                            date_hdr = sanitize_text(headers.get("Date", ""))
+                            snippet = sanitize_text(msg_data.get("snippet", ""))
 
-                if is_noise(from_hdr, subject, snippet, account_type=account_type):
-                    filtered_noise_count += 1
-                    continue
+                            if is_noise(from_hdr, subject, snippet, account_type=account_type):
+                                filtered_noise_count += 1
+                                continue
 
-                category = categorize_email(from_hdr, subject, snippet, account_type=account_type)
-                sender = clean_title(clean_sender(from_hdr))
-                clean_subj = clean_title(subject)
-                actionable.append(
-                    EmailItem(
-                        sender=sender,
-                        subject=clean_subj,
-                        snippet=snippet[:250].strip(),
-                        category=category,
-                        date_str=date_hdr,
+                            category = categorize_email(from_hdr, subject, snippet, account_type=account_type)
+                            sender = clean_title(clean_sender(from_hdr))
+                            clean_subj = clean_title(subject)
+                            actionable.append(
+                                EmailItem(
+                                    sender=sender,
+                                    subject=clean_subj,
+                                    snippet=snippet[:250].strip(),
+                                    category=category,
+                                    date_str=date_hdr,
+                                )
+                            )
+                    return actionable, filtered_noise_count, None
+                elif res.returncode != 0:
+                    err_msg = res.stderr.strip().split("\n")[0] if res.stderr else f"exit code {res.returncode}"
+                    fetch_error = f"gws {gws_profile} error: {err_msg}"
+            except Exception as e:
+                fetch_error = f"gws {gws_profile} error: {e}"
+                print(f"[WARN] gws email fetch failed for {gws_profile}: {e}", file=sys.stderr)
+
+    # 2. Fallback to direct token files
+    if not GWS_BIN.exists():
+        for token_path in token_paths:
+            if not token_path.exists():
+                continue
+
+            try:
+                from google.auth.transport.requests import Request
+                from google.oauth2.credentials import Credentials
+                from googleapiclient.discovery import build
+
+                creds = Credentials.from_authorized_user_file(str(token_path))
+                if creds.expired and creds.refresh_token:
+                    creds.refresh(Request())
+                    token_path.write_text(creds.to_json(), encoding="utf-8")
+
+                service = build("gmail", "v1", credentials=creds, cache_discovery=False)
+
+                # Query unread messages in inbox from last 2 days
+                query = "in:inbox is:unread newer_than:2d"
+                res = service.users().messages().list(userId="me", q=query, maxResults=25).execute()
+                messages = res.get("messages", [])
+
+                for m in messages:
+                    msg = (
+                        service.users()
+                        .messages()
+                        .get(
+                            userId="me",
+                            id=m["id"],
+                            format="metadata",
+                            metadataHeaders=["From", "Subject", "Date"],
+                        )
+                        .execute()
                     )
-                )
-        except Exception as e:
-            print(f"Error checking {token_path.name}: {e}", file=sys.stderr)
+                    headers = {h["name"]: h["value"] for h in msg.get("payload", {}).get("headers", [])}
+                    from_hdr = sanitize_text(headers.get("From", "Unknown"))
+                    subject = sanitize_text(headers.get("Subject", "(No Subject)"))
+                    date_hdr = sanitize_text(headers.get("Date", ""))
+                    snippet = sanitize_text(msg.get("snippet", ""))
 
-    return actionable, filtered_noise_count
+                    if is_noise(from_hdr, subject, snippet, account_type=account_type):
+                        filtered_noise_count += 1
+                        continue
+
+                    category = categorize_email(from_hdr, subject, snippet, account_type=account_type)
+                    sender = clean_title(clean_sender(from_hdr))
+                    clean_subj = clean_title(subject)
+                    actionable.append(
+                        EmailItem(
+                            sender=sender,
+                            subject=clean_subj,
+                            snippet=snippet[:250].strip(),
+                            category=category,
+                            date_str=date_hdr,
+                        )
+                    )
+            except Exception as e:
+                fetch_error = f"{token_path.stem} error: {e}"
+                print(f"[WARN] Direct token fetch failed for {token_path.name}: {e}", file=sys.stderr)
+
+    return actionable, filtered_noise_count, fetch_error
 
 
 def synthesize_account_emails_llm(title: str, account_type: str, items: list[EmailItem]) -> str | None:
@@ -481,10 +560,22 @@ def build_account_message(
     items: list[EmailItem],
     noise_count: int,
     raw_mode: bool = False,
+    error: str | None = None,
 ) -> str:
     """Build the final account message using LLM synthesis or deterministic fallback."""
     now = dt.datetime.now(LOCAL_TZ)
     date_str = now.strftime("%b %d, %Y (%I:%M %p Manila)")
+
+    if error and not items:
+        lines = [
+            "---------------------------------",
+            f"{title} Debrief",
+            f"🗓 {date_str}",
+            "",
+            f"⚠️ Sync Warning: Unable to check inbox ({error}).",
+            "Please check your Google account credentials or run re-auth.",
+        ]
+        return "\n".join(lines).strip()
 
     if not items:
         lines = [
@@ -555,13 +646,14 @@ def main() -> int:
             continue
 
         existing_tokens = [p for p in acc["tokens"] if p.exists()]
-        if not existing_tokens:
+        has_gws = GWS_BIN.exists() and (Path.home() / ".config" / f"gws-{acc.get('gws_profile')}").exists()
+        if not existing_tokens and not has_gws:
             continue
 
-        items, noise_count = fetch_account_emails(existing_tokens, account_type=acc["type"])
+        items, noise_count, fetch_error = fetch_account_emails(existing_tokens, account_type=acc["type"], gws_profile=acc.get("gws_profile"))
 
-        # For personal account: only dispatch if high-priority/security items exist
-        if acc["type"] == "personal":
+        # For personal account: only dispatch if high-priority/security items exist or if there is an error
+        if acc["type"] == "personal" and not fetch_error:
             priority_items = [it for it in items if it.category == "priority"]
             if not priority_items:
                 if args.dry_run:
@@ -575,6 +667,7 @@ def main() -> int:
             items=items,
             noise_count=noise_count,
             raw_mode=args.raw,
+            error=fetch_error,
         )
         messages_to_send.append((acc["title"], msg, acc.get("env_file")))
 

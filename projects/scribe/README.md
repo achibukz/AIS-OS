@@ -1,8 +1,8 @@
 # scribe
 
-Local audio/video → text. Drag files in, get date-prefixed markdown transcripts in `outputs/`.
+Local audio/video & YouTube → text. Drag files in or paste YouTube links, get date-prefixed markdown transcripts in `outputs/`.
 
-Whisper large-v3-turbo via whisper.cpp (Metal), Taglish-capable (`-l auto`). Sequential queue, real per-file progress, upload copies deleted after success.
+Whisper large-v3-turbo via whisper.cpp, Taglish-capable (`-l auto`). Sequential queue, real per-file progress, upload/download copies deleted after success.
 
 ## Requirements
 

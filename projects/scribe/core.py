@@ -2,11 +2,62 @@ import re
 from datetime import date
 from pathlib import Path
 
+import yt_dlp
+
 SEGMENT_RE = re.compile(
     r"^\[(\d{2}):(\d{2}):(\d{2})\.\d{3} --> (\d{2}):(\d{2}):(\d{2})\.\d{3}\]\s*(.*)$"
 )
 
 ERROR_RE = re.compile(r"error|failed", re.IGNORECASE)
+
+YOUTUBE_RE = re.compile(
+    r"^(https?://)?(www\.|m\.)?(youtube\.com/(watch\?.*v=|shorts/|embed/)|youtu\.be/)([\w\-]+)(\S*)?$",
+    re.IGNORECASE,
+)
+
+
+def is_youtube_url(text: str) -> bool:
+    if not text:
+        return False
+    return bool(YOUTUBE_RE.match(text.strip()))
+
+
+def fetch_youtube_metadata(url: str) -> dict:
+    ydl_opts = {
+        "quiet": True,
+        "no_warnings": True,
+        "extract_flat": True,
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url.strip(), download=False)
+        return {
+            "title": info.get("title") or "YouTube Video",
+            "duration": float(info.get("duration") or 0.0),
+            "uploader": info.get("uploader") or info.get("channel") or "",
+        }
+
+
+def download_youtube_audio(url: str, output_dir: Path, jid: str) -> tuple[Path, dict]:
+    ydl_opts = {
+        "format": "bestaudio/best",
+        "outtmpl": str(output_dir / f"{jid}-%(title).80s.%(ext)s"),
+        "quiet": True,
+        "no_warnings": True,
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url.strip(), download=True)
+        filename = ydl.prepare_filename(info)
+        path = Path(filename)
+        if not path.exists():
+            matches = list(output_dir.glob(f"{jid}-*"))
+            if matches:
+                path = matches[0]
+        meta = {
+            "title": info.get("title") or "YouTube Video",
+            "duration": float(info.get("duration") or 0.0),
+            "uploader": info.get("uploader") or info.get("channel") or "",
+        }
+        return path, meta
 
 
 def whisper_error(log: str) -> str:
@@ -39,6 +90,7 @@ def slugify(stem: str) -> str:
 
 
 def output_path(outputs_dir: Path, source_name: str, on: date | None = None) -> Path:
+    outputs_dir.mkdir(parents=True, exist_ok=True)
     on = on or date.today()
     base = f"{on:%Y-%m-%d}-{slugify(Path(source_name).stem)}"
     candidate = outputs_dir / f"{base}.md"
@@ -70,12 +122,24 @@ def group_segments(segments: list[tuple[int, int, str]], window: int = 60) -> st
     return "\n\n".join(paragraphs)
 
 
-def render_markdown(source_name: str, duration: float, body: str, on: date | None = None) -> str:
+def render_markdown(
+    source_name: str,
+    duration: float,
+    body: str,
+    on: date | None = None,
+    url: str | None = None,
+    channel: str | None = None,
+) -> str:
     on = on or date.today()
-    return (
-        f"# {Path(source_name).stem}\n\n"
-        f"- Source: {source_name}\n"
-        f"- Transcribed: {on:%Y-%m-%d}\n"
-        f"- Duration: {format_timestamp(int(duration))}\n\n"
-        f"{body}\n"
-    )
+    title = Path(source_name).stem if not url else source_name
+    lines = [f"# {title}\n"]
+    if url:
+        lines.append(f"- Source: {url}")
+        if channel:
+            lines.append(f"- Channel: {channel}")
+    else:
+        lines.append(f"- Source: {source_name}")
+    lines.append(f"- Transcribed: {on:%Y-%m-%d}")
+    lines.append(f"- Duration: {format_timestamp(int(duration))}\n")
+    lines.append(body + "\n")
+    return "\n".join(lines)

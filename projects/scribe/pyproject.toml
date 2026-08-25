@@ -7,10 +7,14 @@ dependencies = [
     "fastapi>=0.115",
     "uvicorn>=0.32",
     "python-multipart>=0.0.12",
+    "yt-dlp>=2026.08.01",
 ]
 
 [dependency-groups]
-dev = ["pytest>=8"]
+dev = [
+    "httpx>=0.28",
+    "pytest>=8",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

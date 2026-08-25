@@ -78,3 +78,30 @@
   - *Risk & Insurance:* Maintaining total principal exposure within the ₱500,000 PDIC maximum per banking institution.
   - *Frictionless Routing:* Free clearinghouse hubs (e.g. GoTyme free InstaPay transfers) for zero-fee capital rotation.
 - **Target Deliverable:** `~/Documents/Obsidian/achiMem/raw/2026-08-20-ph-high-yield-digital-banking-optimization.md`
+
+---
+
+## 🥗 Health, Nutrition & Fitness Technology
+
+### 7. AI-Integrated Food and Calorie Tracking Apps Landscape
+- **Task Reference:** [tasks.md](file:///home/achibukz/Code/GitHub/AIS-OS/tasks.md) (`!high`)
+- **Research Question:** What is the comprehensive competitive landscape of AI-integrated calorie and macro tracking applications (multimodal photo, voice, and text logging), contrasting subscription apps (e.g. Amy by AloaLabs, Cal AI, MacroFactor, MyFitnessPal) against free, freemium, open-source, and one-time payment alternatives across features, estimation accuracy, pricing, and user sentiment?
+- **Inquiry Lenses:**
+  - *Subscription Landscape:* Tiered pricing, premium AI features, and user lock-in of major subscription apps (Amy by AloaLabs, Cal AI, Foodvisor, MyFitnessPal, MacroFactor).
+  - *Free, Freemium & One-Time Payment Models:* Viable alternatives offering lifetime licenses, generous free tiers, BYO-API-key setups, or open-source local models (Foodnoms, Cronometer, SnapCalorie, OpenNutriTracker, CalorieSY).
+  - *Technical Mechanics & Accuracy Pitfalls:* Multimodal computer vision architectures, volume/depth estimation errors (hidden oils, sauce, mixed meal segmentation) vs lab-verified food databases.
+  - *User Sentiment & Dark Patterns:* Real-world community reviews from Reddit/App Store regarding aggressive trial billing, hallucinated macro counts, and adherence friction.
+  - *Ecosystem & Privacy:* HealthKit/Health Connect integration, on-device vs cloud image processing, and adaptive expenditure algorithms.
+- **Target Deliverable:** `~/Documents/Obsidian/achiMem/raw/2026-08-25-ai-food-calorie-tracking-apps-landscape.md` and `~/Documents/Obsidian/achiMem/raw/2026-08-25-ai-food-calorie-tracking-apps-landscape.pdf`
+
+### 8. Using Google Antigravity as Model Backend for Hermes Agent (Plugins, Proxies & Bridge Repos)
+- **Task Reference:** [tasks.md](file:///home/achibukz/Code/GitHub/AIS-OS/tasks.md) (`!high`)
+- **Research Question:** Can Google Antigravity (AGY / antigravity-cli / Gemini & Claude proxy/backends) be used as the model provider for NousResearch Hermes Agent (`~/.hermes/hermes-agent`), and what plugins, custom provider profiles, reverse proxies, or open-source GitHub repositories bridge this connection if no official integration exists?
+- **Inquiry Lenses:**
+  - *Hermes Model Provider Architecture:* How Hermes loads and routes models via `ProviderProfile` plugins, custom `base_url`s, OpenAI-compatible chat completion protocols, and tool calling schemas.
+  - *Antigravity Backend & Authentication:* How Antigravity exposes models (Gemini 3.7 Flash/Pro, Claude 3.7 Sonnet/Opus), auth token lifecycle, internal Google Cloud Code endpoints, and headless CLI invocations.
+  - *Bridge Proxies & Community Repositories:* GitHub repositories, LiteLLM adapters, reverse proxies, and bridge daemons translating OpenAI API requests to Antigravity / Gemini protocols.
+  - *Technical Viability & Incompatibilities:* Function calling / tool use format translation, streaming SSE handling, rate limits, latency, and operational stability.
+  - *Implementation Blueprint & Meta-Workflow:* Step-by-step custom plugin setup (`$HERMES_HOME/plugins/model-providers/antigravity/`), proxy daemon setup, or alternative CLI delegation workflows in achiOS.
+- **Target Deliverable:** `~/Documents/Obsidian/achiMem/raw/2026-08-25-antigravity-models-in-hermes-agent-feasibility.md`
+

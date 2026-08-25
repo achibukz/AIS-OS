@@ -136,6 +136,42 @@
   #confirm:hover { filter: brightness(1.1); }
   #confirm:disabled { background: var(--line); color: var(--dim); cursor: default; }
   .hidden { display: none !important; }
+
+  .yt-box {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .yt-box input {
+    flex: 1;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 12px 14px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color .15s;
+  }
+  .yt-box input:focus { border-color: var(--amber-dark); }
+  .yt-box input::placeholder { color: var(--dim); }
+  .yt-box button {
+    padding: 12px 18px;
+    font: 600 12px "IBM Plex Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--bg);
+    background: var(--amber);
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: filter .15s;
+    white-space: nowrap;
+  }
+  .yt-box button:hover { filter: brightness(1.1); }
+  .yt-box button:disabled { background: var(--line); color: var(--dim); cursor: default; }
+
   footer { margin-top: 48px; color: var(--dim); font-size: 11px; text-align: center; letter-spacing: 0.08em; }
 </style>
 
@@ -152,6 +188,11 @@
   </div>
   <input type="file" id="picker" multiple class="hidden"
          accept=".mp4,.mov,.mkv,.webm,.mp3,.m4a,.wav,.aac,.flac,.ogg,audio/*,video/*">
+
+  <form id="yt-form" class="yt-box" onsubmit="return false;">
+    <input type="text" id="yt-input" placeholder="or paste YouTube URL (watch, shorts, youtu.be)..." autocomplete="off" spellcheck="false">
+    <button type="submit" id="yt-btn">add url</button>
+  </form>
 
   <section id="staged-section" class="hidden">
     <h2>staged</h2>
@@ -175,6 +216,11 @@
   const queueEl = document.getElementById("queue");
   const queueSection = document.getElementById("queue-section");
   const confirmBtn = document.getElementById("confirm");
+  const ytForm = document.getElementById("yt-form");
+  const ytInput = document.getElementById("yt-input");
+  const ytBtn = document.getElementById("yt-btn");
+
+  const YT_RE = /^(https?:\/\/)?(www\.|m\.)?(youtube\.com\/(watch\?.*v=|shorts\/|embed\/)|youtu\.be\/)([\w\-]+)(\S*)?$/i;
 
   let staged = [];
 
@@ -204,6 +250,37 @@
     renderStaged();
   }
 
+  async function submitYouTubeUrl(url) {
+    if (!url || !YT_RE.test(url.trim())) return;
+    ytBtn.disabled = true;
+    try {
+      const res = await fetch("/api/youtube", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: url.trim() })
+      });
+      if (res.ok) {
+        ytInput.value = "";
+      }
+    } finally {
+      ytBtn.disabled = false;
+    }
+  }
+
+  ytForm.onsubmit = (e) => {
+    e.preventDefault();
+    submitYouTubeUrl(ytInput.value);
+  };
+
+  window.addEventListener("paste", (e) => {
+    if (document.activeElement === ytInput) return;
+    const text = (e.clipboardData || window.clipboardData)?.getData("text")?.trim();
+    if (text && YT_RE.test(text)) {
+      e.preventDefault();
+      submitYouTubeUrl(text);
+    }
+  });
+
   drop.onclick = () => picker.click();
   picker.onchange = () => { addFiles(picker.files); picker.value = ""; };
   ["dragover", "dragenter"].forEach(ev =>
@@ -228,6 +305,7 @@
 
   const STATUS = {
     queued: () => ["waiting", ""],
+    downloading: () => ["downloading youtube audio", "active"],
     extracting: () => ["extracting audio", "active"],
     transcribing: j => [Math.round(j.progress * 100) + "%", "active"],
     done: () => ["done", "done"],
@@ -242,7 +320,7 @@
       const row = document.createElement("div");
       row.className = "row";
       const showBar = j.status !== "error";
-      const indet = j.status === "extracting";
+      const indet = j.status === "extracting" || j.status === "downloading";
       row.innerHTML = `<span class="name"></span><span class="meta ${cls}"></span>
         ${showBar ? `<div class="bar ${j.status === "done" ? "done" : ""} ${indet ? "indet" : ""}">
           <div class="fill" style="width:${indet ? "" : Math.round(j.progress * 100) + "%"}"></div></div>` : ""}

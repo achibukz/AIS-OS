@@ -3,8 +3,10 @@ from datetime import date
 from core import (
     format_timestamp,
     group_segments,
+    is_youtube_url,
     output_path,
     parse_segment,
+    render_markdown,
     slugify,
     whisper_error,
 )
@@ -76,3 +78,34 @@ def test_group_segments_windows():
     segments = [(0, 5, "one"), (30, 35, "two"), (65, 70, "three"), (70, 75, "")]
     body = group_segments(segments, window=60)
     assert body == "[00:00:00] one two\n\n[00:01:05] three"
+
+
+def test_is_youtube_url():
+    assert is_youtube_url("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+    assert is_youtube_url("http://youtube.com/watch?v=dQw4w9WgXcQ")
+    assert is_youtube_url("https://youtu.be/dQw4w9WgXcQ")
+    assert is_youtube_url("https://www.youtube.com/shorts/dQw4w9WgXcQ")
+    assert is_youtube_url("youtube.com/watch?v=dQw4w9WgXcQ")
+    assert is_youtube_url("youtu.be/dQw4w9WgXcQ")
+    assert not is_youtube_url("https://vimeo.com/123456")
+    assert not is_youtube_url("lecture.mp4")
+    assert not is_youtube_url("")
+
+
+def test_render_markdown_with_youtube_url():
+    md = render_markdown(
+        source_name="Rick Astley - Never Gonna Give You Up",
+        duration=213,
+        body="[00:00:00] Never gonna give you up",
+        on=date(2026, 8, 25),
+        url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        channel="Rick Astley",
+    )
+    assert md == (
+        "# Rick Astley - Never Gonna Give You Up\n\n"
+        "- Source: https://www.youtube.com/watch?v=dQw4w9WgXcQ\n"
+        "- Channel: Rick Astley\n"
+        "- Transcribed: 2026-08-25\n"
+        "- Duration: 00:03:33\n\n"
+        "[00:00:00] Never gonna give you up\n"
+    )
