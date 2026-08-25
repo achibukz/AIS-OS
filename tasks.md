@@ -37,7 +37,6 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
 - [ ] Open/fund BPI SaveUp or bank account and obtain proof reflecting account number for ING #finances #career !high
 - [ ] Complete 5-month ING Internship Agreement Form (signatures: Aki, Parent/Guardian, DLSU coordinator, then notarize) #career #school !high
-- [ ] DLSU Term 1 (AY2627-T1) Enrollment via Archers Hub / Animo.sys — ID 123 2nd DL timeslot 11:30 AM - 12:30 PM #school !high @2026-08-25
 - [ ] Go to a BPI branch and ask for an alternative on how to create a new BPI SaveUp account (avoiding traditional bank account) following the notice in work inbox #finances !high
 - [ ] Reapply for a BPI SaveUp account — the 2026-08-15 application was closed for being unfunded. Required initial deposit is Php 1 and monthly ADB is Php 0, so the deadline is the risk, not the amount. Fund it the day the account number lands #finances !med
 - [ ] Maybe buy Codex — align its billing to the Claude subscription renewal once ING internship / thesis workload ramps up #achios !low @2026-09-29
@@ -48,6 +47,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 ## Blocked
 
 ## Done
+- [x] DLSU Term 1 (AY2627-T1) Enrollment via Archers Hub / Animo.sys — ID 123 2nd DL timeslot 11:30 AM - 12:30 PM #school !high @2026-08-25  (done 2026-08-25)
 - [x] Research using Google Antigravity as model backend for Hermes Agent per [research.md#8-using-google-antigravity-as-model-backend-for-hermes-agent-plugins-proxies--bridge-repos](file:///home/achibukz/Code/GitHub/AIS-OS/research.md#8-using-google-antigravity-as-model-backend-for-hermes-agent-plugins-proxies--bridge-repos) #hermes #antigravity #models #research !high @2026-08-25  (done 2026-08-25)
 - [x] Research AI-integrated food and calorie tracking apps across free, one-time purchase, and subscription models per [research.md#7-ai-integrated-food-and-calorie-tracking-apps-landscape](file:///home/achibukz/Code/GitHub/AIS-OS/research.md#7-ai-integrated-food-and-calorie-tracking-apps-landscape) #health #fitness #research !high @2026-08-25  (done 2026-08-25)
 - [x] Rotate `@achiOSBot` Telegram token via BotFather (GitHub Secret Scanning alert #2), update `~/.config/achios/telegram.env`, and push redaction in `docs/2026-08-20-opus-audit-achios-achiagy.md` #security #achios !high @2026-08-21  (done 2026-08-25)
