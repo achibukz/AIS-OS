@@ -56,16 +56,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       -webkit-font-smoothing: antialiased;
     }}
     header {{
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      position: relative;
       background: var(--header-bg);
       border-bottom: 1px solid var(--border-color);
       padding: 10px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      backdrop-filter: blur(10px);
+      gap: 12px;
     }}
     .breadcrumbs {{
       font-size: 13px;
