@@ -22,6 +22,7 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Design and build AI-Assisted Learning Architecture project using achiMem and schoolMem as ground-truth knowledge bases with Claude Code / agy / asa subagents (adapted from amosblomqvist/learn DAG and probing mechanics) #achios #learning #arch #schoolmem #achimem !high @2026-08-30
 - [ ] Audit and design end-to-end cohesion across achiOS daemons, email digest parser, task register, and calendar auto-sync with Claude Code #achios #audit #arch !high @2026-08-27
 - [ ] Set up new Term (AY2627-T1) in schoolMem with Claude Code #school #schoolmem !high @2026-08-28
 - [ ] Update Asa research workflow to mandate an exhaustive sources and citations appendix at the end of all generated markdown files and deliverables #asa #workflows #research !high
