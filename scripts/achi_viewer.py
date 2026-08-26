@@ -249,11 +249,17 @@ class AchiViewerHandler(BaseHTTPRequestHandler):
                     target_path = fb.resolve()
                     break
 
-            # If still not found and it's a single filename, search in achiMem
+            # If still not found and it's a single slug/filename, search across achiMem, schoolMem, and AIS-OS
             if not target_path.exists() and "/" not in raw_path:
-                matches = list((ROOT_DIR / "Documents/Obsidian/achiMem").rglob(raw_path))
+                clean_slug = raw_path.removesuffix(".md").lower()
+                # 1. Exact match
+                matches = list((ROOT_DIR / "Documents/Obsidian/achiMem").rglob(f"{raw_path}*"))
                 if not matches:
-                    matches = list((ROOT_DIR / "Code/GitHub/AIS-OS").rglob(raw_path))
+                    matches = list((ROOT_DIR / "Documents/Obsidian/achiMem").rglob(f"*{clean_slug}*.md"))
+                if not matches:
+                    matches = list((ROOT_DIR / "Code/GitHub/AIS-OS").rglob(f"*{clean_slug}*.md"))
+                if not matches:
+                    matches = list((ROOT_DIR / "Documents/Obsidian/schoolMem").rglob(f"*{clean_slug}*.md"))
                 if matches:
                     target_path = matches[0].resolve()
 
