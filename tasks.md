@@ -22,6 +22,7 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Audit and design end-to-end cohesion across achiOS daemons, email digest parser, task register, and calendar auto-sync with Claude Code #achios #audit #arch !high @2026-08-27
 - [ ] Set up new Term (AY2627-T1) in schoolMem with Claude Code #school #schoolmem !high @2026-08-28
 - [ ] Update Asa research workflow to mandate an exhaustive sources and citations appendix at the end of all generated markdown files and deliverables #asa #workflows #research !high
 - [ ] Build YouTube transcript extraction and structured ingestion workflow in Asa to generate dedicated video learning pages and update achiMem knowledge (secondary to Sciel/achiMem fixes) #asa #workflows #achimem #automation !med
@@ -30,14 +31,13 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Audit and plan integration of Matt Pocock workflows (Wayfinder, Grilling, Codebase Design) with asa SCAN/STORM research pipeline in Claude Code per [docs/2026-08-24-matt-pocock-workflow-integration-and-wayfinder-asa-audit.md](file:///home/achibukz/Code/GitHub/AIS-OS/docs/2026-08-24-matt-pocock-workflow-integration-and-wayfinder-asa-audit.md) #achios #asa #workflows #audit !med @2026-08-27
 - [ ] Build Google Sheets Schedule Planner skill for Claude Code / achiOS based on Hermes OAuth and Sheets v4 API spec in [docs/2026-08-24-google-sheets-schedule-planner-skill-spec.md](file:///home/achibukz/Code/GitHub/AIS-OS/docs/2026-08-24-google-sheets-schedule-planner-skill-spec.md) #skills #automation #achios !high @2026-08-27
 - [ ] Audit Hermes research retrospective and orchestrator findings with Claude Code in asa [docs/reports/2026-08-24-hermes-research-and-orchestrator-audit.md](file:///home/achibukz/Code/GitHub/asa/docs/reports/2026-08-24-hermes-research-and-orchestrator-audit.md) #asa #audit !high @2026-08-27
-- [ ] Benchmark Althea fact-checking on gemini-3.1-pro-high vs gemini-3.7-flash-high across claim granularity, latency, and tool fidelity in asa #asa #eval #benchmark !med @2026-08-26
+- [ ] Benchmark Althea fact-checking on gemini-3.1-pro-high vs gemini-3.7-flash-high across claim granularity, latency, and tool fidelity in asa #asa #eval #benchmark !med @2026-08-27
 - [ ] Implement active heartbeat polling loop in asa orchestrator to prevent streaming inactivity timeouts #asa #arch !high @2026-08-27
-- [ ] Update achiAgy/src/bot.py to push intermediate orchestrator milestone summaries to Telegram during long multi-agent runs #achiagy #telegram !med @2026-08-26
+- [ ] Update achiAgy/src/bot.py to push intermediate orchestrator milestone summaries to Telegram during long multi-agent runs #achiagy #telegram !med @2026-08-27
 - [ ] Execute the new implementation plan created with Claude Code #asa #arch !med @2026-08-27
 - [ ] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-08-29
 - [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
 - [ ] Complete 5-month ING Internship Agreement Form (signatures: Aki, Parent/Guardian, DLSU coordinator, then notarize) #career #school !high
-- [ ] Audit and design end-to-end cohesion across achiOS daemons, email digest parser, task register, and calendar auto-sync with Claude Code #achios #audit #arch !high @2026-08-27
 - [ ] Maybe buy Codex — align its billing to the Claude subscription renewal once ING internship / thesis workload ramps up #achios !low @2026-09-29
 - [ ] Cancel current Google One subscription ahead of renewal #finances #personal !low @2026-10-13
 - [ ] Subscribe to Google AI Pro Student Discount (₱275/mo for up to 4 years via SheerID verification) #finances #personal !low @2026-10-14
