@@ -22,6 +22,7 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Set up new Term (AY2627-T1) in schoolMem with Claude Code #school #schoolmem !high @2026-08-28
 - [ ] Update Asa research workflow to mandate an exhaustive sources and citations appendix at the end of all generated markdown files and deliverables #asa #workflows #research !high
 - [ ] Build YouTube transcript extraction and structured ingestion workflow in Asa to generate dedicated video learning pages and update achiMem knowledge (secondary to Sciel/achiMem fixes) #asa #workflows #achimem #automation !med
 - [ ] Audit and refine ~/.config/achios/USER.md and MEMORY.md with Claude Code to optimize structure, conciseness, and 2,500-char budget utilization #achios #memory #audit !high @2026-08-27
@@ -33,20 +34,18 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Implement active heartbeat polling loop in asa orchestrator to prevent streaming inactivity timeouts #asa #arch !high @2026-08-27
 - [ ] Update achiAgy/src/bot.py to push intermediate orchestrator milestone summaries to Telegram during long multi-agent runs #achiagy #telegram !med @2026-08-26
 - [ ] Execute the new implementation plan created with Claude Code #asa #arch !med @2026-08-27
-- [ ] Follow up / Pick up DLSU Good Moral Certificate (CGMC) once release notification arrives (8-10 working days, event set on DLSU Calendar) #career #school !high @2026-09-02
+- [ ] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-08-29
 - [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
-- [ ] Open/fund BPI SaveUp or bank account and obtain proof reflecting account number for ING #finances #career !high
 - [ ] Complete 5-month ING Internship Agreement Form (signatures: Aki, Parent/Guardian, DLSU coordinator, then notarize) #career #school !high
-- [ ] Go to a BPI branch and ask for an alternative on how to create a new BPI SaveUp account (avoiding traditional bank account) following the notice in work inbox #finances !high
-- [ ] Reapply for a BPI SaveUp account — the 2026-08-15 application was closed for being unfunded. Required initial deposit is Php 1 and monthly ADB is Php 0, so the deadline is the risk, not the amount. Fund it the day the account number lands #finances !med
+- [ ] Audit and design end-to-end cohesion across achiOS daemons, email digest parser, task register, and calendar auto-sync with Claude Code #achios #audit #arch !high @2026-08-27
 - [ ] Maybe buy Codex — align its billing to the Claude subscription renewal once ING internship / thesis workload ramps up #achios !low @2026-09-29
 - [ ] Cancel current Google One subscription ahead of renewal #finances #personal !low @2026-10-13
 - [ ] Subscribe to Google AI Pro Student Discount (₱275/mo for up to 4 years via SheerID verification) #finances #personal !low @2026-10-14
-- [ ] Run `ADD TERM` for `AY2627-T1` in schoolMem once enlistment lands #school !low @2026-09-03
 
 ## Blocked
 
 ## Done
+- [x] Pick up DLSU Good Moral Certificate (CGMC) at SDFO / The Hub (formal release email received) #career #school !high @2026-08-26  (done 2026-08-26)
 - [x] DLSU Term 1 (AY2627-T1) Enrollment via Archers Hub / Animo.sys — ID 123 2nd DL timeslot 11:30 AM - 12:30 PM #school !high @2026-08-25  (done 2026-08-25)
 - [x] Research using Google Antigravity as model backend for Hermes Agent per [research.md#8-using-google-antigravity-as-model-backend-for-hermes-agent-plugins-proxies--bridge-repos](file:///home/achibukz/Code/GitHub/AIS-OS/research.md#8-using-google-antigravity-as-model-backend-for-hermes-agent-plugins-proxies--bridge-repos) #hermes #antigravity #models #research !high @2026-08-25  (done 2026-08-25)
 - [x] Research AI-integrated food and calorie tracking apps across free, one-time purchase, and subscription models per [research.md#7-ai-integrated-food-and-calorie-tracking-apps-landscape](file:///home/achibukz/Code/GitHub/AIS-OS/research.md#7-ai-integrated-food-and-calorie-tracking-apps-landscape) #health #fitness #research !high @2026-08-25  (done 2026-08-25)

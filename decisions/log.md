@@ -480,3 +480,23 @@ non-obvious operational facts here are the whole value, and they are not recover
 the code.
 
 **Owner:** Aki. Revisit after the 2026-08-27 audit, when the second-writer question resolves.
+
+## 2026-08-26 — /tasks dynamic semantic grouping and clean unicode format
+
+**Decision:** Formatted `/tasks` queries with dynamic domain category headers synthesized by LLM from active tasks, using `• ☐` checkboxes, sorted by due date then priority (`!high` > `!med` > `!low`), with raw hashtags stripped for a clean, concise view, showing active tasks only. Persisted in `~/.config/achios/USER.md`.
+
+**Why:** Reduces text-heavy output and repetitive hashtags across task queries while grouping related items into clear contextual buckets.
+
+**Alternatives considered:** Flat raw markdown list under `### Active` (too verbose with duplicate tags), hardcoded static categories (rigid when new tag areas emerge).
+
+**Owner:** Aki.
+
+## 2026-08-26 — DLSU AY2627-T1 Academic Calendar Adjustment
+
+**Decision:** Updated DLSU Google Calendar and course schedules per Provost Roleda memo: Term 1 start shifted from Sep 3 to Sep 7, 2026; Enlistment extended to Sep 6; ILW confirmed as Oct 29 – Nov 4; Grade Consultation Day set to Dec 15; recurring Friday/Saturday course sessions adjusted to first meeting dates (Sep 11 / Sep 12).
+
+**Why:** Grounds calendar and class reminders in the official DLSU Provost adjustment memo and eliminates phantom early course reminders ahead of the true term start.
+
+**Alternatives considered:** Manual individual date edits without recurring series shift (leaves orphan class reminders on Sep 4/5).
+
+**Owner:** Aki.
