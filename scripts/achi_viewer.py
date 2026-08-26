@@ -252,14 +252,19 @@ class AchiViewerHandler(BaseHTTPRequestHandler):
             # If still not found and it's a single slug/filename, search across achiMem, schoolMem, and AIS-OS
             if not target_path.exists() and "/" not in raw_path:
                 clean_slug = raw_path.removesuffix(".md").lower()
-                # 1. Exact match
-                matches = list((ROOT_DIR / "Documents/Obsidian/achiMem").rglob(f"{raw_path}*"))
+                
+                # Priority 1: Search .md files in wiki/
+                matches = list((ROOT_DIR / "Documents/Obsidian/achiMem/wiki").rglob(f"*{clean_slug}*.md"))
                 if not matches:
                     matches = list((ROOT_DIR / "Documents/Obsidian/achiMem").rglob(f"*{clean_slug}*.md"))
                 if not matches:
                     matches = list((ROOT_DIR / "Code/GitHub/AIS-OS").rglob(f"*{clean_slug}*.md"))
                 if not matches:
-                    matches = list((ROOT_DIR / "Documents/Obsidian/schoolMem").rglob(f"*{clean_slug}*.md"))
+                    matches = list((ROOT_DIR / "Documents/Obsidian/schoolMem/wiki").rglob(f"*{clean_slug}*.md"))
+                if not matches:
+                    # Priority 2: Search any matching file
+                    matches = list((ROOT_DIR / "Documents/Obsidian/achiMem").rglob(f"*{clean_slug}*"))
+
                 if matches:
                     target_path = matches[0].resolve()
 
@@ -269,7 +274,7 @@ class AchiViewerHandler(BaseHTTPRequestHandler):
 
         if target_path.is_dir():
             self.render_directory(target_path)
-        elif target_path.suffix.lower() in [".md", ".txt", ".json", ".yaml", ".yml", ".py", ".sh", ".conf", ".env-example"]:
+        elif target_path.suffix.lower() in [".md", ".markdown", ".txt", ".json", ".jsonl", ".yaml", ".yml", ".py", ".sh", ".conf", ".env-example"]:
             self.render_file(target_path)
         else:
             # Serve binary / image / other files directly
