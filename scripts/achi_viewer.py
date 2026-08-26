@@ -235,8 +235,29 @@ class AchiViewerHandler(BaseHTTPRequestHandler):
                 self.send_error(403, "Access Denied to Protected Resource")
                 return
 
+        if not target_path.exists() and raw_path:
+            # Smart Short-Path Fallbacks
+            fallbacks = [
+                ROOT_DIR / "Documents/Obsidian/achiMem" / raw_path,
+                ROOT_DIR / "Documents/Obsidian/schoolMem" / raw_path,
+                ROOT_DIR / "Code/GitHub/AIS-OS" / raw_path,
+                ROOT_DIR / "Documents/Obsidian" / raw_path,
+                ROOT_DIR / "Code/GitHub" / raw_path,
+            ]
+            for fb in fallbacks:
+                if fb.exists():
+                    target_path = fb.resolve()
+                    break
+
+            # If still not found and it's a single filename, search in achiMem
+            if not target_path.exists() and "/" not in raw_path:
+                matches = list((ROOT_DIR / "Documents/Obsidian/achiMem").rglob(raw_path))
+                if not matches:
+                    matches = list((ROOT_DIR / "Code/GitHub/AIS-OS").rglob(raw_path))
+                if matches:
+                    target_path = matches[0].resolve()
+
         if not target_path.exists():
-            # Handle search or missing file
             self.render_not_found(raw_path)
             return
 
