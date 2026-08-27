@@ -18,11 +18,11 @@ Decisions:
   - `review/achiAgy`: On `master` at `d660573`.
   - `schoolMem`: On `main` at `2d66bba`.
   - `asa`: On `phase-1.5-verification` at `65764a2`.
-- Diagnosed and fixed broken `file:///` links emitted by Luna and Aea:
-  1. Updated `achiAgy/src/formatters.py` to mechanically rewrite `file:///home/achibukz/...` and `file://~/...` to Tailscale web viewer links (`http://100.106.210.38:8999/...`) in Telegram HTML output.
-  2. Updated `achiAgy/AGENTS.md` and all agent personas (`agents/luna.md`, `agents/aea.md`, `agents/aurora.md`, `agents/atlas.md`) with explicit Tailscale Markdown (.md) Web Viewer Linking Rules banning `file:///` URLs.
-  3. Added unit tests in `tests/test_bot_routing.py` (all 200 tests passing in `achiAgy`).
-  4. Restarted bot daemons.
+- Diagnosed and fully resolved broken `file:///` and local path links emitted across Telegram chats:
+  1. Updated `achiAgy/src/formatters.py` to mechanically rewrite all local file paths (`/home/achibukz/...`, `~/...`), `file://` URIs, and backtick-wrapped links to Tailscale web viewer links (`http://100.106.210.38:8999/...`) in Telegram HTML output.
+  2. Updated `achiAgy/AGENTS.md` and all agent personas (`agents/luna.md`, `agents/aea.md`, `agents/aurora.md`, `agents/atlas.md`, `agents/ari.md`, `agents/achimem.md`, `agents/schoolmem.md`) with explicit Tailscale Markdown (.md) Web Viewer Linking Rules banning `file:///` URLs.
+  3. Shipped and merged achiAgy PR #28 (`ticket/28-web-viewer-links`), with 201 passing unit tests in `achiAgy`.
+  4. Restarted `achi-agy.service` and verified `achi-viewer.service` running on port 8999.
 
 Open:
 - Continue executing open roadmap tickets in achiAgy (#24, #1, #7, #4, #9).
