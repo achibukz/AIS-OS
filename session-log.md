@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-08-27 22:22 [saved]
+Goal: Implement Outbound Server Media and Document Dispatch in achiAgy.
+
+Decisions:
+- Implemented `MediaDispatcher` in `src/media_dispatcher.py` to extract `![caption](<path>)` references, normalize three-tier paths (absolute, tilde expansion, workspace relative), enforce security blacklists (`~/.ssh`, `~/.config/achios`, `~/.gnupg`, `~/.hermes`), auto-escalate >10MB images to documents, and rewrite markdown tags to Tailscale web viewer links (`http://100.106.210.38:8999/...`).
+- Integrated media extraction, link rewriting, and async Telegram media dispatch (`send_photo` / `send_document`) into `execute_agent_pipeline` in `src/bot.py`.
+- Added 13 automated unit tests in `tests/test_outbound_media.py` covering path resolution, blacklist guards, extension routing, size limits, link rewrites, and mock Telegram dispatch (105/105 tests passing).
+- Checked off Tasks 9, 10, and 11 in [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md).
+
+Rejected:
+- Modifying or implementing unrelated tasks (delegation, workspace locks) during this scoped turn.
+
+Open:
+- None.
+
 ## 2026-08-27 22:18 [saved]
 Goal: Complete /grill-me design session for Outbound Server Media & Document Dispatch and append architecture to achiOS Hub plan.
 
