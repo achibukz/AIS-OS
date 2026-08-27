@@ -10,8 +10,12 @@ Decisions:
 - Verified live polling logs to confirm the active `SecretRedactingFilter` redacts outgoing Telegram API URLs to `bot[redacted]`.
 - Reconciled [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md): moved achiOS Hub implementation, Ticket #22 (streaming timeouts), Ticket #23 (milestones), and Ticket #14/roadmap creation to `## Done`; added active task for executing open roadmap tickets.
 - Added active task to upgrade Claude Code session kick routines (`kick_claude_session.sh` / `sessionclaude` skill) to use updated prompt templates and dispatch email notifications via achiOS notification pipeline upon session initialization.
+- Completed grilling session on automated session logging hooks and authored/filed GitHub issues:
+  1. `achibukz/achiAgy#26`: Daemon post-turn session stop hook continuation for unlogged edits (recorded in [roadmap.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/roadmap.md)).
+  2. `achibukz/AIS-OS#1`: Universal git pre-commit hook to enforce `session-log.md` updates on code changes.
 
 Open:
+- Handoff Ticket #26 to Aea in achiAgy or Ticket #1 in AIS-OS.
 - Upgrade Claude Code session kick routines and integrate email notification dispatch.
 - Run an end-to-end PR code review test with Luna in thread 531, or proceed with Ticket #24 / #1 / #7.
 
