@@ -1,5 +1,33 @@
 # Session Log
 
+## 2026-08-27 20:38 [saved]
+Goal: Stress-test and specify terminal multiplexing, per-workspace concurrency locks, and Claude Code handoff runbook for achiOS Hub.
+
+Decisions:
+- Stress-tested multi-thread terminal output presentation and concurrent workspace safety using `/grill-me` (settled Q1–Q10).
+- Updated [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md) with Locked Decisions D15 (Terminal Multiplexing), D16 (Workspace Concurrency Lock), D17 (Atomic State Persistence), and D18 (Shared Register Fresh Read Invariant).
+- Added Section 8 (Multi-Window Tmux Terminal Console Topology), Section 9 (Workspace Concurrency Control & State Protection Architecture), and Section 10 (Claude Code Implementation Runbook & Handoff Checklist).
+
+Rejected:
+- Single stdout stream with render mutex (blocks live streaming output during simultaneous turns).
+- Uncoordinated parallel file writes (causes lost edits in shared registers).
+
+Open:
+- Hand off execution to Claude Code to implement `WorkspaceLockManager`, per-topic log files, and tmux window initialization.
+
+## 2026-08-27 20:13 [saved]
+Goal: Record Phase 1 test verification (92/92 unit tests passing) and context window test results in telegram-supergroup-hub-plan.md for Claude Code cross-audit.
+
+Decisions:
+- Updated [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md) status to Phase 1 Implemented & Test Verified.
+- Added Section 7 detailing automated test coverage (92/92 passing across all 14 test modules), verified thread isolation mechanics, context window tracking, and audit checkpoints for Claude Code.
+
+Rejected:
+- None.
+
+Open:
+- Run Claude Code cross-audit on `achiAgy` codebase changes.
+
 ## 2026-08-27 19:53 [saved]
 Goal: Implement thread-scoped session isolation, topic routing, and admin persona in achiOS Hub (achiAgy).
 

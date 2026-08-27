@@ -20,6 +20,16 @@ Keep it terse. Future-you will thank present-you for capturing the *why*, not ju
 
 ---
 
+## 2026-08-27 — achiOS Hub Terminal Multiplexing & Workspace Concurrency Locks (D15-D18)
+
+**Decision:** Finalized architecture for multi-window tmux terminal multiplexing and workspace mutation concurrency safety in [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md). The daemon writes isolated rich ANSI event streams to `topics/<topic>.log` tailed by pre-created tmux windows (`daemon`, `general`, `admin`, `schoolmem`, `achimem`), while `WorkspaceLockManager` serializes concurrent turns targeting the same repository path to prevent write collisions.
+
+**Why:** Running multiple concurrent Telegram threads through a shared terminal stdout stream causes mixed log outputs, while simultaneous write tasks in the same repository risk overwriting registers ([tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md)) or source files. Per-topic log pipes eliminate console clutter, and per-workspace async locks eliminate race conditions while preserving full parallelism for different repositories.
+
+**Alternatives considered:** Single-window terminal render mutex (rejected because it blocks live stream output during simultaneous turns) and git worktrees (rejected due to merge overhead for simple markdown registers).
+
+**Owner:** Aki.
+
 ## 2026-08-27 — achiOS Hub Thread-Scoped Session & Persona Isolation
 
 **Decision:** Implemented composite session keying (`chat_id:thread_id`), topic persona router (`src/topic_router.py`), and dedicated topic prompts in `achiAgy` (`prompts/{admin,agi,schoolmem,achimem,aurora,ari}.md`). Model, mode, and effort configurations can now be altered per-thread without affecting other threads.
