@@ -20,6 +20,16 @@ Keep it terse. Future-you will thank present-you for capturing the *why*, not ju
 
 ---
 
+## 2026-08-27 — Standardize session-log.md to Strict Reverse-Chronological Order
+
+**Decision:** Formally standardized [session-log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/session-log.md) to strict reverse-chronological order (newest first) and updated [AGENTS.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/AGENTS.md) and [.agentrules](http://100.106.210.38:8999/Code/GitHub/AIS-OS/.agentrules) to replace ambiguous "append" phrasing with explicit prepending under `# Session Log`.
+
+**Why:** Early session logs from Aug 17 to Aug 21 were appended to the bottom, while sessions from Aug 20 evening and Aug 27 were prepended to the top, creating a split forward/reverse ordering. Reverse-chronological order allows any agent or human to immediately see the latest session context without scrolling past the entire history.
+
+**Alternatives considered:** Forward-chronological order (rejected because it forces models and humans to read through hundreds of lines of older sessions to locate recent state).
+
+**Owner:** Aki.
+
 ## 2026-08-27 — Enforce Unslop Rules across Voice, AGENTS.md, and Memory
 
 **Decision:** Adopted and strictly enforced the `unslop` skill rules across `references/voice.md`, `achiMem/wiki/personal/identity/voice.md`, `AGENTS.md`, and `~/.config/achios/USER.md`.
@@ -533,7 +543,7 @@ the code.
 
 ## 2026-08-27 — Mandatory Clickable Linking & 1-Tap Mobile Viewer Enforcement
 
-**Decision:** Enforced strict clickable linking protocols across [`AGENTS.md`](file:///home/achibukz/Code/GitHub/AIS-OS/AGENTS.md), [`.agentrules`](file:///home/achibukz/Code/GitHub/AIS-OS/.agentrules), and [`CLAUDE.md`](file:///home/achibukz/Code/GitHub/AIS-OS/CLAUDE.md): all referenced file paths and symbols must use `file:///` markdown links, all `.md` files must include 1-tap mobile viewer links (`http://100.106.210.38:8999/...`), and bare unlinked paths are strictly banned. Created [`scripts/verify_links.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/verify_links.py) to validate compliance.
+**Decision:** Enforced strict clickable linking protocols across [AGENTS.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/AGENTS.md), [.agentrules](http://100.106.210.38:8999/Code/GitHub/AIS-OS/.agentrules), and CLAUDE.md: all `.md` files must include 1-tap mobile viewer links (`http://100.106.210.38:8999/...`), and bare unlinked paths are strictly banned. Created `scripts/verify_links.py` to validate compliance.
 
 **Why:** Mobile-first operating UX on Telegram and Obsidian requires zero friction: tapping a file or plan must immediately open the target file or rendered mobile viewer without manual path copying or searching.
 

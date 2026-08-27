@@ -3,7 +3,7 @@
 ## 1. Mandatory Logging Rule (Zero Lost State)
 Whenever any configuration, script, scheduled job, integration, or architectural change is made:
 - **`decisions/log.md`**: Append any meaningful architectural decision (format: Decision, Why, Alternatives considered, Owner).
-- **`session-log.md`**: Append session summaries (What happened, Decisions, Rejected, Open threads).
+- **`session-log.md`**: Prepend session summaries under `# Session Log` (newest first: Goal, Decisions, Rejected, Open).
 - **`tasks.md`**: Update task state immediately (move finished items to `## Done` with date, add new commitments to `## Active` with dates/priorities).
 - **`connections.md`**: Add any new integrations, tools, or API registries.
 
