@@ -1,5 +1,15 @@
 # Session Log
 
+## 2026-08-28 07:41 [saved]
+Goal: Author and file GitHub ticket achiAgy#29 for media dispatcher badge double-escaping and Tailscale web viewer link rendering.
+
+Decisions:
+- Authored and filed GitHub issue `achibukz/achiAgy#29` (`fix(media): resolve HTML double-escaping in media dispatcher badges and enforce Tailscale web viewer link rendering`) with explicit transformation table, root cause breakdown, and acceptance criteria.
+- Added active tracking item in `tasks.md` for ticket #29.
+
+Open:
+- Hand ticket #29 to Aea in `#Aea` to implement test-first in `achiAgy`.
+
 ## 2026-08-28 07:33 [saved]
 Goal: Finalize link verification validator and clean legacy documentation links for Tailscale web viewer protocol.
 

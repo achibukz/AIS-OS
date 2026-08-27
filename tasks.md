@@ -22,6 +22,7 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Execute achiAgy ticket #29: resolve HTML double-escaping in media dispatcher badges and enforce Tailscale web viewer link rendering #achiagy #telegram #media #bug !high @2026-08-28
 - [ ] Design and implement a dedicated ticket-authoring skill / subagent (running on Gemini / Antigravity / Claude Sonnet) to create structured, unslop GitHub issues with tracer-bullet acceptance criteria rather than relying on Claude Opus alone #skills #agents #tickets #tooling !high @2026-08-28
 - [ ] Upgrade Claude Code session kick routines (/home/achibukz/.local/bin/kick_claude_session.sh and sessionclaude skill) with meaningful prompt templates and dispatch an email alert via achiOS notification pipeline upon session initialization #achios #automation #claude !high @2026-08-28
 - [ ] Audit Asa research failure modes and author implementation plan with Claude Code per [2026-08-28-asa-research-failure-modes-and-retry-loop-audit.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-28-asa-research-failure-modes-and-retry-loop-audit.md): (1) fix crashing `asa status` caused by unhandled FileNotFoundError on non-run directories in `~/.local/share/asa/runs/`, and (2) add automated Muses re-run loop when Althea unsupported claims exceed threshold (70-80%) #asa #audit #workflows #planning !high @2026-08-28
