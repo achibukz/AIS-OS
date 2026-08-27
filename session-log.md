@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-08-27 21:14 [saved]
+Goal: Align topic registration, prompt header, and plan topology from #Admin to #Atlas in achiOS Hub.
+
+Decisions:
+- Configured `atlas` as the primary topic key and display name `#Atlas` in [topic_router.py](http://100.106.210.38:8999/Code/GitHub/achiAgy/src/topic_router.py) with `admin` as an alias in `TOPIC_ALIASES`.
+- Updated [atlas.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/prompts/atlas.md) header and system description to reference `#Atlas`.
+- Updated [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md) with `#Atlas` topic, `atlas.log` stream, and `atlas` tmux window.
+- Updated unit test assertions in `achiAgy/tests/test_topic_router_and_isolation.py` (92/92 tests passing).
+- Committed and pushed changes to GitHub remote origin.
+
+Rejected:
+- Retaining `#Admin` in router display when Telegram topic was renamed to `#Atlas`.
+
+Open:
+- None.
+
 ## 2026-08-27 21:08 [saved]
 Goal: Rename prompt file admin.md to atlas.md and update router and plan references.
 
