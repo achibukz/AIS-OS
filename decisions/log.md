@@ -20,6 +20,16 @@ Keep it terse. Future-you will thank present-you for capturing the *why*, not ju
 
 ---
 
+## 2026-08-27 — Name #Admin Infrastructure Specialist Persona Atlas
+
+**Decision:** Officially named the `#Admin` topic persona **Atlas** across [admin.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/prompts/admin.md), [topic_router.py](http://100.106.210.38:8999/Code/GitHub/achiAgy/src/topic_router.py), and [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md). Added `atlas` alias support in `TopicRouter` to allow `/bind atlas` or `/bind admin` interchangeably.
+
+**Why:** Aki approved the moniker Atlas to maintain characterful naming consistency alongside Agi, Ari, and Aurora, representing the heavy-lifting system architecture, daemon supervision, and crash recovery responsibilities of the admin topic.
+
+**Alternatives considered:** Archie, Argus, Aegis, Axel, and purely functional names like Infra/Ops.
+
+**Owner:** Aki.
+
 ## 2026-08-27 — achiOS Hub Terminal Multiplexing & Workspace Concurrency Locks (D15-D18)
 
 **Decision:** Finalized architecture for multi-window tmux terminal multiplexing and workspace mutation concurrency safety in [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md). The daemon writes isolated rich ANSI event streams to `topics/<topic>.log` tailed by pre-created tmux windows (`daemon`, `general`, `admin`, `schoolmem`, `achimem`), while `WorkspaceLockManager` serializes concurrent turns targeting the same repository path to prevent write collisions.

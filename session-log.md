@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-08-27 20:58 [saved]
+Goal: Configure and set official name for #Admin topic persona to Atlas in achiOS Hub.
+
+Decisions:
+- Renamed the `#Admin` system prompt header and persona description in [admin.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/prompts/admin.md) to Atlas (System Architecture & Infrastructure Specialist).
+- Updated [topic_router.py](http://100.106.210.38:8999/Code/GitHub/achiAgy/src/topic_router.py) with display name `#Admin (Atlas)` and added `TOPIC_ALIASES` mapping `atlas` to `admin` for `/bind` commands.
+- Updated [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md) topic taxonomies.
+- Updated unit tests in `achiAgy/tests/test_topic_router_and_isolation.py` (92/92 tests passing).
+- Committed and pushed changes to GitHub remote origin.
+
+Rejected:
+- Using purely generic or unaligned names (Ops, Archie, Argus, Axel).
+
+Open:
+- None.
+
 ## 2026-08-27 20:43 [saved]
 Goal: Push all local commits to remote origin and record auto-push rule in declarative user memory.
 
