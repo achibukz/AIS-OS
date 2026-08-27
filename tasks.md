@@ -22,7 +22,7 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
-- [ ] Audit Asa research failure modes and author implementation plan with Claude Code to add automated Muses re-run loop when Althea unsupported claims exceed threshold (70-80%), and harden `asa status` against non-run directories #asa #audit #workflows #planning !high @2026-08-28
+- [ ] Audit Asa research failure modes and author implementation plan with Claude Code: (1) fix crashing `asa status` caused by unhandled FileNotFoundError on non-run directories in `~/.local/share/asa/runs/`, and (2) add automated Muses re-run loop when Althea unsupported claims exceed threshold (70-80%) #asa #audit #workflows #planning !high @2026-08-28
 - [ ] Create ticket dependency graph and execution roadmap markdown file in achiAgy mapping issue relationships, priority order, and parallel workstreams #achiagy #planning #arch !high
 - [ ] Implement centralized documents and media repository synced via Syncthing across Mac and Achibuntu per [2026-08-27-centralized-documents-and-media-store-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-27-centralized-documents-and-media-store-plan.md) with Claude Code #infra #storage #syncthing #schoolmem #achimem !high @2026-08-28
 - [ ] Audit and implement achiOS Hub with Claude Code per [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md) #achios #achiagy #hub #arch !high @2026-08-27
