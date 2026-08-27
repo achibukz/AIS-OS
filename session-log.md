@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-08-27 21:08 [saved]
+Goal: Rename prompt file admin.md to atlas.md and update router and plan references.
+
+Decisions:
+- Renamed prompt catalog file `prompts/admin.md` to `prompts/atlas.md` in `achiAgy`.
+- Updated `prompt_file="atlas.md"` for `#Admin` in [topic_router.py](http://100.106.210.38:8999/Code/GitHub/achiAgy/src/topic_router.py).
+- Updated all links and references in [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md) and [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
+- Verified full test suite passes (92/92 tests in `achiAgy`).
+- Pushed commits to GitHub remote origin across both repos.
+
+Rejected:
+- Keeping prompt filename as admin.md when all other specialist personas use their name (agi.md, ari.md, aurora.md).
+
+Open:
+- None.
+
 ## 2026-08-27 20:58 [saved]
 Goal: Configure and set official name for #Admin topic persona to Atlas in achiOS Hub.
 

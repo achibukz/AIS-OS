@@ -22,7 +22,7 @@ Keep it terse. Future-you will thank present-you for capturing the *why*, not ju
 
 ## 2026-08-27 — Name #Admin Infrastructure Specialist Persona Atlas
 
-**Decision:** Officially named the `#Admin` topic persona **Atlas** across [admin.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/prompts/admin.md), [topic_router.py](http://100.106.210.38:8999/Code/GitHub/achiAgy/src/topic_router.py), and [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md). Added `atlas` alias support in `TopicRouter` to allow `/bind atlas` or `/bind admin` interchangeably.
+**Decision:** Officially named the `#Admin` topic persona **Atlas** across [atlas.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/prompts/atlas.md), [topic_router.py](http://100.106.210.38:8999/Code/GitHub/achiAgy/src/topic_router.py), and [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md). Added `atlas` alias support in `TopicRouter` to allow `/bind atlas` or `/bind admin` interchangeably.
 
 **Why:** Aki approved the moniker Atlas to maintain characterful naming consistency alongside Agi, Ari, and Aurora, representing the heavy-lifting system architecture, daemon supervision, and crash recovery responsibilities of the admin topic.
 
