@@ -20,6 +20,16 @@ Keep it terse. Future-you will thank present-you for capturing the *why*, not ju
 
 ---
 
+## 2026-08-27 — Cross-Topic Delegation & Multi-Agent Mesh Architecture (D19–D26)
+
+**Decision:** Designed cross-topic delegation protocol and multi-agent mesh architecture in [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md). Features a dual-hybrid trigger (`/delegate <topic> <task>` and `delegate_topic` tool), persistent thread session ingestion in `sessions.json`, non-blocking asynchronous dispatch with live target output streaming and origin completion receipts, shared `prompts/asa.md` subagent orchestration prompt mixin, and cycle/hop limits (`caller_chain`, `max_depth = 2`).
+
+**Why:** Allows Aki and orchestrating personas like Agi (#General) to route specialist tasks to dedicated topics (such as #Atlas for infra diagnostics or #schoolMem for coursework) without manual copy-pasting, chat lockups, or console log clutter in general conversation.
+
+**Alternatives considered:** Synchronous blocking execution (rejected because long-running tool tasks freeze the origin chat session) and single-hop restriction (rejected in favor of 2-hop delegation with cycle detection).
+
+**Owner:** Aki.
+
 ## 2026-08-27 — Name #Admin Infrastructure Specialist Persona Atlas
 
 **Decision:** Officially named the `#Admin` topic persona **Atlas** across [atlas.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/prompts/atlas.md), [topic_router.py](http://100.106.210.38:8999/Code/GitHub/achiAgy/src/topic_router.py), and [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md). Added `atlas` alias support in `TopicRouter` to allow `/bind atlas` or `/bind admin` interchangeably.

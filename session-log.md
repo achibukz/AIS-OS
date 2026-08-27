@@ -1,5 +1,22 @@
 # Session Log
 
+## 2026-08-27 21:30 [saved]
+Goal: Complete /grill-me design session for Cross-Topic Delegation and append architecture to achiOS Hub plan.
+
+Decisions:
+- Settled 8-point design tree (D19–D26) for cross-topic handoffs: dual hybrid trigger (`/delegate` + `delegate_topic` tool), persistent thread session ingestion in `sessions.json`, non-blocking async dispatch with target live streaming and origin receipts, and any-to-any mesh topology.
+- Authored shared subagent orchestration prompt mixin in [prompts/asa.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/prompts/asa.md) with structured payload schemas and error boundaries.
+- Appended Section 11 (Cross-Topic Delegation & Multi-Agent Mesh Architecture) and updated Section 4 / Section 10 in [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md).
+- Enforced cycle detection (`caller_chain`) and recursion hop limits (`max_depth = 2`).
+- Recorded architectural decision in [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
+
+Rejected:
+- Synchronous blocking turns (which would freeze the origin chat during long-running tool tasks).
+- Single-hop restriction without call chaining.
+
+Open:
+- Implement Tasks 6–8 in `achiAgy` (router mixin injection, `/delegate` handler, and unit tests).
+
 ## 2026-08-27 21:14 [saved]
 Goal: Align topic registration, prompt header, and plan topology from #Admin to #Atlas in achiOS Hub.
 
