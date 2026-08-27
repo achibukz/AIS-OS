@@ -1,5 +1,56 @@
 # Session Log
 
+## 2026-08-27 19:33 [saved]
+Goal: Correct agent role attribution and refine coding best practices guide specifically for Aea (coding subagent) under Asa (orchestrator).
+
+Decisions:
+- Clarified architectural distinction: Asa is the orchestrator framework, while Aea (`src/asa/agents/aea.md`) is our primary implementation coding subagent.
+- Updated [coding-best-practices-and-asa-agent-skills-guide.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/coding-best-practices-and-asa-agent-skills-guide.md) to explicitly target Aea's toolset with language coding practices (TypeScript, Python, Swift, Go, Java, SQL) and context-envelope injection via Asa.
+
+Rejected:
+- Confusing Asa (the orchestrator) with Aea (the coding subagent).
+
+Open:
+- None.
+
+## 2026-08-27 19:22 [saved]
+Goal: Record user preference and add task to implement reflect skill in achiOS.
+
+Decisions:
+- Added active task to [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) to implement the `reflect` skill and 3-subagent transcript review loop in achiOS.
+
+Rejected:
+- None.
+
+Open:
+- None.
+
+## 2026-08-27 19:10 [saved]
+Goal: Audit and document pstack skills catalog to identify workflow improvements for achiOS and Asa.
+
+Decisions:
+- Audited 45 skills in `cursor/plugins/tree/main/pstack/skills` across orchestration, investigation, writing, and engineering principles.
+- Created [pstack-skills-showcase.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/pstack-skills-showcase.md) highlighting top skills (`reflect`, `show-me-your-work`, `recall`, `blast-radius`, `why`, `how`, `technical-writing`, and the 20 `principle-*` skills).
+- Outlined key architectural takeaways for Asa and achiOS subagent prompts.
+
+Rejected:
+- Installing skills immediately without browsing and evaluating first.
+
+Open:
+- None.
+
+## 2026-08-27 19:04 [saved]
+Goal: Add task for Matt Pocock skills integration into Asa using writing-for-agents standards.
+
+Decisions:
+- Added active task to [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) to implement Matt Pocock engineering and productivity skills into Asa with `writing-for-agents` prompt design standards.
+
+Rejected:
+- None.
+
+Open:
+- None.
+
 ## 2026-08-27 18:35 [saved]
 Goal: Extend Unslop rules into global Antigravity configuration files.
 
