@@ -20,8 +20,8 @@ from pathlib import Path
 
 VIEWER_BASE = "http://100.106.210.38:8999"
 
-# Matches markdown links: [text](url)
-MD_LINK_REGEX = re.compile(r'\[([^\]]+)\]\(([^\)]+)\)')
+# Matches markdown links: [text](url) (negative lookbehind for ! to ignore images)
+MD_LINK_REGEX = re.compile(r'(?<!!)\[([^\]]+)\]\(([^\)]+)\)')
 
 # Matches bare .md file references not already inside a markdown link [text](url) or code fence
 BARE_MD_REGEX = re.compile(
@@ -32,8 +32,12 @@ BARE_MD_REGEX = re.compile(
 def check_content(text: str, filename: str = "input") -> list[str]:
     issues = []
     
+    # Strip triple-backtick and single-backtick code to avoid false positives in illustrative examples
+    clean_text = re.sub(r'```.*?```', '', text, flags=re.DOTALL)
+    clean_text = re.sub(r'`[^`\n]+`', '', clean_text)
+    
     # 1. Check all markdown links in text
-    for match in MD_LINK_REGEX.finditer(text):
+    for match in MD_LINK_REGEX.finditer(clean_text):
         label = match.group(1)
         url = match.group(2)
         

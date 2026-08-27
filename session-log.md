@@ -1,5 +1,16 @@
 # Session Log
 
+## 2026-08-28 07:33 [saved]
+Goal: Finalize link verification validator and clean legacy documentation links for Tailscale web viewer protocol.
+
+Decisions:
+- Updated `scripts/verify_links.py` to strip code blocks and ignore markdown image tags (`(?<!!)\[...\](...)`) to eliminate false positives in illustrative examples.
+- Cleaned historical doc files (`docs/2026-08-20-system-architecture-audit.md`, `docs/2026-08-18-feature-audit-tgdb-and-correction-harvester.md`, `docs/2026-08-21-tasks-and-systemd-architecture-audit.md`) to comply with Tailscale web viewer linking rules.
+- Verified 100% compliance across all docs and agent instruction files via `python scripts/verify_links.py --check-all` (0 issues).
+
+Open:
+- Continue executing open roadmap tickets in achiAgy (#24, #1, #7, #4, #9).
+
 ## 2026-08-28 06:45 [saved]
 Goal: Implement universal git pre-commit hook enforcing session-log updates on code changes (AIS-OS#1).
 

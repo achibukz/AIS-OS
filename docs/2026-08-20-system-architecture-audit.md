@@ -47,14 +47,14 @@ All background operations run as systemd user services (`systemctl --user`) back
 
 | Unit Name | Timer / Schedule | Python Script | Purpose & Delivery Channel | Relevant Files |
 |---|---|---|---|---|
-| **`achios-daily-brief`** | `08:00 AM` Daily | `scripts/daily_brief.py` | Google Calendar schedule + Top 5 priority tasks from `tasks.md` → `@achiOSBot` | [`systemd/achios-daily-brief.timer`](file:///home/achibukz/Code/GitHub/AIS-OS/systemd/achios-daily-brief.timer), [`scripts/daily_brief.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/daily_brief.py) |
-| **`achios-tasks-digest`**| `11am, 3pm, 6pm, 9pm, 11pm` | `scripts/tasks_digest.py` | High-priority task checkpoint reminders → `@achiOSBot` | [`systemd/achios-tasks-digest.timer`](file:///home/achibukz/Code/GitHub/AIS-OS/systemd/achios-tasks-digest.timer), [`scripts/tasks_digest.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/tasks_digest.py) |
-| **`achios-voo-digest`**  | `04:30 AM` & `08:00 AM` (Daily) | `scripts/voo_digest.py` | US Market close review for VOO, VXUS, QQQM → `@achiETFBot` / `@achiOSBot` | [`systemd/achios-voo-digest.timer`](file:///home/achibukz/Code/GitHub/AIS-OS/systemd/achios-voo-digest.timer), [`scripts/voo_digest.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/voo_digest.py) |
-| **`achios-etf-weekly`**  | `Sun 06:00 PM` | `scripts/etf_weekly_digest.py`| 5-day net price delta ($, %), weekly trading range & 1-yr returns → `@achiETFBot` | [`systemd/achios-etf-weekly-digest.timer`](file:///home/achibukz/Code/GitHub/AIS-OS/systemd/achios-etf-weekly-digest.timer), [`scripts/etf_weekly_digest.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/etf_weekly_digest.py) |
-| **`achios-email-digest`**| `08:30 AM` & `05:30 PM` | `scripts/email_digest.py` | VIP email triage across DLSU and Work inboxes (filters out Manila/Laguna noise) → `@achiSchooNounceBot` | [`systemd/achios-email-digest.timer`](file:///home/achibukz/Code/GitHub/AIS-OS/systemd/achios-email-digest.timer), [`scripts/email_digest.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/email_digest.py) |
-| **`achios-evening-debrief`**| `12:00 MN` Daily | `scripts/evening_debrief.py`| Retrospective of completed tasks, commits, plus harvested rules card → `@achiOSBot` | [`systemd/achios-evening-debrief.timer`](file:///home/achibukz/Code/GitHub/AIS-OS/systemd/achios-evening-debrief.timer), [`scripts/evening_debrief.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/evening_debrief.py) |
-| **`achios-vault-sync`**  | `*:00/15` (Every 15m) | `scripts/vault_inbox_sync.py` | Autonomous mobile capture sweep from `schoolMem/inbox/` and `achiMem/inbox/` to GitHub `origin/main` | [`systemd/achios-vault-sync.timer`](file:///home/achibukz/Code/GitHub/AIS-OS/systemd/achios-vault-sync.timer), [`scripts/vault_inbox_sync.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/vault_inbox_sync.py) |
-| **`achios-failure-alert@`**| On Failure (`%n`) | `scripts/service_failure_alert.py`| Captures journalctl crash logs, redacts bot tokens/keys, and delivers emergency alert | [`systemd/achios-failure-alert@.service`](file:///home/achibukz/Code/GitHub/AIS-OS/systemd/achios-failure-alert@.service), [`scripts/service_failure_alert.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/service_failure_alert.py) |
+| **`achios-daily-brief`** | `08:00 AM` Daily | `scripts/daily_brief.py` | Google Calendar schedule + Top 5 priority tasks from `tasks.md` → `@achiOSBot` | `systemd/achios-daily-brief.timer`, `scripts/daily_brief.py` |
+| **`achios-tasks-digest`**| `11am, 3pm, 6pm, 9pm, 11pm` | `scripts/tasks_digest.py` | High-priority task checkpoint reminders → `@achiOSBot` | `systemd/achios-tasks-digest.timer`, `scripts/tasks_digest.py` |
+| **`achios-voo-digest`**  | `04:30 AM` & `08:00 AM` (Daily) | `scripts/voo_digest.py` | US Market close review for VOO, VXUS, QQQM → `@achiETFBot` / `@achiOSBot` | `systemd/achios-voo-digest.timer`, `scripts/voo_digest.py` |
+| **`achios-etf-weekly`**  | `Sun 06:00 PM` | `scripts/etf_weekly_digest.py`| 5-day net price delta ($, %), weekly trading range & 1-yr returns → `@achiETFBot` | `systemd/achios-etf-weekly-digest.timer`, `scripts/etf_weekly_digest.py` |
+| **`achios-email-digest`**| `08:30 AM` & `05:30 PM` | `scripts/email_digest.py` | VIP email triage across DLSU and Work inboxes (filters out Manila/Laguna noise) → `@achiSchooNounceBot` | `systemd/achios-email-digest.timer`, `scripts/email_digest.py` |
+| **`achios-evening-debrief`**| `12:00 MN` Daily | `scripts/evening_debrief.py`| Retrospective of completed tasks, commits, plus harvested rules card → `@achiOSBot` | `systemd/achios-evening-debrief.timer`, `scripts/evening_debrief.py` |
+| **`achios-vault-sync`**  | `*:00/15` (Every 15m) | `scripts/vault_inbox_sync.py` | Autonomous mobile capture sweep from `schoolMem/inbox/` and `achiMem/inbox/` to GitHub `origin/main` | `systemd/achios-vault-sync.timer`, `scripts/vault_inbox_sync.py` |
+| **`achios-failure-alert@`**| On Failure (`%n`) | `scripts/service_failure_alert.py`| Captures journalctl crash logs, redacts bot tokens/keys, and delivers emergency alert | `systemd/achios-failure-alert@.service`, `scripts/service_failure_alert.py` |
 
 ---
 
@@ -67,10 +67,10 @@ All background operations run as systemd user services (`systemctl --user`) back
   * **Hermes Sessions:** Hooked to gateway exports.
 * **Sanitization:** Strips API tokens, bot secrets, and private paths prior to writing markdown frontmatter notes.
 * **Key Files:**
-  * [`AIS-OS/scripts/tgdb_logger.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/tgdb_logger.py)
-  * [`AIS-OS/scripts/export_transcripts.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/export_transcripts.py)
-  * [`AIS-OS/scripts/export_claude_transcripts.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/export_claude_transcripts.py)
-  * [`achiMem/tgdb/2026-08/`](file:///home/achibukz/Documents/Obsidian/achiMem/tgdb/2026-08/)
+  * `AIS-OS/scripts/tgdb_logger.py`
+  * `AIS-OS/scripts/export_transcripts.py`
+  * `AIS-OS/scripts/export_claude_transcripts.py`
+  * `achiMem/tgdb/2026-08/`
 
 ---
 
@@ -84,15 +84,15 @@ All background operations run as systemd user services (`systemctl --user`) back
   4. Automatically appends validated rules to `AIS-OS/.agentrules` and logs rationale into `AIS-OS/decisions/log.md`.
   5. Delivers a secondary `🧠 Self-Learning & Harvested Rules` card during the midnight `evening_debrief`.
 * **Key Files:**
-  * [`AIS-OS/scripts/extract_corrections.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/extract_corrections.py)
-  * [`AIS-OS/.agentrules`](file:///home/achibukz/Code/GitHub/AIS-OS/.agentrules)
-  * [`AIS-OS/decisions/log.md`](file:///home/achibukz/Code/GitHub/AIS-OS/decisions/log.md)
+  * `AIS-OS/scripts/extract_corrections.py`
+  * `AIS-OS/.agentrules`
+  * [AIS-OS/decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md)
 
 ---
 
 ## 4. `achiAgy` — Dedicated Google Antigravity CLI Telegram Daemon (Major Project)
 
-**Repository:** [`Code/GitHub/achiAgy`](file:///home/achibukz/Code/GitHub/achiAgy) (Branch: `master`)  
+**Repository:** `Code/GitHub/achiAgy` (Branch: `master`)  
 **Creator / Initial Author:** Antigravity AI (Gemini 3.7 Flash)  
 **Core Purpose:** Bridges the terminal-based Google Antigravity (`agy`) CLI into an asynchronous, fully interactive Telegram bot with persistent project switching, rich tmux TUI observability, responsive formatting, and mobile push notifications.
 

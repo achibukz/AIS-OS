@@ -80,7 +80,7 @@ fi
 TODAY_MANILA=$(TZ="Asia/Manila" date +%Y-%m-%d)
 STAGED_SESSION_LOG=$(git show :session-log.md 2>/dev/null || true)
 
-if ! echo "$STAGED_SESSION_LOG" | grep -Eq "^## +${TODAY_MANILA}.*\[saved\]"; then
+if ! echo "$STAGED_SESSION_LOG" | grep -E "^## +${TODAY_MANILA}.*\[saved\]" >/dev/null; then
     echo "❌ Pre-commit check failed: Staged session-log.md lacks a [saved] entry for today (${TODAY_MANILA})."
     echo ""
     echo "Expected header format:"

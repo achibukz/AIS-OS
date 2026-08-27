@@ -23,9 +23,9 @@ This audit document provides a complete technical specification, architectural f
 Automatically preserves raw dialogue sessions from **both Claude Code and Antigravity (Gemini)** into clean, human-readable, sanitized Markdown notes inside Obsidian (`achiMem/tgdb/YYYY-MM/`).
 
 ### 2. Architecture & File Registry
-* **Core Logger:** [`scripts/tgdb_logger.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/tgdb_logger.py)
+* **Core Logger:** `scripts/tgdb_logger.py`
   * Formats frontmatter metadata, extracted action items (`- [ ]`), decision takeaways, and collapsible dialogue transcripts.
-* **Universal Exporter:** [`scripts/export_transcripts.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/export_transcripts.py)
+* **Universal Exporter:** `scripts/export_transcripts.py`
   * Sweeps `~/.claude/projects/` (Claude Code JSONL sessions).
   * Sweeps `~/.gemini/antigravity-cli/brain/` (Antigravity `transcript.jsonl` logs).
   * Detects bot handles:
@@ -40,7 +40,7 @@ Automatically preserves raw dialogue sessions from **both Claude Code and Antigr
 * Preserves user intent, user corrections, and final assistant replies.
 
 ### 4. Claude Code Audit Checklist for Feature 1
-- [ ] Inspect [`scripts/export_transcripts.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/export_transcripts.py) lines 58–106 (`clean_claude_text` and `clean_antigravity_text`) for any potential edge-case XML tag leakage.
+- [ ] Inspect `scripts/export_transcripts.py` lines 58–106 (`clean_claude_text` and `clean_antigravity_text`) for any potential edge-case XML tag leakage.
 - [ ] Verify that bot handle detection accurately distinguishes between `@achiOSClaudeBot` and `@achiAgyOSBot`.
 - [ ] Verify monthly partitioning logic (`YYYY-MM`) and timezone conversions (`Asia/Manila`).
 - [ ] Run unit tests:
@@ -53,10 +53,10 @@ Automatically preserves raw dialogue sessions from **both Claude Code and Antigr
 ## ⚙️ Feature 2: Autonomous Correction Harvester & Self-Learning Loop
 
 ### 1. Purpose & Core Responsibilities
-Transforms real-time user feedback, tone adjustments, directives, and banned words given in Telegram chat into persistent, deduplicated rules inside [`.agentrules`](file:///home/achibukz/Code/GitHub/AIS-OS/.agentrules) and [`decisions/log.md`](file:///home/achibukz/Code/GitHub/AIS-OS/decisions/log.md).
+Transforms real-time user feedback, tone adjustments, directives, and banned words given in Telegram chat into persistent, deduplicated rules inside `.agentrules` and [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
 
 ### 2. Architecture & File Registry
-* **Harvester Engine:** [`scripts/extract_corrections.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/extract_corrections.py)
+* **Harvester Engine:** `scripts/extract_corrections.py`
   * Scans recent tgdb Markdown files for user correction patterns.
   * **Heuristic Triggers:**
     1. *Banned words / terms:* `"don't use the word X"`, `"never use Y"`, `"stop saying Z"` (excludes CLI commands like `curl`, `git`, `python`).
@@ -65,15 +65,15 @@ Transforms real-time user feedback, tone adjustments, directives, and banned wor
     4. *Formatting overrides:* `"change X to Y"` (excludes questions like `"how to change X?"`).
   * **Domain Classification:** Automatically routes rules into `voice`, `tasks`, `logging`, `infra`, or `general`.
 * **Zero-Duplicate Engine:** Compares normalized candidate strings against `.agentrules`, `references/voice.md`, and `decisions/log.md` before applying.
-* **Continuous Sync Pipeline:** [`scripts/vault_inbox_sync.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/vault_inbox_sync.py)
+* **Continuous Sync Pipeline:** `scripts/vault_inbox_sync.py`
   * Runs every 15 minutes via `achios-vault-sync.timer`.
   * Exports transcripts and immediately executes `extract_corrections.py` so corrections take effect within 15 minutes.
-* **Two-Message Evening Debrief Integration:** [`scripts/evening_debrief.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/evening_debrief.py)
+* **Two-Message Evening Debrief Integration:** `scripts/evening_debrief.py`
   * Message 1: Daily accomplishments, service health, tomorrow's focus.
   * Message 2: Standalone `🧠 Self-Learning & Harvested Rules` message sent right after Message 1.
 
 ### 3. Claude Code Audit Checklist for Feature 2
-- [ ] Inspect [`scripts/extract_corrections.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/extract_corrections.py) lines 70–170 for regex robustness and false-positive prevention.
+- [ ] Inspect `scripts/extract_corrections.py` lines 70–170 for regex robustness and false-positive prevention.
 - [ ] Verify `is_rule_duplicate()` logic to ensure duplicate phrases or previously logged banned words cannot be re-appended.
 - [ ] Verify that `scripts/evening_debrief.py` correctly handles days with zero harvested rules (omits Message 2 cleanly without error).
 - [ ] Run unit tests:
@@ -117,13 +117,13 @@ PYTHONPATH=scripts ~/.local/share/achios/venv/bin/python \
 
 | File Path | Role & Key Functions | Status |
 | :--- | :--- | :--- |
-| [`scripts/tgdb_logger.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/tgdb_logger.py) | Formats YAML frontmatter, sanitizes secrets, and formats collapsible transcripts (`format_tgdb_note`, `write_tgdb_session`). | Modified |
-| [`scripts/export_transcripts.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/export_transcripts.py) | Sweeps `~/.claude/projects/` & `~/.gemini/antigravity-cli/brain/`, maps `@achiOSClaudeBot` / `@achiAgyOSBot`, detects engines, and partitions into `achiMem/tgdb/YYYY-MM/`. | Modified |
-| [`tests/test_export_transcripts.py`](file:///home/achibukz/Code/GitHub/AIS-OS/tests/test_export_transcripts.py) | Unit tests verifying Claude / Antigravity transcript parsing, title cleaning, text sanitization, and bot mapping. | Modified |
-| [`tests/test_tgdb_logger.py`](file:///home/achibukz/Code/GitHub/AIS-OS/tests/test_tgdb_logger.py) | Unit tests verifying note formatting, action item extraction (`- [ ]`), and file writing. | Clean |
-| [`systemd/achios-vault-sync.service`](file:///home/achibukz/Code/GitHub/AIS-OS/systemd/achios-vault-sync.service) | Systemd user service running the vault sync & export pipeline. | Clean |
-| [`systemd/achios-vault-sync.timer`](file:///home/achibukz/Code/GitHub/AIS-OS/systemd/achios-vault-sync.timer) | Systemd user timer triggering the sync pipeline every 15 minutes (`*:00,15,30,45 Asia/Manila`). | Clean |
-| [`achiMem/tgdb/2026-08/`](file:///home/achibukz/Documents/Obsidian/achiMem/tgdb/2026-08/) | Sample generated markdown session notes in Obsidian (`*-achiagyosbot-*.md` and `*-achiosclaudebot-*.md`). | Generated |
+| `scripts/tgdb_logger.py` | Formats YAML frontmatter, sanitizes secrets, and formats collapsible transcripts (`format_tgdb_note`, `write_tgdb_session`). | Modified |
+| `scripts/export_transcripts.py` | Sweeps `~/.claude/projects/` & `~/.gemini/antigravity-cli/brain/`, maps `@achiOSClaudeBot` / `@achiAgyOSBot`, detects engines, and partitions into `achiMem/tgdb/YYYY-MM/`. | Modified |
+| `tests/test_export_transcripts.py` | Unit tests verifying Claude / Antigravity transcript parsing, title cleaning, text sanitization, and bot mapping. | Modified |
+| `tests/test_tgdb_logger.py` | Unit tests verifying note formatting, action item extraction (`- [ ]`), and file writing. | Clean |
+| `systemd/achios-vault-sync.service` | Systemd user service running the vault sync & export pipeline. | Clean |
+| `systemd/achios-vault-sync.timer` | Systemd user timer triggering the sync pipeline every 15 minutes (`*:00,15,30,45 Asia/Manila`). | Clean |
+| `achiMem/tgdb/2026-08/` | Sample generated markdown session notes in Obsidian (`*-achiagyosbot-*.md` and `*-achiosclaudebot-*.md`). | Generated |
 
 ---
 
@@ -131,16 +131,16 @@ PYTHONPATH=scripts ~/.local/share/achios/venv/bin/python \
 
 | File Path | Role & Key Functions | Status |
 | :--- | :--- | :--- |
-| [`scripts/extract_corrections.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/extract_corrections.py) | Core engine: scans `tgdb/` for user corrections (banned words, directives, tone adjustments, format overrides), deduplicates against existing rules, and updates `.agentrules` & `decisions/log.md`. | **New** |
-| [`tests/test_extract_corrections.py`](file:///home/achibukz/Code/GitHub/AIS-OS/tests/test_extract_corrections.py) | Unit test suite covering trigger detection, domain classification (`voice`, `tasks`, `logging`), deduplication, and mock application. | **New** |
-| [`scripts/vault_inbox_sync.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/vault_inbox_sync.py) | 15-minute pipeline daemon: calls `extract_corrections.py` immediately after `export_transcripts.py` so corrections take effect across all bots within 15 minutes. | Modified |
-| [`scripts/evening_debrief.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/evening_debrief.py) | Midnight debrief daemon: extracts today's harvested rules and transmits them as a standalone **Message 2** right after the main operational debrief (Message 1). | Modified |
-| [`tests/test_evening_debrief.py`](file:///home/achibukz/Code/GitHub/AIS-OS/tests/test_evening_debrief.py) | Unit test suite verifying the two-message debrief construction and self-learning section rendering. | **New** |
-| [`.agentrules`](file:///home/achibukz/Code/GitHub/AIS-OS/.agentrules) | Section 5: Harvested User Preferences & Corrections (active operational rules read by AI agents on startup). | Modified |
-| [`decisions/log.md`](file:///home/achibukz/Code/GitHub/AIS-OS/decisions/log.md) | Architectural & decision provenance log (records exact user quotes, source session links, and rationale). | Modified |
-| [`references/voice.md`](file:///home/achibukz/Code/GitHub/AIS-OS/references/voice.md) | Reference document for communication voice constraints and banned words. | Clean |
-| [`AGENTS.md`](file:///home/achibukz/Code/GitHub/AIS-OS/AGENTS.md) | Master agent documentation updated with the Correction Harvester architecture and operational usage. | Modified |
-| [`tasks.md`](file:///home/achibukz/Code/GitHub/AIS-OS/tasks.md) | Task tracking state with the harvester task marked completed. | Modified |
+| `scripts/extract_corrections.py` | Core engine: scans `tgdb/` for user corrections (banned words, directives, tone adjustments, format overrides), deduplicates against existing rules, and updates `.agentrules` & `decisions/log.md`. | **New** |
+| `tests/test_extract_corrections.py` | Unit test suite covering trigger detection, domain classification (`voice`, `tasks`, `logging`), deduplication, and mock application. | **New** |
+| `scripts/vault_inbox_sync.py` | 15-minute pipeline daemon: calls `extract_corrections.py` immediately after `export_transcripts.py` so corrections take effect across all bots within 15 minutes. | Modified |
+| `scripts/evening_debrief.py` | Midnight debrief daemon: extracts today's harvested rules and transmits them as a standalone **Message 2** right after the main operational debrief (Message 1). | Modified |
+| `tests/test_evening_debrief.py` | Unit test suite verifying the two-message debrief construction and self-learning section rendering. | **New** |
+| `.agentrules` | Section 5: Harvested User Preferences & Corrections (active operational rules read by AI agents on startup). | Modified |
+| [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md) | Architectural & decision provenance log (records exact user quotes, source session links, and rationale). | Modified |
+| [references/voice.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/references/voice.md) | Reference document for communication voice constraints and banned words. | Clean |
+| [AGENTS.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/AGENTS.md) | Master agent documentation updated with the Correction Harvester architecture and operational usage. | Modified |
+| [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) | Task tracking state with the harvester task marked completed. | Modified |
 
 ---
 
