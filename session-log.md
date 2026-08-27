@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-08-28 06:45 [saved]
+Goal: Implement universal git pre-commit hook enforcing session-log updates on code changes (AIS-OS#1).
+
+Decisions:
+- Created executable pre-commit hook in `scripts/hooks/pre-commit` and synced to `.githooks/pre-commit`.
+- Checked staged files via `git diff --cached --name-only` for significant file extensions and paths (`*.py`, `*.ts`, `*.js`, `*.json`, `*.sh`, `*SKILL.md`, `*AGENTS.md`, `agents/*.md`, `systemd/*`).
+- Enforced staged `session-log.md` with a valid `## YYYY-MM-DD ... [saved]` entry matching today in Manila time (`Asia/Manila`, UTC+8) whenever significant files are staged.
+- Allowed doc-only/task-only commits (`tasks.md`, `README.md`, `docs/*`, `research.md`) to pass without requiring session-log changes.
+- Added bypass mechanisms for `SKIP_SESSION_CHECK=1` and `--no-verify`.
+- Created idempotent installer script in `scripts/install_git_hooks.sh` that targets any repo path.
+- Added unit tests in `tests/test_pre_commit_hook.py` (17 tests) covering clean runs, doc passes, stale date rejections, valid date accepts, pattern checks, installer idempotency, and bypass flags.
+
+Open:
+- Implement achiAgy#26 daemon post-turn session stop hook continuation for unlogged edits.
+
 ## 2026-08-28 06:15 [saved]
 Goal: Restart achiAgy bot daemons, scrub token leaks from disk logs, verify live polling state, and reconcile task register.
 
