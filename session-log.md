@@ -1,5 +1,18 @@
 # Session Log
 
+## 2026-08-27 20:43 [saved]
+Goal: Push all local commits to remote origin and record auto-push rule in declarative user memory.
+
+Decisions:
+- Pushed all outstanding commits across `achiAgy` (`master`) and `AIS-OS` (`main`) to GitHub origin.
+- Recorded standing preference in `~/.config/achios/USER.md`: "Git workflow: Always push to remote origin immediately whenever committing changes."
+
+Rejected:
+- Leaving commits local only.
+
+Open:
+- None.
+
 ## 2026-08-27 20:38 [saved]
 Goal: Stress-test and specify terminal multiplexing, per-workspace concurrency locks, and Claude Code handoff runbook for achiOS Hub.
 
