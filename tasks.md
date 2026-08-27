@@ -22,7 +22,6 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
-- [ ] Research free and open-source alternatives to Whisper Flow (Wispr Flow) across features, feature gaps, and installation playbooks per [research.md#9-whisper-flow--wispr-flow-free-and-open-source-alternatives-deep-dive](http://100.106.210.38:8999/Code/GitHub/AIS-OS/research.md#9-whisper-flow--wispr-flow-free-and-open-source-alternatives-deep-dive) #research #tooling #ai !high @2026-08-28
 - [ ] Create ticket dependency graph and execution roadmap markdown file in achiAgy mapping issue relationships, priority order, and parallel workstreams #achiagy #planning #arch !high
 - [ ] Implement centralized documents and media repository synced via Syncthing across Mac and Achibuntu per [2026-08-27-centralized-documents-and-media-store-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-27-centralized-documents-and-media-store-plan.md) with Claude Code #infra #storage #syncthing #schoolmem #achimem !high @2026-08-28
 - [ ] Audit and implement achiOS Hub with Claude Code per [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md) #achios #achiagy #hub #arch !high @2026-08-27
@@ -50,6 +49,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 ## Blocked
 
 ## Done
+- [x] Research free and open-source alternatives to Whisper Flow (Wispr Flow) across features, feature gaps, and installation playbooks per [research.md#9-whisper-flow--wispr-flow-free-and-open-source-alternatives-deep-dive](http://100.106.210.38:8999/Code/GitHub/AIS-OS/research.md#9-whisper-flow--wispr-flow-free-and-open-source-alternatives-deep-dive) #research #tooling #ai !high @2026-08-28  (done 2026-08-28)
 - [x] Build YouTube transcript extraction and structured ingestion workflow to generate dedicated video learning pages and update achiMem knowledge (standalone, non-Asa) #achimem #automation !med  (done 2026-08-27)
 - [x] Research and configure Syncthing real-time continuous sync between Achibuntu and MacBook Air for Obsidian vaults (achiMem & schoolMem) per [research.md#4-continuous-bi-directional-file-synchronization-across-achibuntu-and-macos-syncthing-vs-alternatives](http://100.106.210.38:8999/Code/GitHub/AIS-OS/research.md#4-continuous-bi-directional-file-synchronization-across-achibuntu-and-macos-syncthing-vs-alternatives) #infra #tooling #obsidian !med  (done 2026-08-27)
 - [x] Pick up DLSU Good Moral Certificate (CGMC) at SDFO / The Hub (formal release email received) #career #school !high @2026-08-26  (done 2026-08-26)

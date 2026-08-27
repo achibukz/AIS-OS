@@ -4,12 +4,13 @@
 Goal: Dispatch Asa STORM multi-lens research on free and open-source alternatives to Whisper Flow (Wispr Flow).
 
 Decisions:
-- Recorded research inquiry in [research.md#9-whisper-flow--wispr-flow-free-and-open-source-alternatives-deep-dive](http://100.106.210.38:8999/Code/GitHub/AIS-OS/research.md#9-whisper-flow--wispr-flow-free-and-open-source-alternatives-deep-dive) with 5 orthogonal lenses (desktop apps, pure FOSS local engines, feature parity & gap analysis, installation playbooks, and privacy/resource tradeoffs).
-- Added tracking task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) (!high, @2026-08-28).
-- Dispatched 5 parallel `asa` `muses` workers (`whisper-apps`, `whisper-local-engines`, `whisper-feature-gaps`, `whisper-install-guide`, `whisper-tradeoffs-privacy`) in background task `task-52`.
+- Recorded research inquiry in [research.md#9-whisper-flow--wispr-flow-free-and-open-source-alternatives-deep-dive](http://100.106.210.38:8999/Code/GitHub/AIS-OS/research.md#9-whisper-flow--wispr-flow-free-and-open-source-alternatives-deep-dive).
+- Dispatched 5 parallel `asa` `muses` workers, synthesized findings via `athena` (`whisper-synthesis`), and audited citations via `althea` (`whisper-fact-check`).
+- Fixed `asa status` crash by relocating non-run data directories (`extracted_responses/` and `extracted_texts/`) out of `~/.local/share/asa/runs/`.
+- Authored final audited research dossier in [2026-08-28-whisper-flow-free-alternatives-deep-dive.md](http://100.106.210.38:8999/Documents/Obsidian/achiMem/raw/2026-08-28-whisper-flow-free-alternatives-deep-dive.md) and moved task to `## Done` in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
 
 Open:
-- Collect findings, run `althea` fact-check audit, and synthesize decision-grade research dossier via `athena`.
+- None. Research deliverable complete.
 
 ## 2026-08-28 02:55 [saved]
 Goal: Add task for achiAgy ticket dependency flowchart and prioritization roadmap.
