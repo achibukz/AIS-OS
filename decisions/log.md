@@ -18,7 +18,15 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
----
+## 2026-08-27 — Centralized Documents & Media Store Architecture (D34–D38)
+
+**Decision:** Designed a centralized, non-markdown document repository at `~/Documents/Files/` synced via a dedicated Syncthing folder (`achi-files`) across Achibuntu and AchiBook Air per [2026-08-27-centralized-documents-and-media-store-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-27-centralized-documents-and-media-store-plan.md). Features domain-aligned taxonomy (`personal/{health,finance,legal}`, `academic/<course>`, `career/<company>`), ISO date-prefixed file naming (`YYYY-MM-DD-descriptor.ext`), Syncthing-only storage (no Git repository or Git LFS bloat), clean retirement/gitignoring of `raw/` in `achiMem` and `schoolMem`, and dual referencing via Tailscale web viewer links (`http://100.106.210.38:8999/Documents/Files/...`) and normalized filesystem paths.
+
+**Why:** Decouples heavy binary files (prescriptions, multi-page PDF contracts, government forms, scans) from Git-backed Obsidian markdown vaults to permanently stop repository bloat and sync delays, while keeping all personal and academic assets accessible across macOS, Linux, AI daemons, and mobile Telegram dispatch.
+
+**Alternatives considered:** Keeping `raw/` inside Obsidian vaults (rejected due to Git repo size bloat), using Git LFS (rejected due to GitHub bandwidth limits and merge complexity), and expanding existing Obsidian Syncthing root to the whole `~/Documents/` folder (rejected to keep failure domains and ignore rules isolated).
+
+**Owner:** Aki.
 
 ## 2026-08-27 — Outbound Server Media & Document Dispatch Architecture (D27–D33)
 

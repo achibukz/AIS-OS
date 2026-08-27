@@ -1,5 +1,24 @@
 # Session Log
 
+## 2026-08-27 22:55 [saved]
+Goal: Plan and architect Centralized Documents & Media Store (`~/Documents/Files/`) via /grill-me.
+
+Decisions:
+- Completed 2-round /grill-me session settling 9 architectural points (D34–D38) for centralized cross-project document and media management.
+- Defined storage root at `~/Documents/Files/` on Achibuntu and AchiBook Air (macOS) with domain-aligned taxonomy (`personal/{health,finance,legal}`, `academic/<course>`, `career/<company>`).
+- Selected dedicated Syncthing folder ID `achi-files` (`~/Documents/Files/` <-> `AchiBook Air`) to isolate binary synchronization from Obsidian markdown text sync (`varww-m4imt`).
+- Established ISO date-prefixed file naming (`YYYY-MM-DD-descriptor.ext`), Syncthing-only storage (no Git repository), `raw/` retirement and gitignoring in `achiMem` and `schoolMem`, and dual Tailscale web viewer / filesystem path referencing.
+- Authored comprehensive implementation plan in [2026-08-27-centralized-documents-and-media-store-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-27-centralized-documents-and-media-store-plan.md) and recorded decision in [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
+- Updated [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) with actionable Claude Code execution task.
+
+Rejected:
+- Keeping binary assets inside Obsidian `raw/` folders (rejected due to Git repo bloat).
+- Using Git LFS for binary documents (rejected due to GitHub limits and merge complexity).
+- Using symlinks inside Obsidian vaults (rejected due to cross-platform sync loops).
+
+Open:
+- Claude Code execution of implementation plan (scaffolding, syncthing wiring, asset migration, gitignore update).
+
 ## 2026-08-27 22:25 [saved]
 Goal: Archive prescription image in achiMem vault and create structured health wiki tracking page.
 
