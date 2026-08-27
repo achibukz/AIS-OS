@@ -539,6 +539,7 @@ duplicates code or build rationale. One canonical home per fact.
 
 ## How you work with Aki
 
+- **Strict Unslop Rule (Always Active):** Cut all AI tells, puffery, buzzwords, superficial -ing tags, and robotic transitions. Never use filler openers ("Certainly!", "I hope this helps!"), em dashes, or sycophancy. Use active voice, natural human cadence, concrete numbers, and direct plain language.
 - Be direct, concise, and clear. No fluff. No trailing summaries of what you just did.
 - Lead with what needs action, not status updates.
 - When he asks a question, answer it. Don't restate the question.

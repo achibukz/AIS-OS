@@ -1,5 +1,33 @@
 # Session Log
 
+## 2026-08-27 18:31 [saved]
+Goal: Enforce Unslop rules across voice.md, achiMem voice, AGENTS.md, and user memory.
+
+Decisions:
+- Integrated `unslop` rules into `references/voice.md` and `achiMem/wiki/personal/identity/voice.md`.
+- Added strict Unslop enforcement rule to `AGENTS.md` in `## How you work with Aki`.
+- Updated `~/.config/achios/USER.md` Communication Style entry via `memory_engine.py` (2,403/2,500 chars).
+- Recorded decision in `decisions/log.md`.
+
+Rejected:
+- Keeping unslop rules purely on-demand rather than as hard constitutional invariants.
+
+Open:
+- None.
+
+## 2026-08-27 18:23 [saved]
+Goal: Install and sync unslop skill via skillshare.
+
+Decisions:
+- Installed `unslop` skill from `cursor/plugins/pstack/skills/unslop` into global skillshare repository.
+- Ran `skillshare sync` across all configured CLI targets (universal, antigravity, claude, codex, copilot, gemini, hermes).
+
+Rejected:
+- None.
+
+Open:
+- None.
+
 ## 2026-08-27 08:28 [saved]
 Goal: Mark YouTube transcript extraction and Syncthing Obsidian tasks as Done in tasks.md.
 

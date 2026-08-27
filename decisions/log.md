@@ -20,6 +20,16 @@ Keep it terse. Future-you will thank present-you for capturing the *why*, not ju
 
 ---
 
+## 2026-08-27 — Enforce Unslop Rules across Voice, AGENTS.md, and Memory
+
+**Decision:** Adopted and strictly enforced the `unslop` skill rules across `references/voice.md`, `achiMem/wiki/personal/identity/voice.md`, `AGENTS.md`, and `~/.config/achios/USER.md`.
+
+**Why:** Aki mandated strict elimination of AI tells, puffery, robotic buzzwords, filler conversational phrases, sycophancy, and unnatural structures. Grounding responses in plain human rhythm, concrete facts/measurements, and active voice ensures authentic communication across all pairing sessions and drafted correspondence.
+
+**Alternatives considered:** Relying solely on on-demand skill invocation without constitution-level embedding (rejected because voice guardrails must apply unconditionally).
+
+**Owner:** Aki.
+
 ## 2026-07-18 — scribe: local Whisper over cloud APIs
 
 **Decision:** Built `projects/scribe/` (first project in the new `projects/` folder) on whisper.cpp large-v3-turbo running locally, not Groq/OpenAI transcription APIs.
