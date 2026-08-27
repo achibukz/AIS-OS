@@ -105,3 +105,15 @@
   - *Implementation Blueprint & Meta-Workflow:* Step-by-step custom plugin setup (`$HERMES_HOME/plugins/model-providers/antigravity/`), proxy daemon setup, or alternative CLI delegation workflows in achiOS.
 - **Target Deliverable:** `~/Documents/Obsidian/achiMem/raw/2026-08-25-antigravity-models-in-hermes-agent-feasibility.md`
 
+### 9. Whisper Flow / Wispr Flow Free and Open-Source Alternatives Deep Dive
+- **Task Reference:** [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) (`!high`)
+- **Research Question:** What are the most capable free and open-source alternatives to Whisper Flow / Wispr Flow for system-wide AI voice typing and dictation across macOS, Linux, and Windows, detailing features, feature gaps (filler removal, context-aware rewriting, auto-formatting), local model inference engines (whisper.cpp, faster-whisper), and complete installation playbooks?
+- **Inquiry Lenses:**
+  - *Ecosystem Survey:* Free desktop apps (Superwhisper free, MacWhisper free, Buzz, Aqua Voice, Voice In, Willow Voice) and their core capabilities.
+  - *Pure Open-Source Local Stacks:* Self-hosted/local Whisper implementations (whisper.cpp, faster-whisper, WhisperWriter, nerd-dictation, whisper-auto-type) with global hotkey cursor injection.
+  - *Feature Parity & Gap Analysis:* Comparison against Wispr Flow (automatic filler removal, LLM post-processing, personal vocabulary, application-aware context, multi-language support, latency).
+  - *Installation & Configuration Playbooks:* Concrete setup instructions, dependencies, permissions, and hotkey binding across macOS (Apple Silicon) and Linux/Windows.
+  - *Tradeoffs & Benchmarks:* Offline privacy and hardware requirements (VRAM, CPU, RAM) vs cloud-based latency and free-tier limitations.
+- **Target Deliverable:** `~/Documents/Obsidian/achiMem/raw/2026-08-28-whisper-flow-free-alternatives-deep-dive.md`
+
+
