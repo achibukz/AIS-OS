@@ -37,6 +37,10 @@ Whenever we build, configure, change, or decide something in this repository, **
 3. **`tasks.md`**: Update task statuses immediately (`## Active` with `@YYYY-MM-DD` and calendar event if dated, or `## Done` with completion date).
 4. **`connections.md`**: Update when wiring new endpoints, crons, or integrations.
 
+## Tailscale Markdown (.md) Web Viewer Linking Rules
+- **Markdown (.md) Files Format**: Whenever referencing, editing, or presenting any `.md` file, ALWAYS format it as a clickable Markdown link pointing directly to the Tailscale web viewer (`http://100.106.210.38:8999/`) using its full relative path from `$HOME` (e.g. `[tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md)` or `[plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md)`).
+- **No `file:///` Links**: Do NOT use `file:///` URLs.
+- **Do NOT Link Non-MD Files or Symbols**: Scripts (`.py`, `.sh`), configs (`.json`, `.toml`, `.service`), and code symbols must remain standard plain or backticked text (e.g. `scripts/run-bot.sh`, `SessionManager`) without links.
 
 ## Task register
 

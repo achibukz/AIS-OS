@@ -23,7 +23,7 @@ Six identities Aki uses to talk about these bots. Verified against each `getMe` 
 |---|---|---|---|---|---|
 | achiOS | `@achiOSClaudeBot` | Claude Code | AIS-OS repo | Two-way chat, read + write, no guard | live |
 | schoolMem | `@schoMemBot` | Claude Code | schoolMem vault | Two-way chat, write-blocked out of `wiki/` | live |
-| achiOS AGY | `@achiAgyOSBot` | agy (Google Antigravity) | AIS-OS repo | Two-way chat via `achiAgy` | live, built 2026-08-17 |
+| achiOS AGY | `@achiAgyOSBot` | agy (Google Antigravity) | `~/Code/GitHub` | Two-way chat via `achiAgy` across GitHub repos | live, repointed to `~/Code/GitHub` 2026-08-27 |
 | schoolMem AGY | `@schoMemAGYBot` | agy (Google Antigravity) | schoolMem vault | Two-way chat via `achiAgy` | live, built 2026-08-17 |
 | achinouncements | `@achiOSBot` | Claude Code (cron only) | AIS-OS `scripts/telegram_notify.py` | One-way: daily brief + scheduled/cron jobs | live |
 | achiFinance | `@achiETFBot` | Python (`voo_digest.py`, `etf_weekly_digest.py`) | AIS-OS | One-way: Daily ETF market digests (08:00 & 22:00) + Sunday weekly recap (18:00) via `telegram_finance.env` | live |

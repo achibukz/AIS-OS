@@ -500,3 +500,53 @@ the code.
 **Alternatives considered:** Manual individual date edits without recurring series shift (leaves orphan class reminders on Sep 4/5).
 
 **Owner:** Aki.
+
+## 2026-08-27 — achiAgy workspace pointed to ~/Code/GitHub
+
+**Decision:** Configured `achiAgy` daemon and `achi-agy.service` to pass `github` as the target argument, establishing `BOT_CWD=/home/achibukz/Code/GitHub` instead of `AIS-OS`.
+
+**Why:** Running both `@achiAgyOSBot` and `@achiOSHubBot` in `~/Code/GitHub/AIS-OS` resulted in workspace collisions and duplicate bot handlers. Repointing `achiAgy` to `~/Code/GitHub` cleanly decouples the pair: `@achiOSHubBot` (and `@achiOSClaudeBot`) manages `AIS-OS`, while `@achiAgyOSBot` provides cross-repo development, inspection, and tooling across all repositories under `~/Code/GitHub`.
+
+**Alternatives considered:** Permanently disabling `achi-agy.service` (loses the Antigravity Telegram pair for general code tasks), scoping strictly to `achiAgy` repo (too limited for cross-project work).
+
+**Owner:** Aki.
+
+## 2026-08-27 — achiAgy Multi-Subsystem Audit & Hub Refactor Baseline
+
+**Decision:** Conducted an end-to-end 3-lens audit across `achiAgy` (Core Engine, TGDB, and Self-Learning Loop) and documented architectural findings, failure modes, and refactor requirements in `docs/telegram-supergroup-hub-plan.md`.
+
+**Why:** Preparing to migrate interactive bot pairs to a unified Telegram Supergroup with Forum Topics required auditing live subsystem health. The audit uncovered critical pre-refactor bugs: TGDB dual-writer truncations, system prompt leak in note titles, 99% memory store saturation with `entries[0]` eviction risks, and `chat_id` keying collisions across forum threads.
+
+**Alternatives considered:** Direct refactoring without holistic audit (would have inherited hidden TGDB overwrites and memory eviction bugs into the Supergroup Hub).
+
+**Owner:** Aki.
+
+## 2026-08-27 — Mandatory Clickable Linking & 1-Tap Mobile Viewer Enforcement
+
+**Decision:** Enforced strict clickable linking protocols across [`AGENTS.md`](file:///home/achibukz/Code/GitHub/AIS-OS/AGENTS.md), [`.agentrules`](file:///home/achibukz/Code/GitHub/AIS-OS/.agentrules), and [`CLAUDE.md`](file:///home/achibukz/Code/GitHub/AIS-OS/CLAUDE.md): all referenced file paths and symbols must use `file:///` markdown links, all `.md` files must include 1-tap mobile viewer links (`http://100.106.210.38:8999/...`), and bare unlinked paths are strictly banned. Created [`scripts/verify_links.py`](file:///home/achibukz/Code/GitHub/AIS-OS/scripts/verify_links.py) to validate compliance.
+
+**Why:** Mobile-first operating UX on Telegram and Obsidian requires zero friction: tapping a file or plan must immediately open the target file or rendered mobile viewer without manual path copying or searching.
+
+**Alternatives considered:** Soft guideline without automated validator script (drifted in previous turns).
+
+**Owner:** Aki.
+
+## 2026-08-27 — Tailscale Markdown (.md) Web Viewer Linking Protocol (/grill-me Finalized)
+
+**Decision:** Formatted all Markdown (`.md`) file links strictly as clickable Tailscale web viewer links (`http://100.106.210.38:8999/<full_path_from_home>`). Banned `file:///` URLs entirely. All non-MD files (`.py`, `.sh`, `.json`, `.toml`) and code symbols remain standard plain/backticked text without links. Locked in `MEMORY.md`, `.agentrules`, `AGENTS.md`, and `CLAUDE.md`, validated via `scripts/verify_links.py` and `.githooks/pre-commit`.
+
+**Why:** Aki reads notes and plans primarily on mobile Telegram over Tailscale. Pointing `.md` links directly to `http://100.106.210.38:8999/...` renders fully styled Markdown, mermaid diagrams, and syntax highlighting in 1 tap without IDE file prompt dialogues or broken local desktop URLs.
+
+**Alternatives considered:** Dual links (`file:///` + web viewer — rejected as cluttered), short fallback paths (rejected to avoid cross-repo filename collisions).
+
+**Owner:** Aki.
+
+## 2026-08-27 — achi-viewer Concurrency & Content-Length Fix
+
+**Decision:** Upgraded `scripts/achi_viewer.py` from single-threaded `HTTPServer` to `ThreadingHTTPServer`, added explicit `Content-Length` headers across all responses, enabled `HTTP/1.1` and `do_HEAD` support, and wrapped socket writes to catch client disconnects gracefully.
+
+**Why:** Single-threaded execution caused socket blocking and request hanging whenever mobile browsers opened persistent keep-alive connections or parallel asset requests. Missing `Content-Length` headers left clients waiting indefinitely on socket closure.
+
+**Alternatives considered:** Running under gunicorn/uvicorn (unnecessary dependency overhead when stdlib `ThreadingHTTPServer` handles concurrent mobile requests perfectly).
+
+**Owner:** Aki.

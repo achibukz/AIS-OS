@@ -35,3 +35,8 @@ Whenever an active task carries a date or deadline:
 - **2026-08-19 (data/accuracy):** Always query live API sources and cross-verify dates before broadcasting market digests to prevent stale day-over-day price replication.
 - **2026-08-19 (notifications/email):** Email Debrief must strictly surface unread emails only (`is:unread`); never include emails that have already been opened/read by Aki, even if sent by VIPs or recruiters like Vanscell/ING.
 - **2026-08-19 (tasks/formatting):** When Aki invokes `/tasks` or asks for tasks, use the structured categorized format: Immediate Deadlines (grouped by timeline), DLSU Academics & Enrollment, Career & Finances Next Steps, and Systems & Engineering (achiOS/Asa/achiAgy) with markdown checkboxes (`- [ ] **Title:** details`) and file links.
+
+## 8. Tailscale Markdown (.md) Web Viewer Linking Protocol
+- **Markdown (.md) Files Format**: Whenever referencing, editing, or presenting any `.md` file, ALWAYS format it as a clickable Markdown link pointing directly to the Tailscale web viewer (`http://100.106.210.38:8999/`) using its full relative path from `$HOME` (e.g. `[tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md)` or `[plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md)`).
+- **No `file:///` Links**: Do NOT use `file:///` URLs.
+- **Do NOT Link Non-MD Files or Symbols**: Scripts (`.py`, `.sh`), configs (`.json`, `.toml`, `.service`), and code symbols must remain standard plain or backticked text (e.g. `scripts/run-bot.sh`, `SessionManager`) without links.

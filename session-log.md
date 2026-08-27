@@ -1,5 +1,76 @@
 # Session Log
 
+## 2026-08-27 08:05 [saved]
+Goal: Diagnose and fix achi-viewer hanging / connection issues on port 8999.
+
+Decisions:
+- Switched `achi_viewer.py` from single-threaded `HTTPServer` to `ThreadingHTTPServer`.
+- Added explicit `Content-Length` headers across all responses (`render_file`, `render_directory`, `render_not_found`, raw binary).
+- Added `HTTP/1.1` and `do_HEAD` support; ignored `BrokenPipeError` on mobile disconnections.
+- Restarted `achi-viewer.service` and verified sub-second 200 OK responses on `http://100.106.210.38:8999/...`.
+
+Rejected:
+- Leaving single-threaded server in place.
+
+Open:
+- None.
+
+## 2026-08-27 07:58 [saved]
+Goal: Finalize and lock Tailscale web viewer linking protocol via /grill-me alignment.
+
+Decisions:
+- Locked in Option A for all four pillars: (1) All `.md` files link directly to `http://100.106.210.38:8999/<full_path>`, (2) non-MD files/symbols remain plain/backticked text with no links, (3) full path from `$HOME` in URLs, and (4) Option C enforcement across `MEMORY.md`, `.agentrules`, `AGENTS.md`, `CLAUDE.md`, `scripts/verify_links.py`, and `.githooks/pre-commit`.
+- Configured git hooks path (`git config core.hooksPath .githooks`).
+
+Rejected:
+- `file:///` URLs (banned across all models/agents).
+- Short slug paths (to prevent multi-repo filename collisions).
+
+Open:
+- None.
+
+## 2026-08-27 07:50 [saved]
+Goal: Enforce strict clickable linking and 1-tap mobile previewer rules across AGENTS.md, .agentrules, and CLAUDE.md.
+
+Decisions:
+- Added explicit linking section to `AGENTS.md`, `.agentrules`, and `CLAUDE.md` requiring `file:///` URLs for all referenced files/symbols and `http://100.106.210.38:8999/...` 1-tap mobile viewer links for all `.md` files.
+- Banned bare unlinked path strings in chat output.
+- Created `scripts/verify_links.py` to validate markdown file linking compliance.
+
+Rejected:
+- Relying on memory heuristics alone without explicit instruction file rules.
+
+Open:
+- None.
+
+## 2026-08-27 07:48 [saved]
+Goal: Full 3-lens audit of achiAgy (Core Engine, TGDB, Self-Learning Loop) for Supergroup Hub refactor.
+
+Decisions:
+- Audited all subsystems in parallel with dedicated subagents.
+- Documented complete diagnostics, failure modes (TGDB dual-writer truncations, system-prompt title leaks, 99% memory saturation with `entries[0]` eviction risks, session key collisions in forum topics), and refactor solutions in Section 6 of `telegram-supergroup-hub-plan.md`.
+- Confirmed all 83 unit tests passing in `achiAgy`.
+
+Rejected:
+- Proceeding to topic refactoring without isolating pre-existing memory eviction and TGDB collision bugs.
+
+Open:
+- Implement composite session keying (`chat_id:thread_id`) and topic router.
+
+## 2026-08-27 07:42 [saved]
+Goal: Configure achiAgy workspace to ~/Code/GitHub to resolve AIS-OS multi-agy collision.
+
+Decisions:
+- Repointed `achiAgy` daemon to `~/Code/GitHub` by adding `github` argument handling in `run-bot.sh` and updating `achi-agy.service`.
+- Decoupled `@achiAgyOSBot` (now scoped across all GitHub repositories) from `@achiOSHubBot` / `@achiOSClaudeBot` (scoped to `AIS-OS`).
+- Verified service reload and live polling on tmux socket `achiagy`. All 83 achiAgy pytest tests passing.
+
+Rejected:
+- Keeping `achi-agy` disabled permanently — leaves cross-repo Telegram queries unsupported.
+
+Open:
+- None.
+
 ## 2026-08-20 19:10 [saved]
 Goal: Kill the v1 harvester and write the v2 implementation plan.
 

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Git pre-commit hook to verify Tailscale web viewer links in markdown files
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+if [ -f "$REPO_ROOT/scripts/verify_links.py" ]; then
+    python3 "$REPO_ROOT/scripts/verify_links.py" "$REPO_ROOT/AGENTS.md" "$REPO_ROOT/CLAUDE.md" "$REPO_ROOT/.agentrules" || {
+        echo "❌ Pre-commit link verification failed. Ensure all .md files use http://100.106.210.38:8999/<full_path>."
+        exit 1
+    }
+fi

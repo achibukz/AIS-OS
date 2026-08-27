@@ -10,7 +10,7 @@ import sys
 import html
 import urllib.parse
 from pathlib import Path
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 
 ROOT_DIR = Path("/home/achibukz").resolve()
 PORT = 8999
@@ -217,6 +217,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
 
 class AchiViewerHandler(BaseHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
+
+    def do_HEAD(self):
+        self.do_GET()
+
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
         raw_path = urllib.parse.unquote(parsed.path).lstrip("/")
@@ -325,11 +330,16 @@ class AchiViewerHandler(BaseHTTPRequestHandler):
             action_buttons=actions,
             content=body_html
         )
+        data = full_html.encode("utf-8")
 
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(data)))
         self.end_headers()
-        self.wfile.write(full_html.encode("utf-8"))
+        try:
+            self.wfile.write(data)
+        except (BrokenPipeError, ConnectionResetError):
+            pass
 
     def render_directory(self, dir_path: Path):
         breadcrumbs = self.get_breadcrumbs(dir_path)
@@ -379,16 +389,18 @@ class AchiViewerHandler(BaseHTTPRequestHandler):
             action_buttons=actions,
             content=body_html
         )
+        data = full_html.encode("utf-8")
 
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(data)))
         self.end_headers()
-        self.wfile.write(full_html.encode("utf-8"))
+        try:
+            self.wfile.write(data)
+        except (BrokenPipeError, ConnectionResetError):
+            pass
 
     def render_not_found(self, raw_path: str):
-        self.send_response(404)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
-        self.end_headers()
         body_html = f'''
           <div class="markdown-body">
             <h2>404 — File Not Found</h2>
@@ -402,7 +414,15 @@ class AchiViewerHandler(BaseHTTPRequestHandler):
             action_buttons='',
             content=body_html
         )
-        self.wfile.write(full_html.encode("utf-8"))
+        data = full_html.encode("utf-8")
+        self.send_response(404)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        try:
+            self.wfile.write(data)
+        except (BrokenPipeError, ConnectionResetError):
+            pass
 
     def serve_raw_file(self, file_path: Path):
         try:
@@ -419,13 +439,15 @@ class AchiViewerHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(data)))
             self.end_headers()
             self.wfile.write(data)
+        except (BrokenPipeError, ConnectionResetError):
+            pass
         except Exception as e:
             self.send_error(500, f"Error serving binary file: {e}")
 
 
 def run_server():
     server_address = (HOST, PORT)
-    httpd = HTTPServer(server_address, AchiViewerHandler)
+    httpd = ThreadingHTTPServer(server_address, AchiViewerHandler)
     print(f"✅ achi-viewer is live on http://{HOST}:{PORT} (serving {ROOT_DIR})")
     try:
         httpd.serve_forever()
@@ -436,3 +458,4 @@ def run_server():
 
 if __name__ == "__main__":
     run_server()
+
