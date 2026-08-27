@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-08-27 08:28 [saved]
+Goal: Mark YouTube transcript extraction and Syncthing Obsidian tasks as Done in tasks.md.
+
+Decisions:
+- Moved YouTube transcript extraction to `## Done` (clarified as standalone direct ingestion into achiMem knowledge without Asa dependency).
+- Moved Syncthing real-time sync research/setup to `## Done` (configured continuous sync between Achibuntu and MacBook Air for Obsidian vaults).
+- Fixed all `file:///` markdown links across `tasks.md` and `research.md` to conform to the Tailscale web viewer link standard (`http://100.106.210.38:8999/...`).
+- Updated `AGENTS.md` and `.agentrules` to note dynamic adaptability of `/tasks` semantic categories to active workstreams.
+
+Rejected:
+- Rigidly freezing category names when active workstream domains shift.
+
+Open:
+- None.
+
 ## 2026-08-27 08:25 [saved]
 Goal: Lock in structured /tasks format preference across AGENTS.md, .agentrules, and user memory.
 

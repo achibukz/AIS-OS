@@ -15,12 +15,7 @@ Read `references/3ms-framework.md` once. It's how Aki thinks about AI work. Mind
 - `/level-up` — Weekly 3Ms interview. Find one automation, scope it, ship it. One per week.
 - `/cron-telegram` — Wire a new scheduled job on achibuntu that reports to Telegram. Use it
   whenever Aki asks for something to run on a schedule and reach his phone.
-- `/tasks` — Surface and review active tasks from `tasks.md` using the structured categorized format:
-  1. 🔥 **Immediate Deadlines & Today** (grouped by date/urgency)
-  2. 🎓 **DLSU Academics & schoolMem**
-  3. 💼 **Career, ING Onboarding & Personal Finances**
-  4. 🛠️ **Systems & Engineering (achiOS / Asa / achiMem)**
-  Format strictly with `• ☐ **Title:** details (!priority, @date)` items, clean line spacing / divider lines (`---`), hashtags stripped, and all referenced markdown files as clickable Tailscale web viewer links (`http://100.106.210.38:8999/...`).
+- `/tasks` — Surface and review active tasks from `tasks.md` using clean categorized semantic groupings (categories adapt dynamically to active workstreams — e.g. Immediate Deadlines, Academics, Career/Finances, Systems/Engineering). Format strictly with `• ☐ **Title:** details (!priority, @date)` items, clean line spacing / divider lines (`---`), hashtags stripped, and all referenced markdown files as clickable Tailscale web viewer links (`http://100.106.210.38:8999/...`).
 
 ## Where things live
 
