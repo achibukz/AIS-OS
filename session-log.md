@@ -9,8 +9,10 @@ Decisions:
 - Restarted `achi-agy.service` and started `tmux -L achiagy-hub` with all 8 topic windows (`daemon`, `general`, `atlas`, `schoolmem`, `achimem`, `aea`, `luna`, `aurora`).
 - Verified live polling logs to confirm the active `SecretRedactingFilter` redacts outgoing Telegram API URLs to `bot[redacted]`.
 - Reconciled [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md): moved achiOS Hub implementation, Ticket #22 (streaming timeouts), Ticket #23 (milestones), and Ticket #14/roadmap creation to `## Done`; added active task for executing open roadmap tickets.
+- Added active task to upgrade Claude Code session kick routines (`kick_claude_session.sh` / `sessionclaude` skill) to use updated prompt templates and dispatch email notifications via achiOS notification pipeline upon session initialization.
 
 Open:
+- Upgrade Claude Code session kick routines and integrate email notification dispatch.
 - Run an end-to-end PR code review test with Luna in thread 531, or proceed with Ticket #24 / #1 / #7.
 
 ## 2026-08-28 04:00 [saved]
