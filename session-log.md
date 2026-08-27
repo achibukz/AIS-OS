@@ -1,5 +1,17 @@
 # Session Log
 
+## 2026-08-27 18:35 [saved]
+Goal: Extend Unslop rules into global Antigravity configuration files.
+
+Decisions:
+- Appended strict Unslop rules to `~/.gemini/config/AGENTS.md` and `~/.gemini/config/GEMINI.md` to enforce anti-AI writing across all Antigravity CLI and IDE sessions globally.
+
+Rejected:
+- None.
+
+Open:
+- None.
+
 ## 2026-08-27 18:31 [saved]
 Goal: Enforce Unslop rules across voice.md, achiMem voice, AGENTS.md, and user memory.
 
