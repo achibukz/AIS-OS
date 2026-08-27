@@ -4,13 +4,13 @@
 Goal: Audit Asa research runtime failure modes and log plan for automated Muses re-run loop upon high Althea unsupported claim rates.
 
 Decisions:
-- Audited two runtime failure modes from the Whisper Flow research run:
+- Authored comprehensive audit report in [2026-08-28-asa-research-failure-modes-and-retry-loop-audit.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-28-asa-research-failure-modes-and-retry-loop-audit.md) detailing two runtime failure modes from the Whisper Flow research run:
   1. `asa status` crashed completely (`FileNotFoundError: meta.json`) when non-run subdirectories (`extracted_responses/`, `extracted_texts/`) were present in `~/.local/share/asa/runs/` because `sidecar.py` lacked defensive checks for missing metadata.
-  2. High unsupported/contradicted claim rate in Althea (14 unsupported + 3 contradicted out of 23 = ~74%) caused by Muses citing marketing landing pages without explicit technical assertions in raw HTML.
-- Added active task to [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) for Claude Code to author an audit and implementation plan to: (1) patch the `asa status` crash, and (2) add an automated Muses re-query/retry loop when unsupported claims exceed threshold (70-80%).
+  2. High unsupported/contradicted claim rate in Althea (14 unsupported + 3 contradicted out of 23 = ~74%) caused by Muses citing marketing landing pages without explicit technical assertions in raw HTML, domain hallucination (`openwhisper.com`), composite claims, and numerical approximations.
+- Added active task to [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) for Claude Code to author an implementation plan to: (1) patch the `asa status` crash, (2) enforce primary-source constraints in `muses.md`, and (3) add an automated Muses re-query/retry loop when unsupported claims exceed threshold (70-80%).
 
 Open:
-- Claude Code authoring the audit report and implementation plan for the Asa fixes.
+- Claude Code executing the plan to patch `asa/sidecar.py`, `asa/agents/muses.md`, and `asa/workflows/research.md`.
 
 ## 2026-08-28 03:43 [saved]
 Goal: Dispatch Asa STORM multi-lens research on free and open-source alternatives to Whisper Flow (Wispr Flow).
