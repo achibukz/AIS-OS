@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-08-27 — achiAgy Streaming Pipe Inactivity Timeout & Keepalive Architecture (D39–D43)
+
+**Decision:** Architected the streaming pipe inactivity watchdog, heartbeat ticks, and milestone progress streaming in `achiAgy` per [2026-08-27-streaming-inactivity-timeout-and-keepalive-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/2026-08-27-streaming-inactivity-timeout-and-keepalive-plan.md). Features a 600s configurable stream idle watchdog (`ACHIAGY_STREAM_IDLE_TIMEOUT`), periodic 15s internal `heartbeat` AgentEvents to keep event loops alive during silent background task execution, live intermediate milestone streaming to Telegram in `src/bot.py`, and orchestrator status polling patterns (`asa status` every 30s).
+
+**Why:** Prevents premature `⚠️ Execution Error: timeout waiting for response` failures during long multi-agent research runs (such as `asa` STORM workflows) where detached workers run silently in the background on disk while the top-level agent awaits completion.
+
+**Alternatives considered:** Modifying detached `asa` worker processes to write fake stdout events (rejected to maintain clean worker isolation) and relying on client reconnection without server keepalives (rejected because it terminates the active Telegram turn with an error).
+
+**Owner:** Aki.
+
 ## 2026-08-27 — Centralized Documents & Media Store Architecture (D34–D38)
 
 **Decision:** Designed a centralized, non-markdown document repository at `~/Documents/Files/` synced via a dedicated Syncthing folder (`achi-files`) across Achibuntu and AchiBook Air per [2026-08-27-centralized-documents-and-media-store-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-27-centralized-documents-and-media-store-plan.md). Features domain-aligned taxonomy (`personal/{health,finance,legal}`, `academic/<course>`, `career/<company>`), ISO date-prefixed file naming (`YYYY-MM-DD-descriptor.ext`), Syncthing-only storage (no Git repository or Git LFS bloat), clean retirement/gitignoring of `raw/` in `achiMem` and `schoolMem`, and dual referencing via Tailscale web viewer links (`http://100.106.210.38:8999/Documents/Files/...`) and normalized filesystem paths.

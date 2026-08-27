@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-08-27 23:20 [saved]
+Goal: Clarify streaming pipe inactivity timeout root cause and author coherent ticket/plan for achiAgy keepalive architecture.
+
+Decisions:
+- Verified research audit logs ([2026-08-24-hermes-research-and-orchestrator-audit.md](http://100.106.210.38:8999/Code/GitHub/asa/docs/reports/2026-08-24-hermes-research-and-orchestrator-audit.md)) confirming `asa` workers ran without crashing or timing out, and that the failure occurred in `achiAgy`'s streaming pipe during silent idle waits on background tasks.
+- Recorded architectural decision in [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
+- Updated [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) to have Claude Code write coherent tickets and implementation plans for: (1) fixing `achiAgy` streaming pipe inactivity timeouts during long background runs (!high, @2026-08-27), and (2) pushing intermediate orchestrator milestone summaries to Telegram in `achiAgy/src/bot.py` (!high, @2026-08-27).
+
+Rejected:
+- Framing the issue as an internal `asa` worker bug (rejected because workers ran healthily to completion on disk).
+- Relying purely on client reconnections without keepalives (rejected because it terminates active Telegram turns with error messages).
+
+Open:
+- Claude Code authoring tickets and executing implementation plans for `achiAgy` streaming watchdog, keepalive architecture, and intermediate Telegram milestone streaming.
+
 ## 2026-08-27 22:55 [saved]
 Goal: Plan and architect Centralized Documents & Media Store (`~/Documents/Files/`) via /grill-me.
 

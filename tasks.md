@@ -35,8 +35,8 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Build Google Sheets Schedule Planner skill for Claude Code / achiOS based on Hermes OAuth and Sheets v4 API spec in [2026-08-24-google-sheets-schedule-planner-skill-spec.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-24-google-sheets-schedule-planner-skill-spec.md) #skills #automation #achios !high @2026-08-27
 - [ ] Audit Hermes research retrospective and orchestrator findings with Claude Code in asa [2026-08-24-hermes-research-and-orchestrator-audit.md](http://100.106.210.38:8999/Code/GitHub/asa/docs/reports/2026-08-24-hermes-research-and-orchestrator-audit.md) #asa #audit !high @2026-08-27
 - [ ] Benchmark Althea fact-checking on gemini-3.1-pro-high vs gemini-3.7-flash-high across claim granularity, latency, and tool fidelity in asa #asa #eval #benchmark !med @2026-08-27
-- [ ] Implement active heartbeat polling loop in asa orchestrator to prevent streaming inactivity timeouts #asa #arch !high @2026-08-27
-- [ ] Update achiAgy/src/bot.py to push intermediate orchestrator milestone summaries to Telegram during long multi-agent runs #achiagy #telegram !med @2026-08-27
+- [ ] Write ticket and plan with Claude Code to fix achiAgy streaming pipe inactivity timeouts during long background runs (ensuring coherence with existing tickets) #achiagy #streaming #arch !high @2026-08-27
+- [ ] Write ticket and plan with Claude Code to push intermediate orchestrator milestone summaries to Telegram in achiAgy/src/bot.py during long multi-agent runs #achiagy #telegram !high @2026-08-27
 - [ ] Execute the new implementation plan created with Claude Code #asa #arch !med @2026-08-27
 - [ ] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-08-29
 - [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
