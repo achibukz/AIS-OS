@@ -1,5 +1,19 @@
 # Session Log
 
+## 2026-08-27 22:25 [saved]
+Goal: Archive prescription image in achiMem vault and create structured health wiki tracking page.
+
+Decisions:
+- Archived prescription image to `~/Documents/Obsidian/achiMem/raw/prescriptions/2021-07-07-dr-arthur-roman-prescription.jpg`.
+- Created structured wiki index in [prescriptions.md](http://100.106.210.38:8999/Documents/Obsidian/achiMem/wiki/personal/health/prescriptions.md) capturing doctor credentials (Dr. Arthur Dessi E. Roman), patient metadata, and exact medication instructions (Levocetirizine + Montelukast, Clobetasol).
+- Rebuilt wiki index (`scripts/build_index.py`) and committed/pushed changes to `achiMem` remote origin.
+
+Rejected:
+- Storing unorganized images in temporary attachment cache.
+
+Open:
+- None.
+
 ## 2026-08-27 22:22 [saved]
 Goal: Implement Outbound Server Media and Document Dispatch in achiAgy.
 
