@@ -11,9 +11,22 @@ Decisions:
 - Added bypass mechanisms for `SKIP_SESSION_CHECK=1` and `--no-verify`.
 - Created idempotent installer script in `scripts/install_git_hooks.sh` that targets any repo path.
 - Added unit tests in `tests/test_pre_commit_hook.py` (17 tests) covering clean runs, doc passes, stale date rejections, valid date accepts, pattern checks, installer idempotency, and bypass flags.
+- Merged AIS-OS#2 (Universal git pre-commit hook) to `main`.
+- Verified and synced workspace worktrees across all repositories:
+  - `AIS-OS`: On `main` at `f954804`.
+  - `achiAgy`: On `master` at `d660573` (PR #27 for Ticket #26 merged).
+  - `review/achiAgy`: On `master` at `d660573`.
+  - `schoolMem`: On `main` at `2d66bba`.
+  - `asa`: On `phase-1.5-verification` at `65764a2`.
+- Diagnosed and fixed broken `file:///` links emitted by Luna and Aea:
+  1. Updated `achiAgy/src/formatters.py` to mechanically rewrite `file:///home/achibukz/...` and `file://~/...` to Tailscale web viewer links (`http://100.106.210.38:8999/...`) in Telegram HTML output.
+  2. Updated `achiAgy/AGENTS.md` and all agent personas (`agents/luna.md`, `agents/aea.md`, `agents/aurora.md`, `agents/atlas.md`) with explicit Tailscale Markdown (.md) Web Viewer Linking Rules banning `file:///` URLs.
+  3. Added unit tests in `tests/test_bot_routing.py` (all 200 tests passing in `achiAgy`).
+  4. Restarted bot daemons.
 
 Open:
-- Implement achiAgy#26 daemon post-turn session stop hook continuation for unlogged edits.
+- Continue executing open roadmap tickets in achiAgy (#24, #1, #7, #4, #9).
+- Upgrade Claude Code session kick routines and integrate email notification dispatch.
 
 ## 2026-08-28 06:15 [saved]
 Goal: Restart achiAgy bot daemons, scrub token leaks from disk logs, verify live polling state, and reconcile task register.
