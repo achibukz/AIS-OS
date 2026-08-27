@@ -1,5 +1,19 @@
 # Session Log
 
+## 2026-08-27 08:25 [saved]
+Goal: Lock in structured /tasks format preference across AGENTS.md, .agentrules, and user memory.
+
+Decisions:
+- Locked in the 4-category structured `/tasks` layout: (1) 🔥 **Immediate Deadlines & Today**, (2) 🎓 **DLSU Academics & schoolMem**, (3) 💼 **Career, ING Onboarding & Personal Finances**, and (4) 🛠️ **Systems & Engineering (achiOS / Asa / achiMem)**.
+- Enforced `• ☐ **Title:** details (!priority, @date)` checklist item format with stripped hashtags, section dividers (`---`), and clickable Tailscale web viewer links (`http://100.106.210.38:8999/...`).
+- Updated `AGENTS.md` and `.agentrules`.
+
+Rejected:
+- Flat unorganized task dumps or unstyled bullet lists.
+
+Open:
+- None.
+
 ## 2026-08-27 08:21 [saved]
 Goal: Revert hardcoded 244% default zoom to clean 100% fit baseline for Reset and initial load.
 

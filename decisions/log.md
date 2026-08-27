@@ -600,3 +600,13 @@ the code.
 **Alternatives considered:** Fixed 244% scale (too zoomed in).
 
 **Owner:** Aki.
+
+## 2026-08-27 — /tasks Structured Layout & Semantic Categorization Lock
+
+**Decision:** Standardized and locked the `/tasks` query output specification across `AGENTS.md`, `.agentrules`, and `USER.md` into 4 strict semantic categories: (1) 🔥 **Immediate Deadlines & Today**, (2) 🎓 **DLSU Academics & schoolMem**, (3) 💼 **Career, ING Onboarding & Personal Finances**, and (4) 🛠️ **Systems & Engineering (achiOS / Asa / achiMem)**.
+
+**Why:** Consistent, scannable, and clean visual grouping with `• ☐ **Title:** details (!priority, @date)`, section dividers (`---`), stripped hashtags, and clickable Tailscale web viewer links (`http://100.106.210.38:8999/...`) provides maximum clarity across mobile Telegram and desktop pair-programming sessions.
+
+**Alternatives considered:** Flat chronological lists, standard unformatted markdown checkboxes without section grouping.
+
+**Owner:** Aki.
