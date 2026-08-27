@@ -550,3 +550,53 @@ the code.
 **Alternatives considered:** Running under gunicorn/uvicorn (unnecessary dependency overhead when stdlib `ThreadingHTTPServer` handles concurrent mobile requests perfectly).
 
 **Owner:** Aki.
+
+## 2026-08-27 — achi-viewer Mermaid Diagram Rendering Engine Fix
+
+**Decision:** Upgraded `scripts/achi_viewer.py` Markdown parsing engine from deprecated `marked.setOptions({ highlight })` to `marked.use({ renderer: { code(token) } })`, capturing `mermaid` code fences directly into `<pre class="mermaid">${code}</pre>`, added dedicated `.mermaid` responsive dark container styling, and configured `mermaid.run()` on DOM mount.
+
+**Why:** Modern Marked.js (v5+) ignores legacy `highlight` option hooks in `setOptions`, preventing code blocks tagged with ````mermaid` from generating `.mermaid` elements. Without `.mermaid` nodes, Mermaid.js never hydrated the raw text into visual vector flowcharts.
+
+**Alternatives considered:** Client-side regex substitution (brittle on nested code blocks), server-side SVG pre-rendering (requires headless Chromium/puppeteer dependency on Achibuntu).
+
+**Owner:** Aki.
+
+## 2026-08-27 — achi-viewer Interactive Diagram Zoom, Pan & Fullscreen Modal
+
+**Decision:** Integrated `@panzoom/panzoom` into `scripts/achi_viewer.py`, added an interactive floating toolbar (`➕ In`, `➖ Out`, `🔄 Reset`, `⛶ Fullscreen`) to every Mermaid diagram card, enabled pinch-to-zoom and drag-to-pan, removed aggressive SVG downscaling constraints (`maxWidth: none`), and added a high-magnification fullscreen lightbox overlay.
+
+**Why:** Large, complex architectural diagrams (such as multi-subgraph Telegram Supergroup routing) scale down to fit container width, rendering labels unreadably small on mobile and narrow desktop views. Interactive pan/zoom and fullscreen inspection allow 1-tap magnification up to 10x with zero vector degradation.
+
+**Alternatives considered:** Static CSS horizontal scrolling without zoom controls (cumbersome on mobile touchscreens), opening SVG in separate browser tab (breaks in-app reading workflow).
+
+**Owner:** Aki.
+
+## 2026-08-27 — achi-viewer Native PointerEvents Drag & In-Place Fullscreen Mode
+
+**Decision:** Replaced external Panzoom library with a native PointerEvents engine using `setPointerCapture` on `.mermaid-viewport`, enabled multi-touch pinch-to-zoom and mouse wheel scaling, added live zoom percentage indicators, and converted fullscreen mode to an in-place CSS overlay (`.fullscreen-mode`).
+
+**Why:** External Panzoom caused dragging deadzones on SVGs and its containment rules blocked panning. Cloning Mermaid SVGs into a modal duplicated element IDs, breaking arrowheads and marker definitions. In-place CSS fullscreen expansion preserves the original SVG DOM, guaranteeing zero ID collisions and 100% responsive gesture tracking.
+
+**Alternatives considered:** Fixing external Panzoom configuration (still suffered from SVG transparent click deadzones), iframe isolation (unnecessary overhead).
+
+**Owner:** Aki.
+
+## 2026-08-27 — achi-viewer Native ViewBox Coordinate Scale Calibration
+
+**Decision:** Calibrated `scripts/achi_viewer.py` to extract the native coordinate dimensions from each Mermaid SVG (`viewBox.baseVal.width`) upon render and set `svg.style.width = nativeWidth + 'px'`, making `100%` scale represent the true 1:1 readable baseline.
+
+**Why:** Without an explicit CSS width, the browser defaulted wide Mermaid SVGs (1391px viewBox) to narrow container widths (~350px-500px), causing the 14px node text to shrink to ~3-5px micro-text at `100%`. Binding the SVG pixel width to its native viewBox width ensures that `100%` is immediately rendered at the true, crisp, comfortable reading scale (matching the 244% zoomed appearance).
+
+**Alternatives considered:** Manual zoom multipliers on load (clunky percentage badges).
+
+**Owner:** Aki.
+
+## 2026-08-27 — achi-viewer 100% Standard Scale Baseline
+
+**Decision:** Reverted initial and reset zoom scale in `scripts/achi_viewer.py` to `1.0` (`100%`), keeping diagrams framed cleanly within the viewport upon initial load and reset.
+
+**Why:** Hardcoding a 244% zoom on reset caused excessive magnification where only 1-2 nodes filled the entire card viewport. A clean 100% baseline allows users to see the diagram structure immediately and zoom in step-by-step (`➕ In` / pinch) when desired.
+
+**Alternatives considered:** Fixed 244% scale (too zoomed in).
+
+**Owner:** Aki.

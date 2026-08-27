@@ -1,5 +1,83 @@
 # Session Log
 
+## 2026-08-27 08:21 [saved]
+Goal: Revert hardcoded 244% default zoom to clean 100% fit baseline for Reset and initial load.
+
+Decisions:
+- Reverted initial and reset scale to `1.0` (`100%`) in `scripts/achi_viewer.py`.
+- Tapping `🔄 Reset` returns to `100%` centered overview.
+- User can zoom in step-by-step (`➕ In`) or pinch-to-zoom as needed.
+- Restarted `achi-viewer.service`.
+
+Rejected:
+- Hardcoding `244%` as the default reset zoom (oversized and caused excessive close-up framing).
+
+Open:
+- None.
+
+## 2026-08-27 08:18 [saved]
+Goal: Calibrate default Mermaid diagram scale to true 1:1 native viewBox dimensions.
+
+Decisions:
+- Extracted native `viewBox` coordinate dimensions from Mermaid SVGs on render and set `svg.style.width = nativeWidth + 'px'`.
+- Ensured `100%` scale represents the true 1:1 coordinate scale where diagram text matches standard readable body font size (the exact comfortable scale previously at 244%).
+- Restarted `achi-viewer.service`.
+
+Rejected:
+- Leaving SVGs without explicit width (which forced browser default ~300px downscaling on wide diagrams).
+
+Open:
+- None.
+
+## 2026-08-27 08:16 [saved]
+Goal: Fix flowchart dragging, button interactions, and fullscreen mode in achi-viewer.
+
+Decisions:
+- Replaced buggy external Panzoom library with a native PointerEvents engine using `setPointerCapture` for buttery-smooth mouse and touch dragging across the entire viewport.
+- Implemented in-place CSS fullscreen expansion (`.fullscreen-mode`) directly on `.mermaid-card` to eliminate SVG cloning, duplicate ID conflicts, and broken arrow markers.
+- Added live zoom percentage badge (`100%`, `125%`...) and verified direct zoom step buttons (`➕ In`, `➖ Out`, `🔄 Reset`, `⛶ Fullscreen` / `✕ Exit`).
+- Added 2-finger multi-touch pinch-to-zoom and mouse-wheel zoom.
+- Restarted `achi-viewer.service`.
+
+Rejected:
+- Cloned SVG modals (caused duplicate ID conflicts and broken markers in complex Mermaid SVGs).
+- External Panzoom library containment constraints that blocked panning on SVGs.
+
+Open:
+- None.
+
+## 2026-08-27 08:15 [saved]
+Goal: Add interactive zoom, pan, and fullscreen lightbox for Mermaid flowcharts in achi-viewer.
+
+Decisions:
+- Integrated `@panzoom/panzoom` (4.5.1) into `scripts/achi_viewer.py`.
+- Added interactive `.mermaid-card` toolbar with `➕ In`, `➖ Out`, `🔄 Reset`, and `⛶ Fullscreen` controls.
+- Enabled native pan and pinch-to-zoom on mobile, mouse-wheel zoom (with Ctrl/Cmd or inside modal), and drag-to-pan.
+- Added full-screen `#mermaid-modal` lightbox with high-magnification panzoom (up to 10x) and escape key dismissal.
+- Set SVG `maxWidth: none` in viewports to prevent aggressive downscaling of wide multi-subgraph flowcharts.
+- Restarted `achi-viewer.service`.
+
+Rejected:
+- Static image exports or server-side rendering (loses interactive client-side vector fidelity).
+
+Open:
+- None.
+
+## 2026-08-27 08:12 [saved]
+Goal: Fix Mermaid flowchart/diagram rendering in achi-viewer on Tailscale web viewer (port 8999).
+
+Decisions:
+- Replaced deprecated `marked.setOptions({ highlight })` in `scripts/achi_viewer.py` with `marked.use({ renderer: { code(token) ... } })`.
+- Routed `lang === 'mermaid'` to `<pre class="mermaid">${code}</pre>` and invoked `mermaid.run({ nodes: ... })` with dark theme and loose security.
+- Added responsive CSS styling for `.mermaid` container (dark background, border-radius, centering, horizontal auto-scroll).
+- Saved `systemd/achi-viewer.service` to repo tracking and restarted `achi-viewer.service`.
+
+Rejected:
+- Leaving marked.js with deprecated options that failed to emit `.mermaid` containers.
+
+Open:
+- None.
+
 ## 2026-08-27 08:05 [saved]
 Goal: Diagnose and fix achi-viewer hanging / connection issues on port 8999.
 

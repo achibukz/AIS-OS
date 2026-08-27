@@ -118,6 +118,151 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       border: 1px solid var(--border-color);
       border-radius: 8px;
     }}
+    
+    /* Mermaid Card & Viewport */
+    .mermaid-card {{
+      position: relative;
+      background: #161b22;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin: 24px 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }}
+    .mermaid-toolbar {{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #1c2128;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 12px;
+      color: #8b949e;
+      user-select: none;
+      -webkit-user-select: none;
+      z-index: 10;
+    }}
+    .mermaid-title {{
+      font-weight: 600;
+      color: #c9d1d9;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }}
+    .mermaid-actions {{
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }}
+    .zoom-level {{
+      font-family: monospace;
+      font-size: 11px;
+      color: #8b949e;
+      min-width: 42px;
+      text-align: right;
+      margin-right: 4px;
+    }}
+    .zoom-btn {{
+      background: #21262d;
+      color: #c9d1d9;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }}
+    .zoom-btn:hover {{
+      background: #30363d;
+      color: #ffffff;
+      border-color: #8b949e;
+    }}
+    .zoom-btn:active {{
+      transform: scale(0.96);
+    }}
+    .mermaid-viewport {{
+      position: relative;
+      width: 100%;
+      min-height: 380px;
+      max-height: 600px;
+      overflow: hidden;
+      background: #0d1117;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }}
+    .mermaid-viewport:active, .mermaid-viewport.dragging {{
+      cursor: grabbing;
+    }}
+    .mermaid-content {{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform-origin: center center;
+      will-change: transform;
+      pointer-events: auto;
+    }}
+    .mermaid-content .mermaid {{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 24px;
+      background: transparent !important;
+      border: none !important;
+    }}
+    .mermaid-content svg {{
+      max-width: none !important;
+      height: auto !important;
+      display: block;
+    }}
+
+    /* Seamless In-Place Fullscreen Mode */
+    .mermaid-card.fullscreen-mode {{
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: none !important;
+      max-height: none !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
+      border: none !important;
+      z-index: 999999 !important;
+      background: #0d1117 !important;
+    }}
+    .mermaid-card.fullscreen-mode .mermaid-toolbar {{
+      padding: 12px 18px;
+      background: #161b22;
+      border-bottom: 1px solid var(--border-color);
+    }}
+    .mermaid-card.fullscreen-mode .mermaid-viewport {{
+      flex: 1 !important;
+      height: 100% !important;
+      max-height: none !important;
+      min-height: 0 !important;
+    }}
+    .mermaid-card.fullscreen-mode .fs-btn {{
+      background: #b62324 !important;
+      color: #fff !important;
+      border-color: #b62324 !important;
+    }}
+
     .dir-list {{
       list-style: none;
       padding: 0;
@@ -170,7 +315,157 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   </main>
 
   <script>
-    mermaid.initialize({{ startOnLoad: false, theme: 'dark' }});
+    mermaid.initialize({{
+      startOnLoad: false,
+      theme: 'dark',
+      securityLevel: 'loose',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+    }});
+
+    const diagramStates = {{}};
+
+    function getCardState(cardId) {{
+      if (!diagramStates[cardId]) {{
+        diagramStates[cardId] = {{
+          scale: 1.0,
+          x: 0,
+          y: 0,
+          pointers: new Map(),
+          prevDiff: -1,
+          isDragging: false,
+          startX: 0,
+          startY: 0
+        }};
+      }}
+      return diagramStates[cardId];
+    }}
+
+    function updateTransform(cardId, animate) {{
+      const state = getCardState(cardId);
+      const card = document.getElementById(cardId);
+      if (!card) return;
+      const content = card.querySelector('.mermaid-content');
+      const zoomLvl = card.querySelector('.zoom-level');
+      if (content) {{
+        content.style.transition = animate ? 'transform 0.18s ease-out' : 'none';
+        content.style.transform = `translate3d(${{state.x}}px, ${{state.y}}px, 0) scale(${{state.scale}})`;
+      }}
+      if (zoomLvl) {{
+        zoomLvl.textContent = `${{Math.round(state.scale * 100)}}%`;
+      }}
+    }}
+
+    function handleZoom(cardId, factor) {{
+      const state = getCardState(cardId);
+      const newScale = Math.min(8.0, Math.max(0.2, state.scale * factor));
+      state.scale = Number(newScale.toFixed(3));
+      updateTransform(cardId, true);
+    }}
+
+    function handleReset(cardId) {{
+      const state = getCardState(cardId);
+      state.scale = 1.0;
+      state.x = 0;
+      state.y = 0;
+      updateTransform(cardId, true);
+    }}
+
+    function toggleFullscreen(cardId) {{
+      const card = document.getElementById(cardId);
+      if (!card) return;
+      const isFs = card.classList.toggle('fullscreen-mode');
+      const fsBtn = card.querySelector('.fs-btn');
+      if (fsBtn) {{
+        fsBtn.innerHTML = isFs ? '✕ Exit' : '⛶ Fullscreen';
+      }}
+      updateTransform(cardId, true);
+    }}
+
+    window.addEventListener('keydown', (e) => {{
+      if (e.key === 'Escape') {{
+        document.querySelectorAll('.mermaid-card.fullscreen-mode').forEach(card => {{
+          toggleFullscreen(card.id);
+        }});
+      }}
+    }});
+
+    function initDiagramInteractions(card) {{
+      const cardId = card.id;
+      const viewport = card.querySelector('.mermaid-viewport');
+      if (!viewport) return;
+      const state = getCardState(cardId);
+
+      // Apply initial 100% scale
+      updateTransform(cardId, false);
+
+      viewport.addEventListener('pointerdown', (e) => {{
+        if (e.button !== 0 && e.pointerType === 'mouse') return;
+        viewport.setPointerCapture(e.pointerId);
+        state.pointers.set(e.pointerId, {{ x: e.clientX, y: e.clientY }});
+
+        if (state.pointers.size === 1) {{
+          state.isDragging = true;
+          state.startX = e.clientX - state.x;
+          state.startY = e.clientY - state.y;
+          viewport.classList.add('dragging');
+        }} else if (state.pointers.size === 2) {{
+          state.isDragging = false;
+          const pts = Array.from(state.pointers.values());
+          state.prevDiff = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        }}
+      }});
+
+      viewport.addEventListener('pointermove', (e) => {{
+        if (!state.pointers.has(e.pointerId)) return;
+        state.pointers.set(e.pointerId, {{ x: e.clientX, y: e.clientY }});
+
+        if (state.pointers.size === 1 && state.isDragging) {{
+          state.x = e.clientX - state.startX;
+          state.y = e.clientY - state.startY;
+          updateTransform(cardId, false);
+        }} else if (state.pointers.size === 2) {{
+          const pts = Array.from(state.pointers.values());
+          const curDiff = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+          if (state.prevDiff > 0) {{
+            const factor = curDiff / state.prevDiff;
+            state.scale = Math.min(8.0, Math.max(0.2, state.scale * factor));
+            updateTransform(cardId, false);
+          }}
+          state.prevDiff = curDiff;
+        }}
+      }});
+
+      function onPointerEnd(e) {{
+        state.pointers.delete(e.pointerId);
+        try {{
+          viewport.releasePointerCapture(e.pointerId);
+        }} catch (err) {{}}
+
+        if (state.pointers.size === 0) {{
+          state.isDragging = false;
+          state.prevDiff = -1;
+          viewport.classList.remove('dragging');
+        }} else if (state.pointers.size === 1) {{
+          state.isDragging = true;
+          const pt = Array.from(state.pointers.values())[0];
+          state.startX = pt.x - state.x;
+          state.startY = pt.y - state.y;
+        }}
+      }}
+
+      viewport.addEventListener('pointerup', onPointerEnd);
+      viewport.addEventListener('pointercancel', onPointerEnd);
+
+      viewport.addEventListener('wheel', (e) => {{
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? 1.15 : 0.85;
+        handleZoom(cardId, factor);
+      }}, {{ passive: false }});
+
+      viewport.addEventListener('dblclick', (e) => {{
+        handleReset(cardId);
+      }});
+    }}
 
     // Render client-side Markdown if raw content is present
     const rawContentEl = document.getElementById('raw-markdown-content');
@@ -180,25 +475,84 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       // Auto-convert [[wikilinks]] to clickable links
       text = text.replace(/\\[\\[([a-zA-Z0-9_\\-\\.\\s\\/]+)(?:\\|([^\\]]+))?\\]\\]/g, function(match, target, alias) {{
         let linkText = alias || target;
-        let cleanTarget = target.trim();
         return `<span class="wiki-link">[[${{linkText}}]]</span>`;
       }});
 
-      marked.setOptions({{
-        highlight: function(code, lang) {{
+      let diagCount = 0;
+      const renderer = {{
+        code(token) {{
+          const code = typeof token === 'object' ? token.text : token;
+          const lang = (typeof token === 'object' ? token.lang : arguments[1]) || '';
+          
           if (lang === 'mermaid') {{
-            return `<div class="mermaid">${{code}}</div>`;
+            diagCount++;
+            const id = 'mermaid-card-' + diagCount;
+            return `
+              <div class="mermaid-card" id="${{id}}">
+                <div class="mermaid-toolbar">
+                  <span class="mermaid-title">📊 Flowchart</span>
+                  <div class="mermaid-actions">
+                    <span class="zoom-level">100%</span>
+                    <button class="zoom-btn" onclick="handleZoom('${{id}}', 1.25)" title="Zoom In">➕ In</button>
+                    <button class="zoom-btn" onclick="handleZoom('${{id}}', 0.8)" title="Zoom Out">➖ Out</button>
+                    <button class="zoom-btn" onclick="handleReset('${{id}}')" title="Reset View">🔄 Reset</button>
+                    <button class="zoom-btn fs-btn" onclick="toggleFullscreen('${{id}}')" title="Toggle Fullscreen">⛶ Fullscreen</button>
+                  </div>
+                </div>
+                <div class="mermaid-viewport" id="vp-${{id}}">
+                  <div class="mermaid-content">
+                    <div class="mermaid">${{code}}</div>
+                  </div>
+                </div>
+              </div>
+            `;
           }}
-          const language = highlight.getLanguage(lang) ? lang : 'plaintext';
-          return highlight.highlight(code, {{ language }}).value;
-        }},
-        gfm: true,
-        breaks: true
-      }});
+          
+          const validLang = (typeof hljs !== 'undefined' && hljs.getLanguage(lang)) ? lang : 'plaintext';
+          if (typeof hljs !== 'undefined') {{
+            try {{
+              const highlighted = hljs.highlight(code, {{ language: validLang }}).value;
+              return `<pre><code class="hljs language-${{validLang}}">${{highlighted}}</code></pre>`;
+            }} catch (e) {{
+              // fallback
+            }}
+          }}
+          return `<pre><code class="language-${{lang}}">${{code}}</code></pre>`;
+        }}
+      }};
+
+      marked.use({{ renderer, gfm: true, breaks: true }});
 
       const outputEl = document.getElementById('rendered-content');
       outputEl.innerHTML = marked.parse(text);
-      mermaid.run();
+
+      if (window.mermaid) {{
+        mermaid.run({{
+          nodes: document.querySelectorAll('.mermaid')
+        }}).then(() => {{
+          document.querySelectorAll('.mermaid-card').forEach(card => {{
+            const svg = card.querySelector('.mermaid-viewport svg');
+            if (svg) {{
+              let nativeWidth = 0;
+              if (svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width > 0) {{
+                nativeWidth = svg.viewBox.baseVal.width;
+              }} else {{
+                const vb = svg.getAttribute('viewBox');
+                if (vb) {{
+                  const parts = vb.trim().split(/[\\s,]+/);
+                  if (parts.length === 4) nativeWidth = parseFloat(parts[2]);
+                }}
+              }}
+              if (nativeWidth > 0) {{
+                svg.style.width = nativeWidth + 'px';
+                svg.style.minWidth = nativeWidth + 'px';
+                svg.style.maxWidth = 'none';
+              }}
+            }}
+            initDiagramInteractions(card);
+          }});
+        }}).catch(err => console.warn('Mermaid rendering issue:', err));
+      }}
     }}
 
     function copyMarkdown() {{
