@@ -1,5 +1,22 @@
 # Session Log
 
+## 2026-08-27 22:18 [saved]
+Goal: Complete /grill-me design session for Outbound Server Media & Document Dispatch and append architecture to achiOS Hub plan.
+
+Decisions:
+- Settled 7-point design tree (D27–D33) for outbound media delivery: standard markdown image syntax (`![caption](<path>)`), text first / streamed delivery followed by trailing media messages, smart extension routing (`send_photo` for images, `send_document` for docs/PDFs).
+- Defined three-tier path normalization (absolute, tilde expansion, workspace relative) and security blacklist (`~/.ssh`, `~/.config/achios`, `~/.gnupg`, `~/.hermes`).
+- Standardized markdown image rewriting to Tailscale web viewer links (`http://100.106.210.38:8999/...`) in final text response.
+- Appended Section 12 (Outbound Server Media & Document Dispatch Architecture) and updated Section 4 / Section 10 in [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md).
+- Recorded architectural decision in [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
+
+Rejected:
+- Custom tag syntax `[send_photo: path]` (which would require prompt retraining).
+- Universal uncompressed document mode for raster photos.
+
+Open:
+- Implement Tasks 9–11 in `achiAgy` (media dispatcher parser, Tailscale link rewriter, and unit tests).
+
 ## 2026-08-27 21:30 [saved]
 Goal: Complete /grill-me design session for Cross-Topic Delegation and append architecture to achiOS Hub plan.
 

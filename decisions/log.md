@@ -20,6 +20,16 @@ Keep it terse. Future-you will thank present-you for capturing the *why*, not ju
 
 ---
 
+## 2026-08-27 — Outbound Server Media & Document Dispatch Architecture (D27–D33)
+
+**Decision:** Designed the outbound media and document dispatch pipeline in [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md). The daemon intercepts standard markdown image references (`![caption](<path>)`), resolves paths across three tiers (absolute, tilde expansion, workspace relative), validates against a security blacklist (`~/.ssh`, `~/.config/achios`, `~/.gnupg`, `~/.hermes`), dispatches images via `bot.send_photo()` or `bot.send_document()`, and rewrites markdown tags in the text message to clickable Tailscale web viewer links (`http://100.106.210.38:8999/...`).
+
+**Why:** Allows Aki to request stored documents and visual files (such as medical prescriptions, study diagrams, receipts, and PDFs) from his phone via Telegram and receive the actual image or document directly in the thread without manual file transfers.
+
+**Alternatives considered:** Custom tag syntax `[send_photo: path]` (rejected because standard markdown image syntax is model-native and requires zero custom prompting) and always-uncompressed document mode (rejected in favor of smart extension routing for instant mobile photo previews).
+
+**Owner:** Aki.
+
 ## 2026-08-27 — Cross-Topic Delegation & Multi-Agent Mesh Architecture (D19–D26)
 
 **Decision:** Designed cross-topic delegation protocol and multi-agent mesh architecture in [telegram-supergroup-hub-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md). Features a dual-hybrid trigger (`/delegate <topic> <task>` and `delegate_topic` tool), persistent thread session ingestion in `sessions.json`, non-blocking asynchronous dispatch with live target output streaming and origin completion receipts, shared `prompts/asa.md` subagent orchestration prompt mixin, and cycle/hop limits (`caller_chain`, `max_depth = 2`).
