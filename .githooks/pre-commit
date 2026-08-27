@@ -1,12 +1,96 @@
 #!/usr/bin/env bash
-# Git pre-commit hook to verify Tailscale web viewer links in markdown files
+# Git pre-commit hook to enforce session-log.md updates and link verification
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
+# 1. Optional Link verification if script exists in the repository
 if [ -f "$REPO_ROOT/scripts/verify_links.py" ]; then
     python3 "$REPO_ROOT/scripts/verify_links.py" "$REPO_ROOT/AGENTS.md" "$REPO_ROOT/CLAUDE.md" "$REPO_ROOT/.agentrules" || {
         echo "❌ Pre-commit link verification failed. Ensure all .md files use http://100.106.210.38:8999/<full_path>."
         exit 1
     }
 fi
+
+# 2. Check if session check is explicitly bypassed via environment variable
+if [ "${SKIP_SESSION_CHECK:-0}" = "1" ] || [ "${SKIP_SESSION_CHECK:-0}" = "true" ]; then
+    exit 0
+fi
+
+# 3. Inspect staged files
+STAGED_FILES=$(git diff --cached --name-only || true)
+if [ -z "$STAGED_FILES" ]; then
+    exit 0
+fi
+
+# Helper to identify significant code/config/agent files
+is_significant_file() {
+    local file="$1"
+    case "$file" in
+        *.py|*.ts|*.js|*.json|*.sh) return 0 ;;
+        *SKILL.md|*AGENTS.md) return 0 ;;
+        agents/*.md|*/agents/*.md) return 0 ;;
+        systemd/*|*/systemd/*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+SIGNIFICANT_STAGED=()
+SESSION_LOG_STAGED=0
+
+while IFS= read -r file; do
+    [ -z "$file" ] && continue
+    if [ "$file" = "session-log.md" ]; then
+        SESSION_LOG_STAGED=1
+    elif is_significant_file "$file"; then
+        SIGNIFICANT_STAGED+=("$file")
+    fi
+done <<< "$STAGED_FILES"
+
+# If no significant files are staged (e.g. only docs, tasks, notes), pass immediately
+if [ "${#SIGNIFICANT_STAGED[@]}" -eq 0 ]; then
+    exit 0
+fi
+
+# If significant files are staged, assert session-log.md is staged
+if [ "$SESSION_LOG_STAGED" -eq 0 ]; then
+    echo "❌ Pre-commit check failed: Significant code/config files staged without session-log.md."
+    echo ""
+    echo "Staged significant files:"
+    for file in "${SIGNIFICANT_STAGED[@]}"; do
+        echo "  - $file"
+    done
+    echo ""
+    echo "Required action:"
+    echo "  1. Update session-log.md with a new entry using the 4-section format:"
+    echo "     ## $(TZ="Asia/Manila" date +%Y-%m-%d) HH:MM [saved]"
+    echo "     Goal: <concise summary>"
+    echo "     Decisions:"
+    echo "     - <key decision or implementation details>"
+    echo "     Open:"
+    echo "     - <next steps>"
+    echo "  2. Stage session-log.md:"
+    echo "     git add session-log.md"
+    echo ""
+    echo "(To bypass in emergencies: SKIP_SESSION_CHECK=1 git commit, or git commit --no-verify)"
+    exit 1
+fi
+
+# Assert staged session-log.md has today's date in Manila timezone (Asia/Manila, UTC+8)
+TODAY_MANILA=$(TZ="Asia/Manila" date +%Y-%m-%d)
+STAGED_SESSION_LOG=$(git show :session-log.md 2>/dev/null || true)
+
+if ! echo "$STAGED_SESSION_LOG" | grep -Eq "^## +${TODAY_MANILA}.*\[saved\]"; then
+    echo "❌ Pre-commit check failed: Staged session-log.md lacks a [saved] entry for today (${TODAY_MANILA})."
+    echo ""
+    echo "Expected header format:"
+    echo "  ## ${TODAY_MANILA} HH:MM [saved]"
+    echo ""
+    echo "Please update session-log.md with today's [saved] entry and re-stage:"
+    echo "  git add session-log.md"
+    echo ""
+    echo "(To bypass in emergencies: SKIP_SESSION_CHECK=1 git commit, or git commit --no-verify)"
+    exit 1
+fi
+
+exit 0

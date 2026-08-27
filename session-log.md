@@ -14,6 +14,7 @@ Decisions:
   1. `achibukz/achiAgy#26`: Daemon post-turn session stop hook continuation for unlogged edits (recorded in [roadmap.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/roadmap.md)).
   2. `achibukz/AIS-OS#1`: Universal git pre-commit hook to enforce `session-log.md` updates on code changes.
 - Added active task to design and build a ticket-authoring skill / subagent (running on Gemini / Antigravity / Claude Sonnet) to create structured, unslop GitHub issues independently of Claude Opus.
+- Diagnosed and fixed Telegram HTML link formatting bug in `achiAgy/src/formatters.py`: normalized outer backtick-wrapped markdown links (`` `[text](url)` `` -> `<a href="url">text</a>`) so Tailscale web viewer links always render as clickable hyperlinks rather than raw code blocks in Telegram.
 
 Open:
 - Design and build the ticket-authoring skill / subagent.
