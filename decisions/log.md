@@ -20,6 +20,16 @@ Keep it terse. Future-you will thank present-you for capturing the *why*, not ju
 
 ---
 
+## 2026-08-27 — achiOS Hub Thread-Scoped Session & Persona Isolation
+
+**Decision:** Implemented composite session keying (`chat_id:thread_id`), topic persona router (`src/topic_router.py`), and dedicated topic prompts in `achiAgy` (`prompts/{admin,agi,schoolmem,achimem,aurora,ari}.md`). Model, mode, and effort configurations can now be altered per-thread without affecting other threads.
+
+**Why:** Aki requested dedicated context windows and independent model/mode controls between `#Admin` (infra/architecture) and `#General` (orchestration) in the Telegram Supergroup hub. Isolating conversation IDs and parameter settings per `message_thread_id` prevents context leakage and cross-topic disruption.
+
+**Alternatives considered:** Single global session shared across threads (rejected because turns and model overrides would clobber across topics).
+
+**Owner:** Aki.
+
 ## 2026-08-27 — Standardize session-log.md to Strict Reverse-Chronological Order
 
 **Decision:** Formally standardized [session-log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/session-log.md) to strict reverse-chronological order (newest first) and updated [AGENTS.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/AGENTS.md) and [.agentrules](http://100.106.210.38:8999/Code/GitHub/AIS-OS/.agentrules) to replace ambiguous "append" phrasing with explicit prepending under `# Session Log`.

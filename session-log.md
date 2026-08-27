@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-08-27 19:53 [saved]
+Goal: Implement thread-scoped session isolation, topic routing, and admin persona in achiOS Hub (achiAgy).
+
+Decisions:
+- Implemented `TopicRouter` (`src/topic_router.py`) to manage bindings between Telegram forum threads (`message_thread_id`) and topic profiles (`admin`, `general`, `schoolmem`, `achimem`, `aurora`, `ari`).
+- Created prompt catalogs in `achiAgy/prompts/{admin,agi,schoolmem,achimem,aurora,ari}.md` including the dedicated `#Admin` Infrastructure Specialist prompt.
+- Refactored `SessionManager` (`src/session_manager.py`) to key sessions by composite `chat_id:thread_id`, maintaining isolated conversation histories, turns, models, modes, and reasoning efforts per topic.
+- Updated `src/bot.py` command and callback handlers so changing models, modes, or resetting context in `#Admin` never alters `#General` or other topics.
+- Added comprehensive unit tests in `tests/test_topic_router_and_isolation.py` (92/92 tests passing).
+
+Rejected:
+- Shared session state across forum threads (would cause turn counts and model settings to overwrite across distinct topics).
+
+Open:
+- Deploy and pair `achiAgy` in Telegram Supergroup with `/bind admin` and `/bind general`.
+
 ## 2026-08-27 19:43 [saved]
 Goal: Sort session-log.md into consistent reverse-chronological order and clarify logging rule.
 
