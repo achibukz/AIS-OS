@@ -26,6 +26,7 @@ Read `references/3ms-framework.md` once. It's how Aki thinks about AI work. Mind
 - `session-log.md` — reverse-chronological session journal of actions, decisions, and files touched
 - `decisions/log.md` — append-only record of decisions and why
 - `archives/` — old stuff. Don't delete. Move here.
+- `~/Documents/Files/` — the document and media store. Not a repo, Syncthing folder `achi-files`. Scans, certificates, answered forms, prescriptions. Its rules are in [AGENTS.md](http://100.106.210.38:8999/Documents/Files/AGENTS.md).
 
 See `EXPANSIONS.md` for what to add as the system grows.
 
@@ -46,6 +47,7 @@ Whenever we build, configure, change, or decide something in this repository, **
 - **Markdown (.md) Files Format**: Whenever referencing, editing, or presenting any `.md` file, ALWAYS format it as a clickable Markdown link pointing directly to the Tailscale web viewer (`http://100.106.210.38:8999/`) using its full relative path from `$HOME` (e.g. `[tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md)` or `[plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/telegram-supergroup-hub-plan.md)`).
 - **No `file:///` Links**: Do NOT use `file:///` URLs.
 - **Do NOT Link Non-MD Files or Symbols**: Scripts (`.py`, `.sh`), configs (`.json`, `.toml`, `.service`), and code symbols must remain standard plain or backticked text (e.g. `scripts/run-bot.sh`, `SessionManager`) without links.
+- **Documents store carve-out**: files under `~/Documents/Files/` are the one exception. Any file there, whatever its extension, gets a viewer link (e.g. `[2021-07-07-dr-arthur-roman-prescription.jpg](http://100.106.210.38:8999/Documents/Files/personal/health/2021-07-07-dr-arthur-roman-prescription.jpg)`), because retrieving a document by tapping it is what that store is for. The carve-out is by path, not extension, so scripts and configs are still never linked. **Except `personal/legal/` and `personal/finance/`**, which the viewer 403s by design — reference those by backticked path only, and ask the Telegram bot when you want the file itself. Rules for the store live in [AGENTS.md](http://100.106.210.38:8999/Documents/Files/AGENTS.md).
 
 
 

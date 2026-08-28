@@ -727,3 +727,61 @@ of `raw/` per the plan (rejected, breaks provenance); migrating `schoolMem/raw/`
 183 MB are ingest-pipeline input, not documents, and are already outside Git).
 
 **Owner:** Aki.
+
+## 2026-08-28 — Grill outcomes for the document store: viewer blocking, Files/raw boundary, term-based academic tree
+
+**Decision:** Settled ten open questions on the centralized store through a `/grill-me` session and
+implemented all of them.
+
+- **`personal/legal` and `personal/finance` are off the web.** Added both to `BLOCKED_PATTERNS` in
+  `scripts/achi_viewer.py`; they now 403 and are hidden from directory listings. Also closed a real
+  hole found while doing it: the viewer's "smart short-path fallbacks" reassign `target_path` *after*
+  the block check ran, so the check is now re-applied to the resolved path.
+- **Telegram still delivers those files.** `MediaDispatcher` reads from disk, never through port 8999,
+  so nothing about retrieval changed. What changed is the rewrite: for a viewer-blocked path it renders
+  the caption as plain text rather than a link that would 403. `VIEWER_BLOCKED_SUBPATHS` in
+  `achiAgy/src/media_dispatcher.py` must stay in step with the viewer's list; two tests in
+  `achiAgy/tests/test_outbound_media.py` hold that line.
+- **The Files/raw boundary is about the file's job, not its extension.** `raw/` holds what is worth
+  ingesting and carries the vaults' `sources:` provenance. Files holds finished artifacts and documents
+  Aki needs to retrieve *as documents*. A file can be both, and when it is, it lives in Files with the
+  wiki `sources:` entry pointing there. That keeps the five files migrated earlier today where they are.
+- **`academic/` is term-based**, mirroring schoolMem's `raw/AY####-T#/COURSE/`. Replaced the flat
+  `csopesy`/`ths-st1`/`stcloud` folders with `AY2627-T1/{CCINOV8,GELITPH,STDISCM,STSP002,THSST2}` read
+  off schoolMem. `general/` sits outside the term tree because a transcript belongs to no term. Future
+  term folders get created lazily.
+- **Dates in filenames are the document's own date**, not the acquisition date, so a listing reads as a
+  timeline of events.
+- **Amended the viewer-link rule** in `CLAUDE.md` and `AGENTS.md` with a path-scoped carve-out for
+  `~/Documents/Files/`, excluding the two blocked folders. Wrote the store its own `AGENTS.md` and
+  `CLAUDE.md` carrying all of the above.
+
+**Why:** The viewer binds `0.0.0.0` with `ROOT_DIR=$HOME` and no authentication, so putting passport
+scans under it without blocking them would have been a straight downgrade in Aki's security posture for
+no gain. The rest follows from him wanting to tap a document from Telegram, which is the reason the
+store exists at all.
+
+**Alternatives considered:** Binding the viewer to the Tailscale IP only (rejected, breaks localhost and
+dies if tailscale flaps; the block list is narrower and enough); rolling the five migrated files back to
+`raw/` (rejected, they are documents he retrieves, not just ingestion sources); backing the store up to
+an encrypted remote (rejected by Aki, he keeps a separate local copy).
+
+**Owner:** Aki.
+
+## 2026-08-28 — Syncthing must never replicate a .git directory
+
+**Decision:** Added `.git`, `.git/**`, `**/.git/**`, and `*.sync-conflict-*` to the `varww-m4imt`
+ignore patterns via the Syncthing REST API, and deleted the 23 conflict files that had accumulated.
+
+**Why:** Syncthing was replicating `achiMem/.git/` and `schoolMem/.git/` between two machines that both
+run git, and had already produced conflicted copies of `index`, `config`, `ORIG_HEAD`, `COMMIT_EDITMSG`,
+and several refs. The usual endgame is a repo that cannot read its own object store. `git fsck` came
+back clean on both repos before and after the cleanup, so this was caught before real damage. Git's own
+remote already carries tracked files between machines, so Syncthing had nothing to contribute inside
+`.git` in the first place.
+
+**Alternatives considered:** Dropping Syncthing for the vaults entirely (rejected, it is what carries
+the gitignored `raw/` material to the Mac). Filing it for later (rejected, object-store corruption is
+not a thing to schedule).
+
+**Owner:** Aki.

@@ -898,25 +898,26 @@ Open:
 - Phase 8 unfinished: cron round-trip, power-cut test.
 - SSH password auth still enabled on the server.
 
-## 2026-08-28 — Built the centralized documents and media store
+## 2026-08-28 — Centralized documents and media store, built and grilled
 
-Goal: execute `docs/2026-08-27-centralized-documents-and-media-store-plan.md`.
+Goal: execute `docs/2026-08-27-centralized-documents-and-media-store-plan.md`, then stress-test it.
 
 Decisions:
-- Scaffolded `~/Documents/Files/` and created Syncthing folder `achi-files` via the REST API, shared
-  with AchiBook Air, simple versioning at 30 days.
-- Migrated five binaries out of `achiMem/raw/` with ISO-date renames, rewrote every `sources:` entry
-  and viewer link across 13 vault files, rebuilt the index. `raw/` fell 7.8 MB to 1.5 MB.
-- Kept `raw/` tracked in Git, gitignoring binary extensions instead. It is the vault's provenance
-  layer and holds `raw/sessions/`. Reasoning in `decisions/log.md`.
+- Built `~/Documents/Files/` and Syncthing folder `achi-files` via the REST API, shared with AchiBook
+  Air. Migrated five binaries out of `achiMem/raw/`, rewrote every `sources:` entry and viewer link
+  across 13 vault files. `raw/` fell 7.8 MB to 1.5 MB.
+- Files vs raw is decided by the file's job, not its extension. `raw/` holds what is worth ingesting
+  and carries wiki provenance; Files holds documents Aki retrieves as documents.
+- `personal/legal` and `personal/finance` now 403 in the viewer. Telegram still uploads them, but
+  withholds the link. Two tests in `achiAgy/tests/test_outbound_media.py` hold that.
+- `academic/` is term-based (`AY2627-T1/…`) mirroring schoolMem. Filenames carry the document's own date.
+- Syncthing now ignores `.git`; deleted 23 sync-conflict files from both vaults' repos.
 
 Rejected:
-- Untracking all of `achiMem/raw/` per the plan's Step 5 (breaks wiki `sources:` provenance).
-- Migrating `schoolMem/raw/` (183 MB of ingest-pipeline input, already outside Git).
-- Hand-editing `config.xml` (syncthing overwrites it from memory on shutdown).
+- Untracking all of `achiMem/raw/` per the plan's Step 5 (breaks `sources:` provenance).
+- Binding the viewer to the Tailscale IP (breaks localhost; the block list is narrower and enough).
+- Backing the store to an encrypted remote (Aki keeps a separate local copy).
 
 Open:
-- AchiBook Air must accept the `achi-files` folder offer.
-- `achi_viewer.py` binds `0.0.0.0` with `ROOT_DIR=$HOME` and no auth; the store now holds documents.
-- Syncthing replicates both vaults' `.git/`; 20 sync-conflict files already exist inside them.
-- Grill round 1 open on taxonomy, backup, naming, and the link-rule contradiction.
+- AchiBook Air must accept the `achi-files` folder offer and set the same `.git` ignore.
+- `tests/test_daily_brief.py` is 44/44 failing against the refactored module. Predates today.

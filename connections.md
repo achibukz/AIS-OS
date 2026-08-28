@@ -78,3 +78,8 @@ there rather than opening repos blind.
 - Reachable over Tailscale at `http://100.106.210.38:8999/Documents/Files/...`, verified 200 for both
   an image and a PDF.
 - achiAgy's `MediaDispatcher` sends anything under here to Telegram already, no change needed.
+- `personal/legal/` and `personal/finance/` are in the viewer's `BLOCKED_PATTERNS` and return 403.
+  Telegram still delivers them; only the link is withheld. Keep `VIEWER_BLOCKED_SUBPATHS` in
+  `achiAgy/src/media_dispatcher.py` in step with the viewer's list.
+- The vault folder `varww-m4imt` now ignores `.git` and `*.sync-conflict-*`. Set it on any new device
+  before first sync, or that device will start replicating git metadata again.

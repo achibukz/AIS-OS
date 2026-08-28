@@ -19,8 +19,17 @@ HOST = "0.0.0.0"
 # Sensitive files/directories that should never be served
 BLOCKED_PATTERNS = [
     ".env", ".key", ".pem", "id_rsa", "id_ed25519",
-    ".git/objects", ".git/refs", ".token_storage", "secrets.env"
+    ".git/objects", ".git/refs", ".token_storage", "secrets.env",
+    # Identity and money documents. The viewer has no auth and binds every interface,
+    # so these two folders are reachable by disk only. Telegram still delivers them:
+    # MediaDispatcher uploads the file itself and never routes through this server.
+    "Documents/Files/personal/legal",
+    "Documents/Files/personal/finance",
 ]
+
+
+def is_blocked(path) -> bool:
+    return any(b in str(path) for b in BLOCKED_PATTERNS)
 
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
@@ -589,10 +598,9 @@ class AchiViewerHandler(BaseHTTPRequestHandler):
             return
 
         # Security check: Block sensitive patterns
-        for blocked in BLOCKED_PATTERNS:
-            if blocked in str(target_path):
-                self.send_error(403, "Access Denied to Protected Resource")
-                return
+        if is_blocked(target_path):
+            self.send_error(403, "Access Denied to Protected Resource")
+            return
 
         if not target_path.exists() and raw_path:
             # Smart Short-Path Fallbacks
@@ -626,6 +634,12 @@ class AchiViewerHandler(BaseHTTPRequestHandler):
 
                 if matches:
                     target_path = matches[0].resolve()
+
+        # Re-check after the fallbacks: they reassign target_path, so the block list
+        # above only ever saw the literal request path.
+        if is_blocked(target_path):
+            self.send_error(403, "Access Denied to Protected Resource")
+            return
 
         if not target_path.exists():
             self.render_not_found(raw_path)
@@ -706,7 +720,7 @@ class AchiViewerHandler(BaseHTTPRequestHandler):
                 if e.name.startswith(".") and e.name not in [".obsidian", ".claude"]:
                     continue
                 # Skip blocked
-                if any(b in str(e) for b in BLOCKED_PATTERNS):
+                if is_blocked(e):
                     continue
                 
                 rel = "/" + str(e.relative_to(ROOT_DIR))
