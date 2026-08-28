@@ -883,16 +883,19 @@ Open:
 Goal: Turn the old HP laptop into a headless Hermes/Claude Code agent host.
 
 Decisions:
-- `commit()` in `achimem_capture.py` now rebases, pushes, retries once, and **aborts** a conflicting rebase — two machines append to `log.md`, so conflicts are unresolvable unattended.
-- `sync-claude-config.sh` uses an **allowlist**, not a denylist — a future credential file dropped in `~/.claude/` cannot leak by default.
-- Plugins are excluded from the sync; `enabledPlugins` in `settings.json` refetches them, avoiding a 333 MB transfer.
-- Hermes `write_approval: true` on memory and skills — both default false, and a sub-70B model is running autonomously.
-- Ubuntu **Server**, not Desktop — desktop power daemons actively fight the lid-close override an always-on box needs.
+- `commit()` in `achimem_capture.py` rebases, pushes, retries once, then aborts a conflicting
+  rebase. Two machines append to `log.md`, so conflicts are unresolvable unattended.
+- `sync-claude-config.sh` uses an allowlist, so a future credential dropped in `~/.claude/`
+  cannot leak by default.
+- Plugins excluded from the sync; `enabledPlugins` refetches them, avoiding 333 MB.
+- Hermes `write_approval: true` on memory and skills. Both default false and a sub-70B model
+  runs autonomously.
+- Ubuntu Server, not Desktop. Desktop power daemons fight the lid-close override.
 
 Rejected:
-- `pip list` as evidence of a missing package — uv venvs have no `pip`.
-- `| bash --flag` for piped installers — bash eats it; use `bash -s -- --flag`.
-- Auto-merging the vault's append-only log unattended — risks silent mangling.
+- `pip list` as evidence of a missing package; uv venvs have no `pip`.
+- `| bash --flag` for piped installers; bash eats it, use `bash -s -- --flag`.
+- Auto-merging the vault's append-only log unattended.
 
 Open:
 - Phase 8 unfinished: cron round-trip, power-cut test.
@@ -903,21 +906,20 @@ Open:
 Goal: execute `docs/2026-08-27-centralized-documents-and-media-store-plan.md`, then stress-test it.
 
 Decisions:
-- Built `~/Documents/Files/` and Syncthing folder `achi-files` via the REST API, shared with AchiBook
-  Air. Migrated five binaries out of `achiMem/raw/`, rewrote every `sources:` entry and viewer link
-  across 13 vault files. `raw/` fell 7.8 MB to 1.5 MB.
-- Files vs raw is decided by the file's job, not its extension. `raw/` holds what is worth ingesting
+- Built `~/Documents/Files/` and Syncthing folder `achi-files` via the REST API. Migrated five
+  binaries out of `achiMem/raw/` and rewrote every reference across 13 vault files.
+- Files vs raw turns on the file's job, not its extension. `raw/` holds what is worth ingesting
   and carries wiki provenance; Files holds documents Aki retrieves as documents.
-- `personal/legal` and `personal/finance` now 403 in the viewer. Telegram still uploads them, but
-  withholds the link. Two tests in `achiAgy/tests/test_outbound_media.py` hold that.
-- `academic/` is term-based (`AY2627-T1/…`) mirroring schoolMem. Filenames carry the document's own date.
-- Syncthing now ignores `.git`; deleted 23 sync-conflict files from both vaults' repos.
+- `personal/legal` and `personal/finance` 403 in the viewer. Telegram still uploads them but
+  withholds the link. Pinned by `achiAgy/tests/test_outbound_media.py`.
+- `academic/` is term-based mirroring schoolMem. Filenames carry the document's own date.
+- Syncthing now ignores `.git`; deleted 23 sync-conflict files. `git fsck` clean both sides.
 
 Rejected:
-- Untracking all of `achiMem/raw/` per the plan's Step 5 (breaks `sources:` provenance).
-- Binding the viewer to the Tailscale IP (breaks localhost; the block list is narrower and enough).
-- Backing the store to an encrypted remote (Aki keeps a separate local copy).
+- Untracking all of `achiMem/raw/` per the plan's Step 5; breaks `sources:` provenance.
+- Binding the viewer to the Tailscale IP; breaks localhost, the block list is narrower.
+- Backing the store to an encrypted remote; Aki keeps a separate local copy.
 
 Open:
-- AchiBook Air must accept the `achi-files` folder offer and set the same `.git` ignore.
-- `tests/test_daily_brief.py` is 44/44 failing against the refactored module. Predates today.
+- AchiBook Air must accept `achi-files` and set the same `.git` ignore.
+- `tests/test_daily_brief.py` fails 44/44 against the refactored module. Predates today.
