@@ -1,5 +1,65 @@
 # Session Log
 
+## 2026-08-29 03:35 [saved]
+Goal: Schedule recurring 5-hour Claude Code session kicks starting at 10:00 AM PHT.
+
+Decisions:
+- Configured systemd user timer `achios-claude-session-kick.timer` and service `achios-claude-session-kick.service` to fire at 10:00, 15:00, 20:00, 01:00, and 06:00 Asia/Manila.
+- Updated user crontab with matching recurring schedule `0 10,15,20,1,6 * * * /home/achibukz/.local/bin/kick_claude_session.sh`.
+- Installed and enabled the unit via `scripts/install_units.sh`.
+
+Verification:
+- Systemd user timer `achios-claude-session-kick.timer` is loaded, enabled, and active. Next fire verified in list-timers output.
+- Execution test of `/home/achibukz/.local/bin/kick_claude_session.sh` verified logging to `~/.local/state/achios/claude_session_kick.log`.
+
+## 2026-08-29 02:34 [saved]
+Goal: Research topic 10, Codex in achiOS, and deliver Markdown and PDF.
+
+Decisions:
+- Saved the [research report](http://100.106.210.38:8999/Documents/Obsidian/achiMem/raw/2026-08-28-codex-in-achios-workflow-and-model-hierarchy.md) at the register's requested path and the [PDF](http://100.106.210.38:8999/Documents/Files/projects/achios/2026-08-28-codex-in-achios-workflow-and-model-hierarchy.pdf) in the document store.
+- Used the existing achiAgy engine tickets as the baseline. Recommendations remain proposals; no code, ticket, service, or runtime configuration changed.
+- Stopped all three research workers when Aki requested no subagents. Stopped source checking when he requested the PDF.
+
+Findings:
+- Official documentation deprecates Codex MCP-server in favor of app-server.
+- Metadata-only app-server calls returned visible models and structured quota windows without starting a model turn.
+- File-change events alone cannot establish that a failed turn is safe to replay.
+
+Verification:
+- PDF has 11 pages and 64 clickable links. All six sections and the final appendix are present; rendered pages inspected for layout.
+- Final source audit was not completed, per Aki's instruction. No end-to-end achiAgy Codex turn or benchmark was run.
+
+Rejected:
+- Further parallel research or source checking after Aki stopped them.
+- Replacing the ongoing integration or treating research recommendations as approved implementation.
+
+Open:
+- Integration tickets remain separate from this completed research task.
+
+## 2026-08-29 02:03 [saved]
+Goal: Add Aki's global unslop SessionStart hook to Codex.
+
+Decisions:
+- Added `/home/achibukz/.codex/hooks.json` with a command that prints Aki's exact JSON payload. No matcher, so all SessionStart sources match.
+- Left existing Codex settings and Claude Code hooks unchanged.
+
+Verification:
+- Parsed the saved configuration and ran its command from `/tmp` with startup, resume, clear, and compact inputs. Each returned the exact payload, exit 0, and no stderr.
+- Installed Codex CLI 0.150.1 reports hooks enabled. Runtime execution has not been verified because the new hook needs user trust.
+
+Rejected:
+- Trust bypass flags or edits to trust records. Codex requires Aki to review the definition through `/hooks`.
+
+Open:
+- Aki must trust the hook through `/hooks`, then start or resume a session to check context injection.
+
+## 2026-08-28 18:59 [saved]
+Goal: Standardize `/restart` command naming across Telegram bot autocomplete menu and help reference in achiAgy.
+
+Decisions:
+- Standardized `cmd_help` and `post_init` in `achiAgy/src/bot.py` to use `/restart` as the primary command for graceful bot daemon restarts while maintaining `/reload` as an alias.
+- Added test verification in `achiAgy/tests/test_bot_routing.py`.
+
 ## 2026-08-28 18:35 [saved]
 Goal: Author and publish achiAgy ticket #35 via /agy-tickets.
 

@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-08-29 — Claude Code 5-Hour Rolling Session Kick Automation
+
+**Decision:** Installed and enabled persistent systemd timer `achios-claude-session-kick.timer` (and synced crontab) to execute `/home/achibukz/.local/bin/kick_claude_session.sh` every 5 hours starting at 10:00 AM PHT (`10:00`, `15:00`, `20:00`, `01:00`, `06:00` Asia/Manila).
+
+**Why:** Automatically triggers a lightweight headless ping (`claude -p "hi"`) on Achibuntu to open Claude Code's 5-hour rolling session window on schedule, ensuring capacity resets systematically without manual intervention.
+
+**Alternatives considered:** Manual triggering or cron-only execution (rejected because cron ignores `CRON_TZ` on Debian/Ubuntu without persistent timer catch-up after downtime).
+
+**Owner:** Aki.
+
 ## 2026-08-27 — achiAgy Streaming Pipe Inactivity Timeout & Keepalive Architecture (D39–D43)
 
 **Decision:** Architected the streaming pipe inactivity watchdog, heartbeat ticks, and milestone progress streaming in `achiAgy` per [2026-08-27-streaming-inactivity-timeout-and-keepalive-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/2026-08-27-streaming-inactivity-timeout-and-keepalive-plan.md). Features a 600s configurable stream idle watchdog (`ACHIAGY_STREAM_IDLE_TIMEOUT`), periodic 15s internal `heartbeat` AgentEvents to keep event loops alive during silent background task execution, live intermediate milestone streaming to Telegram in `src/bot.py`, and orchestrator status polling patterns (`asa status` every 30s).
@@ -856,3 +866,25 @@ outright (rejected, loses the skill router and both safety hooks). Editing `hook
 plugin cache (rejected, a plugin update rewrites it).
 
 **Owner:** Aki.
+
+## 2026-08-29 Global Codex unslop SessionStart hook
+
+Decision: Added `/home/achibukz/.codex/hooks.json` at user scope. Its inline `printf` command emits Aki's supplied `hookSpecificOutput` unchanged. Omitting the matcher covers every SessionStart source.
+
+Why: Aki requested the unslop skill as the default session writing style, with an explicit user override. User scope applies across projects without changing project instructions.
+
+Alternatives: A separate script adds no value for static JSON. Claude Code settings were left unchanged because this request was made in Codex. Trust bypasses were not used; Aki must approve the exact hook through `/hooks` before it runs.
+
+Owner: Aki.
+
+Verification: The saved command returned the exact JSON with four sample SessionStart inputs from `/tmp`. Live context injection remains unverified until trust approval. Format and trust requirements follow the [official hooks documentation](https://learn.chatgpt.com/docs/hooks).
+
+## 2026-08-29 Codex research delivery and execution limits
+
+Decision: Deliver topic 10 as [Markdown](http://100.106.210.38:8999/Documents/Obsidian/achiMem/raw/2026-08-28-codex-in-achios-workflow-and-model-hierarchy.md) and a readable [PDF](http://100.106.210.38:8999/Documents/Files/projects/achios/2026-08-28-codex-in-achios-workflow-and-model-hierarchy.pdf). Stop subagents and further source checking when Aki requests it. Keep the architecture and routing recommendations as proposals.
+
+Why: Aki is already integrating Codex into achiAgy and wants research that informs that work. He explicitly limited delegation to reduce token use and then requested the PDF without further source checks.
+
+Alternatives: Further parallel investigation and a complete final source audit were stopped at Aki's request. No new orchestrator, service migration, or repo rename was executed.
+
+Owner: Aki.
