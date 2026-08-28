@@ -698,3 +698,32 @@ the code.
 **Alternatives considered:** Flat chronological lists, standard unformatted markdown checkboxes without section grouping.
 
 **Owner:** Aki.
+
+## 2026-08-28 — Binary documents leave the vaults for ~/Documents/Files, but raw/ stays in Git
+
+**Decision:** Built the centralized store at `~/Documents/Files/` with the planned taxonomy and a
+dedicated Syncthing folder `achi-files` shared between achibuntu and AchiBook Air. Migrated the five
+binary documents out of `achiMem/raw/` and rewrote every `sources:` frontmatter entry and viewer link
+that pointed at them. Then **departed from the plan's Step 5**: instead of removing `raw/` from Git and
+gitignoring the whole directory, achiMem now gitignores binary extensions under `raw/` and keeps the
+markdown tracked.
+
+**Why:** `achiMem/raw/` had 89 tracked files and only 6 were binaries, together about 6.4 MB. The other
+83 are research notes, transcripts, and the session stubs in `raw/sessions/` that `achimem_recall.py`
+reads back. Worse, every wiki page's `sources:` frontmatter cites a `raw/...` path, so that directory is
+the vault's provenance layer. Untracking it wholesale would trade the anti-hallucination guarantee and
+all GitHub history for those notes against a 6.4 MB bloat problem. Extension globs solve the bloat and
+cost nothing. schoolMem needed no change at all: its `raw/` has been gitignored and untracked since
+before this plan was written.
+
+**Also corrected:** the plan said to hand-edit `~/.local/state/syncthing/config.xml` and restart.
+Syncthing rewrites that file from memory on shutdown, so the edit would have been silently discarded.
+Used the REST API on `127.0.0.1:8384` instead. And Step 5 of the plan (teach `MediaDispatcher` about
+`Documents/Files/`) was already satisfied: the dispatcher resolves any path under `$HOME` generically,
+verified classifying the new jpg as `photo` and the new pdf as `document`.
+
+**Alternatives considered:** Git LFS for the binaries (rejected earlier, GitHub quota); untracking all
+of `raw/` per the plan (rejected, breaks provenance); migrating `schoolMem/raw/` too (rejected, those
+183 MB are ingest-pipeline input, not documents, and are already outside Git).
+
+**Owner:** Aki.

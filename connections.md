@@ -68,3 +68,13 @@ there rather than opening repos blind.
 - `~/Documents/Obsidian/schoolMem` — school notes + thesis meeting minutes. Bridged by `wiki/personal/school-context.md`.
 - `~/Code/GitHub/career-ops` — application pipeline, CV/cover letter generation, follow-up cadence. Bridged by `wiki/personal/career-ops-hub.md`. `data/applications.md` is the source of truth for active applications.
 - `~/Code/GitHub/sfv-thesis` — thesis source, chapters, dataset pipeline.
+
+### achi-files — centralized documents and media store (added 2026-08-28)
+
+- Path: `~/Documents/Files/` on achibuntu and AchiBook Air. No Git repo; Syncthing is the only sync.
+- Syncthing folder id `achi-files`, label `Documents Files`, `sendreceive`, fsWatcher on with a 10s
+  delay, 3600s rescan, simple versioning cleaned after 30 days. Shared achibuntu ↔ AchiBook Air.
+- Managed through the Syncthing REST API at `127.0.0.1:8384`, never by editing `config.xml` by hand.
+- Reachable over Tailscale at `http://100.106.210.38:8999/Documents/Files/...`, verified 200 for both
+  an image and a PDF.
+- achiAgy's `MediaDispatcher` sends anything under here to Telegram already, no change needed.

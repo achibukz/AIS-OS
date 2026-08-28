@@ -897,3 +897,34 @@ Rejected:
 Open:
 - Phase 8 unfinished: cron round-trip, power-cut test.
 - SSH password auth still enabled on the server.
+
+## 2026-08-28 — Built the centralized documents and media store
+
+Goal: execute `docs/2026-08-27-centralized-documents-and-media-store-plan.md`.
+
+Done:
+- Scaffolded `~/Documents/Files/` with the full 10-directory taxonomy.
+- Created Syncthing folder `achi-files` via the REST API, shared with AchiBook Air, simple versioning
+  at 30 days. `.stfolder` appeared, so syncthing is watching it.
+- Migrated five binaries out of `achiMem/raw/`: the 2021 prescription jpg, the ING offer png, the GCash
+  Phase 1 pdf, and both Gallup reports. Renamed all to `YYYY-MM-DD-descriptor.ext`.
+- Rewrote every reference across 13 vault files — `sources:` frontmatter and the one viewer link.
+  Rebuilt the wiki index (91 pages). Committed and pushed achiMem on its current branch.
+- `achiMem/raw/` dropped 7.8 MB → 1.5 MB.
+
+Departed from the plan:
+- Kept `raw/` in Git. Gitignored binary extensions under it instead. Reason in `decisions/log.md`:
+  raw/ is the vault's provenance layer, cited by every wiki page's `sources:`, and `raw/sessions/` is
+  what achiMem recall reads.
+- Left `schoolMem/raw/` alone. It is 183 MB of course material, already untracked and gitignored, and
+  it is ingest-pipeline input rather than a document store.
+- Used the Syncthing REST API, not a hand edit of `config.xml`, which syncthing would have overwritten.
+
+Verified, not assumed:
+- Tailscale viewer returns 200 for both a migrated jpg and a migrated pdf under `/Documents/Files/`.
+- `MediaDispatcher.extract_media_items` resolves both new paths and classifies them `photo` / `document`.
+
+Open:
+- AchiBook Air still has to accept the `achi-files` folder offer and point it at `~/Documents/Files`.
+- Taxonomy has no slot for a personality assessment; both Gallup reports went to `career/certifications`.
+- `achios-failure-alert@achios-vault-sync.service` is in a failed state, unrelated to this work.
