@@ -1,5 +1,27 @@
 # Session Log
 
+## 2026-08-28 16:51 [saved]
+Goal: Centralized documents and media store, built and grilled.
+
+Decisions:
+- Built `~/Documents/Files/` and Syncthing folder `achi-files` via the REST API. Migrated five
+  binaries out of `achiMem/raw/` and rewrote every reference across 13 vault files.
+- Files vs raw turns on the file's job, not its extension. `raw/` holds what is worth ingesting
+  and carries wiki provenance; Files holds documents Aki retrieves as documents.
+- `personal/legal` and `personal/finance` 403 in the viewer. Telegram still uploads them but
+  withholds the link. Pinned by `achiAgy/tests/test_outbound_media.py`.
+- `academic/` is term-based mirroring schoolMem. Filenames carry the document's own date.
+- Syncthing now ignores `.git`; deleted 23 sync-conflict files. `git fsck` clean both sides.
+
+Rejected:
+- Untracking all of `achiMem/raw/` per the plan's Step 5; breaks `sources:` provenance.
+- Binding the viewer to the Tailscale IP; breaks localhost, the block list is narrower.
+- Backing the store to an encrypted remote; Aki keeps a separate local copy.
+
+Open:
+- AchiBook Air must accept `achi-files` and set the same `.git` ignore.
+- `tests/test_daily_brief.py` fails 44/44 against the refactored module. Predates today.
+
 ## 2026-08-28 15:56 [saved]
 Goal: Diagnose and fix Telegram /usage command failure in achiAgy (PR #31).
 
@@ -901,25 +923,3 @@ Open:
 - Phase 8 unfinished: cron round-trip, power-cut test.
 - SSH password auth still enabled on the server.
 
-## 2026-08-28 — Centralized documents and media store, built and grilled
-
-Goal: execute `docs/2026-08-27-centralized-documents-and-media-store-plan.md`, then stress-test it.
-
-Decisions:
-- Built `~/Documents/Files/` and Syncthing folder `achi-files` via the REST API. Migrated five
-  binaries out of `achiMem/raw/` and rewrote every reference across 13 vault files.
-- Files vs raw turns on the file's job, not its extension. `raw/` holds what is worth ingesting
-  and carries wiki provenance; Files holds documents Aki retrieves as documents.
-- `personal/legal` and `personal/finance` 403 in the viewer. Telegram still uploads them but
-  withholds the link. Pinned by `achiAgy/tests/test_outbound_media.py`.
-- `academic/` is term-based mirroring schoolMem. Filenames carry the document's own date.
-- Syncthing now ignores `.git`; deleted 23 sync-conflict files. `git fsck` clean both sides.
-
-Rejected:
-- Untracking all of `achiMem/raw/` per the plan's Step 5; breaks `sources:` provenance.
-- Binding the viewer to the Tailscale IP; breaks localhost, the block list is narrower.
-- Backing the store to an encrypted remote; Aki keeps a separate local copy.
-
-Open:
-- AchiBook Air must accept `achi-files` and set the same `.git` ignore.
-- `tests/test_daily_brief.py` fails 44/44 against the refactored module. Predates today.
