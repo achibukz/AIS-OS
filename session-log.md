@@ -19,8 +19,16 @@ Rejected:
 - Backing the store to an encrypted remote; Aki keeps a separate local copy.
 
 Open:
-- AchiBook Air must accept `achi-files` and set the same `.git` ignore.
 - `tests/test_daily_brief.py` fails 44/44 against the refactored module. Predates today.
+- `stop-reminders.js` reads the last two entries in file order and calls them the newest. This file
+  is newest-first, so it keeps flagging the two oldest entries and never sees the real offenders
+  (2026-08-28 06:15 and 06:45, both ~630 tokens).
+
+Closed same day:
+- AchiBook Air accepted `achi-files` and set the `.git` ignore. Both folders idle, 0 need, 0 errors,
+  0 conflicts. Vault global file count fell 7624 to 1937 as the git objects left the index.
+- macOS Finder had dropped a `.DS_Store` inside `achiMem/.git/refs/`, which git reads as a ref and
+  rejected as `badRefName`. Deleted on the Mac; `fsck` now shows only dangling objects.
 
 ## 2026-08-28 15:56 [saved]
 Goal: Diagnose and fix Telegram /usage command failure in achiAgy (PR #31).
