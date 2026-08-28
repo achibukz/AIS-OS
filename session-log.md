@@ -1,27 +1,28 @@
 # Session Log
 
 ## 2026-08-28 17:52 [saved]
-Goal: Design a ticket-authoring skill so a non-Opus session can turn a plan into GitHub issues.
+Goal: A ticket-authoring skill a non-Opus session can run, plus a trim of the plugin hooks.
 
 Decisions:
-- Do not build it. The global `to-issues` skill already emits Aki's ticket format: What to build,
-  Acceptance criteria as checkboxes, Blocked by. That is achiAgy #26 minus one section.
-- Aki closed the design during grilling round 1, before any of the six frontier questions landed.
+- Shipped `/agy-tickets`, a fork of `to-issues`. Adds label creation, a Recommended model
+  section, a no-plan refusal, and `--body-file`. Tracked copy in `references/skills/`, not
+  `.claude/skills/`, which would double-register it.
+- Disabled warp, claude-notifications-go and vercel on this box only. 16 of 33 hooks gone.
+- Patched `stop-reminders.js` to pick the two newest `[saved]` entries by timestamp.
+  `entries.slice(-2)` assumed oldest-first; this file is newest-first, so it had been flagging
+  2026-08-17 03:45 forever. Now reports 17:52 and 17:45, both under budget.
 
 Rejected:
-- A new `ticket-author` skill. Two skills triggering on "turn this plan into issues" means the
-  router picks one at random, and the new one would duplicate rules that already exist.
-- Dispatching authoring to `agy`. Ticket writing is the judgment-heavy step; a handoff there
-  buys nothing and adds a failure mode.
+- A skill built from scratch, and patching `to-issues` in place. Aki chose the fork.
+- Disabling superpowers-optimized. Its Bash blocker and secret protection earn their place on a
+  box running bypassPermissions with push pre-authorised.
 
 Open:
-- `to-issues` step 5 applies `needs-triage`, which exists in neither achiAgy nor AIS-OS.
-  `gh issue create` errors on an unknown label, so it drafts and quizzes fine then dies at publish.
-  achiAgy has `ready-for-agent` and `priority:high`; AIS-OS has only GitHub defaults.
-- `to-issues` never writes the Recommended model section Aki added on #26, so tickets reach Aea
-  with no routing between `gemini-3.7-flash-high` and Sonnet.
-- Both are a three-line patch to `~/.claude/skills/to-issues/SKILL.md`. Awaiting Aki's go-ahead,
-  along with whether to close the ticket-authoring task on line 25 of `tasks.md`.
+- `sync-claude-config.sh` pushes the Mac's `settings.json` wholesale, so the next sync
+  re-enables all three plugins here. Reapply after every sync, or move the disables somewhere
+  the allowlist does not carry.
+- `stop-reminders.js` fix is local. Filing it upstream needs Aki's go-ahead.
+- CLAUDE.md claims claude-mem is disabled here. No marker exists and its 7 hooks are live.
 
 ## 2026-08-28 17:45 [saved]
 Goal: Update master task register (complete achiAgy ticket #29, drop session kick routine upgrade).

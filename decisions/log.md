@@ -805,3 +805,54 @@ agent that dispatches authoring to `agy` (rejected, ticket writing is the judgme
 a handoff there adds a failure mode for no gain).
 
 **Owner:** Aki.
+
+## 2026-08-28 — Reversal: `/agy-tickets` ships as a copy of `to-issues` after all
+
+**Decision:** Supersedes the entry above. Aki chose to fork `to-issues` rather than patch it.
+The copy lives at `~/.claude/skills/agy-tickets/` with a tracked copy in
+`references/skills/agy-tickets/`. It differs from the original in four ways: it creates
+`ready-for-agent` and the `priority:` labels before publishing instead of applying the
+nonexistent `needs-triage`, it adds a Recommended model section with a table for choosing
+between `gemini-3.7-flash-high` and Sonnet, it requires an approved plan and refuses a rough
+idea, and it uses `--body-file` so backticks in acceptance criteria survive the shell.
+
+**Why:** Patching `to-issues` in place would have been undone by any future refresh of that
+skill, and the fork lets the description name Aea and Luna so the router picks it over the
+original. The duplicate-trigger risk I raised earlier is real but small, because the two
+descriptions now diverge on repo and agent names.
+
+**Alternatives considered:** Editing `to-issues` in place (rejected by Aki). Making it a
+project skill under `.claude/skills/` (rejected, it would only load in AIS-OS and the tickets
+mostly go to achiAgy). Leaving it uncommitted on the server (rejected, `sync-claude-config.sh`
+pushes Mac to server with `rsync --delete` and would have deleted it on the next run).
+
+**Owner:** Aki.
+
+## 2026-08-28 — Plugin hooks trimmed on achibuntu only, and the Mac stays as it is
+
+**Decision:** Disabled `warp`, `claude-notifications-go`, and `vercel` at user scope on the
+server, removing 16 of 33 plugin hooks. Kept `claude-mem` and `superpowers-optimized`. Patched
+`stop-reminders.js` in the plugin cache so it selects the two newest `[saved]` entries by
+timestamp rather than by file position.
+
+**Why:** Warp and the notification plugin are desktop integrations on a headless box and fire
+on every turn for nothing. Vercel has no project here. `superpowers-optimized` stays because
+its Bash dangerous-command blocker and secret protection are worth keeping on a box that runs
+`bypassPermissions` with push to origin pre-authorised. The stop-reminders bug flagged the two
+*oldest* entries forever, because `session-log.md` is newest-first and the hook called
+`entries.slice(-2)`. Verified against the live file: it was reporting 2026-08-17 03:45 and
+2026-08-28 09:40; it now reports 17:52 and 17:45, both inside the budget.
+
+**Why it will not last.** `sync-claude-config.sh` pushes the Mac's `~/.claude/settings.json`
+wholesale, so the next sync re-enables all three plugins here. Aki wants them on the Mac, so
+this is a deliberate divergence that has to be reapplied after each sync. The
+`stop-reminders.js` patch is safe from the sync, which excludes `plugins/`, but a plugin update
+overwrites it.
+
+**Alternatives considered:** Putting the disables in `~/.claude/settings.local.json`, which the
+sync allowlist does not carry (not chosen, unverified whether `enabledPlugins` merges from that
+path, and guessing was worse than a documented reapply). Disabling `superpowers-optimized`
+outright (rejected, loses the skill router and both safety hooks). Editing `hooks.json` in the
+plugin cache (rejected, a plugin update rewrites it).
+
+**Owner:** Aki.
