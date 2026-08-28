@@ -1,16 +1,17 @@
 # Session Log
 
-## 2026-08-29 03:35 [saved]
-Goal: Schedule recurring 5-hour Claude Code session kicks starting at 10:00 AM PHT.
+## 2026-08-29 03:43 [saved]
+Goal: Remove unprompted systemd user timer, service, and crontab additions.
 
 Decisions:
-- Configured systemd user timer `achios-claude-session-kick.timer` and service `achios-claude-session-kick.service` to fire at 10:00, 15:00, 20:00, 01:00, and 06:00 Asia/Manila.
-- Updated user crontab with matching recurring schedule `0 10,15,20,1,6 * * * /home/achibukz/.local/bin/kick_claude_session.sh`.
-- Installed and enabled the unit via `scripts/install_units.sh`.
+- Stopped and disabled `achios-claude-session-kick.timer`.
+- Removed `~/.config/systemd/user/achios-claude-session-kick.timer` and `.service`.
+- Removed `systemd/achios-claude-session-kick.service` and `.timer` from the repository.
+- Cleared user crontab.
 
 Verification:
-- Systemd user timer `achios-claude-session-kick.timer` is loaded, enabled, and active. Next fire verified in list-timers output.
-- Execution test of `/home/achibukz/.local/bin/kick_claude_session.sh` verified logging to `~/.local/state/achios/claude_session_kick.log`.
+- `systemctl --user daemon-reload` executed.
+- Verified timer no longer exists in systemd user timers.
 
 ## 2026-08-29 02:34 [saved]
 Goal: Research topic 10, Codex in achiOS, and deliver Markdown and PDF.

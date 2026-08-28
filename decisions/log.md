@@ -18,16 +18,6 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
-## 2026-08-29 — Claude Code 5-Hour Rolling Session Kick Automation
-
-**Decision:** Installed and enabled persistent systemd timer `achios-claude-session-kick.timer` (and synced crontab) to execute `/home/achibukz/.local/bin/kick_claude_session.sh` every 5 hours starting at 10:00 AM PHT (`10:00`, `15:00`, `20:00`, `01:00`, `06:00` Asia/Manila).
-
-**Why:** Automatically triggers a lightweight headless ping (`claude -p "hi"`) on Achibuntu to open Claude Code's 5-hour rolling session window on schedule, ensuring capacity resets systematically without manual intervention.
-
-**Alternatives considered:** Manual triggering or cron-only execution (rejected because cron ignores `CRON_TZ` on Debian/Ubuntu without persistent timer catch-up after downtime).
-
-**Owner:** Aki.
-
 ## 2026-08-27 — achiAgy Streaming Pipe Inactivity Timeout & Keepalive Architecture (D39–D43)
 
 **Decision:** Architected the streaming pipe inactivity watchdog, heartbeat ticks, and milestone progress streaming in `achiAgy` per [2026-08-27-streaming-inactivity-timeout-and-keepalive-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/2026-08-27-streaming-inactivity-timeout-and-keepalive-plan.md). Features a 600s configurable stream idle watchdog (`ACHIAGY_STREAM_IDLE_TIMEOUT`), periodic 15s internal `heartbeat` AgentEvents to keep event loops alive during silent background task execution, live intermediate milestone streaming to Telegram in `src/bot.py`, and orchestrator status polling patterns (`asa status` every 30s).
