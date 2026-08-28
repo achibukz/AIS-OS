@@ -22,9 +22,7 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
-- [ ] Execute achiAgy ticket #29: resolve HTML double-escaping in media dispatcher badges and enforce Tailscale web viewer link rendering #achiagy #telegram #media #bug !high @2026-08-28
 - [ ] Design and implement a dedicated ticket-authoring skill / subagent (running on Gemini / Antigravity / Claude Sonnet) to create structured, unslop GitHub issues with tracer-bullet acceptance criteria rather than relying on Claude Opus alone #skills #agents #tickets #tooling !high @2026-08-28
-- [ ] Upgrade Claude Code session kick routines (/home/achibukz/.local/bin/kick_claude_session.sh and sessionclaude skill) with meaningful prompt templates and dispatch an email alert via achiOS notification pipeline upon session initialization #achios #automation #claude !high @2026-08-28
 - [ ] Audit Asa research failure modes and author implementation plan with Claude Code per [2026-08-28-asa-research-failure-modes-and-retry-loop-audit.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-28-asa-research-failure-modes-and-retry-loop-audit.md): (1) fix crashing `asa status` caused by unhandled FileNotFoundError on non-run directories in `~/.local/share/asa/runs/`, and (2) add automated Muses re-run loop when Althea unsupported claims exceed threshold (70-80%) #asa #audit #workflows #planning !high @2026-08-28
 - [ ] Execute prioritized open tickets in achiAgy per [roadmap.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/roadmap.md) starting with #24 (read-only lock bypass), #1 (atomic persistence), #7 (per-topic defaults), #4 (orchestration mixin), and #9 (Atlas persona) #achiagy #engineering !high @2026-08-28
 - [ ] Repair tests/test_daily_brief.py, all 44 tests fail against the refactored daily_brief module (no attribute parse_tasks, tasks_message, schedule_message, color_dot, polish_with_claude) #infra #testing !med
@@ -49,6 +47,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 ## Blocked
 
 ## Done
+- [x] Execute achiAgy ticket #29: resolve HTML double-escaping in media dispatcher badges and enforce Tailscale web viewer link rendering #achiagy #telegram #media #bug !high @2026-08-28  (done 2026-08-28)
 - [x] Set up new Term (AY2627-T1) in schoolMem with Claude Code — five subjects scaffolded to the current schema (CCINOV8, GELITPH, STDISCM, STSP002, THS-ST2), AY2526-T3 frozen, THS-ST1 thesis state carried into THS-ST2, [_term-index.md](http://100.106.210.38:8999/Documents/Obsidian/schoolMem/wiki/AY2627-T1/_term-index.md) #school #schoolmem !high @2026-08-28  (done 2026-08-28)
 - [x] Fix the schoolMem wiki guard — it denied attended sessions because the hook outlives the bot that arms it; now keys off ACHIOS_UNATTENDED_BOT / TELEGRAM_STATE_DIR, and the Bash matcher no longer misses paths held in shell variables (`scripts/schoolmem_wiki_guard.py`, guard suite 20 → 47) #achios #schoolmem #security !high @2026-08-28  (done 2026-08-28)
 - [x] Implement centralized documents and media repository synced via Syncthing across Mac and Achibuntu per [2026-08-27-centralized-documents-and-media-store-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-27-centralized-documents-and-media-store-plan.md) with Claude Code #infra #storage #syncthing #schoolmem #achimem !high @2026-08-28  (done 2026-08-28)

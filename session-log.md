@@ -1,5 +1,15 @@
 # Session Log
 
+## 2026-08-28 17:45 [saved]
+Goal: Update master task register (complete achiAgy ticket #29, drop session kick routine upgrade).
+
+Decisions:
+- Marked achiAgy ticket #29 as done in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+- Removed Claude Code session kick upgrade task from active register per user instruction.
+
+Open:
+- None.
+
 ## 2026-08-28 16:51 [saved]
 Goal: Centralized documents and media store, built and grilled.
 
