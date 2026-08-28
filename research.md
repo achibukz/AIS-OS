@@ -116,4 +116,34 @@
   - *Tradeoffs & Benchmarks:* Offline privacy and hardware requirements (VRAM, CPU, RAM) vs cloud-based latency and free-tier limitations.
 - **Target Deliverable:** `~/Documents/Obsidian/achiMem/raw/2026-08-28-whisper-flow-free-alternatives-deep-dive.md`
 
+### 10. Integrating Codex into the achiOS Workflow — Multi-Agent Architecture, Model Hierarchy, and OS-Agnostic Engine Strategy
 
+- **Task Reference:** [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) (`!high`)
+- **Research Question:** How should OpenAI Codex CLI be integrated into the achiOS multi-agent ecosystem — as a Hermes model backend (Hermes+Codex brain), as a direct model provider inside achiAgy replacing or supplementing `agy`, or as an MCP tool server — and what is the optimal model hierarchy, token economics, and task routing when stacking Codex, Claude Code, Gemini, and other engines together? This is additive, not a replacement — we are extending what we have.
+- **Inquiry Lenses:**
+
+  - *Lens 1 — Hermes + Codex Brain (Hermes as orchestrator, Codex as reasoning engine):*
+    Evaluate running Hermes gateway with `provider: openai-codex` (OAuth, no per-token billing under subscription). Map what Hermes's tool harness (browser-use, Kanban DB, cron scheduling, 150+ skills, SQLite WAL sessions, 20+ messaging platform adapters) gains from o3/o4-mini or `codex-mini-latest` as the brain vs the current Nemotron-free baseline. Identify the specific task classes where this is strictly better than the current achiAgy+Gemini setup (e.g. long-horizon code planning, architecture review, autonomous SRE cron tasks). Document the pairing friction: auth flow, `hermes auth add openai-codex` OAuth steps, config.yaml changes, and what the `achiHermes` Hub topic would look like in the Telegram supergroup.
+
+  - *Lens 2 — Codex as a Direct Model Provider in achiAgy (OS-agnostic engine layer):*
+    Research what it takes to add Codex as a selectable model in `achiAgy/src/config.py` — either via `codex exec` subprocess wrapping (mirroring how `agy` is wrapped today) or via `codex mcp-server` (stdio MCP mount, cleaner tool-schema interface). Evaluate session continuity (`codex exec resume --last`), streaming NDJSON compatibility with `AgyClient`, and sandboxed code execution. Compare per-request latency and context limits (Codex: 200K ctx vs Gemini: 1M ctx). Answer whether Codex as an MCP-mounted engine inside achiAgy is the cleanest path toward OS-agnostic model routing (any model — Claude, Gemini, Codex, local — selectable per topic with zero code duplication).
+
+  - *Lens 3 — Pros and Cons: Codex vs Claude Code as Orchestrators (Token Economics + Billing):*
+    Direct comparison of using Codex CLI vs Claude Code as the primary agentic engine for achiOS. Dimensions: token billing model (Codex subscription seat vs Claude Code Max subscription vs per-token API), effective cost per complex coding task, context window constraints and their real-world impact on long tasks, tool quality (terminal, git, file ops, search), model ceiling (o3/o4-mini/Codex-1 vs Claude Opus 4.6 vs Gemini 3.1 Pro), and rate limits per plan tier. Include token consumption benchmarks if available from community reports.
+
+  - *Lens 4 — Full Model Access Matrix and Task Routing Hierarchy:*
+    Build a comprehensive matrix of every model accessible via Claude Code, Codex CLI, and Gemini/agy across all available tiers (free, subscription, API). Columns: context window, max output, reasoning quality tier, coding benchmark scores (SWE-Bench, HumanEval), tool-use reliability, multimodal capability, cost, and latency. From this matrix, define a recommended routing hierarchy for achiOS topics:
+    - Which model handles everyday Telegram chat and task tracking (#General, daily brief)?
+    - Which handles architectural review and long HITL sessions (#Aurora, #Ari)?
+    - Which handles implementation tickets with heavy file mutations (#Aea)?
+    - Which handles autonomous cron tasks and research pipelines (Asa, Atlas)?
+    - Which handles emergencies and deep reasoning that rivals Opus (Sol, Luna, o3)?
+    Include Sol, Luna, and other strong models (o3, o4-mini, Gemini 3.1 Pro High) in this comparison and identify which tasks they beat Opus at and which they don't.
+
+  - *Lens 5 — Benefits of Adding Codex to the Stack (Additive Value, Not Replacement):*
+    Document the concrete, non-overlapping value Codex CLI brings that Claude Code and agy do not cover today: native OpenAI subscription OAuth (no per-token billing for Codex-gated models), access to o3/o4-mini reasoning on demand, `codex exec review` as a dedicated code-review engine, Cloud task execution (`codex cloud`), sandbox isolation (`codex sandbox`), and `mcp-server` mode for composing Codex into any MCP-aware orchestrator. Frame this as an additive superpower layer on top of the existing achiOS stack, clarifying which new capabilities unlock without displacing Gemini Flash as the cheap everyday engine or Claude Opus as the heavy reasoning fallback.
+
+  - *Lens 6 — OS-Agnostic Engine Rename and Architecture Implication:*
+    Research how naming and structural changes to the `achiAgy` codebase (currently named after Google Antigravity) should be scoped to support a genuinely engine-agnostic architecture — where `agy`, `codex exec`, `claude -p`, or any future CLI agent can be swapped in per topic. What's the minimal rename surface (repo name, service names, config keys, systemd units, AGENTS.md, README) and what architectural changes in `AgyClient` make the engine truly pluggable? Document candidate names (e.g. `achiAgent`, `achiOS-agent`, `achihub`, `achicore`) and the trade-offs of each.
+
+- **Target Deliverable:** `~/Documents/Obsidian/achiMem/raw/2026-08-28-codex-in-achios-workflow-and-model-hierarchy.md`
