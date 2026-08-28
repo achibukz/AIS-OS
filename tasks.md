@@ -22,6 +22,7 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Execute achiAgy ticket #35: display active topic, model, effort, mode, and skills in /new reset message #achiagy #telegram #ux !med @2026-08-28
 - [ ] Audit Asa research failure modes and author implementation plan with Claude Code per [2026-08-28-asa-research-failure-modes-and-retry-loop-audit.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-28-asa-research-failure-modes-and-retry-loop-audit.md): (1) fix crashing `asa status` caused by unhandled FileNotFoundError on non-run directories in `~/.local/share/asa/runs/`, and (2) add automated Muses re-run loop when Althea unsupported claims exceed threshold (70-80%) #asa #audit #workflows #planning !high @2026-08-28
 - [ ] Execute prioritized open tickets in achiAgy per [roadmap.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/roadmap.md) starting with #24 (read-only lock bypass), #1 (atomic persistence), #7 (per-topic defaults), #4 (orchestration mixin), and #9 (Atlas persona) #achiagy #engineering !high @2026-08-28
 - [ ] Repair tests/test_daily_brief.py, all 44 tests fail against the refactored daily_brief module (no attribute parse_tasks, tasks_message, schedule_message, color_dot, polish_with_claude) #infra #testing !med

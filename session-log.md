@@ -1,5 +1,16 @@
 # Session Log
 
+## 2026-08-28 18:35 [saved]
+Goal: Author and publish achiAgy ticket #35 via /agy-tickets.
+
+Decisions:
+- Published GitHub issue #35 to `achibukz/achiAgy` (`Display active topic, model, effort, mode, and skills in /new reset message`).
+- Applied unslop guidelines (clean card without decorative emojis).
+- Added tracking item to [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+Open:
+- None.
+
 ## 2026-08-28 17:52 [saved]
 Goal: A ticket-authoring skill a non-Opus session can run, plus a trim of the plugin hooks.
 
