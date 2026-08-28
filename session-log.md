@@ -1,5 +1,17 @@
 # Session Log
 
+## 2026-08-28 15:56 [saved]
+Goal: Diagnose and fix Telegram /usage command failure in achiAgy (PR #31).
+
+Decisions:
+- Identified root cause in `src/bot.py:621-633`: `cmd_usage` passed decomposed keyword arguments to `build_models_and_quota_html(session, p_state, global_stats)`, raising a `TypeError`.
+- Fixed `cmd_usage` in `src/bot.py` to pass `(session, p_state, global_stats)`.
+- Added `test_cmd_usage_handler` in `tests/test_quota.py`.
+- Pushed branch `ticket/fix-usage-command-signature` and opened GitHub PR #31 (`achibukz/achiAgy#31`).
+
+Open:
+- Review and merge achiAgy PR #31, then restart `achi-agy.service`.
+
 ## 2026-08-28 07:41 [saved]
 Goal: Author and file GitHub ticket achiAgy#29 for media dispatcher badge double-escaping and Tailscale web viewer link rendering.
 
