@@ -785,3 +785,23 @@ the gitignored `raw/` material to the Mac). Filing it for later (rejected, objec
 not a thing to schedule).
 
 **Owner:** Aki.
+
+## 2026-08-28 — No ticket-authoring skill; `to-issues` already covers it
+
+**Decision:** Dropped the planned `ticket-author` skill. The existing global `to-issues` skill
+already breaks a plan into tracer-bullet vertical slices, quizzes Aki on granularity and
+dependencies, and publishes with the body template achiOS already uses: What to build,
+Acceptance criteria as checkboxes, Blocked by. Two gaps remain open, both small patches to
+`~/.claude/skills/to-issues/SKILL.md` rather than reasons to build something new.
+
+**Why:** The point of the original task was that Aki should not need Opus to write tickets Aea and
+Luna can work from. `to-issues` is model-agnostic prose with no Opus dependency, so the need was
+already met and nobody had checked. Building a second skill on the same trigger phrase would have
+made the router pick one of the two at random, which is worse than either alone.
+
+**Alternatives considered:** A fresh `~/.claude/skills/ticket-author/` reusing the slice rules
+(rejected, duplicate triggers). Wrapping `to-issues` (rejected for the same reason). An achiAgy
+agent that dispatches authoring to `agy` (rejected, ticket writing is the judgment-heavy step and
+a handoff there adds a failure mode for no gain).
+
+**Owner:** Aki.
