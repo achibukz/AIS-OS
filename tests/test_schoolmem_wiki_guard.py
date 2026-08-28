@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -8,13 +9,34 @@ GUARD = Path(__file__).resolve().parent.parent / "scripts" / "schoolmem_wiki_gua
 VAULT = Path.home() / "Documents" / "Obsidian" / "schoolMem"
 WIKI = VAULT / "wiki"
 
+MARKER = "ACHIOS_UNATTENDED_BOT"
+FALLBACK = "TELEGRAM_STATE_DIR"
 
-def run(event):
+
+def bot_env(**overrides):
+    """The environment telegram-bot.sh hands the guard."""
+    env = os.environ.copy()
+    env[MARKER] = "1"
+    env[FALLBACK] = "/home/achibukz/.local/state/achios/schoolmem-bot"
+    env.update(overrides)
+    return env
+
+
+def attended_env():
+    """A session Aki is sitting in front of: neither marker present."""
+    env = os.environ.copy()
+    env.pop(MARKER, None)
+    env.pop(FALLBACK, None)
+    return env
+
+
+def run(event, env=None):
     return subprocess.run(
         ["python3", str(GUARD)],
         input=json.dumps(event),
         capture_output=True,
         text=True,
+        env=env if env is not None else bot_env(),
     )
 
 
@@ -115,7 +137,11 @@ def test_allows_bash_that_only_reads_wiki(command):
 
 def test_unparseable_input_fails_closed():
     result = subprocess.run(
-        ["python3", str(GUARD)], input="not json", capture_output=True, text=True
+        ["python3", str(GUARD)],
+        input="not json",
+        capture_output=True,
+        text=True,
+        env=bot_env(),
     )
     assert decision(result) == "deny"
 
@@ -123,3 +149,86 @@ def test_unparseable_input_fails_closed():
 def test_deny_reason_points_at_the_inbox():
     payload = json.loads(run(write_event(WIKI / "index.md")).stdout)
     assert "inbox/" in payload["hookSpecificOutput"]["permissionDecisionReason"]
+
+
+# --- session detection -------------------------------------------------------
+# The hook is armed in <repo>/.claude/settings.json by telegram-bot.sh and outlives the
+# bot, so every later interactive session inherits it. It must judge who is running.
+
+
+@pytest.mark.parametrize("tool", ["Write", "Edit", "MultiEdit", "NotebookEdit"])
+def test_attended_session_may_write_the_wiki(tool):
+    target = WIKI / "AY2627-T1" / "_term-index.md"
+    assert decision(run(write_event(target, tool), env=attended_env())) is None
+
+
+def test_attended_session_may_run_bash_against_the_wiki():
+    assert decision(run(bash_event("echo hi > wiki/log.md"), env=attended_env())) is None
+
+
+def test_attended_session_is_not_denied_by_a_malformed_event():
+    # main() checks the environment before touching stdin, so an unparseable event can
+    # never lock Aki out of the vault he owns.
+    result = subprocess.run(
+        ["python3", str(GUARD)],
+        input="not json",
+        capture_output=True,
+        text=True,
+        env=attended_env(),
+    )
+    assert decision(result) is None
+
+
+def test_explicit_marker_alone_is_enough():
+    env = attended_env()
+    env[MARKER] = "1"
+    assert decision(run(write_event(WIKI / "index.md"), env=env)) == "deny"
+
+
+def test_telegram_state_dir_alone_is_enough():
+    # Fallback: a launcher predating the marker stays guarded rather than failing open.
+    env = attended_env()
+    env[FALLBACK] = "/home/achibukz/.local/state/achios/schoolmem-bot"
+    assert decision(run(write_event(WIKI / "index.md"), env=env)) == "deny"
+
+
+def test_marker_set_to_something_other_than_one_does_not_arm_it():
+    env = attended_env()
+    env[MARKER] = "0"
+    assert decision(run(write_event(WIKI / "index.md"), env=env)) is None
+
+
+# --- the variable-indirection hole -------------------------------------------
+# The old pattern required the literal "wiki/" to sit next to the write verb, so a path
+# held in a shell variable walked straight past it. This is how the AY2627-T1 scaffold
+# copied four files into the vault on 2026-08-28 without tripping the guard.
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        'SRC=wiki/AY2526-T3/x; DST=/tmp/y; cp "$SRC/CLAUDE.md" "$DST/"',
+        'D=wiki/AY2627-T1; mkdir -p "$D/topics"',
+        'F=wiki/index.md; sed -i "s/a/b/" "$F"',
+        'B=wiki/log.md\ncat >> "$B" <<EOF\nhi\nEOF',
+        "mkdir wiki/AY2627-T1",
+        "touch wiki/AY2627-T1/.gitkeep",
+        'python3 -c "open(\'wiki/index.md\', \'w\').write(\'x\')"',
+        "find wiki/ -name '*.md' -delete",
+        "rsync -a /tmp/x wiki/",
+        "ln -s /tmp/x wiki/x",
+    ],
+)
+def test_denies_indirect_and_previously_missed_writes(command):
+    assert decision(run(bash_event(command))) == "deny"
+
+
+def test_bash_denial_explains_the_coarseness():
+    payload = json.loads(run(bash_event("cp a.md wiki/")).stdout)
+    reason = payload["hookSpecificOutput"]["permissionDecisionReason"]
+    assert "coarse" in reason
+
+
+def test_still_allows_reads_that_mention_no_write_verb():
+    for command in ["wc -l wiki/index.md", "head -20 wiki/log.md", "diff wiki/a wiki/b"]:
+        assert decision(run(bash_event(command))) is None, command

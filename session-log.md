@@ -931,3 +931,35 @@ Open:
 - Phase 8 unfinished: cron round-trip, power-cut test.
 - SSH password auth still enabled on the server.
 
+
+## 2026-08-28 09:40 [saved]
+Goal: Fix the schoolMem wiki guard, which denied an attended session scaffolding a new term.
+
+Decisions:
+- The guard identifies the session before judging the call. `ACHIOS_UNATTENDED_BOT=1` is the
+  explicit marker, exported by `telegram-bot.sh`; `TELEGRAM_STATE_DIR` is the fallback so an
+  older launcher stays guarded instead of failing open. Neither present means attended.
+- Root cause was scope, not logic. `telegram-bot.sh` arms the hook by writing it into
+  `<repo>/.claude/settings.json`, which outlives the bot, so every later interactive session
+  in schoolMem inherited a hook written for the bot.
+- The env check runs before stdin is read. A malformed event can no longer lock Aki out of
+  his own vault.
+- Bash matching now tests two signals independently, mentions-wiki AND can-write, instead of
+  requiring the literal `wiki/` beside the verb. A path in a shell variable used to walk past;
+  that is how four files reached the vault untripped during the AY2627-T1 scaffold.
+- Accepted the resulting false positives. `cat wiki/a.md > inbox/b.md` is denied. Precision
+  belongs in the path-checked tools, and the deny reason now says so.
+
+Rejected:
+- A read-only Bash allowlist. Sound, but it would have blocked the bot's legitimate `inbox/`
+  writes, which is the workflow the guard exists to preserve.
+- Making `AGENTS.md`/`GEMINI.md` pointer files in schoolMem. Unverified whether Codex and agy
+  follow pointers; kept as a separate experiment.
+
+Open:
+- The guard still loses to a path assembled from pieces (`W=wik; cat > ${W}i/x`). Documented
+  as out of scope; it guards against the obvious, it is not a sandbox.
+- `.claude/settings.json` in schoolMem is still shared state between the bot and interactive
+  sessions. Session detection makes that harmless, but scoping the arming to the bot's own
+  session would be the cleaner fix.
+- 44 pre-existing failures in `tests/test_daily_brief.py`, unrelated and untouched.

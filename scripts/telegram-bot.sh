@@ -79,6 +79,11 @@ log "launching claude ($BOT_MODEL, bypassPermissions, guard=${BOT_GUARD:-none})"
 
 export TELEGRAM_STATE_DIR="$BOT_STATE_DIR"
 
+# Tells a PreToolUse guard that nobody is watching this session. The guard also
+# falls back to TELEGRAM_STATE_DIR above, so it stays armed if this line is ever
+# dropped, but set it explicitly rather than leaning on a side effect.
+export ACHIOS_UNATTENDED_BOT=1
+
 claude \
     --channels plugin:telegram@claude-plugins-official \
     --model "$BOT_MODEL" \
