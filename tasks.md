@@ -41,7 +41,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-09-02
 - [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
 - [ ] Complete 5-month ING Internship Agreement Form (signatures: Aki, Parent/Guardian, DLSU coordinator, then notarize) #career #school !high
-- [ ] Re-auth achiOS Google tokens — run `scripts/auth_google_account.py` on Achibuntu to regenerate expired `~/.config/achios/google_token*.json` files (expired Aug 23–24, gcal_add.py broken) #achios #infra !high
+- [ ] Plan and implement automated weekly Google OAuth token refresh for achiOS — research fully automated headless re-auth (service account, token rotation script, or publish-to-production fix); if full automation is not possible, set up a weekly cron + Telegram notification reminding Aki to run `scripts/auth_google_account.py` before tokens expire (7-day window) #achios #infra #automation !high
 - [ ] Cancel current Google One subscription ahead of renewal #finances #personal !low @2026-10-13
 - [ ] Subscribe to Google AI Pro Student Discount (₱275/mo for up to 4 years via SheerID verification) #finances #personal !low @2026-10-14
 
