@@ -28,6 +28,26 @@ Verification:
 - `systemctl --user daemon-reload` executed.
 - Verified timer no longer exists in systemd user timers.
 
+## 2026-08-29 11:05 [saved]
+Goal: Get calendar writes working again before starting the ticket batch.
+
+Decisions:
+- Ported `scripts/gcal_add.py` off the dead `google_token*.json` files onto the gws CLI, closing
+  AIS-OS #4 ahead of the rest of the batch. gws credentials are encrypted, so google-auth cannot
+  load them; every call shells out to the binary.
+- Calendar resolution walks `calendarList` across personal, work, main, dlsu; first writable
+  match wins, nothing cached. Insert uses `events insert --json`, not `+insert`, which cannot
+  express an all-day event. A profile that errors is skipped with a warning rather than aborting.
+- Verified live: `--list` returns 30 writable calendars across all four profiles, insert writes
+  `start.date` with reminders off, a rerun is a no-op, unknown calendar exits 1.
+- Backfilled the four future dated tasks that never got events: BPI account (ING, 09-02),
+  learning architecture (Personal, 08-30), Google One cancel (10-13), Google AI Pro (10-14).
+  The dated tasks from 08-27 and 08-28 are already overdue, so no events were created for them.
+- 21 unit tests in `tests/test_gcal_add.py`.
+
+Open:
+- Remaining batch: AIS-OS #3, #5, #6, then #7, #8, then achiCore #57.
+
 ## 2026-08-29 10:20 [saved]
 Goal: Grill a plan for the Google OAuth 7-day cycle and the inconsistent /tasks output, then publish tickets.
 
