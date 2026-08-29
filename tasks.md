@@ -42,6 +42,8 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
 - [ ] Complete 5-month ING Internship Agreement Form (signatures: Aki, Parent/Guardian, DLSU coordinator, then notarize) #career #school !high
 - [ ] Plan and implement automated weekly Google OAuth token refresh for achiOS — research fully automated headless re-auth (service account, token rotation script, or publish-to-production fix); if full automation is not possible, set up a weekly cron + Telegram notification reminding Aki to run `scripts/auth_google_account.py` before tokens expire (7-day window) #achios #infra #automation !high
+- [ ] Ship the Google auth lifecycle and /tasks renderer batch, AIS-OS #3 to #8 plus achiCore #57, per [the plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-29-google-auth-lifecycle-and-tasks-renderer-plan.md) #achios #infra !high
+- [ ] Test whether `ssh -L` port-forward re-auth works for gws on achibuntu, so the four logins run server-side and no credential copy is needed #achios #infra !med
 - [ ] Cancel current Google One subscription ahead of renewal #finances #personal !low @2026-10-13
 - [ ] Subscribe to Google AI Pro Student Discount (₱275/mo for up to 4 years via SheerID verification) #finances #personal !low @2026-10-14
 

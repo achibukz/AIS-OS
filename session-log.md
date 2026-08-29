@@ -13,26 +13,52 @@ Verification:
 - `systemctl --user daemon-reload` executed.
 - Verified timer no longer exists in systemd user timers.
 
+## 2026-08-29 10:20 [saved]
+Goal: Grill a plan for the Google OAuth 7-day cycle and the inconsistent /tasks output, then publish tickets.
+
+Decisions:
+- Accept the 7-day Testing-mode token cycle. Aki declined publishing `achiclaude` to Production,
+  so weekly re-auth is by design and detection becomes mandatory.
+- `gws` is the one true auth path. Its `token_cache.json` is ciphertext, so Python cannot load
+  those credentials; everything shells out to the `gws` binary. `gcal_add.py` ports to
+  `gws calendar events insert --json`, since `+insert` cannot write all-day events.
+- Health check is reactive and proactive, per profile: a read call, a dry-run write probe, a
+  Gmail read, plus a `credentials.enc` mtime warning inside 48 hours of the wall. Fixed Sunday
+  09:00 nudge, daily 07:30 silent-unless-broken check, both to `achinouncements`.
+- Digests keep sending with a dead-profile banner. Silence is what hid this for five days.
+- `/tasks` gets a fixed Python skeleton for deadlines and a dynamic model pass only for the
+  undated remainder, one shared renderer for cron and bot, deterministic fallback. Model pass
+  held back from this batch; #6 ships deterministic-only.
+- Published AIS-OS #3 to #8 and achiCore #57, plus a comment on achiCore #41 adding per-call
+  graceful degradation as a second fallback class.
+
+Rejected:
+- Service account (no domain-wide delegation) and a token rotation script (cannot revive a
+  token Google deliberately kills). Neither can work.
+- A fifth Telegram bot for auth alerts.
+- Suppressing digests while auth is dead.
+
+Open:
+- Live bug: `gcal_add.py --list` fails with `invalid_grant`. Every dated task since 2026-08-24
+  has no calendar event. Fixed by #4.
+- `ssh -L` re-auth test unproven; `gws` may bind a random port.
+- The original "Plan and implement automated weekly Google OAuth token refresh" task is still
+  active and now superseded by the ticket batch.
+
 ## 2026-08-29 02:34 [saved]
 Goal: Research topic 10, Codex in achiOS, and deliver Markdown and PDF.
 
 Decisions:
-- Saved the [research report](http://100.106.210.38:8999/Documents/Obsidian/achiMem/raw/2026-08-28-codex-in-achios-workflow-and-model-hierarchy.md) at the register's requested path and the [PDF](http://100.106.210.38:8999/Documents/Files/projects/achios/2026-08-28-codex-in-achios-workflow-and-model-hierarchy.pdf) in the document store.
-- Used the existing achiAgy engine tickets as the baseline. Recommendations remain proposals; no code, ticket, service, or runtime configuration changed.
-- Stopped all three research workers when Aki requested no subagents. Stopped source checking when he requested the PDF.
-
-Findings:
-- Official documentation deprecates Codex MCP-server in favor of app-server.
-- Metadata-only app-server calls returned visible models and structured quota windows without starting a model turn.
-- File-change events alone cannot establish that a failed turn is safe to replay.
-
-Verification:
-- PDF has 11 pages and 64 clickable links. All six sections and the final appendix are present; rendered pages inspected for layout.
-- Final source audit was not completed, per Aki's instruction. No end-to-end achiAgy Codex turn or benchmark was run.
+- Saved the [research report](http://100.106.210.38:8999/Documents/Obsidian/achiMem/raw/2026-08-28-codex-in-achios-workflow-and-model-hierarchy.md) and the [PDF](http://100.106.210.38:8999/Documents/Files/projects/achios/2026-08-28-codex-in-achios-workflow-and-model-hierarchy.pdf) in the document store. 11 pages, 64 links.
+- Baselined on the existing achiAgy engine tickets. Recommendations are proposals; nothing shipped.
+- Codex docs deprecate the MCP server in favour of app-server. Metadata-only app-server calls
+  return visible models and quota windows without starting a model turn.
+- File-change events alone cannot prove a failed turn is safe to replay.
 
 Rejected:
-- Further parallel research or source checking after Aki stopped them.
-- Replacing the ongoing integration or treating research recommendations as approved implementation.
+- Further parallel research or source checking after Aki stopped them. The final source audit
+  never ran, and no end-to-end achiAgy Codex turn was benchmarked.
+- Treating the recommendations as approved implementation.
 
 Open:
 - Integration tickets remain separate from this completed research task.

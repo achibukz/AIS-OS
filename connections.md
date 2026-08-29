@@ -83,3 +83,7 @@ there rather than opening repos blind.
   `achiAgy/src/media_dispatcher.py` in step with the viewer's list.
 - The vault folder `varww-m4imt` now ignores `.git` and `*.sync-conflict-*`. Set it on any new device
   before first sync, or that device will start replicating git metadata again.
+
+## Codex global writing hook
+
+Added 2026-08-29 at `/home/achibukz/.codex/hooks.json`. A SessionStart command prints Aki's unslop instruction as JSON additional context. The command output is verified; activation awaits Aki's trust approval through `/hooks`. No network endpoint or credentials. Claude Code settings are unchanged.

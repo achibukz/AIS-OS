@@ -118,6 +118,8 @@
 
 ### 10. Integrating Codex into the achiOS Workflow — Multi-Agent Architecture, Model Hierarchy, and OS-Agnostic Engine Strategy
 
+- Status: Research delivered 2026-08-29. [Markdown report](http://100.106.210.38:8999/Documents/Obsidian/achiMem/raw/2026-08-28-codex-in-achios-workflow-and-model-hierarchy.md) and [PDF](http://100.106.210.38:8999/Documents/Files/projects/achios/2026-08-28-codex-in-achios-workflow-and-model-hierarchy.pdf). Continued without subagents after Aki requested it; stopped the final source audit at his request. No Asa STORM run or integration implementation.
+
 - **Task Reference:** [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) (`!high`)
 - **Research Question:** How should OpenAI Codex CLI be integrated into the achiOS multi-agent ecosystem — as a Hermes model backend (Hermes+Codex brain), as a direct model provider inside achiAgy replacing or supplementing `agy`, or as an MCP tool server — and what is the optimal model hierarchy, token economics, and task routing when stacking Codex, Claude Code, Gemini, and other engines together? This is additive, not a replacement — we are extending what we have.
 - **Inquiry Lenses:**

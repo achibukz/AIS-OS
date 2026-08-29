@@ -878,3 +878,46 @@ Why: Aki is already integrating Codex into achiAgy and wants research that infor
 Alternatives: Further parallel investigation and a complete final source audit were stopped at Aki's request. No new orchestrator, service migration, or repo rename was executed.
 
 Owner: Aki.
+
+## 2026-08-29 — Accept the 7-day Google token cycle, make gws the only auth path
+
+**Decision.** achiOS stops maintaining two Google auth systems. The `gws` CLI profiles
+(`gws-main`, `gws-personal`, `gws-work`, `gws-dlsu`) become the only credential path, and the
+legacy `~/.config/achios/google_token*.json` files, `scripts/auth_google_account.py`, and every
+direct `google-auth` import get deleted. `gcal_add.py` ports to
+`gws calendar events insert --json`.
+
+The seven-day refresh-token expiry stays. GCP project `achiclaude` keeps its consent screen in
+Testing, so Google kills refresh tokens weekly. Detection and a weekly re-auth nudge replace the
+fix.
+
+**Why.** All three legacy tokens were dead for five days before anyone noticed, because the
+digests silently fall back to `gws` and `gcal_add.py` silently fails. Two auth systems where one
+is dead is worse than one. A constraint settles the direction: `gws` stores credentials as
+ciphertext keyed by `.encryption_key`, so Python's `google-auth` can never load them. The CLI is
+the only way in, and three scripts already use it.
+
+**Alternatives.** Publishing the consent screen to Production is the actual root fix and costs
+nothing, and Aki declined it: no domain, no appetite for the unverified-app warning path. A
+service account cannot read personal Gmail or Calendar without Workspace domain-wide delegation
+he does not control. A token rotation script cannot revive a token Google deliberately expires.
+
+**Owner.** Aki. Plan in `docs/2026-08-29-google-auth-lifecycle-and-tasks-renderer-plan.md`,
+tickets AIS-OS #3 to #8.
+
+## 2026-08-29 — /tasks renders from a shared deterministic skeleton, not a free-form model turn
+
+**Decision.** `cmd_tasks` in achiCore stops handing the literal string `/tasks` to a model.
+Deadline sections are computed in Python and never move. A pinned `gemini-3.7-flash-high` call
+groups only the undated remainder, and any failure falls back to the deterministic card. One
+renderer in `scripts/tasks_digest.py` serves both the cron and the bot.
+
+**Why.** Structure moving between invocations is what made the output feel random, and deadlines
+are objective facts a model should never adjudicate. The undated pile is the one place dynamic
+grouping earns its cost. `daily_brief.py` already runs this degradation contract.
+
+**Alternatives.** Fully deterministic output, which loses the dynamic categorisation Aki
+explicitly wanted. Fully dynamic categories, which reintroduces the drift. A constrained model
+over the whole list, which puts deadlines back in the model's hands.
+
+**Owner.** Aki. Tickets AIS-OS #6 and achiCore #57; the model pass is held back from that batch.
