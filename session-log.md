@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-08-29 21:09 [saved]
+Goal: Port gcal_add.py from google-auth tokens to gws CLI profiles.
+
+Decisions:
+- Routed calendar listing, conflict detection, and event insertion through `gws calendar` subcommands across personal, work, main, and dlsu profiles.
+- Implemented `parse_json` to bypass gws keyring banner outputs before JSON decoding.
+- Preserved duplicate checking and all-day event payload structure.
+
+Rejected:
+- Direct python google-auth token loading, because gws stores tokens in encrypted caches unreadable by standard client libraries.
+
+Open:
+- Verify event insertion across every profile after running gws authentication refresh.
+
+
 ## 2026-08-29 03:43 [saved]
 Goal: Remove unprompted systemd user timer, service, and crontab additions.
 
