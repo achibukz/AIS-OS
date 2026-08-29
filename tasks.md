@@ -22,7 +22,6 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
-- [ ] Do PR 60 of achiCore #achicore !high
 - [ ] Change Telegram command /newtopics to make /new the first command in autocomplete #achicore #telegram !med
 - [ ] Build cron job that scans all repos for open GitHub tickets and surfaces the single most important one to action — Telegram message must include clickable links to each ticket so Aki can jump directly to it #achios #infra #engineering !med
 - [ ] Write `references/model-selection.md` — research-grounded model tier hierarchy and use-case reference guide (Opus, Sonnet, Flash, Flash-lite, etc. across achiOS, achiAgy, Asa, and daily tasks), then update AGENTS.md model guidance sections to match — current AGENTS.md mentions are undetailed and not grounded in research #achios #reference #arch !med
@@ -52,6 +51,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 ## Blocked
 
 ## Done
+- [x] Do PR 60 of achiCore #achicore !high  (done 2026-08-30)
 - [x] Fix conflicting --effort flag dispatch for agy Gemini models in achiCore (achiCore #58) #achicore #bug !high  (done 2026-08-30)
 - [x] Create Ara — personal writer agent for achiOS (name chosen, scope built out as skill) #achios #agents !med  (done 2026-08-29)
 - [x] Rename achiAgy repo and codebase to an OS-agnostic name (candidates: achiAgent, achicore, achihub) — update repo name on GitHub, README, AGENTS.md, CLAUDE.md, systemd units, service names, config keys, and any achiOS references that hardcode "achiAgy" #achiagy #achios #engineering !med  (done 2026-08-29)
