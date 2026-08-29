@@ -1,5 +1,19 @@
 # Session Log
 
+## 2026-08-29 21:18 [saved]
+Goal: Publish tracer-bullet issue for conflicting agy model effort dispatch in achiCore.
+
+Decisions:
+- Published [achiCore #58](https://github.com/achibukz/achiCore/issues/58) to fix MODEL_REGISTRY effort metadata and prevent passing conflicting `--effort` arguments to the `agy` CLI for models with fixed reasoning suffixes.
+- Logged tracking item in tasks.md under Active.
+
+Rejected:
+- Modifying agy CLI binary directly, because achiCore is responsible for dispatching valid CLI flag combinations.
+
+Open:
+- Implement and review issue #58 on a ticket branch.
+
+
 ## 2026-08-29 21:09 [saved]
 Goal: Port gcal_add.py from google-auth tokens to gws CLI profiles.
 
