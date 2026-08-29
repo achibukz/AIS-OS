@@ -17,33 +17,26 @@ Verification:
 Goal: Grill a plan for the Google OAuth 7-day cycle and the inconsistent /tasks output, then publish tickets.
 
 Decisions:
-- Accept the 7-day Testing-mode token cycle. Aki declined publishing `achiclaude` to Production,
-  so weekly re-auth is by design and detection becomes mandatory.
-- `gws` is the one true auth path. Its `token_cache.json` is ciphertext, so Python cannot load
-  those credentials; everything shells out to the `gws` binary. `gcal_add.py` ports to
-  `gws calendar events insert --json`, since `+insert` cannot write all-day events.
-- Health check is reactive and proactive, per profile: a read call, a dry-run write probe, a
-  Gmail read, plus a `credentials.enc` mtime warning inside 48 hours of the wall. Fixed Sunday
-  09:00 nudge, daily 07:30 silent-unless-broken check, both to `achinouncements`.
-- Digests keep sending with a dead-profile banner. Silence is what hid this for five days.
-- `/tasks` gets a fixed Python skeleton for deadlines and a dynamic model pass only for the
-  undated remainder, one shared renderer for cron and bot, deterministic fallback. Model pass
-  held back from this batch; #6 ships deterministic-only.
-- Published AIS-OS #3 to #8 and achiCore #57, plus a comment on achiCore #41 adding per-call
-  graceful degradation as a second fallback class.
+- Accept the 7-day Testing-mode token cycle; Aki declined publishing `achiclaude` to Production.
+  `gws` becomes the only auth path, because its `token_cache.json` is ciphertext Python cannot
+  load. `gcal_add.py` ports to `gws calendar events insert --json`; `+insert` cannot do all-day.
+- Health check per profile: read call, dry-run write probe, Gmail read, plus a `credentials.enc`
+  mtime warning inside 48h. Fixed Sunday 09:00 nudge, daily 07:30 silent-unless-broken.
+- Digests keep sending with a dead-profile banner. Silence hid this for five days.
+- `/tasks` gets a fixed Python skeleton for deadlines, a dynamic model pass for the undated
+  remainder only, one shared renderer, deterministic fallback. Model pass held back from batch.
+- Published AIS-OS #3 to #8, achiCore #57, and a comment on #41 adding per-call degradation as a
+  second fallback class. Plan doc: `docs/2026-08-29-google-auth-lifecycle-and-tasks-renderer-plan.md`.
 
 Rejected:
-- Service account (no domain-wide delegation) and a token rotation script (cannot revive a
-  token Google deliberately kills). Neither can work.
-- A fifth Telegram bot for auth alerts.
-- Suppressing digests while auth is dead.
+- Service account (no domain-wide delegation) and a token rotation script (cannot revive a token
+  Google deliberately kills). A fifth Telegram bot. Suppressing digests while auth is dead.
 
 Open:
-- Live bug: `gcal_add.py --list` fails with `invalid_grant`. Every dated task since 2026-08-24
-  has no calendar event. Fixed by #4.
+- Live bug: `gcal_add.py --list` fails `invalid_grant`. Dated tasks since 2026-08-24 have no
+  calendar event. Fixed by #4.
 - `ssh -L` re-auth test unproven; `gws` may bind a random port.
-- The original "Plan and implement automated weekly Google OAuth token refresh" task is still
-  active and now superseded by the ticket batch.
+- The original OAuth planning task is still active and superseded by the batch line.
 
 ## 2026-08-29 02:34 [saved]
 Goal: Research topic 10, Codex in achiOS, and deliver Markdown and PDF.
