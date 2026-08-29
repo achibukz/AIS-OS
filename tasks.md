@@ -24,7 +24,6 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 ## Active
 - [ ] Do PR 60 of achiCore #achicore !high
 - [ ] Change Telegram command /newtopics to make /new the first command in autocomplete #achicore #telegram !med
-- [ ] Fix conflicting --effort flag dispatch for agy Gemini models in achiCore (achiCore #58) #achicore #bug !high
 - [ ] Build cron job that scans all repos for open GitHub tickets and surfaces the single most important one to action — Telegram message must include clickable links to each ticket so Aki can jump directly to it #achios #infra #engineering !med
 - [ ] Write `references/model-selection.md` — research-grounded model tier hierarchy and use-case reference guide (Opus, Sonnet, Flash, Flash-lite, etc. across achiOS, achiAgy, Asa, and daily tasks), then update AGENTS.md model guidance sections to match — current AGENTS.md mentions are undetailed and not grounded in research #achios #reference #arch !med
 - [ ] Audit Asa research failure modes and author implementation plan with Claude Code per [2026-08-28-asa-research-failure-modes-and-retry-loop-audit.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-28-asa-research-failure-modes-and-retry-loop-audit.md): (1) fix crashing `asa status` caused by unhandled FileNotFoundError on non-run directories in `~/.local/share/asa/runs/`, and (2) add automated Muses re-run loop when Althea unsupported claims exceed threshold (70-80%) #asa #audit #workflows #planning !high @2026-08-28
@@ -53,6 +52,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 ## Blocked
 
 ## Done
+- [x] Fix conflicting --effort flag dispatch for agy Gemini models in achiCore (achiCore #58) #achicore #bug !high  (done 2026-08-30)
 - [x] Create Ara — personal writer agent for achiOS (name chosen, scope built out as skill) #achios #agents !med  (done 2026-08-29)
 - [x] Rename achiAgy repo and codebase to an OS-agnostic name (candidates: achiAgent, achicore, achihub) — update repo name on GitHub, README, AGENTS.md, CLAUDE.md, systemd units, service names, config keys, and any achiOS references that hardcode "achiAgy" #achiagy #achios #engineering !med  (done 2026-08-29)
 - [x] Add tests for `frontmatter_flag`, `orchestrates`, and the mixin branch of `get_persona_prompt` in `src/topic_router.py` — Luna's PR #36 review found these new methods shipped with zero test coverage; three live agents use the mixin path on every turn (agi, aurora, ari) #achiagy #testing !high @2026-08-28  (done 2026-08-29)
