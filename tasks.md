@@ -22,8 +22,8 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
-- [ ] Add tests for `frontmatter_flag`, `orchestrates`, and the mixin branch of `get_persona_prompt` in `src/topic_router.py` — Luna's PR #36 review found these new methods shipped with zero test coverage; three live agents use the mixin path on every turn (agi, aurora, ari) #achiagy #testing !high @2026-08-28
-- [ ] File a dedicated ticket for the orchestration mixin feature that landed unreviewably inside PR #36 (`ORCHESTRATION_MIXIN_FILE`, `_TRUTHY`, `frontmatter_flag`, `orchestrates`, mixin concatenation in `get_persona_prompt`) — no ticket, no spec, no targeted review #achiagy #engineering #planning !med
+- [ ] Build cron job that scans all repos for open GitHub tickets and surfaces the single most important one to action — Telegram message must include clickable links to each ticket so Aki can jump directly to it #achios #infra #engineering !med
+- [ ] Write `references/model-selection.md` — research-grounded model tier hierarchy and use-case reference guide (Opus, Sonnet, Flash, Flash-lite, etc. across achiOS, achiAgy, Asa, and daily tasks), then update AGENTS.md model guidance sections to match — current AGENTS.md mentions are undetailed and not grounded in research #achios #reference #arch !med
 - [ ] Audit Asa research failure modes and author implementation plan with Claude Code per [2026-08-28-asa-research-failure-modes-and-retry-loop-audit.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-28-asa-research-failure-modes-and-retry-loop-audit.md): (1) fix crashing `asa status` caused by unhandled FileNotFoundError on non-run directories in `~/.local/share/asa/runs/`, and (2) add automated Muses re-run loop when Althea unsupported claims exceed threshold (70-80%) #asa #audit #workflows #planning !high @2026-08-28
 - [ ] Execute prioritized open tickets in achiAgy per [roadmap.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/roadmap.md) starting with #24 (read-only lock bypass), #1 (atomic persistence), #7 (per-topic defaults), #4 (orchestration mixin), and #9 (Atlas persona) #achiagy #engineering !high @2026-08-28
 - [ ] Repair tests/test_daily_brief.py, all 44 tests fail against the refactored daily_brief module (no attribute parse_tasks, tasks_message, schedule_message, color_dot, polish_with_claude) #infra #testing !med
@@ -38,18 +38,24 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Audit Hermes research retrospective and orchestrator findings with Claude Code in asa [2026-08-24-hermes-research-and-orchestrator-audit.md](http://100.106.210.38:8999/Code/GitHub/asa/docs/reports/2026-08-24-hermes-research-and-orchestrator-audit.md) #asa #audit !high @2026-08-27
 - [ ] Benchmark Althea fact-checking on gemini-3.1-pro-high vs gemini-3.7-flash-high across claim granularity, latency, and tool fidelity in asa #asa #eval #benchmark !med @2026-08-27
 - [ ] Execute the new implementation plan created with Claude Code #asa #arch !med @2026-08-27
-- [ ] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-08-29
+- [ ] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-09-02
 - [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
 - [ ] Complete 5-month ING Internship Agreement Form (signatures: Aki, Parent/Guardian, DLSU coordinator, then notarize) #career #school !high
-- [ ] Maybe buy Codex — align its billing to the Claude subscription renewal once ING internship / thesis workload ramps up #achios !low @2026-09-29
 - [ ] Cancel current Google One subscription ahead of renewal #finances #personal !low @2026-10-13
 - [ ] Subscribe to Google AI Pro Student Discount (₱275/mo for up to 4 years via SheerID verification) #finances #personal !low @2026-10-14
-- [ ] Run Asa STORM research on Codex integration in achiOS workflows per [research.md#10-integrating-codex-into-the-achios-workflow](http://100.106.210.38:8999/Code/GitHub/AIS-OS/research.md) — 6 lenses: Hermes+Codex brain, Codex as direct model provider/MCP in achiAgy, Codex vs Claude Code token economics, full model access matrix and task routing hierarchy, additive benefits of Codex in the stack, and OS-agnostic engine rename and architecture implications #achios #achiagy #codex #research !high
-- [ ] Rename achiAgy repo and codebase to an OS-agnostic name (candidates: achiAgent, achicore, achihub) — update repo name on GitHub, README, AGENTS.md, CLAUDE.md, systemd units, service names, config keys, and any achiOS references that hardcode "achiAgy" #achiagy #achios #engineering !med
 
 ## Blocked
 
 ## Done
+- [x] Create Ara — personal writer agent for achiOS (name chosen, scope built out as skill) #achios #agents !med  (done 2026-08-29)
+- [x] Rename achiAgy repo and codebase to an OS-agnostic name (candidates: achiAgent, achicore, achihub) — update repo name on GitHub, README, AGENTS.md, CLAUDE.md, systemd units, service names, config keys, and any achiOS references that hardcode "achiAgy" #achiagy #achios #engineering !med  (done 2026-08-29)
+- [x] Add tests for `frontmatter_flag`, `orchestrates`, and the mixin branch of `get_persona_prompt` in `src/topic_router.py` — Luna's PR #36 review found these new methods shipped with zero test coverage; three live agents use the mixin path on every turn (agi, aurora, ari) #achiagy #testing !high @2026-08-28  (done 2026-08-29)
+- [x] Have Claude Code plan and research how to implement Codex in achiAgy, then write a ticket for it #achiagy #codex #planning !high  (done 2026-08-29)
+- [x] Enable global Codex unslop SessionStart hook; configuration installed and command output tested, awaiting Aki's trust approval through `/hooks` and a session-start check #achios #codex !med  (done 2026-08-29)
+- [x] Maybe buy Codex — align its billing to the Claude subscription renewal once ING internship / thesis workload ramps up #achios !low @2026-09-29  (done 2026-08-29)
+- [x] File a dedicated ticket for the orchestration mixin feature that landed unreviewably inside PR #36 (`ORCHESTRATION_MIXIN_FILE`, `_TRUTHY`, `frontmatter_flag`, `orchestrates`, mixin concatenation in `get_persona_prompt`) — no ticket, no spec, no targeted review #achiagy #engineering #planning !med  (done 2026-08-29)
+
+- [x] Research Codex integration in achiOS, topic 10, covering all six lenses; delivered [Markdown](http://100.106.210.38:8999/Documents/Obsidian/achiMem/raw/2026-08-28-codex-in-achios-workflow-and-model-hierarchy.md) and [PDF](http://100.106.210.38:8999/Documents/Files/projects/achios/2026-08-28-codex-in-achios-workflow-and-model-hierarchy.pdf). Finished directly, not through Asa STORM; final source audit stopped at Aki's request #achios #achiagy #codex #research !high  (done 2026-08-29)
 - [x] Execute achiAgy ticket #35: display active topic, model, effort, mode, and skills in /new reset message (PR #36 merged) #achiagy #telegram #ux !med @2026-08-28  (done 2026-08-28)
 - [x] Ticket-authoring skill shipped as `/agy-tickets`, a copy of `to-issues` carrying Aki's ticket format, label creation so `gh issue create` stops failing on `needs-triage`, and a Recommended model section routing each slice to `gemini-3.7-flash-high` or Sonnet. Committed to [SKILL.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/references/skills/agy-tickets/SKILL.md) #skills #agents #tickets #tooling !high @2026-08-28  (done 2026-08-28)
 - [x] Execute achiAgy ticket #29: resolve HTML double-escaping in media dispatcher badges and enforce Tailscale web viewer link rendering #achiagy #telegram #media #bug !high @2026-08-28  (done 2026-08-28)
