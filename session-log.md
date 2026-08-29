@@ -40,9 +40,14 @@ Decisions:
   express an all-day event. A profile that errors is skipped with a warning rather than aborting.
 - Verified live: `--list` returns 30 writable calendars across all four profiles, insert writes
   `start.date` with reminders off, a rerun is a no-op, unknown calendar exits 1.
-- Backfilled the four future dated tasks that never got events: BPI account (ING, 09-02),
-  learning architecture (Personal, 08-30), Google One cancel (10-13), Google AI Pro (10-14).
-  The dated tasks from 08-27 and 08-28 are already overdue, so no events were created for them.
+- Backfilled two future dated tasks that had no events: BPI account (ING, 09-02) and learning
+  architecture (Personal, 08-30). Google One 10-13 and Google AI Pro 10-14 already existed under
+  different wording, so my inserts were duplicates and were deleted. The idempotency check
+  matches an exact summary, so it cannot catch a reworded twin; use the tasks.md text verbatim.
+  The 08-27 and 08-28 tasks are overdue, so no events were created for them.
+- Full suite: 44 failed, 275 passed. All 44 are the known `test_daily_brief` failures, and all
+  are AttributeError on five renamed or removed names, not assertion failures. Posted the exact
+  list and diagnosis on AIS-OS #3.
 - 21 unit tests in `tests/test_gcal_add.py`.
 
 Open:

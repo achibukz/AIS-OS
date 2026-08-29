@@ -72,7 +72,9 @@ Ranked detail lives in `docs/ROADMAP.md`. The load-bearing ones:
 - The `ssh -L` port-forward re-auth test. Needs his Mac and a browser. Decides whether the
   credential copy step survives.
 - Whether the overdue dated tasks from 2026-08-27 and 2026-08-28 should get calendar events.
-  The four future ones were backfilled; past-due ones were left alone.
+  Two future ones were backfilled (BPI on ING for 09-02, learning architecture on Personal for
+  08-30). Two more turned out to already exist under different wording, so the duplicates I
+  created were deleted. Past-due ones were left alone.
 - Whether the original "Plan and implement automated weekly Google OAuth token refresh" task
   in `tasks.md` should be closed now that it is superseded by the ticket batch.
 - Which roadmap item to take after this batch. Items 1 and 2 are the high-value ones.
