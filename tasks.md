@@ -57,6 +57,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 ## Blocked
 
 ## Done
+- [x] Pause automatic TGDB transcript export and commits while the self-learning loop is discussed in achiCore #83 #achios #achicore #achimem !high  (done 2026-08-31)
 - [x] Autostart achiCore hub daemon with topic windows on system boot via systemd (achiCore #79, #80) #achicore #infra !med @2026-08-31  (done 2026-08-31)
 - [x] Research: Subagent-optimized CI/CD, automated testing gates, and PR verification architecture #systems #ci #agents #research !high @2026-08-30  (done 2026-08-30)
 - [x] Do PR 60 of achiCore #achicore !high  (done 2026-08-30)

@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-08-31 — Pause TGDB transcript automation
+
+**Decision:** Removed TGDB transcript export and `tgdb/` staging from `scripts/vault_inbox_sync.py`. The timer continues syncing `schoolMem/inbox/` and `achiMem/inbox/`.
+
+**Why:** The pipeline committed test mocks, unavailable-media placeholders, and repeated transcript rewrites. [achiCore #83](https://github.com/achibukz/achiCore/issues/83) will hold the redesign discussion before TGDB automation returns.
+
+**Alternatives considered:** Stopping the whole vault timer, which would also strand mobile inbox captures.
+
+**Owner:** Aki.
+
 ## 2026-08-31 — Canonical Hub Tmux Window Sequence with career-ops after achiMem
 
 **Decision:** Enforced a persistent canonical topic window order in `achiCore/scripts/tmux-bot.sh`: `0: daemon`, `1: general`, `2: atlas`, `3: schoolmem`, `4: achimem`, `5: career-ops`, `6: aea`, `7: luna`, `8: aurora`, `9: ara`, `10: ari`, with dynamic runtime topics appended after.
