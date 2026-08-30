@@ -1,5 +1,19 @@
 # Session Log
 
+## 2026-08-31 05:14 [saved]
+Goal: Lock in canonical hub tmux window sequence with career-ops directly following achimem.
+
+Decisions:
+- Updated `scripts/tmux-bot.sh` in `achiCore` with canonical sort sequence: `general`, `atlas`, `schoolmem`, `achimem`, `career-ops`, `aea`, `luna`, `aurora`, `ara`, `ari`.
+- Shipped and merged pull request [achiCore #82](https://github.com/achibukz/achiCore/pull/82).
+- Restarted `achi-core.service` and verified live window indices on socket `achicore-hub`.
+
+Rejected:
+- Relying on manual runtime window swaps, which are wiped on service restart or reboot.
+
+Open:
+- None.
+
 ## 2026-08-31 05:06 [saved]
 Goal: Configure systemd user service to autostart achiCore hub daemon on server boot.
 
