@@ -149,3 +149,17 @@
     Research how naming and structural changes to the `achiAgy` codebase (currently named after Google Antigravity) should be scoped to support a genuinely engine-agnostic architecture — where `agy`, `codex exec`, `claude -p`, or any future CLI agent can be swapped in per topic. What's the minimal rename surface (repo name, service names, config keys, systemd units, AGENTS.md, README) and what architectural changes in `AgyClient` make the engine truly pluggable? Document candidate names (e.g. `achiAgent`, `achiOS-agent`, `achihub`, `achicore`) and the trade-offs of each.
 
 - **Target Deliverable:** `~/Documents/Obsidian/achiMem/raw/2026-08-28-codex-in-achios-workflow-and-model-hierarchy.md`
+
+### 11. Optimizing CI/CD, Automated Testing, and PR Verification for Subagent Swarms Across GitHub Repositories
+- Status: Research delivered 2026-08-30 via Asa 5-lens STORM pipeline. [Markdown report](http://100.106.210.38:8999/Documents/Obsidian/achiMem/raw/2026-08-30-subagent-cicd-optimization.md) and [docs/2026-08-30-subagent-cicd-optimization.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-30-subagent-cicd-optimization.md).
+- **Task Reference:** [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) (`!high`)
+- **Research Question:** What architectures, test gating strategies, worktree isolation patterns, and zero-trust verification mechanisms optimize continuous integration and delivery (CI/CD) when autonomous subagents (Aea, Aya, Asta, Luna) develop across multiple GitHub repositories (AIS-OS, achiCore, schoolMem, career-ops)?
+- **Inquiry Lenses:**
+  - *Lens 1 — Practitioner & Fast Feedback Gating:* Fast local gates vs exhaustive CI runs; isolating agent git worktrees; automated TDD red-to-green proof loops; pre-commit verification vs remote workflow checks.
+  - *Lens 2 — Multi-Repo Architecture & Dependency Layout:* Resolving cross-repo dependencies in GitHub Actions (sibling checkouts vs package feeds); test environment isolation; shared test doubles/fixtures; artifact transfer between implementation and review agents.
+  - *Lens 3 — Skeptic & Failure Analysis:* Flaky test quarantine; infinite agent retry loops / token depletion; hallucinated mock passes; prompt injection vectors in commit logs and issue bodies; branch pollution and push race conditions.
+  - *Lens 4 — Token Economics & Compute Tiering:* Cost/latency tradeoffs between fast gating (Gemini Flash) and deep review (Claude Opus/Sonnet); test suite slicing to preserve LLM context; local runner execution vs GitHub Actions cloud compute.
+  - *Lens 5 — Evolution & Prior Art:* Lessons from SWE-bench harnesses, AutoPR, Devin, Cursor Agent, and GitHub Workspace; established best practices for human-in-the-loop (HITL) checkpoints in automated PR lifecycles.
+- **Target Deliverable:** [2026-08-30-subagent-cicd-optimization.md](http://100.106.210.38:8999/Documents/Obsidian/achiMem/raw/2026-08-30-subagent-cicd-optimization.md)
+
+
