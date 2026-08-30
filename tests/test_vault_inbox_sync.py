@@ -23,7 +23,8 @@ class TestNoCorrectionHarvesting:
         assert "scan_vault_tgdb(" not in source
         assert "apply_corrections(" not in source
 
-    def test_still_exports_transcripts_and_syncs(self):
+    def test_tgdb_export_and_sync_are_paused(self):
         source = SCRIPT.read_text(encoding="utf-8")
-        assert "export_recent_sessions" in source
+        assert "export_recent_sessions" not in source
+        assert '"watch_dirs": ["inbox", "tgdb"]' not in source
         assert "check_and_sync_vault" in source

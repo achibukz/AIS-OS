@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-08-31 07:23 [saved]
+Goal: Pause tgdb transcript exports and watch sweeps in vault inbox sync.
+
+Decisions:
+- Removed `tgdb` from `watch_dirs` for `achiMem` in `scripts/vault_inbox_sync.py`, restricting automated sweeps to `inbox`.
+- Removed transcript sweeps (`export_recent_sessions`) from `scripts/vault_inbox_sync.py`.
+- Updated unit tests in `tests/test_vault_inbox_sync.py` to verify tgdb exports and sync are paused.
+
+Rejected:
+- Keeping tgdb in watch directories while only removing transcript exports.
+
+Open:
+- None.
+
+
 ## 2026-08-31 05:14 [saved]
 Goal: Lock in canonical hub tmux window sequence with career-ops directly following achimem.
 
