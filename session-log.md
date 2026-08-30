@@ -1,5 +1,33 @@
 # Session Log
 
+## 2026-08-31 05:06 [saved]
+Goal: Configure systemd user service to autostart achiCore hub daemon on server boot.
+
+Decisions:
+- Updated `systemd/achi-core.service` in `achiCore` to execute `scripts/tmux-bot.sh hub` on socket `achicore-hub`.
+- Updated `scripts/install-service.sh` in `achiCore` to ensure `~/.local/state/achicore-hub` exists.
+- Merged pull request [achiCore #80](https://github.com/achibukz/achiCore/pull/80) and installed the updated service unit via `scripts/install-service.sh main`.
+- Reloaded daemon and verified active service state with all 11 tmux windows initialized on `achicore-hub`.
+
+Rejected:
+- Running single-repo `run-bot.sh github` in systemd unit, which bypassed hub forum topic routing and topic tail windows.
+
+Open:
+- None.
+
+## 2026-08-30 23:05 [saved]
+Goal: Author architecture blueprint and task tracking for Tauri v2 desktop control center for achiOS, achiCore, and achiMem.
+
+Decisions:
+- Authored [2026-08-30-tauri-desktop-gui-architecture-and-blueprint.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-30-tauri-desktop-gui-architecture-and-blueprint.md) detailing Tauri v2 Rust SSH/SFTP and Tailscale connection layers, live agent Kanban board, topic settings matrix, two-way tasks.md sync, memory inspector, and systemd service management.
+- Logged tracking item in tasks.md under Active.
+
+Rejected:
+- Web-only dashboard with mandatory browser tab, in favor of a native macOS desktop wrapper with system tray indicators, macOS notifications, and direct SSH/SFTP access.
+
+Open:
+- Scaffold Tauri v2 project structure on macOS when ready to implement.
+
 ## 2026-08-29 21:18 [saved]
 Goal: Publish tracer-bullet issue for conflicting agy model effort dispatch in achiCore.
 

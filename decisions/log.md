@@ -18,6 +18,26 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-08-31 — Autostart achiCore Hub Daemon on Server Boot via Systemd
+
+**Decision:** Updated `systemd/achi-core.service` in `achiCore` to execute `scripts/tmux-bot.sh hub` on socket `achicore-hub` with `ExecStop=-/usr/bin/tmux -L achicore-hub kill-server`, installed the service unit to `~/.config/systemd/user/achi-core.service`, and verified auto-initialization of topic log windows on boot.
+
+**Why:** Ensures the achiCore supergroup hub daemon and all topic console tail windows launch automatically whenever Achibuntu boots or reboots, allowing Aki to attach directly to `achicore-hub` without manual terminal initialization.
+
+**Alternatives considered:** Manual session startup on login (rejected because unattended Telegram polling is required after power cycles or reboots).
+
+**Owner:** Aki.
+
+## 2026-08-30 — Tauri Desktop GUI Architecture for achiOS, achiCore, and achiMem
+
+**Decision:** Architected a native macOS desktop control center using Tauri v2 (Rust + React/Tailwind) connecting to Achibuntu over SSH/SFTP (`russh` / `ssh2`) and Tailscale per [2026-08-30-tauri-desktop-gui-architecture-and-blueprint.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-30-tauri-desktop-gui-architecture-and-blueprint.md). Features a live multi-agent Kanban monitor (`~/.local/state/achicore/`), dynamic topic/model matrix editor, two-way `tasks.md` synchronization, declarative memory budget monitor (`USER.md`, `MEMORY.md`), and systemd user unit daemon controls.
+
+**Why:** Gives Aki a centralized native macOS desktop cockpit with system tray indicators, desktop notifications for completed turns, and direct management of topic configurations without requiring a separate web server open on Achibuntu.
+
+**Alternatives considered:** Web-only browser dashboard (rejected because it lacks native menu bar indicators, macOS notifications, and requires a dedicated long-running web daemon on Linux) and Electron wrapper (rejected due to excessive memory overhead).
+
+**Owner:** Aki.
+
 ## 2026-08-27 — achiAgy Streaming Pipe Inactivity Timeout & Keepalive Architecture (D39–D43)
 
 **Decision:** Architected the streaming pipe inactivity watchdog, heartbeat ticks, and milestone progress streaming in `achiAgy` per [2026-08-27-streaming-inactivity-timeout-and-keepalive-plan.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/2026-08-27-streaming-inactivity-timeout-and-keepalive-plan.md). Features a 600s configurable stream idle watchdog (`ACHIAGY_STREAM_IDLE_TIMEOUT`), periodic 15s internal `heartbeat` AgentEvents to keep event loops alive during silent background task execution, live intermediate milestone streaming to Telegram in `src/bot.py`, and orchestrator status polling patterns (`asa status` every 30s).

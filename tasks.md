@@ -22,6 +22,10 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Hold a grill-me session and design an Asa skill/workflow for prior art discovery, competitive market analysis, and idea viability evaluation (check if an idea already exists, analyze competitors, and assess market viability) #asa #skills #research #planning !med
+- [ ] Hold a grill-me session and implement model escalation fallback in achiCore to upgrade to a higher-tier model when a lower model fails #achicore #models #planning !med
+- [ ] Add codebase inspection skill to Aurora in achiCore #achicore #agents !med
+- [ ] Build Tauri v2 desktop GUI for achiOS, achiCore, and achiMem connecting to Achibuntu over SSH/Tailscale per [2026-08-30-tauri-desktop-gui-architecture-and-blueprint.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-30-tauri-desktop-gui-architecture-and-blueprint.md) #achios #achicore #ui #infra !med
 - [ ] Require @achibukz and @luna-achiCore on Aea PRs and @achibukz and @aea-achiCore on Luna reviews (achiCore #77) #achicore #github !med
 - [ ] Test fallback mechanism when Gemini 3.7 Flash and Codex hit quota limits #achicore #testing #models !med
 - [ ] Change Telegram command /newtopics to make /new the first command in autocomplete #achicore #telegram !med
@@ -53,6 +57,8 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 ## Blocked
 
 ## Done
+- [x] Autostart achiCore hub daemon with topic windows on system boot via systemd (achiCore #79, #80) #achicore #infra !med @2026-08-31  (done 2026-08-31)
+- [x] Research: Subagent-optimized CI/CD, automated testing gates, and PR verification architecture #systems #ci #agents #research !high @2026-08-30  (done 2026-08-30)
 - [x] Do PR 60 of achiCore #achicore !high  (done 2026-08-30)
 - [x] Fix conflicting --effort flag dispatch for agy Gemini models in achiCore (achiCore #58) #achicore #bug !high  (done 2026-08-30)
 - [x] Create Ara — personal writer agent for achiOS (name chosen, scope built out as skill) #achios #agents !med  (done 2026-08-29)
