@@ -1,6 +1,22 @@
 # Session Log
 
-## 2026-08-31 07:23 [saved]
+## 2026-08-31 07:36 [saved]
+Goal: Clean worthless mock and broken automation Markdown files from achiMem/tgdb/.
+
+Decisions:
+- Scanned all 4,067 files in `achiMem/tgdb/`.
+- Executed `git rm` across 3,603 confirmed test and automation files (3,291 mock handle/object files, 142 memory gate passes, 104 subagent dispatches, 32 automated cron briefings, 16 session summary hook prompts, 13 CLI test verifications, 4 stop hook test fixtures, 1 startup hook error).
+- Preserved 7 ambiguous interactive health check transcripts (`test`, `reply with pong`) per Aki's instruction.
+- Kept 457 genuine multi-turn conversations and sessions clean in `tgdb/`.
+- Verified zero remaining files in `tgdb/` match mock, fixture, or broken automated patterns.
+- Did not commit or push (staged in git status for human review).
+
+Rejected:
+- Deleting the 7 single-turn health check files without human confirmation.
+- Rewriting Git history.
+
+Open:
+- Human review of staged changes in achiMem.
 Goal: Pause tgdb transcript exports and watch sweeps in vault inbox sync.
 
 Decisions:

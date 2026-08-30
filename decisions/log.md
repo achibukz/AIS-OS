@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-08-31 — TGDB Mock and Automation Artifacts Cleanup
+
+**Decision:** Executed `git rm` across 3,603 test fixture and automated prompt files in `achiMem/tgdb/`, preserving 457 genuine conversation files and 7 interactive health check notes.
+
+**Why:** Universal TGDB logging recorded unmocked pytest test runs (generating thousands of `*asyncmockname*` files), memory gate classification loops, subagent dispatches, and cron prompts into `tgdb/`. Cleaning these files restores `tgdb/` as a high-signal archive of real user sessions.
+
+**Alternatives considered:** Deleting all single-turn files (rejected to preserve real user health-checks), bulk-removing via `rm` outside Git (rejected to retain proper staging in Git index).
+
+**Owner:** Aki.
+
 ## 2026-08-31 — Pause TGDB transcript automation
 
 **Decision:** Removed TGDB transcript export and `tgdb/` staging from `scripts/vault_inbox_sync.py`. The timer continues syncing `schoolMem/inbox/` and `achiMem/inbox/`.
