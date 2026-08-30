@@ -201,11 +201,11 @@ It is meant to read loose on a phone, not dense.
 - Run now: `systemctl --user start achios-email-digest.service`
 
 
-### Vault Inbox & tgdb Sync
+### Vault inbox sync
 
-`scripts/vault_inbox_sync.py` automatically sweeps, commits, and pushes new mobile captures from `schoolMem/inbox/`, `achiMem/inbox/`, and sanitized session notes from `achiMem/tgdb/` to GitHub:
-- Universal Coverage: Archives conversations across `@achiOSClaudeBot`, `@schoMemBot`, `@achiAgyOSBot`, and `@schoMemAGYBot`
-- Safety: Regex secret sanitization (`sk-ant-*`, `AIzaSy*`, `bot<token>`), scoped strictly to watched directories (`inbox`, `tgdb`), with autostash rebase conflict protection
+`scripts/vault_inbox_sync.py` automatically commits and pushes new mobile captures from `schoolMem/inbox/` and `achiMem/inbox/` to GitHub:
+- TGDB transcript export and staging are paused while [achiCore #83](https://github.com/achibukz/achiCore/issues/83) discusses the self-learning loop redesign.
+- The git stage is scoped to `inbox/`, with autostash rebase conflict protection.
 - Schedule: `systemd/achios-vault-sync.timer` (runs every 15 minutes `*:00,15,30,45 Asia/Manila` with `Persistent=true`)
 - Log: `~/.local/state/achios/vault_sync.log`
 - Preview: `python scripts/vault_inbox_sync.py --dry-run`
