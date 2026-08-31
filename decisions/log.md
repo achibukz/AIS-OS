@@ -20,7 +20,7 @@ Keep it terse. Future-you will thank present-you for capturing the *why*, not ju
 
 ## 2026-08-31 — Chelz Class Schedule Hidden Calendar (cc sched)
 
-**Decision:** Created a secondary Google Calendar named `cc sched` under `akibukuhan10@gmail.com` with `hidden: true` and `selected: false`, populated with weekly recurring class blocks for Chelz (Monday 09:00-12:00 & 13:30-19:30, Tuesday 10:30-13:30, Wednesday 13:30-16:30, Thursday 09:00-12:00 & 13:30-16:30, Friday 10:30-13:30).
+**Decision:** Created a secondary Google Calendar named `cc sched` under `akibukuhan10@gmail.com` with `hidden: true` and `selected: false`, populated with weekly recurring class blocks for Chelz through December 8, 2026 (Monday 09:00-12:00 & 13:30-19:30, Tuesday 10:30-13:30, Wednesday 13:30-16:30, Thursday 09:00-12:00 & 13:30-16:30, Friday 10:30-13:30).
 
 **Why:** Allows fast schedule alignment and availability queries against Chelz's schedule without cluttering Aki's visible daily calendar views.
 
