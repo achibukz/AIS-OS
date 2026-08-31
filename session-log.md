@@ -9,7 +9,7 @@ Decisions:
   - `Watch Before Sunrise` on `2026-01-18` (age 23)
   - `Watch Before Sunset` on `2035-01-18` (age 32)
   - `Watch Before Midnight` on `2044-01-18` (age 41)
-- Added upcoming watchlist items to [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+- Kept events strictly on Google Calendar; excluded from [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) per Aki's instruction.
 
 Rejected:
 - Placing events in `Bdayy` calendar (reserved for birthday announcements, `Personal` fits personal activities/plans).
