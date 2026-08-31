@@ -1,5 +1,22 @@
 # Session Log
 
+## 2026-08-31 23:58 [saved]
+Goal: Schedule UST trip and meetups with Stef, Yna, and Lui for Tuesday, September 1, 2026.
+
+Decisions:
+- Created 3 timed events on `Personal` Google Calendar via `gws`:
+  - `Go to UST` (12:00 - 15:00)
+  - `Meetup with Stef & Yna` (15:00 - 18:00)
+  - `Meetup with Lui` (18:00 - 21:00)
+- Logged task to [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) under `## Active` with `@2026-09-01`.
+
+Rejected:
+- None.
+
+Open:
+- None.
+
+
 ## 2026-08-31 23:52 [saved]
 Goal: Create a hidden Google Calendar named cc sched and populate it with Chelz's recurring weekly schedule.
 
