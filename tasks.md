@@ -22,6 +22,8 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Watch Before Sunset #personal !low @2035-01-18
+- [ ] Watch Before Midnight #personal !low @2044-01-18
 - [ ] Hold a grill-me session and design an Asa skill/workflow for prior art discovery, competitive market analysis, and idea viability evaluation (check if an idea already exists, analyze competitors, and assess market viability) #asa #skills #research #planning !med
 - [ ] Hold a grill-me session and implement model escalation fallback in achiCore to upgrade to a higher-tier model when a lower model fails #achicore #models #planning !med
 - [ ] Add codebase inspection skill to Aurora in achiCore #achicore #agents !med

@@ -1,5 +1,23 @@
 # Session Log
 
+## 2026-08-31 09:34 [saved]
+Goal: Schedule Before trilogy watchlist calendar events for Aki's 23rd, 32nd, and 41st birthdays.
+
+Decisions:
+- Verified birth date from medical records (18 on 2021-07-07 -> born 2003-01-18).
+- Scheduled 3 all-day events on `Personal` Google Calendar via `scripts/gcal_add.py`:
+  - `Watch Before Sunrise` on `2026-01-18` (age 23)
+  - `Watch Before Sunset` on `2035-01-18` (age 32)
+  - `Watch Before Midnight` on `2044-01-18` (age 41)
+- Added upcoming watchlist items to [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+Rejected:
+- Placing events in `Bdayy` calendar (reserved for birthday announcements, `Personal` fits personal activities/plans).
+
+Open:
+- None.
+
+
 ## 2026-08-31 07:36 [saved]
 Goal: Clean worthless mock and broken automation Markdown files from achiMem/tgdb/.
 
