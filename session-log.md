@@ -6,6 +6,7 @@ Goal: Create a hidden Google Calendar named cc sched and populate it with Chelz'
 Decisions:
 - Created secondary Google Calendar `cc sched` under profile `personal` (`akibukuhan10@gmail.com`).
 - Configured calendar metadata on `calendarList` with `hidden: true` and `selected: false` so it does not render in daily default views.
+- Updated calendar and event colors to blue/navy (`colorId: 16` for calendar, `colorId: 9` for events).
 - Populated 7 weekly recurring event blocks via `gws`:
   - Monday 09:00 - 12:00 & 13:30 - 19:30 (break 12:00 - 13:30)
   - Tuesday 10:30 - 13:30 (no lunch)
