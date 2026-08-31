@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-08-31 — Chelz Class Schedule Hidden Calendar (cc sched)
+
+**Decision:** Created a secondary Google Calendar named `cc sched` under `akibukuhan10@gmail.com` with `hidden: true` and `selected: false`, populated with weekly recurring class blocks for Chelz (Monday 09:00-12:00 & 13:30-19:30, Tuesday 10:30-13:30, Wednesday 13:30-16:30, Thursday 09:00-12:00 & 13:30-16:30, Friday 10:30-13:30).
+
+**Why:** Allows fast schedule alignment and availability queries against Chelz's schedule without cluttering Aki's visible daily calendar views.
+
+**Alternatives considered:** Storing the schedule solely in text memory without calendar events (rejected because calendar objects allow structured overlap/freebusy calculations).
+
+**Owner:** Aki.
+
 ## 2026-08-31 — Pause TGDB transcript automation
 
 **Decision:** Removed TGDB transcript export and `tgdb/` staging from `scripts/vault_inbox_sync.py`. The timer continues syncing `schoolMem/inbox/` and `achiMem/inbox/`.

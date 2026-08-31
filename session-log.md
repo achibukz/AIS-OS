@@ -1,5 +1,26 @@
 # Session Log
 
+## 2026-08-31 23:52 [saved]
+Goal: Create a hidden Google Calendar named cc sched and populate it with Chelz's recurring weekly schedule.
+
+Decisions:
+- Created secondary Google Calendar `cc sched` under profile `personal` (`akibukuhan10@gmail.com`).
+- Configured calendar metadata on `calendarList` with `hidden: true` and `selected: false` so it does not render in daily default views.
+- Populated 7 weekly recurring event blocks via `gws`:
+  - Monday 09:00 - 12:00 & 13:30 - 19:30 (break 12:00 - 13:30)
+  - Tuesday 10:30 - 13:30 (no lunch)
+  - Wednesday 13:30 - 16:30
+  - Thursday 09:00 - 12:00 & 13:30 - 16:30 (lunch 12:00 - 13:30)
+  - Friday 10:30 - 13:30
+- Stored declarative reference in persistent memory for cross-turn alignment queries.
+
+Rejected:
+- Making events visible on primary calendars.
+
+Open:
+- None.
+
+
 ## 2026-08-31 07:23 [saved]
 Goal: Pause tgdb transcript exports and watch sweeps in vault inbox sync.
 
