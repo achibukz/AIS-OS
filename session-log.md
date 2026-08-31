@@ -8,7 +8,7 @@ Decisions:
   - `Go to UST` (12:00 - 15:00)
   - `Meetup with Stef & Yna` (15:00 - 18:00)
   - `Meetup with Lui` (18:00 - 21:00)
-- Logged task to [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) under `## Active` with `@2026-09-01`.
+- Excluded meetup schedules from [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md); stored standing invariant in USER.md (keep meetup and social schedules strictly on Google Calendar).
 
 Rejected:
 - None.
