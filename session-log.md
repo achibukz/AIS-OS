@@ -1,5 +1,18 @@
 # Session Log
 
+## 2026-09-01 14:54 [saved]
+Goal: Clone AUTO-Zoom-Leaver repository to Achibuntu server.
+
+Decisions:
+- Cloned `achibukz/AUTO-Zoom-Leaver` into `/home/achibukz/Code/GitHub/AUTO-Zoom-Leaver`.
+
+Rejected:
+- None.
+
+Open:
+- None.
+
+
 ## 2026-08-31 23:58 [saved]
 Goal: Schedule UST trip and meetups with Stef, Yna, and Lui for Tuesday, September 1, 2026.
 
