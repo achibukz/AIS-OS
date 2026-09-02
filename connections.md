@@ -89,7 +89,9 @@ there rather than opening repos blind.
 - Self-hosted Immich server reachable at `http://100.106.210.38:2283` (Docker container `immich-server`).
 - External Library: `/home/achibukz/Documents/Files/personal/memories` mounted to `/mnt/media/memories`.
 - Folder-to-Album Sync: `salvoxia/immich-folder-album-creator:latest` via `scripts/immich_folder_sync.sh` (`--dry-run` supported).
-- Config: `ALBUM_LEVELS=1`, maps all 114 `YY.MM.DD- EventName` folders to chronological Immich albums (7,018+ assets).
+- Schedule: `systemd/achios-immich-sync.timer` (runs daily at `00:30 Asia/Manila` with `Persistent=true`).
+- Log: `~/.local/state/achios/immich_sync.log`.
+- Config: `ALBUM_LEVELS=1`, maps all 114 `YY.MM.DD- EventName` folders to chronological Immich albums (7,018+ assets). Automatically triggers external library scan before syncing albums.
 
 ## Codex global writing hook
 

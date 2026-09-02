@@ -1,0 +1,10 @@
+[Unit]
+Description=achiOS Immich Album Sync after Midnight (00:30 Manila)
+
+[Timer]
+OnCalendar=00:30 Asia/Manila
+Persistent=true
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

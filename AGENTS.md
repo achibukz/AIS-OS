@@ -211,6 +211,14 @@ It is meant to read loose on a phone, not dense.
 - Preview: `python scripts/vault_inbox_sync.py --dry-run`
 - Run now: `systemctl --user start achios-vault-sync.service`
 
+### Immich folder album sync
+
+`scripts/immich_folder_sync.sh` triggers an external library scan and syncs `memories` event folders into Immich albums:
+- Schedule: `systemd/achios-immich-sync.timer` (set to `00:30 Asia/Manila` with `Persistent=true`)
+- Log: `~/.local/state/achios/immich_sync.log`
+- Preview: `scripts/immich_folder_sync.sh --dry-run`
+- Run now: `systemctl --user start achios-immich-sync.service`
+
 ### Self-learning loop
 
 The bot learns Aki's standing preferences from ordinary conversation. Rebuilt 2026-08-20

@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-09-03 04:18 [saved]
+Goal: Schedule automated Immich external library scan and folder album sync after midnight.
+
+Decisions:
+- Enhanced `scripts/immich_folder_sync.sh` to trigger the Immich external library scan via REST API before launching `salvoxia/immich-folder-album-creator`.
+- Created systemd unit `systemd/achios-immich-sync.service` and timer `systemd/achios-immich-sync.timer` scheduled for `00:30 Asia/Manila` with `Persistent=true`.
+- Installed, daemon-reloaded, and activated the timer via `scripts/install_units.sh`, verified test execution via `systemctl --user start achios-immich-sync.service` and confirmed logs in `~/.local/state/achios/immich_sync.log`.
+- Updated [connections.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/connections.md), [AGENTS.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/AGENTS.md), and [log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
+
+Rejected:
+- Relying on crontab, which does not support named timezones on Achibuntu.
+- Running a continuous filesystem watcher daemon, which would generate unnecessary idle resource overhead.
+
+Open:
+- None.
+
 ## 2026-09-03 04:10 [saved]
 Goal: Correct date and media metadata for `MOA Date w Yna` from 2026 to 2025 and synchronize Immich album.
 

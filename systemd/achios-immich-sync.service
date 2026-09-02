@@ -1,0 +1,17 @@
+[Unit]
+Description=achiOS Immich External Library & Folder Album Sync
+After=network-online.target docker.service
+Wants=network-online.target docker.service
+OnFailure=achios-failure-alert@%n.service
+StartLimitIntervalSec=1h
+StartLimitBurst=3
+
+[Service]
+Type=oneshot
+Environment=PATH=%h/.local/bin:%h/.npm-global/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=@REPO@/scripts/immich_folder_sync.sh
+StandardOutput=append:%h/.local/state/achios/immich_sync.log
+StandardError=append:%h/.local/state/achios/immich_sync.log
+TimeoutStartSec=15min
+Restart=on-failure
+RestartSec=5min

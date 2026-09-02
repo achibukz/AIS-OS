@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-03 — Automated Immich Album and Library Synchronization Timer
+
+**Decision:** Automated the Immich folder-to-album synchronization via `systemd/achios-immich-sync.{service,timer}` scheduled at `00:30 Asia/Manila` with `Persistent=true`. Enhanced `scripts/immich_folder_sync.sh` to trigger the Immich external library scan via REST API prior to running `salvoxia/immich-folder-album-creator`.
+
+**Why:** Media added to `~/Documents/Files/personal/memories` throughout the day needs automatic ingestion into Immich albums after midnight without requiring manual terminal invocations.
+
+**Alternatives considered:** Triggering scans from crontab (which lacks named timezone support on Ubuntu), relying solely on Immich's native midnight scan without album synchronization, or running a continuous filesystem watcher daemon.
+
+**Owner:** Aki.
+
 ## 2026-09-02 — Modular Backlog Registers for Systems Engineering and Asa Workflows
 
 **Decision:** Moved granular Systems & Engineering and Asa & Research sub-tasks out of `tasks.md` into dedicated modular backlog files (`docs/tasks-systems-engineering.md` and `docs/tasks-asa-research.md`), linked via anchor tasks in master `tasks.md`.
