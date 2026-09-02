@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-02 — Modular Backlog Registers for Systems Engineering and Asa Workflows
+
+**Decision:** Moved granular Systems & Engineering and Asa & Research sub-tasks out of `tasks.md` into dedicated modular backlog files (`docs/tasks-systems-engineering.md` and `docs/tasks-asa-research.md`), linked via anchor tasks in master `tasks.md`.
+
+**Why:** Running `/tasks` and the daily brief was getting bloated with 20+ fine-grained development tickets, obscuring high-priority daily personal, career, and onboarding items.
+
+**Alternatives considered:** Keeping all sub-tasks in master `tasks.md`, archiving incomplete engineering tickets into `archives/`, or tracking them solely in individual GitHub repository issue trackers.
+
+**Owner:** Aki.
+
 ## 2026-09-02 — Immich Folder Album Synchronization via salvoxia/immich-folder-album-creator
 
 **Decision:** Use `salvoxia/immich-folder-album-creator` in Docker with `ALBUM_LEVELS=1` and `UNATTENDED=1` across `big-bear-immich_big_bear_immich_network` to synchronize the 114 event folders in `/home/achibukz/Documents/Files/personal/memories` into Immich albums. Added `scripts/immich_folder_sync.sh` as the repeatable sync runner.

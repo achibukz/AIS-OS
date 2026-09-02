@@ -22,37 +22,11 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
-- [ ] Handle Codex diagnostic stderr without failing turn and document rm -f exec policy restrictions (achiCore #89) #achicore #codex #bug !high
-- [ ] Implement AUTO Zoom Leaver Windows port tickets #1-#4 #projects #windows #engineering !high
-- [ ] Hold a grill-me session and design an Asa skill/workflow for prior art discovery, competitive market analysis, and idea viability evaluation (check if an idea already exists, analyze competitors, and assess market viability) #asa #skills #research #planning !med
-- [ ] Hold a grill-me session and implement model escalation fallback in achiCore to upgrade to a higher-tier model when a lower model fails #achicore #models #planning !med
-- [ ] Add codebase inspection skill to Aurora in achiCore #achicore #agents !med
-- [ ] Build Tauri v2 desktop GUI for achiOS, achiCore, and achiMem connecting to Achibuntu over SSH/Tailscale per [2026-08-30-tauri-desktop-gui-architecture-and-blueprint.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-30-tauri-desktop-gui-architecture-and-blueprint.md) #achios #achicore #ui #infra !med
-- [ ] Require @achibukz and @luna-achiCore on Aea PRs and @achibukz and @aea-achiCore on Luna reviews (achiCore #77) #achicore #github !med
-- [ ] Test fallback mechanism when Gemini 3.7 Flash and Codex hit quota limits #achicore #testing #models !med
-- [ ] Change Telegram command /newtopics to make /new the first command in autocomplete #achicore #telegram !med
-- [ ] Build cron job that scans all repos for open GitHub tickets and surfaces the single most important one to action — Telegram message must include clickable links to each ticket so Aki can jump directly to it #achios #infra #engineering !med
-- [ ] Write `references/model-selection.md` — research-grounded model tier hierarchy and use-case reference guide (Opus, Sonnet, Flash, Flash-lite, etc. across achiOS, achiAgy, Asa, and daily tasks), then update AGENTS.md model guidance sections to match — current AGENTS.md mentions are undetailed and not grounded in research #achios #reference #arch !med
-- [ ] Audit Asa research failure modes and author implementation plan with Claude Code per [2026-08-28-asa-research-failure-modes-and-retry-loop-audit.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-28-asa-research-failure-modes-and-retry-loop-audit.md): (1) fix crashing `asa status` caused by unhandled FileNotFoundError on non-run directories in `~/.local/share/asa/runs/`, and (2) add automated Muses re-run loop when Althea unsupported claims exceed threshold (70-80%) #asa #audit #workflows #planning !high @2026-08-28
-- [ ] Execute prioritized open tickets in achiAgy per [roadmap.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/roadmap.md) starting with #24 (read-only lock bypass), #1 (atomic persistence), #7 (per-topic defaults), #4 (orchestration mixin), and #9 (Atlas persona) #achiagy #engineering !high @2026-08-28
-- [ ] Repair tests/test_daily_brief.py, all 44 tests fail against the refactored daily_brief module (no attribute parse_tasks, tasks_message, schedule_message, color_dot, polish_with_claude) #infra #testing !med
-- [ ] Design and build AI-Assisted Learning Architecture project using achiMem and schoolMem as ground-truth knowledge bases with Claude Code / agy / asa subagents (adapted from amosblomqvist/learn DAG and probing mechanics) #achios #learning #arch #schoolmem #achimem !high @2026-08-30
-- [ ] Audit and design end-to-end cohesion across achiOS daemons, email digest parser, task register, and calendar auto-sync with Claude Code #achios #audit #arch !high @2026-08-27
-- [ ] Update Asa research workflow to mandate an exhaustive sources and citations appendix at the end of all generated markdown files and deliverables #asa #workflows #research !high
-- [ ] Audit and refine ~/.config/achios/USER.md and MEMORY.md with Claude Code to optimize structure, conciseness, and 2,500-char budget utilization #achios #memory #audit !high @2026-08-27
-- [ ] Audit and plan integration of Matt Pocock workflows (Wayfinder, Grilling, Codebase Design) with asa SCAN/STORM research pipeline in Claude Code per [2026-08-24-matt-pocock-workflow-integration-and-wayfinder-asa-audit.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-24-matt-pocock-workflow-integration-and-wayfinder-asa-audit.md) #achios #asa #workflows #audit !med @2026-08-27
-- [ ] Implement Matt Pocock skills into Asa skills library and apply writing-for-agents standards to improve subagent prompt quality #asa #skills #agents !high
-- [ ] Implement reflect skill and 3-subagent transcript review loop in achiOS (adapted from pstack/reflect) #achios #skills #learning !high
-- [ ] Build Google Sheets Schedule Planner skill for Claude Code / achiOS based on Hermes OAuth and Sheets v4 API spec in [2026-08-24-google-sheets-schedule-planner-skill-spec.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-24-google-sheets-schedule-planner-skill-spec.md) #skills #automation #achios !high @2026-08-27
-- [ ] Audit Hermes research retrospective and orchestrator findings with Claude Code in asa [2026-08-24-hermes-research-and-orchestrator-audit.md](http://100.106.210.38:8999/Code/GitHub/asa/docs/reports/2026-08-24-hermes-research-and-orchestrator-audit.md) #asa #audit !high @2026-08-27
-- [ ] Benchmark Althea fact-checking on gemini-3.1-pro-high vs gemini-3.7-flash-high across claim granularity, latency, and tool fidelity in asa #asa #eval #benchmark !med @2026-08-27
-- [ ] Execute the new implementation plan created with Claude Code #asa #arch !med @2026-08-27
 - [ ] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-09-02
-- [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
 - [ ] Complete 5-month ING Internship Agreement Form (signatures: Aki, Parent/Guardian, DLSU coordinator, then notarize) #career #school !high
-- [ ] Plan and implement automated weekly Google OAuth token refresh for achiOS — research fully automated headless re-auth (service account, token rotation script, or publish-to-production fix); if full automation is not possible, set up a weekly cron + Telegram notification reminding Aki to run `scripts/auth_google_account.py` before tokens expire (7-day window) #achios #infra #automation !high
-- [ ] Ship the Google auth lifecycle and /tasks renderer batch, AIS-OS #3 to #8 plus achiCore #57, per [the plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-29-google-auth-lifecycle-and-tasks-renderer-plan.md) #achios #infra !high
-- [ ] Test whether `ssh -L` port-forward re-auth works for gws on achibuntu, so the four logins run server-side and no credential copy is needed #achios #infra !med
+- [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
+- [ ] Complete active Systems & Engineering backlog tasks per [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md) #systems #engineering #achicore #infra !high
+- [ ] Complete active Asa & Research workflows backlog tasks per [tasks-asa-research.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-asa-research.md) #asa #research #workflows !high
 - [ ] Cancel current Google One subscription ahead of renewal #finances #personal !low @2026-10-13
 - [ ] Subscribe to Google AI Pro Student Discount (₱275/mo for up to 4 years via SheerID verification) #finances #personal !low @2026-10-14
 

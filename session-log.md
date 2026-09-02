@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-09-03 02:19 [saved]
+Goal: De-bloat `tasks.md` by moving Systems & Engineering and Asa & Research sub-tasks into dedicated modular registers.
+
+Decisions:
+- Created [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md) containing 20 granular systems, engineering, and achiCore tickets.
+- Created [tasks-asa-research.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-asa-research.md) containing 8 Asa and STORM research workflow tickets.
+- Replaced 28 fine-grained items in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) with two clean anchor tasks linking to the dedicated registers.
+- Logged architecture decision in [log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
+
+Rejected:
+- Deleting or archiving active engineering tickets before completion.
+
+Open:
+- None.
+
 ## 2026-09-02 20:18 [saved]
 Goal: Install and run `salvoxia/immich-folder-album-creator` to convert `/home/achibukz/Documents/Files/personal/memories` into Immich albums.
 
