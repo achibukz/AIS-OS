@@ -18,6 +18,46 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-02 — Immich Folder Album Synchronization via salvoxia/immich-folder-album-creator
+
+**Decision:** Use `salvoxia/immich-folder-album-creator` in Docker with `ALBUM_LEVELS=1` and `UNATTENDED=1` across `big-bear-immich_big_bear_immich_network` to synchronize the 114 event folders in `/home/achibukz/Documents/Files/personal/memories` into Immich albums. Added `scripts/immich_folder_sync.sh` as the repeatable sync runner.
+
+**Why:** Immich does not auto-create albums from mounted external library directories. The memories directory already follows a strict `YY.MM.DD- EventName` convention with multi-day subfolders (such as `26.06.21- Japan 2026`) that map cleanly into parent event albums.
+
+**Alternatives considered:** Manual album curation in the Immich UI, re-uploading via Immich CLI `--album`, or writing a custom REST API sync script.
+
+**Owner:** Aki.
+
+## 2026-09-01 — Deliver the Windows diagnostic through Drive and Gmail
+
+**Decision:** AUTO-Zoom-Leaver #1 must upload its tested diagnostic executable to Google Drive, share it with `shpengson@gmail.com`, and email the download link and SHA-256 checksum. The issue records the delivery timestamp in PHT, filename, checksum, and Drive file ID.
+
+**Why:** Gmail blocks `.exe` attachments and archives that contain executables. A Drive link delivers the requested file without creating a ticket criterion that Gmail will reject.
+
+**Alternatives considered:** Attach the executable directly or hide it inside a ZIP archive.
+
+**Owner:** Aki.
+
+## 2026-09-01 — Windows probe ships as a diagnostic executable
+
+**Decision:** The first AUTO Zoom Leaver Windows ticket must publish a read-only diagnostic executable as a GitHub Actions artifact. Aki runs it on the Windows laptop without cloning the repository or installing Python, then returns the generated sanitized report. The diagnostic inspects the Zoom leave prompt but never invokes a control.
+
+**Why:** The implementation needs exact Windows UI Automation names, types, and IDs from a live Zoom session. A narrative test report cannot supply those selectors, while requiring a development setup on the test laptop adds work unrelated to validation.
+
+**Alternatives considered:** Clone the repository on the laptop, install Python and dependencies by hand, or accept a narrative report without machine-readable control metadata.
+
+**Owner:** Aki.
+
+## 2026-09-01 — AUTO Zoom Leaver Windows v1 planning baseline
+
+**Decision:** Propose a Windows 10 and 11 console executable that finishes the existing `zoom_auto_leaver.py` path. Use Microsoft UI Automation to read Zoom controls and invoke only the exact "Leave Meeting" action. Require a Windows accessibility-tree probe before implementation. Keep system tray UI, installer, signing, and auto-update outside v1. Do not publish `/agy-tickets` issues until Aki approves the plan and full issue bodies.
+
+**Why:** The repository calls its untested Python script a Windows version, but it has no packaged executable and blindly presses `Enter` after `Alt+Q`. That can select the wrong host action. The proposal needs a live Windows probe because Zoom's accessible control tree cannot be confirmed from Achibuntu.
+
+**Alternatives considered:** Starting a second Windows implementation, keeping title-only detection, using a blind confirmation key, and expanding v1 into a tray application.
+
+**Owner:** Aki.
+
 ## 2026-08-31 — Chelz Class Schedule Hidden Calendar (cc sched)
 
 **Decision:** Created a secondary Google Calendar named `cc sched` under `akibukuhan10@gmail.com` with `hidden: true` and `selected: false`, populated with weekly recurring class blocks for Chelz through December 8, 2026 (Monday 09:00-12:00 & 13:30-19:30, Tuesday 10:30-13:30, Wednesday 13:30-16:30, Thursday 09:00-12:00 & 13:30-16:30, Friday 10:30-13:30).
@@ -971,3 +1011,13 @@ explicitly wanted. Fully dynamic categories, which reintroduces the drift. A con
 over the whole list, which puts deadlines back in the model's hands.
 
 **Owner.** Aki. Tickets AIS-OS #6 and achiCore #57; the model pass is held back from that batch.
+
+## 2026-09-02 — Shared Telegram image sender skill
+
+**Decision:** Created `telegram-image-sender` in the global Skillshare source at `~/.config/skillshare/skills/` and synced it to all seven configured AI tool targets. The skill instructs agents to emit standard Markdown image tags with local absolute paths so the achiOS bridge can dispatch the file and rewrite the text reference to a Tailscale viewer link.
+
+**Why:** Aki wants one reusable instruction set across Codex, Claude, Gemini, Antigravity, Hermes, Copilot, and Universal. The existing bridge already recognizes this syntax, so a shared skill keeps the behavior consistent without another sender or tag format.
+
+**Alternatives considered:** A Codex-only skill, a custom `[send_photo: path]` tag, and direct Telegram API calls from each agent.
+
+**Owner:** Aki.

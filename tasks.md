@@ -22,6 +22,8 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Handle Codex diagnostic stderr without failing turn and document rm -f exec policy restrictions (achiCore #89) #achicore #codex #bug !high
+- [ ] Implement AUTO Zoom Leaver Windows port tickets #1-#4 #projects #windows #engineering !high
 - [ ] Hold a grill-me session and design an Asa skill/workflow for prior art discovery, competitive market analysis, and idea viability evaluation (check if an idea already exists, analyze competitors, and assess market viability) #asa #skills #research #planning !med
 - [ ] Hold a grill-me session and implement model escalation fallback in achiCore to upgrade to a higher-tier model when a lower model fails #achicore #models #planning !med
 - [ ] Add codebase inspection skill to Aurora in achiCore #achicore #agents !med
@@ -57,6 +59,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 ## Blocked
 
 ## Done
+- [x] Create and sync the shared `telegram-image-sender` skill for sending local images through achiOS Telegram media dispatch #achios #skills #telegram #media !med (done 2026-09-02)
 - [x] Pause automatic TGDB transcript export and commits while the self-learning loop is discussed in achiCore #83 #achios #achicore #achimem !high  (done 2026-08-31)
 - [x] Autostart achiCore hub daemon with topic windows on system boot via systemd (achiCore #79, #80) #achicore #infra !med @2026-08-31  (done 2026-08-31)
 - [x] Research: Subagent-optimized CI/CD, automated testing gates, and PR verification architecture #systems #ci #agents #research !high @2026-08-30  (done 2026-08-30)

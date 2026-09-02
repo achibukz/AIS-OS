@@ -1,5 +1,101 @@
 # Session Log
 
+## 2026-09-02 20:18 [saved]
+Goal: Install and run `salvoxia/immich-folder-album-creator` to convert `/home/achibukz/Documents/Files/personal/memories` into Immich albums.
+
+Decisions:
+- Verified 114 event folders in `/home/achibukz/Documents/Files/personal/memories` against [INDEX.md](http://100.106.210.38:8999/Documents/Files/personal/memories/INDEX.md) and [AGENTS.md](http://100.106.210.38:8999/Documents/Files/personal/memories/AGENTS.md).
+- Pulled and executed `salvoxia/immich-folder-album-creator:latest` using `ALBUM_LEVELS=1` over `big-bear-immich_big_bear_immich_network`.
+- Created and populated 114 albums containing 7,018 media assets in Immich (`http://100.106.210.38:2283`).
+- Built `scripts/immich_folder_sync.sh` for repeatable dry-run and live synchronization.
+
+Rejected:
+- Manually creating albums in the Immich UI.
+- Flattening multi-day trip directories (e.g. `26.06.21- Japan 2026` daily folders), which correctly rolled up into their parent trip album under `ALBUM_LEVELS=1`.
+
+Open:
+- None.
+
+Decisions:
+
+- Created `telegram-image-sender` in the global Skillshare source at `~/.config/skillshare/skills/`.
+- Standardized outbound image references on Markdown image tags with absolute local paths.
+- Included path, blacklist, file-size, and missing-file rules from the live media dispatcher contract.
+- Synced the source to all seven configured Skillshare targets.
+
+Rejected:
+
+- Making the skill Codex-only.
+- Adding a custom media tag or direct Telegram API sender.
+
+Open:
+
+- None.
+
+## 2026-09-01 15:17 [saved]
+Goal: Add external delivery of the ticket #1 diagnostic executable to `shpengson@gmail.com`.
+
+Decisions:
+- Updated AUTO-Zoom-Leaver #1 to upload the tested executable to Google Drive, grant the recipient access, and email the Drive link plus SHA-256 checksum.
+- Prohibited attaching the executable or an archive containing it because Gmail blocks executable attachments.
+- Required a delivery comment on the issue with the PHT timestamp, filename, checksum, and Drive file ID.
+
+Rejected:
+- Attaching the `.exe` or a ZIP containing it directly to Gmail.
+
+Open:
+- Delivery remains pending until ticket #1 produces a passing Windows artifact.
+
+## 2026-09-01 15:13 [saved]
+Goal: Publish the approved AUTO Zoom Leaver Windows port ticket batch with `/agy-tickets`.
+
+Decisions:
+- Published AUTO-Zoom-Leaver issues #1 through #4 in dependency order with `ready-for-agent` and priority labels.
+- Assigned `claude-sonnet-5` to the UI Automation diagnostic and safe-leave integration, then `gemini-3.7-flash-high` to packaging, CI, and documentation.
+- Kept ticket #1 HITL with a downloadable read-only diagnostic executable. Tickets #2 through #4 remain blocked in sequence.
+- Replaced the generic active task with one batch entry covering #1 through #4.
+
+Rejected:
+- Creating one task-register line per issue.
+- Publishing later tickets without real blocker issue numbers.
+
+Open:
+- Implement #1 and give Aki its Windows diagnostic artifact and exact capture instructions.
+
+## 2026-09-01 15:04 [saved]
+Goal: Clarify Aki's HITL work for the first AUTO Zoom Leaver Windows ticket.
+
+Decisions:
+- Ticket 1 will produce a downloadable diagnostic executable through GitHub Actions, so the Windows laptop needs no repository checkout, Git, or Python.
+- Aki will run two disposable Zoom scenarios and return the generated sanitized report. A narrative alone cannot supply the control names and automation metadata needed by the implementation.
+- The diagnostic may inspect the leave prompt but may never click a button.
+
+Rejected:
+- Requiring Aki to clone and configure the development repository on the Windows laptop.
+- Accepting only a manual description of the test, because selectors cannot be derived from it.
+
+Open:
+- Aki must approve the full `/agy-tickets` drafts before publication.
+
+## 2026-09-01 14:58 [saved]
+Goal: Plan the AUTO Zoom Leaver Windows port and prepare it for `/agy-tickets` issue authoring.
+
+Decisions:
+- Scoped Windows v1 as a self-contained console executable for Windows 10 and 11. System tray UI, installer, signing, and auto-update remain outside this port.
+- Proposed Microsoft UI Automation through `pywinauto` for participant discovery and exact "Leave Meeting" button invocation.
+- Required the Windows leave path to fail closed. It may never press `Enter` blindly or invoke "End Meeting for All."
+- Wrote the proposed implementation and verification sequence in [WINDOWS_PORT_PLAN.md](http://100.106.210.38:8999/Code/GitHub/AUTO-Zoom-Leaver/docs/WINDOWS_PORT_PLAN.md).
+- Added one active task for the eventual implementation ticket batch.
+
+Rejected:
+- Treating the existing untested `zoom_auto_leaver.py` prototype as a finished Windows port.
+- Starting a second Windows implementation instead of repairing the existing entry point.
+- Including a system tray UI in v1 before the monitoring and safe-leave path works.
+
+Open:
+- Aki must approve or revise the plan before `/agy-tickets` drafts issue bodies.
+- Aki must approve the full issue bodies before they are published.
+
 ## 2026-09-01 14:54 [saved]
 Goal: Clone AUTO-Zoom-Leaver repository to Achibuntu server.
 

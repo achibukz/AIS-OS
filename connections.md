@@ -84,6 +84,13 @@ there rather than opening repos blind.
 - The vault folder `varww-m4imt` now ignores `.git` and `*.sync-conflict-*`. Set it on any new device
   before first sync, or that device will start replicating git metadata again.
 
+### Immich photo management & folder album sync (added 2026-09-02)
+
+- Self-hosted Immich server reachable at `http://100.106.210.38:2283` (Docker container `immich-server`).
+- External Library: `/home/achibukz/Documents/Files/personal/memories` mounted to `/mnt/media/memories`.
+- Folder-to-Album Sync: `salvoxia/immich-folder-album-creator:latest` via `scripts/immich_folder_sync.sh` (`--dry-run` supported).
+- Config: `ALBUM_LEVELS=1`, maps all 114 `YY.MM.DD- EventName` folders to chronological Immich albums (7,018+ assets).
+
 ## Codex global writing hook
 
 Added 2026-08-29 at `/home/achibukz/.codex/hooks.json`. A SessionStart command prints Aki's unslop instruction as JSON additional context. The command output is verified; activation awaits Aki's trust approval through `/hooks`. No network endpoint or credentials. Claude Code settings are unchanged.
