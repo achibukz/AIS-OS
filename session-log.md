@@ -1,5 +1,24 @@
 # Session Log
 
+## 2026-09-03 04:10 [saved]
+Goal: Correct date and media metadata for `MOA Date w Yna` from 2026 to 2025 and synchronize Immich album.
+
+Decisions:
+- Installed standalone ExifTool to `~/.local/share/exiftool` and symlinked `~/.local/bin/exiftool`.
+- Shifted all 48 JPG EXIF date tags (`DateTimeOriginal`, `CreateDate`, `ModifyDate`) back by 1 year (`2026:08:19` -> `2025:08:19`) without pixel recompression.
+- Losslessly shifted QuickTime `creation_time` tags on 4 MOV video files to `2025-08-19` via ffmpeg stream copy (`-c copy`).
+- Synchronized filesystem modification times (`mtime`) on all 52 media files to match August 19, 2025.
+- Renamed directory `/home/achibukz/Documents/Files/personal/memories/26.08.19- MOA Date w Yna` to `25.08.19- MOA Date w Yna`.
+- Updated [INDEX.md](http://100.106.210.38:8999/Documents/Files/personal/memories/INDEX.md) to move the event into the 2025 section (2025: 41 events / 1,796 files; 2026: 24 events / 1,034 files).
+- Triggered Immich library scan and ran `scripts/immich_folder_sync.sh`, creating album `25.08.19- MOA Date w Yna` with 52 assets and pruning the empty 2026 album.
+
+Rejected:
+- Lossy re-encoding of media assets.
+- Leaving stale empty 2026 album in Immich.
+
+Open:
+- None.
+
 ## 2026-09-03 02:19 [saved]
 Goal: De-bloat `tasks.md` by moving Systems & Engineering and Asa & Research sub-tasks into dedicated modular registers.
 
