@@ -1,8 +1,10 @@
 # Google auth lifecycle and /tasks renderer plan
 
 Date: 2026-08-29
-Status: approved, not started
+Status: superseded on 2026-09-03
 Owner: Aki
+
+Superseded by the [unified AIS-OS open tickets implementation plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/.hermes/plans/2026-09-03_052750-unified-ais-os-open-tickets.md). This document remains as the record of the original ticket decomposition and the decisions that produced it.
 
 ## Why this exists
 

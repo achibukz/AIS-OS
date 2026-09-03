@@ -1,5 +1,27 @@
 # Session Log
 
+## 2026-09-03 13:27 [saved]
+Goal: Inventory every open AIS-OS ticket and design one coordinated delivery plan instead of executing each ticket separately.
+
+Decisions:
+- Included AIS-OS #3, #5, #6, #7, #8 and dependent achiCore #57 in one release plan.
+- Preserved the current chronological daily brief and treated its old test contract as stale.
+- Chose Production OAuth for `achiclaude`, with silent daily health checks and a Sunday heartbeat.
+- Chose shared `task_engine.py` and `gws_client.py` modules, cached semantic task grouping, deterministic fallback, and a read-only calendar permission check.
+- Chose one AIS-OS integration pull request and one dependent achiCore pull request from clean worktrees, with AIS-OS deployed first.
+- Authorized a narrow Google-auth correction in [CLAUDE.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/CLAUDE.md) during implementation.
+- Saved the complete sequence in the [unified implementation plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/.hermes/plans/2026-09-03_052750-unified-ais-os-open-tickets.md).
+
+Rejected:
+- One implementation and pull request per ticket.
+- Keeping the intentional seven-day OAuth expiry.
+- Restoring the obsolete two-message daily brief.
+- Using `gws events insert --dry-run` as proof of write access, since it never contacts Google.
+- Creating and deleting a disposable calendar event every day.
+
+Open:
+- Implementation, pull requests, Production OAuth cutover, deployment, and runtime credential cleanup remain unstarted.
+
 ## 2026-09-03 13:12 [saved]
 Goal: Add runtime secrets unlock toggle and .env file rendering to achi_viewer.
 
