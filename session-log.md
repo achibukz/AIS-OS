@@ -1,5 +1,34 @@
 # Session Log
 
+## 2026-09-03 13:12 [saved]
+Goal: Add runtime secrets unlock toggle and .env file rendering to achi_viewer.
+
+Decisions:
+- Added `ALLOW_SECRETS_FILE = Path.home() / ".local/state/achi-viewer/allow_secrets"` and `is_secrets_allowed()` check to `scripts/achi_viewer.py`, permitting dynamic bypass of `BLOCKED_PATTERNS` when the flag file exists or `ACHI_VIEWER_ALLOW_SECRETS=1` is set.
+- Updated `render_file` branch in `scripts/achi_viewer.py` to recognize `.env` files and filenames ending in `.env` so they render with syntax highlighting rather than raw downloads.
+- Added 3 unit tests in `tests/test_achi_viewer.py` covering default blocking, flag-file bypass, and env-var bypass.
+- Restarted `achi-viewer.service` and verified live HTTP 403 when locked and HTTP 200 when unlocked via curl.
+
+Rejected:
+- Permanently emptying `BLOCKED_PATTERNS`. A toggle preserves baseline protection while allowing temporary inspection.
+
+Open:
+- None.
+
+## 2026-09-03 04:35 [saved]
+Goal: Update message-writer skill sign-off convention and revise ING onboarding email draft for Vanscell Nierra.
+
+Decisions:
+- Updated `message-writer` skill in `~/.config/skillshare/skills/message-writer/SKILL.md` (and linked target `~/.gemini/config/skills/message-writer/SKILL.md`) to set standard email reply sign-off to `Abram Aki Bukuhan` (removing parentheses).
+- Synchronized skills across targets using `skillshare sync`.
+- Updated draft email in [2026-09-03-vanscell-ing-onboarding-update.md](http://100.106.210.38:8999/Documents/Obsidian/achiMem/output/2026-09-03-vanscell-ing-onboarding-update.md) to sign off as `Abram Aki Bukuhan`.
+
+Rejected:
+- Leaving parenthesis variants across skill profiles.
+
+Open:
+- None.
+
 ## 2026-09-03 04:18 [saved]
 Goal: Schedule automated Immich external library scan and folder album sync after midnight.
 
