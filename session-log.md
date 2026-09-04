@@ -1,5 +1,18 @@
 # Session Log
 
+## 2026-09-05 06:02 [saved]
+Goal: Resolve Claude Code usage display failure in Telegram /usage.
+
+Decisions:
+- Commented out hardcoded `CLAUDE_CODE_OAUTH_TOKEN` in `/home/achibukz/Code/GitHub/achiCore/.env.hub`.
+- Allowed `src/quota.py` to fall back to auto-refreshed credentials in `~/.claude/.credentials.json`, resolving the Anthropic HTTP 429 rate limit caused by the stale static token.
+
+Rejected:
+- Manually refreshing the token string in `.env.hub`: static token assignment inevitably becomes stale or rate-limited; Claude Code handles its own refresh lifecycle directly in `~/.claude/.credentials.json`.
+
+Open:
+- Issue `/restart` in Telegram to apply the environment change to the running achiCore daemon.
+
 ## 2026-09-05 05:48 [saved]
 Goal: Standardize Google Workspace scripts on gws CLI in Production mode and add automated auth health checks.
 
