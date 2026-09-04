@@ -1542,3 +1542,38 @@ Open:
   sessions. Session detection makes that harmless, but scoping the arming to the bot's own
   session would be the cleaner fix.
 - 44 pre-existing failures in `tests/test_daily_brief.py`, unrelated and untouched.
+
+## 2026-09-04 22:45 [saved]
+
+Goal: write two agy-tickets against `achibukz/achiCore` for the `/model` flow.
+
+Published:
+- #138 Add Astra as a Codex model in the registry. `priority:med`, `ready-for-agent`,
+  recommended `gemini-3.7-flash-high`.
+- #139 Ask for the effort after picking a model in `/model`. `priority:med`,
+  `ready-for-agent`, recommended `claude-sonnet-5`.
+
+Findings that shaped #138:
+- `~/.codex/config.toml` already names `model = "gpt-6-astra"`, but `models_cache.json`,
+  written the same day, lists only Sol, Terra, Luna, 5.5 and 5.4-mini under
+  `visibility: "list"`. `load_codex_models()` reads that cache, so no refresh will ever
+  surface Astra. It has to be a declared entry in the `MODEL_REGISTRY` literal.
+- `MODEL_REGISTRY.update(load_codex_models())` runs after the literal, so a cache that
+  later lists Astra overrides the static entry instead of colliding with it.
+- Astra's accepted reasoning levels are unknown, so the ticket makes Aea probe the CLI
+  and record what it found rather than guessing Sol's six.
+
+Findings that shaped #139:
+- The `set_model:` callback in `src/bot.py` ends at a confirmation. Effort is only
+  corrected silently by `normalize_model_effort` inside `session_manager.set_model`, so
+  Codex, Sol lands on a default Aki never chose.
+- `src/codex_client.py:114` refuses a turn whose effort is outside the model's list, so
+  a wrong effort list is a refused turn rather than a silent downgrade.
+
+Decision: #139 is independent of #138 at Aki's request, so both can run at once. It reads
+the effort list off whatever the registry holds, so it needs no particular model to exist.
+Its argument-path criterion uses `gpt-5.6-sol` instead of Astra.
+
+Open:
+- Nothing published against `CARD_AGY_MODELS` in `src/topic_models.py`. Astra reaches the
+  `/topicmodels` card through the codex branch of `catalog()` with no edit.

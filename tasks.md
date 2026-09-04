@@ -32,6 +32,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Cancel current Google One subscription ahead of renewal #finances #personal !low @2026-10-13
 - [ ] Subscribe to Google AI Pro Student Discount (₱275/mo for up to 4 years via SheerID verification) #finances #personal !low @2026-10-14
 - [ ] Audit achiOS, achiCore, achiMem, and Telegram sessions per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) upon Astra release #systems #achios #achicore !med
+- [ ] Ship achiCore #138-#139: register Astra as a Codex model and add the effort step to /model #achicore #ux !med
 - [ ] Check Google OAuth tokens after 7 days to verify permanent production validity without re-auth #infra #security #achicore !med @2026-09-12
 
 ## Blocked
