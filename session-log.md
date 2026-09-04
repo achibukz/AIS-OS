@@ -1,5 +1,111 @@
 # Session Log
 
+## 2026-09-04 20:42 [saved]
+Goal: Diagnose /ToWork CI waiting loop hang on repositories without GitHub Actions workflows and draft an achiCore bug ticket.
+
+Decisions:
+- Diagnosed root cause of stalled /ToWork job `f235a4449f584ba2ef5b20be-2`: `_wait_for_to_work_ci` in `achiCore/src/bot.py` checks `if checks.runs and not checks.pending:`, which evaluates to false when `checks.runs` is empty, indefinitely polling repositories lacking `.github/workflows/` (such as `achibukz/opus-subagents`).
+- Added tracking task `- [ ] Fix /ToWork CI hang on repositories without GitHub Actions workflows (achiCore #113) #achicore #bug !high` to [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+- Drafted and published vertical slice bug ticket [achiCore #113](https://github.com/achibukz/achiCore/issues/113) with acceptance criteria covering workflow detection, empty check runs bypass, and test cases.
+
+Rejected:
+- Modifying or publishing directly to `achibukz/achiCore` without presenting the full ticket draft and questions to Aki for approval.
+
+Open:
+- Stop current stuck /ToWork job loop for `achibukz/opus-subagents#2` in achiCore.
+- Implement and verify [achiCore #113](https://github.com/achibukz/achiCore/issues/113).
+
+## 2026-09-04 20:32 [saved]
+Goal: Add Google Calendar event for Codex Usage Reset 1 expiration on October 4, 2026, and track in tasks.md.
+
+Decisions:
+- Added all-day event "Codex Usage Reset 1 expires" on 2026-10-04 to the Personal Google Calendar via `scripts/gcal_add.py`.
+- Added `- [ ] Codex Usage Reset 1 expires #tooling #personal !low @2026-10-04` to `## Active` in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+- Updated `scripts/gcal_add.py` to probe writability of `~/.config/gws-<profile>` and dynamically mirror to `/tmp/gws-<profile>` when running under sandbox environments.
+
+Rejected:
+- Defaulting calendar addition to non-personal calendars; Codex subscription tracking belongs in Personal.
+
+Open:
+- None.
+
+## 2026-09-04 20:17 [saved]
+Goal: Add DLSU Registrar document request link to tasks.md and record online application procedures.
+
+Decisions:
+- Appended official DLSU Online Request for Documents (ORD) Google Form link directly to the active NAPI 2027 registrar document task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+- Synthesized DLSU Registrar online application protocols (ORD facility vs The Concierge portal, regular 8-day vs express 3-day turnaround, prerequisites) for achiMem.
+
+Rejected:
+- Direct cross-workspace write to achiMem from #General topic workspace due to runtime sandbox isolation; routing to #achiMem.
+
+Open:
+- Complete achiMem sync via #achiMem topic.
+
+## 2026-09-04 19:58 [saved]
+Goal: Register NAPI 2027 application tasks in tasks.md and review participating lab options and info session materials.
+
+Decisions:
+- Added dedicated `### NAPI 2027 (NAIST Research Internship)` subsection under `## Active` in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) covering the application form (@2026-10-16), DLSU registrar documents (TOR/COE), and academic recommendation (@2026-10-23).
+- Locked Aki's NAPI 2027 lab preferences: Preference 1 = Software Design and Analysis Lab (Test & Secure Vision-Language Models in the Wild); Preference 2 = Human-AI Interaction Lab (Multimodal Interaction AI).
+
+Rejected:
+- Using a top-level `## ` section header in tasks.md, which would break `daily_brief.py` and `tasks_digest.py` section parsing.
+
+Open:
+- Resolve schedule overlap with ING internship exclusivity (Oct 2026 – Mar 2027) and DLSU Term 2 (Jan 7 – Apr 14, 2027).
+
+## 2026-09-03 13:27 [saved]
+Goal: Inventory every open AIS-OS ticket and design one coordinated delivery plan instead of executing each ticket separately.
+
+Decisions:
+- Included AIS-OS #3, #5, #6, #7, #8 and dependent achiCore #57 in one release plan.
+- Preserved the current chronological daily brief and treated its old test contract as stale.
+- Chose Production OAuth for `achiclaude`, with silent daily health checks and a Sunday heartbeat.
+- Chose shared `task_engine.py` and `gws_client.py` modules, cached semantic task grouping, deterministic fallback, and a read-only calendar permission check.
+- Chose one AIS-OS integration pull request and one dependent achiCore pull request from clean worktrees, with AIS-OS deployed first.
+- Authorized a narrow Google-auth correction in [CLAUDE.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/CLAUDE.md) during implementation.
+- Saved the complete sequence in the [unified implementation plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/.hermes/plans/2026-09-03_052750-unified-ais-os-open-tickets.md).
+
+Rejected:
+- One implementation and pull request per ticket.
+- Keeping the intentional seven-day OAuth expiry.
+- Restoring the obsolete two-message daily brief.
+- Using `gws events insert --dry-run` as proof of write access, since it never contacts Google.
+- Creating and deleting a disposable calendar event every day.
+
+Open:
+- Implementation, pull requests, Production OAuth cutover, deployment, and runtime credential cleanup remain unstarted.
+
+## 2026-09-03 13:12 [saved]
+Goal: Add runtime secrets unlock toggle and .env file rendering to achi_viewer.
+
+Decisions:
+- Added `ALLOW_SECRETS_FILE = Path.home() / ".local/state/achi-viewer/allow_secrets"` and `is_secrets_allowed()` check to `scripts/achi_viewer.py`, permitting dynamic bypass of `BLOCKED_PATTERNS` when the flag file exists or `ACHI_VIEWER_ALLOW_SECRETS=1` is set.
+- Updated `render_file` branch in `scripts/achi_viewer.py` to recognize `.env` files and filenames ending in `.env` so they render with syntax highlighting rather than raw downloads.
+- Added 3 unit tests in `tests/test_achi_viewer.py` covering default blocking, flag-file bypass, and env-var bypass.
+- Restarted `achi-viewer.service` and verified live HTTP 403 when locked and HTTP 200 when unlocked via curl.
+
+Rejected:
+- Permanently emptying `BLOCKED_PATTERNS`. A toggle preserves baseline protection while allowing temporary inspection.
+
+Open:
+- None.
+
+## 2026-09-03 04:35 [saved]
+Goal: Update message-writer skill sign-off convention and revise ING onboarding email draft for Vanscell Nierra.
+
+Decisions:
+- Updated `message-writer` skill in `~/.config/skillshare/skills/message-writer/SKILL.md` (and linked target `~/.gemini/config/skills/message-writer/SKILL.md`) to set standard email reply sign-off to `Abram Aki Bukuhan` (removing parentheses).
+- Synchronized skills across targets using `skillshare sync`.
+- Updated draft email in [2026-09-03-vanscell-ing-onboarding-update.md](http://100.106.210.38:8999/Documents/Obsidian/achiMem/output/2026-09-03-vanscell-ing-onboarding-update.md) to sign off as `Abram Aki Bukuhan`.
+
+Rejected:
+- Leaving parenthesis variants across skill profiles.
+
+Open:
+- None.
+
 ## 2026-09-03 04:18 [saved]
 Goal: Schedule automated Immich external library scan and folder album sync after midnight.
 

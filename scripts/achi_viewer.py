@@ -16,7 +16,7 @@ ROOT_DIR = Path("/home/achibukz").resolve()
 PORT = 8999
 HOST = "0.0.0.0"
 
-# Sensitive files/directories that should never be served
+# Sensitive files/directories that should never be served by default
 BLOCKED_PATTERNS = [
     ".env", ".key", ".pem", "id_rsa", "id_ed25519",
     ".git/objects", ".git/refs", ".token_storage", "secrets.env",
@@ -27,8 +27,18 @@ BLOCKED_PATTERNS = [
     "Documents/Files/personal/finance",
 ]
 
+ALLOW_SECRETS_FILE = Path.home() / ".local" / "state" / "achi-viewer" / "allow_secrets"
+
+
+def is_secrets_allowed() -> bool:
+    if os.getenv("ACHI_VIEWER_ALLOW_SECRETS", "0").lower() in ("1", "true", "yes"):
+        return True
+    return ALLOW_SECRETS_FILE.is_file()
+
 
 def is_blocked(path) -> bool:
+    if is_secrets_allowed():
+        return False
     return any(b in str(path) for b in BLOCKED_PATTERNS)
 
 HTML_TEMPLATE = """<!DOCTYPE html>
@@ -647,7 +657,11 @@ class AchiViewerHandler(BaseHTTPRequestHandler):
 
         if target_path.is_dir():
             self.render_directory(target_path)
-        elif target_path.suffix.lower() in [".md", ".markdown", ".txt", ".json", ".jsonl", ".yaml", ".yml", ".py", ".sh", ".conf", ".env-example"]:
+        elif (
+            target_path.suffix.lower() in [".md", ".markdown", ".txt", ".json", ".jsonl", ".yaml", ".yml", ".py", ".sh", ".conf", ".env-example", ".env"]
+            or target_path.name.startswith(".env")
+            or target_path.name.endswith(".env")
+        ):
             self.render_file(target_path)
         else:
             # Serve binary / image / other files directly

@@ -22,13 +22,20 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Fix /ToWork CI hang on repositories without GitHub Actions workflows (achiCore #113) #achicore #bug !high
 - [ ] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-09-02
 - [ ] Complete 5-month ING Internship Agreement Form (signatures: Aki, Parent/Guardian, DLSU coordinator, then notarize) #career #school !high
 - [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
 - [ ] Complete active Systems & Engineering backlog tasks per [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md) #systems #engineering #achicore #infra !high
 - [ ] Complete active Asa & Research workflows backlog tasks per [tasks-asa-research.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-asa-research.md) #asa #research #workflows !high
+- [ ] Codex Usage Reset 1 expires #tooling #personal !low @2026-10-04
 - [ ] Cancel current Google One subscription ahead of renewal #finances #personal !low @2026-10-13
 - [ ] Subscribe to Google AI Pro Student Discount (₱275/mo for up to 4 years via SheerID verification) #finances #personal !low @2026-10-14
+
+### NAPI 2027 (NAIST Research Internship)
+- [ ] Write and submit NAPI 2027 Application Form (Pref 1: Software Design & Analysis [Test & Secure VLMs], Pref 2: Human-AI Interaction [Multimodal Interaction AI]) #career #research !high @2026-10-16
+- [ ] Request DLSU Documents from Registrar (Official TOR and Certificate of Enrollment) for NAPI 2027 ([Google Form](https://docs.google.com/forms/d/e/1FAIpQLSeoG-zBVba-bGo70EvN1kB_F4ALmqtjkppq7WPbXMKu0CsKrA/closedform)) #school #career !high
+- [ ] Ask academic professor for NAPI 2027 recommendation letter #school #career !high @2026-10-23
 
 ## Blocked
 

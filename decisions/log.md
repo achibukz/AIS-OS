@@ -18,6 +18,26 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-04 - gcal_add Sandboxed Profile Mirroring to /tmp
+
+**Decision:** Updated `scripts/gcal_add.py` to probe writability of `~/.config/gws-<profile>` and fallback to a synced mirror in `/tmp/gws-<profile>` if read-only.
+
+**Why:** Subagent and sandboxed processes enforce read-only protection outside the repository workspace. The `gws` binary fails with OS error 13 if it cannot write `token_cache.json` in its configuration directory. Mirroring to `/tmp` allows calendar queries and event additions to succeed in both sandboxed and host environments.
+
+**Alternatives considered:** Requiring manual host terminal execution for all calendar additions or weakening sandbox boundaries.
+
+**Owner:** Agi, Aki.
+
+## 2026-09-03 - Unified delivery plan for AIS-OS #3, #5, #6, #7, #8 and achiCore #57
+
+**Decision:** Deliver the five open AIS-OS issues and dependent achiCore #57 as one coordinated release through two linked pull requests. Add shared task and Google Workspace modules, preserve the current chronological daily brief, move `achiclaude` OAuth to Production, use silent daily auth checks plus a Sunday heartbeat, and deploy AIS-OS before achiCore. The full sequence is in the [unified implementation plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/.hermes/plans/2026-09-03_052750-unified-ais-os-open-tickets.md).
+
+**Why:** The tickets share code and hard dependencies. Implementing them independently would repeat Google subprocess logic, preserve contradictory task parsing, and leave a window where achiCore depends on an unavailable renderer. Production OAuth removes the known seven-day token failure instead of building permanent reauthentication work around it.
+
+**Alternatives considered:** One pull request per ticket, keeping OAuth in Testing, restoring the old two-message daily brief, running a real create-delete calendar probe every day, and replacing the existing issues with one umbrella issue.
+
+**Owner:** Aki.
+
 ## 2026-09-03 — Automated Immich Album and Library Synchronization Timer
 
 **Decision:** Automated the Immich folder-to-album synchronization via `systemd/achios-immich-sync.{service,timer}` scheduled at `00:30 Asia/Manila` with `Persistent=true`. Enhanced `scripts/immich_folder_sync.sh` to trigger the Immich external library scan via REST API prior to running `salvoxia/immich-folder-album-creator`.
