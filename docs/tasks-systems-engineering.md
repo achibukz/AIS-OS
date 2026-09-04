@@ -28,3 +28,4 @@ Modular register for achiOS, achiCore, infrastructure, and engineering sub-tasks
 - [ ] Automate completed GitHub PR and issue sync into tasks.md and evening debrief (AIS-OS #11) #achios #automation #telegram !high
 - [ ] Add show-me skill to Aea and Luna and mandate visual architecture diagrams in PR descriptions and reviews (achiCore #133-#134) #achicore #agents #ux !med
 - [ ] Fix Claude Code quota and auto-refresh stale provider tokens in /usage (achiCore #135-#136) #achicore #ux #bug !high
+- [ ] Hold grill-me session to design and build GitHub trending repos scanner cron (star surge tracking, adoption driver analysis, workflow integration) #automation #tooling #infra !med

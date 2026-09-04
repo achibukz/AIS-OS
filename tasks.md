@@ -33,6 +33,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Subscribe to Google AI Pro Student Discount (₱275/mo for up to 4 years via SheerID verification) #finances #personal !low @2026-10-14
 - [ ] Audit achiOS, achiCore, achiMem, and Telegram sessions per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) upon Astra release #systems #achios #achicore !med
 - [ ] Ship achiCore #142-#143: add /sync repository pull command and /towork conflict resolution flow #achicore #infra #ux !med
+- [ ] Hold grill-me session to design and build GitHub trending repos scanner cron (star surge tracking, adoption driver analysis, workflow integration) #automation #tooling #infra !med
 - [ ] Check Google OAuth tokens after 7 days to verify permanent production validity without re-auth #infra #security #achicore !med @2026-09-12
 
 ## Blocked
