@@ -20,6 +20,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -34,7 +35,26 @@ class GwsError(RuntimeError):
 
 
 def profile_dir(profile: str) -> Path:
-    return Path.home() / ".config" / f"gws-{profile}"
+    orig = Path.home() / ".config" / f"gws-{profile}"
+    if not orig.exists():
+        return orig
+    test_file = orig / ".write_test"
+    try:
+        with open(test_file, "a"):
+            pass
+        test_file.unlink(missing_ok=True)
+        return orig
+    except OSError:
+        tmp_dir = Path(f"/tmp/gws-{profile}")
+        if not tmp_dir.exists():
+            shutil.copytree(orig, tmp_dir)
+        else:
+            for item in orig.iterdir():
+                dest = tmp_dir / item.name
+                if not dest.exists() or item.stat().st_mtime > dest.stat().st_mtime:
+                    if item.is_file():
+                        shutil.copy2(item, dest)
+        return tmp_dir
 
 
 def gws(profile: str, *args: str, timeout: int = 30) -> dict:

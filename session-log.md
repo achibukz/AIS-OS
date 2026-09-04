@@ -1,5 +1,19 @@
 # Session Log
 
+## 2026-09-04 20:32 [saved]
+Goal: Add Google Calendar event for Codex Usage Reset 1 expiration on October 4, 2026, and track in tasks.md.
+
+Decisions:
+- Added all-day event "Codex Usage Reset 1 expires" on 2026-10-04 to the Personal Google Calendar via `scripts/gcal_add.py`.
+- Added `- [ ] Codex Usage Reset 1 expires #tooling #personal !low @2026-10-04` to `## Active` in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+- Updated `scripts/gcal_add.py` to probe writability of `~/.config/gws-<profile>` and dynamically mirror to `/tmp/gws-<profile>` when running under sandbox environments.
+
+Rejected:
+- Defaulting calendar addition to non-personal calendars; Codex subscription tracking belongs in Personal.
+
+Open:
+- None.
+
 ## 2026-09-04 20:17 [saved]
 Goal: Add DLSU Registrar document request link to tasks.md and record online application procedures.
 
