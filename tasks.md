@@ -32,12 +32,13 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Cancel current Google One subscription ahead of renewal #finances #personal !low @2026-10-13
 - [ ] Subscribe to Google AI Pro Student Discount (₱275/mo for up to 4 years via SheerID verification) #finances #personal !low @2026-10-14
 - [ ] Audit achiOS, achiCore, achiMem, and Telegram sessions per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) upon Astra release #systems #achios #achicore !med
-- [ ] Ship achiCore #138-#139: register Astra as a Codex model and add the effort step to /model #achicore #ux !med
+- [ ] Ship achiCore #142-#143: add /sync repository pull command and /towork conflict resolution flow #achicore #infra #ux !med
 - [ ] Check Google OAuth tokens after 7 days to verify permanent production validity without re-auth #infra #security #achicore !med @2026-09-12
 
 ## Blocked
 
 ## Done
+- [x] Ship achiCore #138-#139: register Astra as a Codex model and add the effort step to /model #achicore #ux !med  (done 2026-09-05)
 - [x] Integrate Claude Code foundation into achiCore as third engine with subscription OAuth (ticket 119, PR 126), scoped config directories, and prompt attachment handling #achicore #claude #arch !high  (done 2026-09-05)
 - [x] Promote achiclaude GCP OAuth consent screen to In Production to eliminate 7-day token expiration cap, re-auth 4 profiles, and verify Google Drive access #achicore #infra #security !high  (done 2026-09-05)
 - [x] Configure per-topic model selection and fallback models with custom effort levels via Telegram UI in achiCore (tickets 106, 108, 118, 125) #achicore #ux !med  (done 2026-09-05)

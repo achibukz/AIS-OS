@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-05 — Multi-Ticket Conflict Resolution Flow and Telegram Repository Sync
+
+**Decision:** Designed and published implementation tickets achiCore #142 (`/sync` repository pull command) and #143 (autonomous `Fix conflicts` button and resolution flow for `/towork` jobs).
+
+**Why:** Concurrent ticket execution causes branch drift and merge conflicts (particularly on `session-log.md`), which previously stalled `/towork` jobs and required manual terminal intervention. Automated conflict delegation to Aea with subsequent Luna verification allows hands-off resolution from Telegram. The `/sync` command gives Aki immediate visibility and one-tap fast-forward synchronization across all repositories from his phone.
+
+**Alternatives considered:** Using git rebase instead of merge commits (breaks signed commits and review history), resolving conflicts strictly through deterministic regex heuristics (fails on semantic code conflicts), or keeping repo sync purely as a local terminal script.
+
+**Owner:** Atlas / Aki.
+
 ## 2026-09-05 — Google Cloud OAuth Consent Screen Transition to Production Mode
 
 **Decision:** Promoted the `achiclaude` GCP OAuth consent screen from Testing to "In Production" status, re-authenticated all four profiles (`gws-main`, `gws-personal`, `gws-work`, `gws-dlsu`), and verified Google Drive access alongside Gmail and Calendar.
