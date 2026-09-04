@@ -30,6 +30,11 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Cancel current Google One subscription ahead of renewal #finances #personal !low @2026-10-13
 - [ ] Subscribe to Google AI Pro Student Discount (₱275/mo for up to 4 years via SheerID verification) #finances #personal !low @2026-10-14
 
+### NAPI 2027 (NAIST Research Internship)
+- [ ] Write and submit NAPI 2027 Application Form (Pref 1: Software Design & Analysis [Test & Secure VLMs], Pref 2: Human-AI Interaction [Multimodal Interaction AI]) #career #research !high @2026-10-16
+- [ ] Request DLSU Documents from Registrar (Official TOR and Certificate of Enrollment) for NAPI 2027 ([Google Form](https://docs.google.com/forms/d/e/1FAIpQLSeoG-zBVba-bGo70EvN1kB_F4ALmqtjkppq7WPbXMKu0CsKrA/closedform)) #school #career !high
+- [ ] Ask academic professor for NAPI 2027 recommendation letter #school #career !high @2026-10-23
+
 ## Blocked
 
 ## Done

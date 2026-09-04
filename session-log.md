@@ -1,5 +1,31 @@
 # Session Log
 
+## 2026-09-04 20:17 [saved]
+Goal: Add DLSU Registrar document request link to tasks.md and record online application procedures.
+
+Decisions:
+- Appended official DLSU Online Request for Documents (ORD) Google Form link directly to the active NAPI 2027 registrar document task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+- Synthesized DLSU Registrar online application protocols (ORD facility vs The Concierge portal, regular 8-day vs express 3-day turnaround, prerequisites) for achiMem.
+
+Rejected:
+- Direct cross-workspace write to achiMem from #General topic workspace due to runtime sandbox isolation; routing to #achiMem.
+
+Open:
+- Complete achiMem sync via #achiMem topic.
+
+## 2026-09-04 19:58 [saved]
+Goal: Register NAPI 2027 application tasks in tasks.md and review participating lab options and info session materials.
+
+Decisions:
+- Added dedicated `### NAPI 2027 (NAIST Research Internship)` subsection under `## Active` in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) covering the application form (@2026-10-16), DLSU registrar documents (TOR/COE), and academic recommendation (@2026-10-23).
+- Locked Aki's NAPI 2027 lab preferences: Preference 1 = Software Design and Analysis Lab (Test & Secure Vision-Language Models in the Wild); Preference 2 = Human-AI Interaction Lab (Multimodal Interaction AI).
+
+Rejected:
+- Using a top-level `## ` section header in tasks.md, which would break `daily_brief.py` and `tasks_digest.py` section parsing.
+
+Open:
+- Resolve schedule overlap with ING internship exclusivity (Oct 2026 – Mar 2027) and DLSU Term 2 (Jan 7 – Apr 14, 2027).
+
 ## 2026-09-03 13:27 [saved]
 Goal: Inventory every open AIS-OS ticket and design one coordinated delivery plan instead of executing each ticket separately.
 
