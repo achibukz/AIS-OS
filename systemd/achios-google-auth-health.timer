@@ -1,0 +1,11 @@
+[Unit]
+Description=achiOS Google OAuth health check at 07:30 daily and 09:00 Sunday Manila
+
+[Timer]
+OnCalendar=07:30 Asia/Manila
+OnCalendar=Sun *-*-* 09:00:00 Asia/Manila
+Persistent=true
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

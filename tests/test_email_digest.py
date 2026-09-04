@@ -7,6 +7,15 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import email_digest as ed
 
+
+def test_missing_gws_binary_exits_nonzero(monkeypatch, tmp_path, capsys):
+    missing = tmp_path / "gws"
+    monkeypatch.setattr(ed, "GWS_BIN", missing)
+    monkeypatch.setattr("sys.argv", ["email_digest.py", "--dry-run"])
+
+    assert ed.main() == 1
+    assert str(missing) in capsys.readouterr().err
+
 TZ = ZoneInfo("Asia/Manila")
 
 

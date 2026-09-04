@@ -17,7 +17,6 @@ import argparse
 import datetime as dt
 import html
 import json
-import os
 import re
 import subprocess
 import sys
@@ -29,13 +28,8 @@ from zoneinfo import ZoneInfo
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 from telegram_notify import send
+from google_auth_health import gws_env
 
-CONFIG_DIR = Path.home() / ".config" / "achios"
-GOOGLE_TOKENS = [
-    CONFIG_DIR / "google_token_dlsu.json",
-    CONFIG_DIR / "google_token.json",
-    CONFIG_DIR / "google_token_work.json",
-]
 GWS_BIN = Path.home() / ".npm-global" / "bin" / "gws"
 GWS_PROFILES = ["personal", "dlsu", "main", "work"]
 
@@ -129,141 +123,66 @@ def parse_active_tasks(body: str) -> list[Task]:
 
 
 def fetch_calendar_events(start_dt: dt.datetime, end_dt: dt.datetime) -> tuple[list[CalendarEvent], list[str]]:
-    """Fetch and deduplicate Google Calendar events via gws CLI and OAuth tokens."""
+    """Fetch and deduplicate Google Calendar events through the gws CLI."""
     events: list[CalendarEvent] = []
     seen_summaries_and_times: set[tuple[str, str]] = set()
     errors: list[str] = []
 
-    # 1. Try fetching via gws CLI first (supports multiple configured profiles)
+    if not GWS_BIN.is_file():
+        raise RuntimeError(f"gws binary missing: {GWS_BIN}")
+
     days_ahead = max(1, (end_dt.date() - start_dt.date()).days)
-    if GWS_BIN.exists():
-        for prof in GWS_PROFILES:
-            cfg_dir = Path.home() / ".config" / f"gws-{prof}"
-            if not cfg_dir.exists():
-                continue
-            env = {**os.environ, "GOOGLE_WORKSPACE_CLI_CONFIG_DIR": str(cfg_dir), "KEYRING_BACKEND": "file"}
-            try:
-                res = subprocess.run(
-                    [str(GWS_BIN), "calendar", "+agenda", "--days", str(days_ahead), "--format", "json"],
-                    env=env,
-                    capture_output=True,
-                    text=True,
-                    timeout=10,
-                )
-                if res.returncode == 0 and res.stdout.strip():
-                    stdout_clean = res.stdout[res.stdout.find("{"):] if "{" in res.stdout else res.stdout
-                    data = json.loads(stdout_clean)
-                    for item in data.get("events", []):
-                        raw_summary = item.get("summary", "")
-                        if not raw_summary or "laguna" in raw_summary.lower():
-                            continue
-                        summary = clean_summary(raw_summary)
-                        cal_title = item.get("calendar", "")
-                        start_str = item.get("start", "")
-                        if "T" in start_str:
-                            evt_dt = dt.datetime.fromisoformat(start_str).astimezone(LOCAL_TZ)
-                            is_all_day = False
-                            time_key = evt_dt.strftime("%Y-%m-%d %H:%M")
-                        else:
-                            d = dt.date.fromisoformat(start_str)
-                            evt_dt = dt.datetime.combine(d, dt.time.min, LOCAL_TZ)
-                            is_all_day = True
-                            time_key = evt_dt.strftime("%Y-%m-%d all-day")
-
-                        key = (summary.lower(), time_key)
-                        if key in seen_summaries_and_times:
-                            continue
-                        seen_summaries_and_times.add(key)
-
-                        events.append(
-                            CalendarEvent(
-                                summary=summary,
-                                start_dt=evt_dt,
-                                is_all_day=is_all_day,
-                                calendar_name=cal_title,
-                            )
-                        )
-                elif res.returncode != 0:
-                    err_msg = res.stderr.strip().split("\n")[0] if res.stderr else f"exit code {res.returncode}"
-                    errors.append(f"{prof} ({err_msg})")
-            except Exception as e:
-                errors.append(f"{prof} ({e})")
-                print(f"[WARN] gws calendar fetch failed for {prof}: {e}", file=sys.stderr)
-
-    # 2. Fallback to direct token files if gws returned nothing or is unavailable
-    if not events and not GWS_BIN.exists():
-        from google.auth.transport.requests import Request
-        from google.oauth2.credentials import Credentials
-        from googleapiclient.discovery import build
-
-        def utc(value: dt.datetime) -> str:
-            return value.astimezone(dt.timezone.utc).isoformat().replace("+00:00", "Z")
-
-        for token_path in GOOGLE_TOKENS:
-            if not token_path.exists():
-                continue
-            try:
-                creds = Credentials.from_authorized_user_file(str(token_path))
-                if creds.expired and creds.refresh_token:
-                    creds.refresh(Request())
-                    token_path.write_text(creds.to_json(), encoding="utf-8")
-                service = build("calendar", "v3", credentials=creds, cache_discovery=False)
-
-                cals = service.calendarList().list().execute().get("items", [])
-                for cal in cals:
-                    cal_id = cal["id"]
-                    cal_title = cal.get("summary", "")
-                    
-                    if "laguna" in cal_title.lower():
+    for prof in GWS_PROFILES:
+        cfg_dir = Path.home() / ".config" / f"gws-{prof}"
+        if not cfg_dir.exists():
+            continue
+        try:
+            res = subprocess.run(
+                [str(GWS_BIN), "calendar", "+agenda", "--days", str(days_ahead), "--format", "json"],
+                env=gws_env(prof),
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            if res.returncode == 0 and res.stdout.strip():
+                stdout_clean = res.stdout[res.stdout.find("{"):] if "{" in res.stdout else res.stdout
+                data = json.loads(stdout_clean)
+                for item in data.get("events", []):
+                    raw_summary = item.get("summary", "")
+                    if not raw_summary or "laguna" in raw_summary.lower():
                         continue
+                    summary = clean_summary(raw_summary)
+                    cal_title = item.get("calendar", "")
+                    start_str = item.get("start", "")
+                    if "T" in start_str:
+                        evt_dt = dt.datetime.fromisoformat(start_str).astimezone(LOCAL_TZ)
+                        is_all_day = False
+                        time_key = evt_dt.strftime("%Y-%m-%d %H:%M")
+                    else:
+                        d = dt.date.fromisoformat(start_str)
+                        evt_dt = dt.datetime.combine(d, dt.time.min, LOCAL_TZ)
+                        is_all_day = True
+                        time_key = evt_dt.strftime("%Y-%m-%d all-day")
 
-                    res = (
-                        service.events()
-                        .list(
-                            calendarId=cal_id,
-                            timeMin=utc(start_dt),
-                            timeMax=utc(end_dt),
-                            singleEvents=True,
-                            orderBy="startTime",
+                    key = (summary.lower(), time_key)
+                    if key in seen_summaries_and_times:
+                        continue
+                    seen_summaries_and_times.add(key)
+
+                    events.append(
+                        CalendarEvent(
+                            summary=summary,
+                            start_dt=evt_dt,
+                            is_all_day=is_all_day,
+                            calendar_name=cal_title,
                         )
-                        .execute()
                     )
-                    for item in res.get("items", []):
-                        raw_summary = item.get("summary", "")
-                        if not raw_summary or "laguna" in raw_summary.lower():
-                            continue
-
-                        summary = clean_summary(raw_summary)
-                        start_info = item.get("start", {})
-                        
-                        if "dateTime" in start_info:
-                            evt_dt = dt.datetime.fromisoformat(start_info["dateTime"].replace("Z", "+00:00")).astimezone(LOCAL_TZ)
-                            is_all_day = False
-                            time_key = evt_dt.strftime("%Y-%m-%d %H:%M")
-                        elif "date" in start_info:
-                            d = dt.date.fromisoformat(start_info["date"])
-                            evt_dt = dt.datetime.combine(d, dt.time.min, LOCAL_TZ)
-                            is_all_day = True
-                            time_key = evt_dt.strftime("%Y-%m-%d all-day")
-                        else:
-                            continue
-
-                        key = (summary.lower(), time_key)
-                        if key in seen_summaries_and_times:
-                            continue
-                        seen_summaries_and_times.add(key)
-
-                        events.append(
-                            CalendarEvent(
-                                summary=summary,
-                                start_dt=evt_dt,
-                                is_all_day=is_all_day,
-                                calendar_name=cal_title,
-                            )
-                        )
-            except Exception as e:
-                errors.append(f"{token_path.stem} ({e})")
-                print(f"[WARN] Direct token fetch failed for {token_path.name}: {e}", file=sys.stderr)
+            elif res.returncode != 0:
+                err_msg = res.stderr.strip().split("\n")[0] if res.stderr else f"exit code {res.returncode}"
+                errors.append(f"{prof} ({err_msg})")
+        except Exception as exc:
+            errors.append(f"{prof} ({exc})")
+            print(f"[WARN] gws calendar fetch failed for {prof}: {exc}", file=sys.stderr)
 
     events.sort(key=lambda e: (e.start_dt, not e.is_all_day, e.summary))
     return events, errors

@@ -19,7 +19,6 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
-import os
 import re
 import subprocess
 import sys
@@ -31,14 +30,9 @@ from zoneinfo import ZoneInfo
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 from telegram_notify import send
+from google_auth_health import gws_env
 
 TASKS_FILE = SCRIPT_DIR.parent / "tasks.md"
-CONFIG_DIR = Path.home() / ".config" / "achios"
-GOOGLE_TOKENS = [
-    CONFIG_DIR / "google_token_dlsu.json",
-    CONFIG_DIR / "google_token.json",
-    CONFIG_DIR / "google_token_work.json",
-]
 GWS_BIN = Path.home() / ".npm-global" / "bin" / "gws"
 GWS_PROFILES = ["personal", "dlsu", "main", "work"]
 LOCAL_TZ = ZoneInfo("Asia/Manila")
@@ -124,91 +118,44 @@ def get_tasks_data(concluding_date: dt.date) -> tuple[list[str], list[Task], lis
 
 
 def fetch_tomorrow_events(tomorrow: dt.date) -> tuple[list[str], list[str]]:
-    """Fetch calendar events for tomorrow from Google Calendar via gws or tokens."""
+    """Fetch tomorrow's Google Calendar events through the gws CLI."""
     events_summary = []
     seen = set()
     errors = []
 
-    # 1. Try fetching via gws CLI
-    if GWS_BIN.exists():
-        for prof in GWS_PROFILES:
-            cfg_dir = Path.home() / ".config" / f"gws-{prof}"
-            if not cfg_dir.exists():
-                continue
-            env = {**os.environ, "GOOGLE_WORKSPACE_CLI_CONFIG_DIR": str(cfg_dir), "KEYRING_BACKEND": "file"}
-            try:
-                res = subprocess.run(
-                    [str(GWS_BIN), "calendar", "+agenda", "--days", "2", "--format", "json"],
-                    env=env,
-                    capture_output=True,
-                    text=True,
-                    timeout=10,
-                )
-                if res.returncode == 0 and res.stdout.strip():
-                    stdout_clean = res.stdout[res.stdout.find("{"):] if "{" in res.stdout else res.stdout
-                    data = json.loads(stdout_clean)
-                    for item in data.get("events", []):
-                        raw_summary = item.get("summary", "")
-                        if not raw_summary or "laguna" in raw_summary.lower():
-                            continue
-                        start_str = item.get("start", "")
-                        evt_date = dt.datetime.fromisoformat(start_str).astimezone(LOCAL_TZ).date() if "T" in start_str else dt.date.fromisoformat(start_str)
-                        if evt_date == tomorrow and raw_summary not in seen:
-                            seen.add(raw_summary)
-                            events_summary.append(raw_summary)
-                elif res.returncode != 0:
-                    err_msg = res.stderr.strip().split("\n")[0] if res.stderr else f"exit code {res.returncode}"
-                    errors.append(f"{prof} ({err_msg})")
-            except Exception as e:
-                errors.append(f"{prof} ({e})")
-                print(f"[WARN] gws calendar fetch failed for {prof}: {e}", file=sys.stderr)
+    if not GWS_BIN.is_file():
+        raise RuntimeError(f"gws binary missing: {GWS_BIN}")
 
-    # 2. Fallback to direct token files
-    if not events_summary and not GWS_BIN.exists():
+    for prof in GWS_PROFILES:
+        cfg_dir = Path.home() / ".config" / f"gws-{prof}"
+        if not cfg_dir.exists():
+            continue
         try:
-            from google.auth.transport.requests import Request
-            from google.oauth2.credentials import Credentials
-            from googleapiclient.discovery import build
-
-            start_dt = dt.datetime.combine(tomorrow, dt.time.min, LOCAL_TZ)
-            end_dt = dt.datetime.combine(tomorrow + dt.timedelta(days=1), dt.time.min, LOCAL_TZ)
-
-            def utc(value: dt.datetime) -> str:
-                return value.astimezone(dt.timezone.utc).isoformat().replace("+00:00", "Z")
-
-            for token_path in GOOGLE_TOKENS:
-                if not token_path.exists():
-                    continue
-                creds = Credentials.from_authorized_user_file(str(token_path))
-                if creds.expired and creds.refresh_token:
-                    creds.refresh(Request())
-                    token_path.write_text(creds.to_json(), encoding="utf-8")
-                service = build("calendar", "v3", credentials=creds, cache_discovery=False)
-                
-                cals = service.calendarList().list().execute().get("items", [])
-                for cal in cals:
-                    cal_id = cal["id"]
-                    if cal_id in seen:
+            res = subprocess.run(
+                [str(GWS_BIN), "calendar", "+agenda", "--days", "2", "--format", "json"],
+                env=gws_env(prof),
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            if res.returncode == 0 and res.stdout.strip():
+                stdout_clean = res.stdout[res.stdout.find("{"):] if "{" in res.stdout else res.stdout
+                data = json.loads(stdout_clean)
+                for item in data.get("events", []):
+                    raw_summary = item.get("summary", "")
+                    if not raw_summary or "laguna" in raw_summary.lower():
                         continue
-                    seen.add(cal_id)
-                    res = (
-                        service.events()
-                        .list(
-                            calendarId=cal_id,
-                            timeMin=utc(start_dt),
-                            timeMax=utc(end_dt),
-                            singleEvents=True,
-                            orderBy="startTime",
-                        )
-                        .execute()
-                    )
-                    for item in res.get("items", []):
-                        title = item.get("summary")
-                        if title and title not in events_summary:
-                            events_summary.append(title)
-        except Exception as e:
-            errors.append(f"direct_token ({e})")
-            print(f"[WARN] Direct token fetch failed in evening debrief: {e}", file=sys.stderr)
+                    start_str = item.get("start", "")
+                    evt_date = dt.datetime.fromisoformat(start_str).astimezone(LOCAL_TZ).date() if "T" in start_str else dt.date.fromisoformat(start_str)
+                    if evt_date == tomorrow and raw_summary not in seen:
+                        seen.add(raw_summary)
+                        events_summary.append(raw_summary)
+            elif res.returncode != 0:
+                err_msg = res.stderr.strip().split("\n")[0] if res.stderr else f"exit code {res.returncode}"
+                errors.append(f"{prof} ({err_msg})")
+        except Exception as exc:
+            errors.append(f"{prof} ({exc})")
+            print(f"[WARN] gws calendar fetch failed for {prof}: {exc}", file=sys.stderr)
     return events_summary, errors
 
 
@@ -381,4 +328,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

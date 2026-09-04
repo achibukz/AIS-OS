@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-09-05 05:48 [saved]
+Goal: Standardize Google Workspace scripts on gws CLI in Production mode and add automated auth health checks.
+
+Decisions:
+- Refactored `scripts/daily_brief.py`, `scripts/email_digest.py`, and `scripts/evening_debrief.py` to use `gws` CLI via `google_auth_health.gws_env`, removing direct token JSON fallbacks.
+- Added `scripts/google_auth_health.py` and `tests/test_google_auth_health.py` to probe Google auth status, scopes, Calendar write access, and Drive access across all four profiles.
+- Added `systemd/achios-google-auth-health.{service,timer}` scheduled to run twice daily (`07:00` and `19:00` Manila).
+- Documented the OAuth consent screen transition to Production mode and Google Drive connection in [connections.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/connections.md) and [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
+- Added [docs/astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) covering Astra review protocols for sessions, second brain vaults, and evergreen projects.
+
+Rejected Approaches:
+- Retaining legacy direct token JSON file fallbacks: direct token loading duplicated credentials and bypassed centralized `gws` profile configuration.
+
+Open:
+- None.
+
 ## 2026-09-05 05:34 [saved]
 Goal: Draft and publish tickets for Claude Code quota reporting and automatic provider token refresh in /usage.
 

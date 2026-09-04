@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-05 — Google Cloud OAuth Consent Screen Transition to Production Mode
+
+**Decision:** Promoted the `achiclaude` GCP OAuth consent screen from Testing to "In Production" status, re-authenticated all four profiles (`gws-main`, `gws-personal`, `gws-work`, `gws-dlsu`), and verified Google Drive access alongside Gmail and Calendar.
+
+**Why:** In Testing mode, Google imposes a 7-day expiration policy on OAuth refresh tokens. Switching to Production mode eliminates the 7-day expiration cap, providing permanent refresh tokens and preventing weekly auth dropouts. The Google Drive scope (`https://www.googleapis.com/auth/drive`) is active and verified across all four accounts.
+
+**Alternatives considered:** Continuing weekly re-authentication, or using service accounts (which cannot access personal user Gmail/Calendar/Drive without Google Workspace domain delegation).
+
+**Owner:** Aki.
+
 ## 2026-09-03 — Automated Immich Album and Library Synchronization Timer
 
 **Decision:** Automated the Immich folder-to-album synchronization via `systemd/achios-immich-sync.{service,timer}` scheduled at `00:30 Asia/Manila` with `Persistent=true`. Enhanced `scripts/immich_folder_sync.sh` to trigger the Immich external library scan via REST API prior to running `salvoxia/immich-folder-album-creator`.
