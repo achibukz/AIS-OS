@@ -6,7 +6,7 @@ Goal: Draft and publish tickets for Claude Code quota reporting and automatic pr
 Decisions:
 - Published GitHub issue #135 in `achibukz/achiCore` (`Query Anthropic OAuth usage endpoint directly in /usage`) labeled `ready-for-agent` and `priority:high` targeting `gemini-3.7-flash-high`.
 - Published GitHub issue #136 in `achibukz/achiCore` (`Auto-refresh stale provider credentials on /usage requests`) labeled `ready-for-agent` and `priority:high` targeting `gemini-3.7-flash-high`.
-- Added tracking item for issues #135-#136 under `## Active` in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+- Added tracking item for issues #135-#136 under `## Active` in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) and [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md).
 
 Rejected:
 - Spawning subprocess `claude -p /usage` for quota retrieval: `-p /usage` only returns local session token costs and lacks rate limit data.
