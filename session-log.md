@@ -1,5 +1,125 @@
 # Session Log
 
+## 2026-09-05 05:34 [saved]
+Goal: Draft and publish tickets for Claude Code quota reporting and automatic provider token refresh in /usage.
+
+Decisions:
+- Published GitHub issue #135 in `achibukz/achiCore` (`Query Anthropic OAuth usage endpoint directly in /usage`) labeled `ready-for-agent` and `priority:high` targeting `gemini-3.7-flash-high`.
+- Published GitHub issue #136 in `achibukz/achiCore` (`Auto-refresh stale provider credentials on /usage requests`) labeled `ready-for-agent` and `priority:high` targeting `gemini-3.7-flash-high`.
+- Added tracking item for issues #135-#136 under `## Active` in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+Rejected:
+- Spawning subprocess `claude -p /usage` for quota retrieval: `-p /usage` only returns local session token costs and lacks rate limit data.
+
+Open:
+- Implement #135 and #136 in achiCore.
+
+## 2026-09-05 05:15 [saved]
+Goal: Draft and publish tickets for adding show-me skill to Aea and Luna to provide visual PR diagrams.
+
+Decisions:
+- Published GitHub issues #133 (HITL discussion) and #134 (AFK implementation) in `achibukz/achiCore` labeled `ready-for-agent` and `priority:med` targeting `gemini-3.8-flash-high`.
+- Appended tracking task to [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md) referencing issues #133-#134.
+
+Rejected:
+- None.
+
+Open:
+- Discuss PR layout and visual format rules for #133.
+
+## 2026-09-05 04:22 [saved]
+Goal: Publish issue for automated completed PR and issue synchronization into tasks.md and evening debrief.
+
+Decisions:
+- Created and published GitHub issue #11 in `achibukz/AIS-OS` (`Automate completed GitHub PR and issue sync into tasks.md and evening debrief`) labeled `ready-for-agent` and `priority:high` targeting `gemini-3.8-flash-high`.
+- Appended tracking task to [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md).
+
+Rejected:
+- None.
+
+Open:
+- None.
+
+## 2026-09-05 04:18 [saved]
+Goal: Register completed tasks for today, add 7-day Google OAuth check-in task, and verify evening debrief.
+
+Decisions:
+- Appended completed items to `## Done` in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) (Claude Code foundation in achiCore #119, GCP OAuth Production mode and Drive verification, achiCore model and effort configuration #106/#118, Codex quota in /usage #42, Codex stderr handling #89, and Astra plan).
+- Added 7-day OAuth token validity check-in task to `## Active` in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) (`@2026-09-12`) and created Google Calendar event on `Personal` via `scripts/gcal_add.py`.
+- Verified `scripts/evening_debrief.py` correctly parses and displays today's completed milestones.
+
+Rejected:
+- None.
+
+Open:
+- None.
+
+## 2026-09-05 04:12 [saved]
+Goal: Register Google Drive connection and document OAuth production mode migration.
+
+Decisions:
+- Verified Google Drive API listing and read capabilities across all four `gws` profiles (`main`, `personal`, `work`, `dlsu`).
+- Updated [connections.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/connections.md) with Google Drive integration and registered Production OAuth status for GCP project `achiclaude`.
+- Appended architecture decision in [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
+
+Rejected:
+- None.
+
+Open:
+- None.
+
+## 2026-09-05 03:54 [saved]
+Goal: Publish issue for Landlock write boundary permission bug on `~/.config/gws-*`.
+
+Decisions:
+- Published GitHub issue #131 in `achibukz/achiCore` (`Allow permitted subdirectories beneath protected roots in write boundary (~/.config/gws-*)`) labeled `ready-for-agent` and `priority:high`.
+- Appended task to [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md).
+
+Rejected:
+- None.
+
+Open:
+- None.
+
+## 2026-09-05 03:51 [saved]
+Goal: Verify renewed gws OAuth credentials and sync calendar events.
+
+Decisions:
+- Verified all 4 gws profiles (`main`, `personal`, `work`, `dlsu`) across Gmail, Calendar, and Google Drive endpoints.
+- Synced updated BPI account creation event (`2026-09-07`) to Google Calendar (`ING`) via `scripts/gcal_add.py`.
+- Verified `daily_brief.py` successfully retrieves timeline and upcoming schedule without auth warnings.
+
+Rejected:
+- None.
+
+Open:
+- None.
+
+## 2026-09-05 03:15 [saved]
+Goal: Document Project Astra audit plan and register release task.
+
+Decisions:
+- Created [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) with three-part audit framework (workflow review, second brain audit, evergreen project inspection).
+- Added active task to [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) linking to the plan upon Astra release.
+
+Rejected:
+- Storing plan in root workspace directory rather than `docs/`.
+
+Open:
+- None.
+
+## 2026-09-05 03:10 [saved]
+Goal: Move BPI account creation deadline to Monday (2026-09-07).
+
+Decisions:
+- Updated BPI account creation task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) to `@2026-09-07`.
+
+Rejected:
+- Updating Google Calendar via `scripts/gcal_add.py` directly, as gws OAuth refresh tokens on Achibuntu are expired.
+
+Open:
+- Re-authenticate gws profiles on Mac (`gws auth login`) and copy tokens over to Achibuntu (`~/.config/gws-*`).
+
 ## 2026-09-03 04:18 [saved]
 Goal: Schedule automated Immich external library scan and folder album sync after midnight.
 

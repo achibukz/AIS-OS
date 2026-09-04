@@ -22,17 +22,27 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
-- [ ] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-09-02
+- [ ] Fix Claude Code quota and auto-refresh stale provider tokens in /usage (achiCore #135-#136) #achicore #ux #bug !high
+- [ ] Align and copy global instructions from Claude (CLAUDE.md) to Antigravity and Codex #systems #tooling !med
+- [ ] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-09-07
 - [ ] Complete 5-month ING Internship Agreement Form (signatures: Aki, Parent/Guardian, DLSU coordinator, then notarize) #career #school !high
 - [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
 - [ ] Complete active Systems & Engineering backlog tasks per [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md) #systems #engineering #achicore #infra !high
 - [ ] Complete active Asa & Research workflows backlog tasks per [tasks-asa-research.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-asa-research.md) #asa #research #workflows !high
 - [ ] Cancel current Google One subscription ahead of renewal #finances #personal !low @2026-10-13
 - [ ] Subscribe to Google AI Pro Student Discount (₱275/mo for up to 4 years via SheerID verification) #finances #personal !low @2026-10-14
+- [ ] Audit achiOS, achiCore, achiMem, and Telegram sessions per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) upon Astra release #systems #achios #achicore !med
+- [ ] Check Google OAuth tokens after 7 days to verify permanent production validity without re-auth #infra #security #achicore !med @2026-09-12
 
 ## Blocked
 
 ## Done
+- [x] Integrate Claude Code foundation into achiCore as third engine with subscription OAuth (ticket 119, PR 126), scoped config directories, and prompt attachment handling #achicore #claude #arch !high  (done 2026-09-05)
+- [x] Promote achiclaude GCP OAuth consent screen to In Production to eliminate 7-day token expiration cap, re-auth 4 profiles, and verify Google Drive access #achicore #infra #security !high  (done 2026-09-05)
+- [x] Configure per-topic model selection and fallback models with custom effort levels via Telegram UI in achiCore (tickets 106, 108, 118, 125) #achicore #ux !med  (done 2026-09-05)
+- [x] Report Codex account allowance and remaining quota in achiCore /usage command (tickets 42, 112, 114, 116) #achicore #ux !med  (done 2026-09-05)
+- [x] Handle Codex diagnostic stderr without failing turn and adapt to rm -f exec policy in achiCore (ticket 89, PR 101) #achicore #codex #bug !high  (done 2026-09-05)
+- [x] Document Project Astra audit plan across workflow review, second brain audit, and evergreen project inspection in docs/astra-plan.md #arch #planning !med  (done 2026-09-05)
 - [x] Create and sync the shared `telegram-image-sender` skill for sending local images through achiOS Telegram media dispatch #achios #skills #telegram #media !med (done 2026-09-02)
 - [x] Pause automatic TGDB transcript export and commits while the self-learning loop is discussed in achiCore #83 #achios #achicore #achimem !high  (done 2026-08-31)
 - [x] Autostart achiCore hub daemon with topic windows on system boot via systemd (achiCore #79, #80) #achicore #infra !med @2026-08-31  (done 2026-08-31)
