@@ -22,7 +22,7 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
-- [ ] Fix /ToWork CI hang on repositories without GitHub Actions workflows #achicore #bug !high
+- [ ] Fix /ToWork CI hang on repositories without GitHub Actions workflows (achiCore #113) #achicore #bug !high
 - [ ] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-09-02
 - [ ] Complete 5-month ING Internship Agreement Form (signatures: Aki, Parent/Guardian, DLSU coordinator, then notarize) #career #school !high
 - [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med

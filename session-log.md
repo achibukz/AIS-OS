@@ -5,15 +5,15 @@ Goal: Diagnose /ToWork CI waiting loop hang on repositories without GitHub Actio
 
 Decisions:
 - Diagnosed root cause of stalled /ToWork job `f235a4449f584ba2ef5b20be-2`: `_wait_for_to_work_ci` in `achiCore/src/bot.py` checks `if checks.runs and not checks.pending:`, which evaluates to false when `checks.runs` is empty, indefinitely polling repositories lacking `.github/workflows/` (such as `achibukz/opus-subagents`).
-- Added tracking task `- [ ] Fix /ToWork CI hang on repositories without GitHub Actions workflows #achicore #bug !high` to [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
-- Drafted vertical slice bug ticket for achiCore with acceptance criteria covering workflow detection, empty check runs bypass, and test cases.
+- Added tracking task `- [ ] Fix /ToWork CI hang on repositories without GitHub Actions workflows (achiCore #113) #achicore #bug !high` to [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+- Drafted and published vertical slice bug ticket [achiCore #113](https://github.com/achibukz/achiCore/issues/113) with acceptance criteria covering workflow detection, empty check runs bypass, and test cases.
 
 Rejected:
 - Modifying or publishing directly to `achibukz/achiCore` without presenting the full ticket draft and questions to Aki for approval.
 
 Open:
 - Stop current stuck /ToWork job loop for `achibukz/opus-subagents#2` in achiCore.
-- Review and publish the bug ticket to `achibukz/achiCore`.
+- Implement and verify [achiCore #113](https://github.com/achibukz/achiCore/issues/113).
 
 ## 2026-09-04 20:32 [saved]
 Goal: Add Google Calendar event for Codex Usage Reset 1 expiration on October 4, 2026, and track in tasks.md.
