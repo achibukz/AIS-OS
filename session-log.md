@@ -1,5 +1,24 @@
 # Session Log
 
+## 2026-09-06 03:56 [saved]
+Goal: Add `--repo` and `-r` options to `scripts/sync-repos.sh` to target a single repository and verify with unit tests (AIS-OS #12).
+
+Decisions:
+- Implemented argument parsing in `scripts/sync-repos.sh` supporting `--repo <target>`, `-r <target>`, and their equals syntax variants (`--repo=...`, `-r=...`).
+- Added direct repository directory targeting: if the target argument is an existing directory containing `.git`, use that repository directly without scanning roots.
+- Added candidate repository discovery and filtering across roots when the target is a repository folder name or relative path fragment.
+- Added error handling with status code 1 when `--repo` or `-r` is missing an argument, or when no matching repository is found.
+- Isolated test git commits in `tests/test_sync_repos.py` with `-c core.hooksPath=` to prevent the user's global pre-commit hook from triggering on fresh test repositories.
+- Added 11 unit tests in `tests/test_sync_repos.py` covering folder name matching, short flag, equals syntax, direct path targeting, error exits, and baseline multi-repo sync.
+- Recorded architecture decision in [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
+
+Verification:
+- Full repository test suite: 311 passed in 18.78s via `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/`.
+- All 23 unit tests in `tests/test_sync_repos.py` pass cleanly.
+
+Open:
+- achiCore #145 companion ticket for `/sync <repo>` in Telegram bot.
+
 ## 2026-09-05 20:25 [saved]
 Goal: Declare AIS-OS reviewed locally so an achiCore `/ToWork` run reaches Luna instead of polling GitHub for checks this repository never produces.
 
