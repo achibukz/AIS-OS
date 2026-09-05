@@ -1,5 +1,24 @@
 # Session Log
 
+## 2026-09-05 19:15 [saved]
+Goal: Implement --repo and -r options in scripts/sync-repos.sh to target a specific repository (AIS-OS #12).
+
+Decisions:
+- Added `--repo <name_or_path>` and `-r <name_or_path>` (including `--repo=*` and `-r=*`) flag parsing to `scripts/sync-repos.sh` before scanning roots.
+- If the argument points directly to an existing directory containing `.git`, use that repository directly without scanning roots.
+- If the argument is a repo name or path fragment (such as folder name or relative path), discover candidates across roots and filter down to matches.
+- If no repository matches, output an error message and exit with status code 1.
+- Default invocation without `--repo` continues scanning all repositories under default or provided roots unchanged.
+- Isolated test git commits from user global `core.hooksPath` in `tests/test_sync_repos.py` and expanded unit tests covering single-repo targeting with `--repo` and `-r`, direct paths, equals syntax, nested path fragments, default roots, and error exits.
+- All 311 unit tests in the repository pass.
+- Updated [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) and recorded architectural rationale in [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
+
+Rejected:
+- Creating a separate script for single-repo syncing: `scripts/sync-repos.sh` must remain the single source of truth for repository fast-forwarding logic.
+
+Open:
+- Complete partner ticket achiCore #145 to wire `/sync <repo>` in the Telegram bot.
+
 ## 2026-09-05 10:10 [saved]
 Goal: Incorporate Aea and Luna optimization, CLI runner prompt injection analysis, and skill specialization into astra-plan.md discussion topics.
 

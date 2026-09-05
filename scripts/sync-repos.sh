@@ -14,22 +14,113 @@ FETCH_TIMEOUT=${SYNC_REPOS_TIMEOUT:-300}
 # A repo whose credentials went stale must fail, not sit waiting for a password.
 export GIT_TERMINAL_PROMPT=0
 
-roots=("$@")
-if [ ${#roots[@]} -eq 0 ]; then
-  roots=("${DEFAULT_ROOTS[@]}")
-fi
+target_repo=""
+target_repo_set=false
+roots=()
 
-repos=()
-for root in "${roots[@]}"; do
-  [ -d "$root" ] || continue
-  while IFS= read -r gitdir; do
-    repos+=("$(dirname "$gitdir")")
-  done < <(find "$root" -maxdepth 4 -name .git -prune 2>/dev/null | sort)
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --repo)
+      if [ $# -lt 2 ]; then
+        echo "error: --repo requires an argument"
+        exit 1
+      fi
+      target_repo="$2"
+      target_repo_set=true
+      shift 2
+      ;;
+    --repo=*)
+      target_repo="${1#*=}"
+      target_repo_set=true
+      shift
+      ;;
+    -r)
+      if [ $# -lt 2 ]; then
+        echo "error: -r requires an argument"
+        exit 1
+      fi
+      target_repo="$2"
+      target_repo_set=true
+      shift 2
+      ;;
+    -r=*)
+      target_repo="${1#*=}"
+      target_repo_set=true
+      shift
+      ;;
+    --)
+      shift
+      while [ $# -gt 0 ]; do
+        roots+=("$1")
+        shift
+      done
+      break
+      ;;
+    *)
+      roots+=("$1")
+      shift
+      ;;
+  esac
 done
 
-if [ ${#repos[@]} -eq 0 ]; then
-  echo "no repos found under: ${roots[*]}"
-  exit 0
+repos=()
+
+# Direct target check: if argument points directly to an existing directory containing .git
+expanded_target="${target_repo/#\~/$HOME}"
+if [ "$target_repo_set" = true ] && [ -d "$expanded_target" ] && [ -e "$expanded_target/.git" ]; then
+  repos+=("$(cd "$expanded_target" 2>/dev/null && pwd)")
+else
+  if [ ${#roots[@]} -eq 0 ]; then
+    roots=("${DEFAULT_ROOTS[@]}")
+  fi
+
+  all_repos=()
+  for root in "${roots[@]}"; do
+    [ -d "$root" ] || continue
+    while IFS= read -r gitdir; do
+      all_repos+=("$(dirname "$gitdir")")
+    done < <(find "$root" -maxdepth 4 -name .git -prune 2>/dev/null | sort)
+  done
+
+  if [ "$target_repo_set" = true ]; then
+    clean_target="${target_repo%/}"
+    clean_target="${clean_target#./}"
+    for candidate in "${all_repos[@]}"; do
+      folder_name="$(basename "$candidate")"
+      rel_home="${candidate#"$HOME"/}"
+      match=false
+      if [ "$folder_name" = "$clean_target" ]; then
+        match=true
+      elif [ "$rel_home" = "$clean_target" ]; then
+        match=true
+      elif [[ "$candidate" == *"/$clean_target" ]]; then
+        match=true
+      else
+        for root in "${roots[@]}"; do
+          rel_root="${candidate#"$root"/}"
+          if [ "$rel_root" = "$clean_target" ]; then
+            match=true
+            break
+          fi
+        done
+      fi
+
+      if [ "$match" = true ]; then
+        repos+=("$candidate")
+      fi
+    done
+
+    if [ ${#repos[@]} -eq 0 ]; then
+      echo "error: no repository matching '$target_repo' found"
+      exit 1
+    fi
+  else
+    repos=("${all_repos[@]}")
+    if [ ${#repos[@]} -eq 0 ]; then
+      echo "no repos found under: ${roots[*]}"
+      exit 0
+    fi
+  fi
 fi
 
 width=0
