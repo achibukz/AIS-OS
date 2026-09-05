@@ -1,13 +1,16 @@
 # achiOS roadmap
 
-## 2026-09-05 Autonomous learning and worker reliability
+## 2026-09-05 deployment update
 
-The [Astra plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) contains the current cross-repository audit and dependency order. The older dated snapshots below remain historical and must not be read as today's deployment state. The [ticket bodies](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-tickets.md) contain the published ten new issues and three existing-issue revisions.
+[achiCore #153](https://github.com/achibukz/achiCore/issues/153) is closed at Aki's request. [PR #154](https://github.com/achibukz/achiCore/pull/154) is merged as `bbb8fb73a6b1ba3632187df3b9ee45b31b4d3af1` and the main hub restarted on that code at 18:45 UTC. Telegram polling succeeded. Bindings and conversation IDs were preserved.
 
-Start with achiCore #128 for the canonical test command and #113 for an explicit CI policy. Add [#146 environment preflight](https://github.com/achibukz/achiCore/issues/146), then [#147 recovery from verified progress](https://github.com/achibukz/achiCore/issues/147), retaining #143 for merge conflicts. T1 task and Calendar actions can proceed independently in a verified development environment. T2 connects Telegram, T3 learns corrections, T4 saves notes, and revised AIS-OS #11 reconciles completed linked work. T5 adds current verified recall, T7 delivery recovery and the digest, T8 reviewed skills, and T9 the real Gemini 3.8 Flash pilot. See the plan for hard blockers.
+Remaining worker work is [#155](https://github.com/achibukz/achiCore/issues/155), separate conflict-repair attempts and Atlas repair/merge-queue status, and [#156](https://github.com/achibukz/achiCore/issues/156), invalidating cached probes when a worker virtualenv disappears or changes. Neither follow-up is implemented. Background preparation and automatic recovery retain their default-off production settings.
 
-The existing test suites pass in an ordinary shell, but the scoped-home collection failure in #128 remains reproducible. No production behavior changed during planning. Do not close implementation tickets merely because their planned capability appears in this document.
+Aki's Flash staging run produced five completed jobs and one abandoned job. It did not establish six simultaneous jobs, all-engine coverage or the full fault-injection matrix. Closure and deployment do not mark those gates passed. See the [deployment and test record](http://100.106.210.38:8999/Code/GitHub/achiCore/docs/issue-153-deployment.md) for commands, counts, receipts and limits. Learning T1 through T9 and the control board remain separate work; this deployment does not establish learning completion.
 
+## Earlier roadmap snapshots
+
+The following dated entries describe their original revisions, not the current deployment.
 
 What is worth building next, and why. Written 2026-08-21, after the self-learning loop v2
 build and the infrastructure audit.

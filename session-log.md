@@ -1,5 +1,36 @@
 # Session Log
 
+## 2026-09-05, global instruction sync and Canvas integration tasks
+
+Logged active tasks in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) for automated propagation of global agent instructions across CLI harnesses (~/.claude/CLAUDE.md to Antigravity and Codex) and DLSU Canvas Instructure data/announcements extraction into achiSchooNounce with searchable query capability. Moved the completed one-time instruction alignment copy to done.
+
+## 2026-09-05, reusable assisted testing and next Astra work
+
+Aki asked to reuse the Telegram test hub and generalize the guided testing session beyond interfaces to CLI/backend work. He requested a Markdown interaction record and PR comment as outputs. Created [assisted-live-testing](http://100.106.210.38:8999/.config/skillshare/skills/assisted-live-testing/SKILL.md), the [assisted testing guide](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/assisted-live-testing.md), a ticket-section template and a retrospective. Installed the skill through Skillshare for the configured clients; this does not change production persona allowlists or launch a test. Source changes are isolated under AIS-OS #20 for review.
+
+Updated the task list and Astra plan to start self-learning foundations with AIS-OS #13 and achiCore #56, then #148 and AIS-OS #14. Keep worker follow-ups #155/#156 open. Retained missing live gates and the incomplete independent audit. Chose a reusable skill over a dedicated agent because no separate persistent queue or identity is needed. Local scenario walkthroughs are not model or live acceptance results.
+
+## 2026-09-05 18:45 UTC, worker deployment and follow-ups
+
+Aki requested testing first, then accepted the staging report with remaining work moved to #155 and #156. Merged achiCore PR #154 as `bbb8fb7`, fast-forwarded the existing main checkout, stopped the idle production daemon, backed up state and restarted the main hub. Telegram polling succeeded; bindings and conversations were preserved. The [deployment and test record](http://100.106.210.38:8999/Code/GitHub/achiCore/docs/issue-153-deployment.md) records exact test counts and the backup location.
+
+The staging run completed five jobs; opus-subagents #5 stopped on a Rust CI failure and was abandoned. Six simultaneous jobs, all three engines, fallback and the full fault matrix remain unverified. The independent audit is incomplete and reproduced the cache defect now in #156. No gate was marked passed from simulation. #155 tracks merge-conflict budgets and status updates; #156 tracks probe invalidation. Self-learning and control-board work remain open.
+
+Updated the Astra plan, ticket map, roadmaps, historical-document status notices, acceptance record and task register. Preserved existing local edits. No further implementation or runtime configuration change was part of this documentation update.
+
+
+## 2026-09-05 12:46 UTC [saved]
+
+Goal: Audit the autonomous worker loop, consolidate its reliability tickets, and merge the current CI follow-up before continuing.
+
+Aki approved two independently deliverable efforts, worker reliability and daily self-learning, with parallel implementation possible. Created [achiCore #153](https://github.com/achibukz/achiCore/issues/153) with ten source tickets, internal implementation stages, six-job acceptance and an isolated Telegram staging hub. Updated the [plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md), ticket map, roadmaps and task references. The [audit](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-09-05-autonomous-loop-audit.md) includes current and proposed flow diagrams.
+
+Merged PR #152 at Aki's explicit request after reading its diff and observing all three Python CI jobs succeed. Fast-forwarded achiCore to `a1c5d9e`. The running hub was not restarted. Preserved Claude Code's concurrent AIS-OS local-review configuration changes at `efe250d`.
+
+Verification: the audit command recorded in the audit returned 488 passed in 34.12s against achiCore `4ff50b5`. An earlier command had a wrong test filename and exited 4 without running assertions. Those tests establish existing behavior; six concurrent jobs and the new staging behavior remain unverified.
+
+Open: finish learning-scope and retention decisions, then revise the learning acceptance criteria as needed. Staging credentials and the initial real-phone checks belong to implementation. No learning rules, provider credentials, production state or vault pages were changed.
+
 ## 2026-09-05 20:25 [saved]
 Goal: Declare AIS-OS reviewed locally so an achiCore `/ToWork` run reaches Luna instead of polling GitHub for checks this repository never produces.
 

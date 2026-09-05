@@ -1107,3 +1107,33 @@ Alternatives considered. A required /learn command, fixed Calendar routing rules
 Owner. Aki. The [Astra plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) records the design and evidence; [ticket bodies](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-tickets.md) record the implementation slices. This is a planned change, not a claim that automatic learning or wiki promotion is deployed. Aki approved the breakdown and the implementation issues are published. Issue #83 closes the design discussion; the implementation issues remain open.
 
 Aki also requested a separate follow-up planning session for a control board or Kanban frontend connecting these workflows. The current batch should expose reusable status and action contracts; frontend scope and interaction design remain for that session.
+
+## 2026-09-05 Consolidate autonomous worker reliability
+
+Decision: Aki wants one executable reliability ticket, [achiCore #153](https://github.com/achibukz/achiCore/issues/153), for six concurrent jobs. Learning can ship independently and progress in parallel. The control board comes later. Aki keeps the merge decision, with branch preparation and routine recovery in the background.
+
+Why: Repeated CI waits, quota stops and branch synchronization make several simultaneous jobs require manual intervention. One executor should own the full path and prove it with a six-job staging run.
+
+Alternatives: Retaining many separately dispatched reliability tickets; adding a permanent privileged agent; restricting Luna to changed hunks. Aki instead accepts isolated staging, relevant cross-repository reviewer context and revised unattended workflows. Original criteria remain traceable in the consolidated ticket.
+
+Owner: Aki. Implementation model recommendation is `claude-opus-4-6-thinking`, with `gpt-6-astra` available when selected. The [audit](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-09-05-autonomous-loop-audit.md) corrects earlier claims that every base update conflicts and that first-turn prompt injection proves warm-turn amnesia.
+
+## 2026-09-05, deploy worker reliability and retain open findings
+
+Decision: Aki authorized merging PR #154, restarting the main achiCore hub and closing #153 after the Flash staging run. Move merge-conflict and status concerns to #155 and the reproduced worker-probe cache defect to #156.
+
+Why: Aki reported the workflow was usable and wanted the tested implementation in the main deployment before further fixes.
+
+Alternatives: Keep #153 open until every original release gate passes, or fix the newly reported defects before deployment. Aki chose deployment with follow-up tickets. Incomplete live coverage remains explicit in the [deployment and test record](http://100.106.210.38:8999/Code/GitHub/achiCore/docs/issue-153-deployment.md).
+
+Owner: Aki. This is a repository deployment decision; it does not establish a broader personal workflow policy.
+
+## 2026-09-05, guide human acceptance with a reusable skill
+
+Decision: Use [assisted-live-testing](http://100.106.210.38:8999/.config/skillshare/skills/assisted-live-testing/SKILL.md) for features needing human actions, including CLI/backend, API, device, browser and Telegram work. The outputs are a redacted Markdown interaction record and a comment on the tested PR. Separate unattended implementation from assisted live testing in applicable tickets.
+
+Why: Aki found the step-by-step phone testing useful and wants the same help from Astra, Gemini 3.8 Flash or another selected model. One-action guidance plus observed receipts makes the human effort concrete and the result reviewable.
+
+Alternatives: A dedicated persistent agent, or a bare HITL label with a manual checklist. Start with a skill; revisit an agent only if it needs its own queue, scheduling or identity.
+
+Owner: Aki. Next implementation work is the self-learning loop, with existing worker defects still tracked separately. This procedure applies beyond this repository; any achiMem promotion remains a separate sourced action.

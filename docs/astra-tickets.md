@@ -1,144 +1,36 @@
 # Astra implementation tickets
 
-Published on 2026-09-05 after Aki approved the breakdown. Ten new issues and revisions to achiCore #128, achiCore #113 and AIS-OS #11. GitHub issue bodies are authoritative if later implementation changes their scope. AFK means unattended implementation under existing review and merge rules. T9 requires Aki for the live Flash pilot and activation. Frontend planning is a separate follow-up in the Astra plan.
+## Next Astra work, 2026-09-05
 
-## W0. [Make the full pytest command work unchanged in scoped Codex homes](https://github.com/achibukz/achiCore/issues/128)
+The reusable assisted-testing skill is installed locally and its source is in [PR #21](https://github.com/achibukz/AIS-OS/pull/21) for review. Its next real assisted-run acceptance is still open.
 
-Repository: `achibukz/achiCore`. Revised issue #128.
+The worker implementation is deployed; the next workstream is the self-learning loop. Start with [AIS-OS #13](https://github.com/achibukz/AIS-OS/issues/13), stable task and Calendar operations, and [achiCore #56](https://github.com/achibukz/achiCore/issues/56), persona and memory precedence. Then connect ordinary input through achiCore #148 and correction reuse through AIS-OS #14. Keep #155/#156 as parallel worker follow-ups, not a claim that every worker gate passed. The rest of T1 through T9 retains its declared dependency order.
 
-### Parent
+Prepare AIS-OS #18's replay corpus while the early slices are built. Its final real Flash pilot still waits for its integrations. For tickets that need a human action, use [assisted-live-testing](http://100.106.210.38:8999/.config/skillshare/skills/assisted-live-testing/SKILL.md) and the [assisted testing guide](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/assisted-live-testing.md): the assistant prepares the test, guides one step at a time, checks the human's observations, saves a Markdown interaction record and posts a PR comment. This covers CLI/backend, API, device, browser and Telegram work. Automated-only tickets do not need a human gate.
 
-[achiCore #83](https://github.com/achibukz/achiCore/issues/83), autonomous-learning design discussion.
+Testing Grounds is reusable infrastructure, not a fresh or automatically ready run. Read the skill's Telegram reference for the isolated root, operator config and lifecycle checks. Downstream Calendar, database and vault destinations need separate isolation. See the [retrospective](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-09-05-assisted-testing-retrospective.md) for what our workflow test did and did not prove.
 
-### What to build
 
-AFK implementation. Extend existing #128 with the reproduced September 5 failures. Provide one repository-owned test runner used by human shells, bound writer and reviewer worktrees, and CI. Update pyproject.toml, dependency discovery, affected tests, CI, test documentation and Luna's testing instructions. Preserve subprocess lifecycle coverage from #72.
+## 2026-09-05 deployment update
 
-The audit reproduced a learning_ledger collection error with a temporary HOME even using the main checkout's complete venv. Three worker venvs lack pytest and pytest-asyncio. CI installs these separately and clones a moving AIS-OS default branch. The global pre-push dispatcher resolves hooks beneath git-dir, which misses the shared repository hook in linked worktrees. Deliver a reviewed installation change for that dispatcher alongside the runner, preserving all other hooks.
+[achiCore #153](https://github.com/achibukz/achiCore/issues/153) is closed at Aki's request. [PR #154](https://github.com/achibukz/achiCore/pull/154) is merged as `bbb8fb73a6b1ba3632187df3b9ee45b31b4d3af1` and the main hub restarted on that code at 18:45 UTC. Telegram polling succeeded. Bindings and conversation IDs were preserved.
 
-Follow the agreed behavior and ownership in the [Astra plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md). Gemini 3.8 Flash must support the runtime path. A manual `/learn` command is never a prerequisite. Existing repository review and merge rules still apply.
+Remaining worker work is [#155](https://github.com/achibukz/achiCore/issues/155), separate conflict-repair attempts and Atlas repair/merge-queue status, and [#156](https://github.com/achibukz/achiCore/issues/156), invalidating cached probes when a worker virtualenv disappears or changes. Neither follow-up is implemented. Background preparation and automatic recovery retain their default-off production settings.
 
-### Acceptance criteria
+Aki's Flash staging run produced five completed jobs and one abandoned job. It did not establish six simultaneous jobs, all-engine coverage or the full fault-injection matrix. Closure and deployment do not mark those gates passed. See the [deployment and test record](http://100.106.210.38:8999/Code/GitHub/achiCore/docs/issue-153-deployment.md) for commands, counts, receipts and limits. Learning T1 through T9 and the control board remain separate work; this deployment does not establish learning completion.
 
-- [ ] One documented command completes unchanged in a fresh bound Luna and Aea Codex worktree, a human shell and CI on Python 3.11 through 3.13. Record actual bound-run evidence before closure.
-- [ ] Declare test dependencies, including pytest and pytest-asyncio, alongside runtime dependencies such as rich. Record Python, dependency-manifest and resolved AIS-OS revision in the test receipt; use a declared shared dependency revision in CI and local runs.
-- [ ] Resolve repository and AIS-OS paths independently of scoped HOME. No caller-supplied HOME, PYTHONPATH, VIRTUAL_ENV or basetemp override is needed. Preserve scoped credentials, skills and subprocess permissions.
-- [ ] Use a unique bounded per-run temporary root. Isolate test state from production and preserve the subprocess failures covered by #72 without skips or weaker assertions.
-- [ ] The pre-push dispatcher reaches the repository test hook in both main and linked worktrees. The hook calls the same runner; no hook is disabled. Luna uses her provisioned checkout instead of fetching a second review clone.
-- [ ] Environment setup leaves Git status clean, including any supported .venv symlink. Do not hide unrelated untracked files. Expose environment failure separately from a failing product assertion.
-- [ ] Unit and integration tests cover fresh test dependencies, scoped HOME, sibling resolution, concurrent temp roots, main and linked-worktree hooks, environment artifacts and unchanged subprocess lifecycle cases.
 
-### Blocked by
+Originally published on 2026-09-05. Aki subsequently consolidated worker reliability into achiCore #153. The learning ticket bodies below remain separate. GitHub issue bodies are authoritative if later implementation changes their scope. AFK means unattended implementation under existing review and merge rules. T9 requires Aki for the live Flash pilot and activation. Frontend planning is a separate follow-up in the Astra plan.
 
-None. Can start immediately.
+## R1. [Make six concurrent /ToWork jobs recover reliably and keep reviewed PRs ready to merge](https://github.com/achibukz/achiCore/issues/153)
 
-### Recommended model
+Repository: `achibukz/achiCore`. R1 is closed and its implementation is deployed through PR #154. The assignment description below is historical; remaining defects are #155 and #156. Read the [full body](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-autonomous-loop-ticket.md) and [workflow audit](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-09-05-autonomous-loop-audit.md).
 
-`claude-opus-4-6-thinking`. Environment and hook isolation can pass in CI while failing only in a bound worker.
+R1 owns the remaining acceptance criteria from #64, #65, #66, #67, #121, #122, #123, #143, #146 and #147. It adds six-job admission, recoverable operation ownership, early branch preparation and an isolated Telegram test hub. The original issues remain requirement references, with organizational closure rather than a claim that their code is complete.
 
-## W3. [Handle repositories without CI through an explicit review policy](https://github.com/achibukz/achiCore/issues/113)
+W0, #128, shipped in PR #150. W3, #113, shipped in PR #151. Follow-up PR #152 is merged too. Preserve and verify these implementations instead of repeating the old environment and CI-policy designs.
 
-Repository: `achibukz/achiCore`. Revised issue #113.
-
-### Parent
-
-[achiCore #83](https://github.com/achibukz/achiCore/issues/83), autonomous-learning design discussion.
-
-### What to build
-
-AFK implementation. Revise #113 so an intentionally CI-free repository reaches review promptly while a missing check on a repository that requires CI remains a failure to establish readiness. Add a persisted per-repository policy to src/github_client.py, src/review_handoff.py and the ToWork status path in src/bot.py.
-
-The absence of .github/workflows does not establish that no CI exists. Repositories can require external providers or legacy commit statuses. Read branch protection or ruleset requirements when accessible, include check runs and commit statuses, and treat missing permissions or unknown policy as unresolved. An explicit local-review policy may permit handoff with a verified local test receipt and a visible CI-not-configured state.
-
-Follow the agreed behavior and ownership in the [Astra plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md). Gemini 3.8 Flash must support the runtime path. A manual `/learn` command is never a prerequisite. Existing repository review and merge rules still apply.
-
-### Acceptance criteria
-
-- [ ] An explicitly configured repository without required CI bypasses the 45-minute no-check wait and reaches review only with the configured local verification evidence.
-- [ ] Repositories with required CI wait for the required checks or statuses on the current head. Empty results, missing Actions files and API errors cannot turn those requirements green.
-- [ ] External CI and legacy status contexts remain visible. Unknown requirements or insufficient API permissions produce an actionable policy state, not a silent bypass.
-- [ ] The job card distinguishes CI not configured, required checks pending, failed checks and unknown policy. The same policy applies to direct review and ToWork handoff.
-- [ ] Policy changes record their source and revision. A PR changing its own workflow files cannot authorize a downgrade of the repository review policy.
-- [ ] Unit and integration tests cover explicit no-CI policy, local evidence missing, required checks not arrived, external statuses, failed checks, missing API permissions, changed head and attempted policy downgrade.
-
-### Blocked by
-
-- [achiCore #128](https://github.com/achibukz/achiCore/issues/128), local test evidence contract.
-
-### Recommended model
-
-`claude-opus-4-6-thinking`. A missing check must not weaken a review gate just because the local workflow directory is absent.
-
-## W1. [Verify worker environments before dispatching autonomous jobs](https://github.com/achibukz/achiCore/issues/146)
-
-Repository: `achibukz/achiCore`. Created issue #146.
-
-### Parent
-
-[achiCore #83](https://github.com/achibukz/achiCore/issues/83), autonomous-learning design discussion.
-
-### What to build
-
-AFK implementation. Extend src/worktrees.py and the ToWork start and review-handoff paths with a deterministic readiness probe using #128's runner. Provision writer and reviewer environments before a paid model turn. Expose failures on the existing job card with a retry action and a read-only worker inventory.
-
-Use a separate environment per worktree, or an immutable cache keyed by Python and the dependency manifest. Never let one worker's dependency installation mutate another worker's running environment. Reuse existing provisioning rollback, /standby and merged-job cleanup rather than adding another deletion routine.
-
-Follow the agreed behavior and ownership in the [Astra plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md). Gemini 3.8 Flash must support the runtime path. A manual `/learn` command is never a prerequisite. Existing repository review and merge rules still apply.
-
-### Acceptance criteria
-
-- [ ] A newly started job verifies the writer before implementation and the reviewer before review, using their actual engine environment and write boundary. Dependency or import failure dispatches no model.
-- [ ] The probe checks interpreter, required imports, isolated temporary writes and child-process support. It does not run the full suite on every turn. Cache only against the exact environment and runner fingerprint.
-- [ ] Setup leaves the checkout clean and records interpreter, runner hash, dependency manifest, AIS-OS revision and probe result in the job history.
-- [ ] Retry rechecks the failed prerequisite and continues the pending stage. An unchanged failure reports one actionable state instead of consuming a model repair cycle.
-- [ ] The inventory links worktrees to jobs and worker slots and reports dirty state, environment readiness and cached branch status. Unknown ownership and dirty historical work remain untouched.
-- [ ] Concurrent provisioning cannot share a mutable environment or delete another attempt. Existing merged-job parking still releases both workers and keeps its current safeguards.
-- [ ] Unit and integration tests cover missing pytest, bad sibling resolution, denied temp or child creation, cache invalidation, clean setup, concurrent workers, retry recovery and dirty orphan preservation.
-
-### Blocked by
-
-- [achiCore #128](https://github.com/achibukz/achiCore/issues/128), canonical scoped-home runner.
-
-### Recommended model
-
-`claude-opus-4-6-thinking`. Concurrent provisioning and environment caching can affect another worker without failing the creating job.
-
-## W2. [Resume autonomous jobs from verified progress without repeating unchanged failures](https://github.com/achibukz/achiCore/issues/147)
-
-Repository: `achibukz/achiCore`. Created issue #147.
-
-### Parent
-
-[achiCore #83](https://github.com/achibukz/achiCore/issues/83), autonomous-learning design discussion.
-
-### What to build
-
-AFK implementation. Change src/to_work.py, src/review_loop.py, src/review_handoff.py, src/github_client.py and the related bot handlers so recovery resumes the unfinished stage. Preserve versioned attempt and review receipts instead of clearing approval and replacing review history on every resume.
-
-Classify environment, auth, transport, pending CI, missing CI, assertion failure, merge conflict and review findings before choosing the next actor. Only a code defect or actionable review finding dispatches a repair model. Supply the failed check's bounded diagnostic evidence, current commit and environment fingerprint. Reuse #113's no-CI policy and #143's conflict flow.
-
-Follow the agreed behavior and ownership in the [Astra plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md). Gemini 3.8 Flash must support the runtime path. A manual `/learn` command is never a prerequisite. Existing repository review and merge rules still apply.
-
-### Acceptance criteria
-
-- [ ] Resuming an unchanged approved PR revalidates its current checks, non-dismissed review and recorded head, base, issue-body and policy revisions. It returns to merge-ready with zero writer or reviewer calls when evidence remains valid.
-- [ ] A changed head, base, specification or review invalidates the affected approval. Pending or temporarily unavailable GitHub state waits or parks without launching implementation. No automatic merge is added.
-- [ ] An environment, auth or transport failure retains its reason and prerequisite. Use at most two bounded deterministic retries where retryable, then park. No-CI follows the explicitly configured repository policy from #113, never a fabricated green check.
-- [ ] Persist a fingerprint of stage, head, environment and normalized failure. The same unresolved fingerprint cannot launch another model repair after resume unless relevant evidence changes or Aki explicitly requests another attempt.
-- [ ] Preserve existing review-cycle, CI-repair and wall-clock limits across automatic recovery. A manual fresh attempt is explicit and retains earlier history. Unknown mergeability follows bounded read retries; real conflicts use #143.
-- [ ] Store trusted command, cwd, commit, environment, exit status, log reference and test totals when available. Handoffs use these receipts; model-written success claims cannot replace them. Emit outcome and failure events for the learning pipeline.
-- [ ] Record model calls, reported input/output tokens, test executions and wait time per stage. Mark unavailable usage as unknown. Prove fewer model calls with replayed unchanged-state failures; do not claim token savings from polling time.
-- [ ] Unit and integration tests cover unchanged approval reuse, invalidated or dismissed review, auth outage, pending and missing CI, repeated environment failure, changed failure fingerprint, real assertion repair, merge conflict, restart and preserved attempt history.
-
-### Blocked by
-
-- [achiCore #146](https://github.com/achibukz/achiCore/issues/146)
-- [achiCore #113](https://github.com/achibukz/achiCore/issues/113), explicit policy for repositories without CI.
-- [achiCore #143](https://github.com/achibukz/achiCore/issues/143), bounded conflict resolution.
-
-### Recommended model
-
-`claude-opus-4-6-thinking`. Recovery must avoid duplicate paid work without reusing stale approval or weakening merge gates.
+R1's internal order is worker reservation and preflight, durable recovery, Claude stream/write/fallback support, background branch preparation, worker runbooks and staging acceptance. The source issues are not hard blockers on starting R1. #25 remains a separate model rollout after R1.
 
 ## T1. [Fulfill task and Calendar intents with stable IDs and durable receipts](https://github.com/achibukz/AIS-OS/issues/13)
 
@@ -348,7 +240,7 @@ Follow the agreed behavior and ownership in the [Astra plan](http://100.106.210.
 - [AIS-OS #15](https://github.com/achibukz/AIS-OS/issues/15)
 - [achiCore #56](https://github.com/achibukz/achiCore/issues/56), precedence and memory cleanup.
 
-- [achiCore #147](https://github.com/achibukz/achiCore/issues/147), trusted test and job outcome receipts.
+- [achiCore #153](https://github.com/achibukz/achiCore/issues/153), trusted test and job outcome receipts.
 
 ### Recommended model
 
@@ -435,7 +327,7 @@ Repository: `achibukz/AIS-OS`. Created issue #18.
 
 ### What to build
 
-HITL implementation. Build a shared sanitized replay corpus and a release runner, starting alongside [AIS-OS #13](https://github.com/achibukz/AIS-OS/issues/13). Run real Gemini 3.8 Flash at high effort for both foreground interpretation and background review. Prove correction-to-later-action behavior, note capture and recall, linked ticket completion, procedure reuse and fault recovery. Mocked model tests or results on Astra cannot satisfy the real-model gate.
+Unattended replay implementation followed by assisted feature live testing. Build a shared sanitized replay corpus and a release runner, starting alongside [AIS-OS #13](https://github.com/achibukz/AIS-OS/issues/13). Run real Gemini 3.8 Flash at high effort for both foreground interpretation and background review. Prove correction-to-later-action behavior, note capture and recall, linked ticket completion, procedure reuse and fault recovery. Mocked model tests or results on Astra cannot satisfy the real-model gate.
 
 Ship a consented phone pilot with synthetic notes, Calendar items and linked test tickets. Enable capture-only, shadow proposals and restricted automatic writes in stages. Keep independent switches for capture, classification, actions, wiki writes and skill publication. Record actual results without claiming the existing unit suite verifies unimplemented behavior.
 
@@ -462,7 +354,7 @@ Follow the agreed behavior and ownership in the [Astra plan](http://100.106.210.
 - [AIS-OS #16](https://github.com/achibukz/AIS-OS/issues/16)
 - [AIS-OS #17](https://github.com/achibukz/AIS-OS/issues/17)
 
-- [achiCore #147](https://github.com/achibukz/achiCore/issues/147), environment preflight and bounded recovery.
+- [achiCore #153](https://github.com/achibukz/achiCore/issues/153), environment preflight and bounded recovery.
 
 ### Recommended model
 

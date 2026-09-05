@@ -1,8 +1,40 @@
 # Astra plan for autonomous learning and connected workflows
 
-Implementation plan, 2026-09-05 UTC. This replaces the earlier Astra planning checklist. The audit and design are complete; the proposed runtime changes have not been implemented.
+## Next Astra work, 2026-09-05
+
+The reusable assisted-testing skill is installed locally and its source is in [PR #21](https://github.com/achibukz/AIS-OS/pull/21) for review. Its next real assisted-run acceptance is still open.
+
+The worker implementation is deployed; the next workstream is the self-learning loop. Start with [AIS-OS #13](https://github.com/achibukz/AIS-OS/issues/13), stable task and Calendar operations, and [achiCore #56](https://github.com/achibukz/achiCore/issues/56), persona and memory precedence. Then connect ordinary input through achiCore #148 and correction reuse through AIS-OS #14. Keep #155/#156 as parallel worker follow-ups, not a claim that every worker gate passed. The rest of T1 through T9 retains its declared dependency order.
+
+Prepare AIS-OS #18's replay corpus while the early slices are built. Its final real Flash pilot still waits for its integrations. For tickets that need a human action, use [assisted-live-testing](http://100.106.210.38:8999/.config/skillshare/skills/assisted-live-testing/SKILL.md) and the [assisted testing guide](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/assisted-live-testing.md): the assistant prepares the test, guides one step at a time, checks the human's observations, saves a Markdown interaction record and posts a PR comment. This covers CLI/backend, API, device, browser and Telegram work. Automated-only tickets do not need a human gate.
+
+Testing Grounds is reusable infrastructure, not a fresh or automatically ready run. Read the skill's Telegram reference for the isolated root, operator config and lifecycle checks. Downstream Calendar, database and vault destinations need separate isolation. See the [retrospective](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-09-05-assisted-testing-retrospective.md) for what our workflow test did and did not prove.
+
+
+## 2026-09-05 deployment update
+
+[achiCore #153](https://github.com/achibukz/achiCore/issues/153) is closed at Aki's request. [PR #154](https://github.com/achibukz/achiCore/pull/154) is merged as `bbb8fb73a6b1ba3632187df3b9ee45b31b4d3af1` and the main hub restarted on that code at 18:45 UTC. Telegram polling succeeded. Bindings and conversation IDs were preserved.
+
+Remaining worker work is [#155](https://github.com/achibukz/achiCore/issues/155), separate conflict-repair attempts and Atlas repair/merge-queue status, and [#156](https://github.com/achibukz/achiCore/issues/156), invalidating cached probes when a worker virtualenv disappears or changes. Neither follow-up is implemented. Background preparation and automatic recovery retain their default-off production settings.
+
+Aki's Flash staging run produced five completed jobs and one abandoned job. It did not establish six simultaneous jobs, all-engine coverage or the full fault-injection matrix. Closure and deployment do not mark those gates passed. See the [deployment and test record](http://100.106.210.38:8999/Code/GitHub/achiCore/docs/issue-153-deployment.md) for commands, counts, receipts and limits. Learning T1 through T9 and the control board remain separate work; this deployment does not establish learning completion.
+
+
+Implementation plan, 2026-09-05 UTC. The original learning design is followed by the current consolidation below. Some worker prerequisites have shipped; the automatic learning loop remains unimplemented.
 
 The [first audit](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-09-05-astra-cohesion-audit.md) remains the historical snapshot. This plan uses a fresh code, GitHub and runtime check, plus Aki's decisions in this task. The design discussion is [achiCore #83](https://github.com/achibukz/achiCore/issues/83). Aki approved the ticket breakdown, and #83 is now closed as a completed design discussion with links to its open implementation tickets.
+
+## Current agreement and execution entry point
+
+Aki approved two independently deliverable efforts that may proceed in parallel. Autonomous worker reliability is the priority. It should support six concurrent jobs and leave reviewed PRs for his merge decision. Self-learning should turn daily corrections into sourced rules used on later matching requests. The control board remains a later feature.
+
+Worker reliability from [achiCore #153](https://github.com/achibukz/achiCore/issues/153) is merged and deployed through PR #154 at `bbb8fb7`; #153 is closed. Continue with #155 for conflict repair and Atlas status, and #156 for worker probe-cache invalidation. The consolidated source tickets remain requirement references, not separate dispatches.
+
+The [new workflow audit](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-09-05-autonomous-loop-audit.md) contains historical current/proposed flow diagrams, source findings, runtime limits and the observed 488-test result. It corrects the earlier claims about warm-turn amnesia, inevitable merge conflicts, an unhandled TGDB exception and Luna's old test command. Historical tables below describe their stated audit revisions.
+
+The learning tickets T1 through T9 remain separate. Where T5 and T9 previously depended on #147, they now depend on #153 for trusted job receipts and recovery. T1 and early learning fixtures can start independently. Keeping the final learning release dependent on worker receipts does not require delaying all learning implementation.
+
+Aki accepts a separate Telegram staging hub, relevant cross-repository read access for Luna, and clearer unattended worker workflows. The implementation brief bounds staging resources and background branch preparation. Aki retains the final merge decision; new code after branch synchronization needs current tests and review.
 
 ## What must work when this is finished
 
@@ -254,7 +286,7 @@ Measure environment failures before and after dispatch, model calls per stage, p
 
 ## Implementation order and ticket map
 
-Aki approved this breakdown on 2026-09-05. Ten new issues and three revised issues are published below. Every ticket includes files, scope, dependencies, failure behavior and acceptance tests.
+The original breakdown below is retained for the learning slices and source history. Worker implementation from #153 is deployed. W0 and W3 are shipped prerequisites; W1 and W2 were consolidated into #153. Remaining defects are #155 and #156, with acceptance gaps recorded above.
 
 | Slice | Repository | Complete behavior | Hard dependencies |
 |---|---|---|---|
@@ -266,13 +298,13 @@ Aki approved this breakdown on 2026-09-05. Ten new issues and three revised issu
 | T2, [#148](https://github.com/achibukz/achiCore/issues/148) | achiCore | A normal Telegram request reaches T1 with current preferences and records its outcome | T1, achiCore #56 |
 | T3, [#14](https://github.com/achibukz/AIS-OS/issues/14) | AIS-OS | A correction repairs the current item and changes a later matching request automatically | T1, T2 |
 | T4, [#15](https://github.com/achibukz/AIS-OS/issues/15) | AIS-OS | A Telegram note reaches its permitted vault destination and becomes available for scoped recall | T2, T3 |
-| T5, [#149](https://github.com/achibukz/achiCore/issues/149) | achiCore | Verified learning reaches warm turns through one governed memory path | T3, T4, W2, achiCore #56 |
+| T5, [#149](https://github.com/achibukz/achiCore/issues/149) | achiCore | Verified learning reaches warm turns through one governed memory path | T3, T4, #153, achiCore #56 |
 | T6, [#11](https://github.com/achibukz/AIS-OS/issues/11) | AIS-OS | A completed linked GitHub ticket updates its active task and debrief once | Extend existing #11; T1 |
 | T7, [#16](https://github.com/achibukz/AIS-OS/issues/16) | AIS-OS | Failed action receipts recover after an outage; the daily digest reports learning and unresolved work | T3, T4, T6 |
 | T8, [#17](https://github.com/achibukz/AIS-OS/issues/17) | AIS-OS | A verified procedure produces a reviewed skill PR, then becomes discoverable after publication | T3, T5 |
-| T9, [#18](https://github.com/achibukz/AIS-OS/issues/18) | AIS-OS | A Flash-only replay and phone pilot prove the scenarios, recovery, revocation and later reuse | T2 through T8, W2 |
+| T9, [#18](https://github.com/achibukz/AIS-OS/issues/18) | AIS-OS | A Flash-only replay and phone pilot prove the scenarios, recovery, revocation and later reuse | T2 through T8, #153 |
 
-Fix #128 first for unattended worker execution, then W1 and W2. T1 and evaluation fixtures can proceed independently in a verified development environment. Each slice includes its source-to-result tests. T1 is a complete command-line path; T2 connects the same contract to Telegram. T3 closes the first correction-to-next-action loop. T4 and T6 add notes and completed tickets. T7 is required before unattended rollout. T8 finishes procedural publication. Build T9's fixtures from T1 onward and run its final live gate after the integrations land.
+Use the deployed #153 implementation as the worker baseline, preserving #128/#113/#152 and addressing follow-ups #155/#156. T1 and evaluation fixtures can proceed independently in a verified development environment. Each slice includes its source-to-result tests. T1 is a complete command-line path; T2 connects the same contract to Telegram. T3 closes the first correction-to-next-action loop. T4 and T6 add notes and completed tickets. T7 is required before unattended rollout. T8 finishes procedural publication. Build T9's fixtures from T1 onward and run its final live gate after the integrations land.
 
 Existing ticket handling:
 
@@ -298,108 +330,24 @@ Use the existing owners and commands behind the interface. The board should read
 
 ## Follow-up discussion topics with Astra: privileged testing, conflict handling, /towork audit, TGDB overhaul, and worker optimization
 
-Aki identified five design areas to discuss with Astra to strengthen the autonomous execution loop, align worker engines, and restore operational transcript capture before broader rollout:
+### Worker decisions
 
-### 1. Privileged testing agent for HITL and administrative verification
+The consolidated #153 brief owns isolated staging verification, atomic worker reservations, scoped environment preparation, recovery from verified progress, Claude Code fallback, background branch updates and Aea/Luna workflow normalization. Six concurrent jobs is the acceptance workload. The coordinator schedules conflict repair through the assigned writer; no separate permanent privileged or merging persona is required. The executor works in one session. Runtime worker jobs remain concurrent.
 
-Current worker sandboxes enforce strict Landlock confinement and restricted user privileges. While essential for containment, this architecture creates an execution barrier for tickets containing a `## Manual testing (HITL)` section that touches administrative tasks:
-- Managing or querying systemd user and system services (`systemctl --user restart`, daemon health inspections).
-- Reading journald system logs without token redaction leaks.
-- Validating network ports, Docker daemon configurations, or local firewall states.
-- Running live OAuth handshakes or verifying file mode changes requiring elevated rights.
+Luna starts from the complete diff and acceptance criteria, then reads relevant callers, tests and sibling repositories such as AIS-OS. Related context is permitted; unrelated cleanup remains outside the review. The coordinator pins the review checkout and records the revisions used for cross-repository conclusions.
 
-When a ticket reaches this stage, the loop stalls and forces Aki to manually execute verification commands on his phone or via SSH terminal.
+### Learning decisions
 
-**Topics for Astra:**
-- **Dedicated Admin Test Agent vs. Scoped Privileged Capabilities:** Should achiOS introduce a dedicated verification agent (such as an `#Atlas-Tester` or elevated executor) equipped with restricted sudoers permissions, or should the trusted parent daemon execute a discrete, pre-declared verification manifest outside the untrusted worker subprocess?
-- **Bounding Privileged Execution:** What security boundaries prevent prompt-injected or untrusted ticket code from abusing administrative test credentials while still allowing automated verification of systemd and infrastructure updates?
+TGDB mainly supplies evidence to self-learning, with searchable history as a secondary use. Use the existing planned event pipeline rather than a second transcript harvester. Keep authorized user text, assistant output and observed tool outcomes distinct. A recorded assistant claim does not establish that an action succeeded. Store durable evidence before acknowledging an operation; perform extraction and indexing in the background. Full sensitive payloads remain outside the searchable database under restricted storage.
 
-### 2. Merge conflict resolution: dedicated agent vs. feature-level button (achiCore #143)
+Aki wants corrections such as "don't make this mistake again" and repeated task/document placement instructions to affect later matching work without repeating himself. Capture the current correction, identify the narrow supported scope, store a source-backed revision and retrieve it before the next matching action. An explicit durable instruction can apply immediately within existing permissions. A proposed change to AGENTS.md or a shared skill still follows the repository's reviewed-change contract. Learning cannot expand its own write permissions.
 
-When multiple `/towork` jobs execute in parallel across separate branches and worktrees, merging one pull request inevitably causes the remaining PRs to diverge from `main`. This triggers merge conflicts, most frequently on append-only files (`session-log.md`, `decisions/log.md`) or shared package imports.
+### Questions still to settle
 
-[achiCore #143](https://github.com/achibukz/achiCore/issues/143) proposes adding an inline `Fix conflicts` button to Atlas status cards, delegating the resolution turn back to Aea.
-
-**Topics for Astra (Is an agent better than a simple feature?):**
-- **Option A: Simple Feature (Card Button delegating to Aea):** Atlas detects `merge_recheck_failed` or `CONFLICTING`, renders an inline button, and triggers a one-shot rebase/merge prompt in Aea's existing worktree.
-  - *Trade-offs:* Minimal architectural complexity, no extra topic configuration, preserves Aea's current working diff context. However, it remains reactive, requires manual human button tapping, and forces Aea (an implementation specialist) to perform three-way Git reconciliations.
-- **Option B: Autonomous Conflict Resolution Agent:** A specialized background reconciler (such as `#Rebase` or a concurrency manager) that monitors active pull requests, detects base branch updates immediately upon merge, autonomously fetches `origin/main`, executes semantic AST-aware merges, preserves reverse-chronological log orders, validates the test suite, and pushes the updated head without human intervention.
-  - *Trade-offs:* Fully autonomous multi-ticket pipeline, eliminates idle wait times on stale branches, allows model optimization (running expensive reasoning models only on genuine semantic conflicts). However, it adds daemon state complexity and potential race conditions if multiple workers attempt concurrent rebases against a fast-moving base.
-- **Deterministic Pre-Filters:** Whether custom Git merge drivers (for example, for `session-log.md`) can resolve 80% of log drift deterministically before delegating genuine code conflicts to either an agent or a feature button.
-
-### 3. Workflow audit of `/towork` and targeted loop improvements
-
-An end-to-end review of the `/towork` lifecycle (`JobStage`, `WorkerPair`, `readiness`, and `review_loop`) identifies several operational bottlenecks:
-
-1. **Input and Specification Flexibility:** The coordinator strictly requires `owner/repo#123` or full URLs. It lacks support for multi-issue batching, branch re-targeting, or subtask decomposition.
-2. **Proactive Drift Detection:** Currently, branch staleness is only discovered when a merge is attempted (`merge_recheck_failed`). The loop needs continuous background mergeability checks so conflicts surface while reviews are underway rather than at the final merge step.
-3. **Environment and Dependency Preflight:** Worktree provisioning frequently creates environments missing key test dependencies (`pytest`, `pytest-asyncio`), causing Aea or Luna to fail during test collection rather than code execution (addressed in W1 / achiCore #146).
-4. **Review Loop Efficiency:** Luna reviews currently evaluate full working checkouts rather than isolated patch diffs, burning context tokens and occasionally repeating style critiques on unchanged files. The loop needs incremental diff scoping and stricter bounds on cyclical review ping-pong.
-5. **Deterministic Resume without Token Burn:** Resuming a parked job historically reset `approved_head_sha` and re-triggered full implementation prompts even when code was already complete and only CI timed out. W2 (#147) must ensure resumption preserves validated evidence and resumes only the exact unfinished stage.
-6. **Automated Completion Sync:** When a `/towork` pull request merges, the corresponding item in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) and the midnight debrief must update automatically (connected to AIS-OS #11 and T6) without requiring manual status cleanup.
-
-### 4. TGDB overhaul: restoring transcript capture to feed the self-learning loop
-
-Automatic TGDB logging (`ACHICORE_TGDB_LOGGING=0`) was paused across achiCore and `scripts/vault_inbox_sync.py` after the initial implementation produced three critical system failures:
-- **Memory Poisoning Loops:** Transcripts saved rendered conversation buffers that included prepended memories and frozen prompts. When the harvester scanned `achiMem/tgdb/`, it re-ingested rules it had written in prior passes, multiplying prefixes into runaway memory corruption.
-- **Vault Bloat and Git Sync Churn:** Dumping raw turn Markdown files directly into `achiMem/tgdb/` created hundreds of Git commits, clogged Syncthing replication with mobile devices, and polluted Obsidian global search with fragmented dialogue.
-- **Runtime Crashes:** Turn logging in `src/bot.py` threw unhandled runtime exceptions (`NameError: name 'context' is not defined`), producing warning noise and risking turn degradation.
-
-**Why fixing TGDB is essential for autonomous self-learning:**
-Shutting off TGDB stopped the memory corruption, but it also cut off the primary source of operational evidence. A working self-learning loop cannot function in a vacuum. It requires an unpolluted, reliable stream of real-world dialogue, explicit corrections, negative constraints, and verified workflow outcomes. If TGDB is redesigned properly, this raw conversational telemetry becomes the high-value training and refinement data that drives autonomous adaptation across the entire operating system.
-
-**Topics for Astra:**
-- **Decoupling Raw Telemetry from the Knowledge Vault:** Raw conversation turns belong in the local append-only coordination database (`~/.local/state/achios/cohesion.sqlite3` under `events`) rather than as Markdown notes in `achiMem`. The Obsidian vault should only receive curated knowledge, verified notes, or explicitly requested session summaries via the destination writer, keeping the human second brain uncluttered.
-- **Strict Input Lineage (Anti-Poisoning):** TGDB events must capture only the clean human prompt and assistant response text, completely excluding injected memory blocks, topic persona prompts, or delegation wrappers. Every record receives an immutable `source_event_id` to prevent circular re-extraction by the learning reviewer.
-- **Feeding the Background Learning Worker:** Designing the exact event schema that the scheduled review worker (`gemini-3.8-flash-high`) queries to extract candidate preferences, identify operational corrections (such as placement overrides), and recognize reusable technical procedures.
-- **Asynchronous Non-Blocking Pipeline:** Moving event recording off the critical message path into an async worker queue so database writes cannot slow down Telegram responses or crash turns on write failures.
-- **Fast Local Search without Markdown Grep:** Enabling SQLite FTS5 full-text indexing over stored conversation events so users or agents can query historical Telegram context (for example, through an Atlas `/tgdb search <query>` command) without scanning raw filesystem files.
-
-### 5. Aea and Luna optimization, runner prompt injection, and skill specialization across engines
-
-Aea and Luna are the primary implementation and review personas in achiOS and achiCore. While their personas define clear responsibilities, their execution across different agent engines (`agy`, `codex`, and `claude_code`) reveals prompt dilution, tool contradictions, and skill mismatches that impair autonomous execution.
-
-#### How agent engines handle system prompts and personas today
-
-achiCore composes a frozen system prompt (`build_frozen_system_prompt`) containing user profile text, persistent declarative memory, the active persona ([agents/aea.md](http://100.106.210.38:8999/Code/GitHub/achiCore/agents/aea.md) or [agents/luna.md](http://100.106.210.38:8999/Code/GitHub/achiCore/agents/luna.md)), the declared skill index, and tool invariants. However, each underlying CLI runner handles this prompt differently:
-
-1. **Claude Code (`src/claude_client.py`):**
-   - **System prompt behavior:** Claude Code runs with its native default instructions and reads the workspace `CLAUDE.md`. achiCore appends its frozen system prompt via the `--append-system-prompt` flag on **every single invocation** (`appends_system_prompt = True`).
-   - **Skills and isolation:** Scoped through a private configuration directory (`CLAUDE_CONFIG_DIR=~/.local/state/achicore/claude-homes/<agent>`) containing symlinks only to allowlisted skills. Auto-memory is explicitly disabled (`CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`), and subagent delegation is blocked (`--disallowed-tools Agent`).
-2. **Antigravity (`src/agy_client.py`):**
-   - **System prompt behavior:** Antigravity runs with its native system prompt and tools, reading `.agentrules` and `AGENTS.md`. achiCore injects its frozen system prompt by **prepending it as text to the user prompt only on the first turn** (`session.conversation_id is None`). On warm turns (`resume`), achiCore passes only the raw user prompt. Consequently, warm turns lose persona boundaries and updated declarative memory.
-   - **Skills and isolation:** Runs in the real user `$HOME` without on-disk skill isolation. It can see all 90+ installed skills under `~/.gemini/config/skills/`, relying entirely on prompt text to restrict usage.
-3. **Codex (`src/codex_client.py`):**
-   - **System prompt behavior:** Codex runs with its native system prompt and repository instructions. Like Antigravity, achiCore prepends the frozen system prompt only on turn 1. Resumed turns (`codex exec resume`) receive only the user prompt without the prepended persona.
-   - **Skills and isolation:** Scoped through private homes (`HOME` and `CODEX_HOME` redirected to `~/.local/state/achicore/codex-homes/<agent>`) with symlinked allowlisted skills. Codex excludes skills whose `SKILL.md` specifies `disable-model-invocation: true`. Built-in execution policies block `rm -rf` and `rm -f`.
-
-#### Current friction points and performance bottlenecks
-
-1. **Skill and Persona Contradictions:**
-   - Both Aea and Luna declare `code-review` in their skills list. However, `code-review/SKILL.md` explicitly commands the agent to spawn two parallel sub-agents (Standards and Spec) via `invoke_subagent`. This directly violates Aea and Luna's persona rule: *"Never launch, delegate to, or ask for subagents."* In Claude Code, attempting to spawn subagents fails because the `Agent` tool is denied. In Antigravity, it risks spawning unmanaged subagents and burning tokens.
-   - Aea's persona directs: *"Use `/implement`. It already chains `/tdd` for the red-green cycle and `/code-review` at the end."* But `implement` is a 16-line stub with `disable-model-invocation: true`. Codex drops it from its catalog entirely, and headless non-interactive CLI turns cannot execute interactive slash commands.
-2. **Warm Turn Prompt Amnesia in Antigravity and Codex:**
-   - In both `agy` and `codex`, conversational turns after turn 1 lose the injected persona and declarative memory block because the adapter appends nothing to resumed turns. Claude Code remains the only engine receiving current system prompts on every turn.
-3. **Reviewer Scope and Checkout Drift:**
-   - Luna's persona directs manual Git checkout commands (`git fetch origin && git checkout <headRefName>`), which can collide with the orchestrator's numbered worktree provisioning. Additionally, Luna frequently evaluates entire directory trees rather than bounding analysis to the three-dot pull request diff (`git diff <base>...HEAD`). This consumes unnecessary input tokens.
-4. **Environment Instability:**
-   - Worker provisioning historically created venvs lacking testing packages (`pytest`, `pytest-asyncio`). This caused workers to burn turn budgets on dependency discovery rather than implementation (addressed in W1 / achiCore #146).
-
-#### Improving Aea and Luna: Do we need more skills?
-
-Adding more skills is not the solution. Expanding the skill list increases prompt token overhead, inflates index size, and introduces conflicting behavioral rules.
-
-The path to optimizing Aea and Luna requires streamlining existing assets and aligning engine behaviors:
-- **Single-Session Review Runbook:** Replace or adapt `code-review` with a headless, single-session review skill that evaluates Spec and Standards sequentially within the same context without spawning subagents.
-- **Actionable Implementation Instructions:** Remove the dependency on interactive slash command chaining (`/implement -> /tdd -> /code-review`) in favor of direct, procedural execution steps embedded in the persona or a headless-safe skill.
-- **Consistent Warm Turn Injection:** Update `agy_client.py` and `codex_client.py` to ensure persona rules, write boundaries, and current memory remain present across multi-turn sessions, to match Claude Code's reliability.
-- **Strict Diff-Only Reviewing:** Enforce diff-scoped prompts for Luna so reviews examine only changed hunks and acceptance criteria, to avoid full-tree token waste.
-- **Model-to-Role Assignment:** Pair implementation tasks with high-reasoning models (Claude Opus 4.6 or Sonnet 3.7) while assigning fast, adversarial review to models specialized for diff inspection (such as GPT-5.6 Luna or Gemini 3.8 Flash High).
-
-**Topics for Astra:**
-- **Single-Pass vs Multi-Agent Review in Headless Runs:** How should Luna's review workflow be structured to preserve rigorous two-axis evaluation (Spec and Standards) without spawning subagents or exceeding token budgets?
-- **Unifying Prompt Injection Across Engines:** What is the cleanest mechanism to ensure `agy` and `codex` retain persona constraints on warm turns without triggering full prefix cache invalidation?
-- **Skill Pruning and Headless Normalization:** Which declared skills should be removed from Aea and Luna to eliminate dead stubs and avoid slash-command dependencies in unattended batch jobs?
+- When "don't do this again" leaves the category unclear, should the system ask immediately about future scope or save only the current correction until the category becomes clear? The current plan recommends preserving the item repair and asking one narrow scope question.
+- How long should ordinary searchable conversation content remain, and what evidence must remain when a learned rule still depends on an older source?
+- For instructions naming AGENTS.md, does Aki want automatic preparation of a reviewed repository change, or only an immediately reusable preference until he explicitly requests that change? The current permission and review rules still apply while this is discussed.
+- Staging requires a separate bot and test forum. Initial real-user phone interactions remain distinct from automated handler replay.
 
 ## Tests and activation
 
