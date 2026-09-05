@@ -22,6 +22,8 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Hold a separate planning session for a control board or Kanban frontend connecting the Astra workflow and learning records, per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md#follow-up-planning-session-for-a-control-board) #achios #achicore #planning !med
+- [ ] Ship the [Astra learning and worker-reliability plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md), achiCore #146-#149 and AIS-OS #13-#18, with revised achiCore #128/#113 and AIS-OS #11 #systems #achios #achicore !high
 - [ ] Fix Claude Code quota and auto-refresh stale provider tokens in /usage (achiCore #135-#136) #achicore #ux #bug !high
 - [ ] Align and copy global instructions from Claude (CLAUDE.md) to Antigravity and Codex #systems #tooling !med
 - [ ] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-09-07
@@ -31,7 +33,6 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Complete active Asa & Research workflows backlog tasks per [tasks-asa-research.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-asa-research.md) #asa #research #workflows !high
 - [ ] Cancel current Google One subscription ahead of renewal #finances #personal !low @2026-10-13
 - [ ] Subscribe to Google AI Pro Student Discount (₱275/mo for up to 4 years via SheerID verification) #finances #personal !low @2026-10-14
-- [ ] Audit achiOS, achiCore, achiMem, and Telegram sessions per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) upon Astra release #systems #achios #achicore !med
 - [ ] Ship achiCore #142-#143: add /sync repository pull command and /towork conflict resolution flow #achicore #infra #ux !med
 - [ ] Ship specific-repo sync across AIS-OS #12 and achiCore #145 (/sync <repo>) #achios #achicore #infra !med
 - [ ] Hold grill-me session to design and build GitHub trending repos scanner cron (star surge tracking, adoption driver analysis, workflow integration) #automation #tooling #infra !med
@@ -40,6 +41,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 ## Blocked
 
 ## Done
+- [x] Audit Telegram, achiCore, achiOS, achiMem and worker test environments; replace the [Astra plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) with implementation slices #systems #achios #achicore !high (done 2026-09-05)
 - [x] Ship achiCore #138-#139: register Astra as a Codex model and add the effort step to /model #achicore #ux !med  (done 2026-09-05)
 - [x] Integrate Claude Code foundation into achiCore as third engine with subscription OAuth (ticket 119, PR 126), scoped config directories, and prompt attachment handling #achicore #claude #arch !high  (done 2026-09-05)
 - [x] Promote achiclaude GCP OAuth consent screen to In Production to eliminate 7-day token expiration cap, re-auth 4 profiles, and verify Google Drive access #achicore #infra #security !high  (done 2026-09-05)

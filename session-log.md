@@ -1,5 +1,26 @@
 # Session Log
 
+## 2026-09-05 08:29 [saved]
+Goal: Audit Telegram, achiCore, achiOS and achiMem; replace the Astra plan with autonomous-learning and workflow implementation slices.
+
+Decisions:
+- Aki requested a separate follow-up planning session for a control board, mission control or Kanban frontend. Added it to the plan and task register; frontend implementation remains outside this batch.
+- Recorded Aki's automatic placement learning, correction, note capture, scoped reuse, wiki allowlist, daily digest and 24-call Flash budget in the [Astra plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md).
+- Read the original audit and refreshed code, GitHub and runtime evidence. Reproduced #128 under a scoped HOME and traced repeated work through provisioning, test hooks and job recovery.
+- Published achiCore #146-#149 and AIS-OS #13-#18, and revised achiCore #128, achiCore #113 and AIS-OS #11. The published [ticket bodies](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-tickets.md) include acceptance tests and blockers. Aki approved the breakdown and all 13 issue bodies were re-read for verification. Closed achiCore #83 as the completed design discussion, with successor links.
+
+Rejected:
+- A mandatory /learn command, a fixed task/Calendar routing table, an Astra-dependent runtime and inference that missing Actions files means no required CI.
+- Deleting historical worktrees or changing production memory and services during the audit.
+
+Verification:
+- achiCore full suite: 1260 passed, 1 skipped, 2 warnings, 21 subtests passed in 55.37s. AIS-OS full suite: 300 passed in 17.58s.
+- Scoped-home test collection failed with ModuleNotFoundError for learning_ledger. Three worker venvs lack pytest and pytest-asyncio. Calendar-list reads passed on four profiles; no Calendar write or live learning pilot ran.
+
+Open:
+- Implement the runner and preflight fixes, then the learning slices and real Flash pilot. Preserve the existing vault edits and historical worktrees.
+
+
 ## 2026-09-05 08:03 [saved]
 Goal: Scope and publish tracer-bullet implementation tickets for single-repository sync in sync-repos and Telegram /sync.
 

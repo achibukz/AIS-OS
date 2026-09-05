@@ -1,5 +1,14 @@
 # achiOS roadmap
 
+## 2026-09-05 Autonomous learning and worker reliability
+
+The [Astra plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) contains the current cross-repository audit and dependency order. The older dated snapshots below remain historical and must not be read as today's deployment state. The [ticket bodies](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-tickets.md) contain the published ten new issues and three existing-issue revisions.
+
+Start with achiCore #128 for the canonical test command and #113 for an explicit CI policy. Add [#146 environment preflight](https://github.com/achibukz/achiCore/issues/146), then [#147 recovery from verified progress](https://github.com/achibukz/achiCore/issues/147), retaining #143 for merge conflicts. T1 task and Calendar actions can proceed independently in a verified development environment. T2 connects Telegram, T3 learns corrections, T4 saves notes, and revised AIS-OS #11 reconciles completed linked work. T5 adds current verified recall, T7 delivery recovery and the digest, T8 reviewed skills, and T9 the real Gemini 3.8 Flash pilot. See the plan for hard blockers.
+
+The existing test suites pass in an ordinary shell, but the scoped-home collection failure in #128 remains reproducible. No production behavior changed during planning. Do not close implementation tickets merely because their planned capability appears in this document.
+
+
 What is worth building next, and why. Written 2026-08-21, after the self-learning loop v2
 build and the infrastructure audit.
 

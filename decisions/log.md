@@ -1071,3 +1071,19 @@ over the whole list, which puts deadlines back in the model's hands.
 **Alternatives considered:** A Codex-only skill, a custom `[send_photo: path]` tag, and direct Telegram API calls from each agent.
 
 **Owner:** Aki.
+
+## 2026-09-05 Autonomous learning and connected workflows
+
+Decision. Aki chose automatic learning from normal Telegram requests, corrections and verified outcomes. Initial placement preferences put social plans in Calendar, quick tasks and coding tickets in tasks.md, and school deadlines in both. These are editable starting preferences. A correction repairs its current item and changes future matching behavior within the supported scope. One-time exceptions remain local to the item.
+
+Verified facts and procedures may be reused automatically. A procedure needs one observed success and relevant checks. Shared skills and operating rules need a reviewed PR. Automatic wiki updates will target designated sections on the achi-os, achi-core and achibuntu pages, completed-work timeline rows and Tooling / workflow decision pointers. The implementation must preserve domain boundaries and source provenance.
+
+The runtime must work with Gemini 3.8 Flash in both the foreground and background. Background review has a limit of 24 short calls per Manila day. Routine changes belong in the daily digest, with separate actionable alerts. A live Flash pilot must prove correction, later reuse, notes and linked ticket completion before activation.
+
+Why. Capturing text alone does not make the next action better. Stable item IDs, observed outcomes, current recall and reliable retries connect the existing stores. The worktree audit also reproduced environment failures before useful testing; preparation and recovery need deterministic checks before another paid model attempt.
+
+Alternatives considered. A required /learn command, fixed Calendar routing rules, a larger global memory file, unrestricted automatic rule changes and migration to Hermes as the runtime. Aki's requested behavior instead uses automatic typed learning over the existing Telegram and repository workflow.
+
+Owner. Aki. The [Astra plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) records the design and evidence; [ticket bodies](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-tickets.md) record the implementation slices. This is a planned change, not a claim that automatic learning or wiki promotion is deployed. Aki approved the breakdown and the implementation issues are published. Issue #83 closes the design discussion; the implementation issues remain open.
+
+Aki also requested a separate follow-up planning session for a control board or Kanban frontend connecting these workflows. The current batch should expose reusable status and action contracts; frontend scope and interaction design remain for that session.
