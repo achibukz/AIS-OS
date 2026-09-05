@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-05 — Specific Repository Option for sync-repos and Telegram /sync
+
+**Decision:** Designed and published tracer-bullet implementation tickets AIS-OS #12 (`Add --repo option to sync-repos to target a specific repository`) and achiCore #145 (`Accept optional repository argument in /sync and /syncres commands`).
+
+**Why:** Full synchronization across all default repositories takes unnecessary network time and noise when only a single repository is actively being updated or investigated. Supporting `sync-repos --repo <target>` and Telegram command `/sync <repo>` (such as `/sync achiCore`) allows targeted fast-forward pulling of individual repositories from mobile or terminal.
+
+**Alternatives considered:** Requiring full repository paths in the CLI without discovery matching (cumbersome on mobile Telegram), or relying on manual shell navigation and `git pull`.
+
+**Owner:** Agi / Aki.
+
 ## 2026-09-05 — Multi-Ticket Conflict Resolution Flow and Telegram Repository Sync
 
 **Decision:** Designed and published implementation tickets achiCore #142 (`/sync` repository pull command) and #143 (autonomous `Fix conflicts` button and resolution flow for `/towork` jobs).

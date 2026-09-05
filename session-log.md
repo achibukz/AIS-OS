@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-09-05 08:03 [saved]
+Goal: Scope and publish tracer-bullet implementation tickets for single-repository sync in sync-repos and Telegram /sync.
+
+Decisions:
+- Published GitHub issue #12 in `achibukz/AIS-OS` (`Add --repo option to sync-repos to target a specific repository`) labeled `ready-for-agent` and `priority:med` targeting `gemini-3.8-flash-high`.
+- Published GitHub issue #145 in `achibukz/achiCore` (`Accept optional repository argument in /sync and /syncres commands`) labeled `ready-for-agent` and `priority:med`, blocked by AIS-OS #12, targeting `gemini-3.8-flash-high`.
+- Added tracking item for AIS-OS #12 and achiCore #145 in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+- Logged architecture decision in [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
+
+Rejected:
+- Coupling Telegram bot logic to local directory path resolution: keep repository discovery inside `scripts/sync-repos.sh` so both CLI and bot share the exact same matching logic.
+
+Open:
+- Run implementation of AIS-OS #12, followed by achiCore #145.
+
 ## 2026-09-05 07:55 [saved]
 Goal: Register task and grill-me session for GitHub trending repositories cron scanner.
 
