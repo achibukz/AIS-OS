@@ -4,13 +4,14 @@
 Goal: Declare AIS-OS reviewed locally so an achiCore `/ToWork` run reaches Luna instead of polling GitHub for checks this repository never produces.
 
 Decisions:
-- Added [.achicore/review-policy.json](http://100.106.210.38:8999/Code/GitHub/AIS-OS/.achicore/review-policy.json) on `main` with `mode: local_review` and `local_command: pytest tests/`.
-- Chose `pytest tests/` because `tests/conftest.py` puts `scripts/` on `sys.path` itself, so the command works from any worktree without extra environment setup.
-- The suite is green at this revision: 300 passed in 17s.
+- Added [.achicore/review-policy.json](http://100.106.210.38:8999/Code/GitHub/AIS-OS/.achicore/review-policy.json) on `main` with `mode: local_review` and a `local_command` that runs the suite.
+- The command names this repository's own interpreter at `/home/achibukz/.local/share/achios/venv/bin/python`. A bare `pytest tests/` resolves only through the achiCore daemon's virtualenv on `PATH`, which would make this repository's review gate depend on another repository's environment and would report a missing interpreter as a test failure.
+- `tests/conftest.py` puts `scripts/` on `sys.path` itself, so the command needs no other setup and runs from any worktree.
+- The suite is green: 300 passed on `main`, 311 at the head of #19.
 - The document has to live on `main`. achiCore reads it from the base branch, and its downgrade guard refuses a branch that declares itself CI-free.
 
 Open:
-- `pytest` is not installed for this repository. The command resolves only through the achiCore daemon's own virtualenv on `PATH`. A dedicated environment for AIS-OS would remove that coupling.
+- Nothing outstanding for this repository.
 
 ## 2026-09-05 10:10 [saved]
 Goal: Incorporate Aea and Luna optimization, CLI runner prompt injection analysis, and skill specialization into astra-plan.md discussion topics.

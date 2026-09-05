@@ -1,4 +1,4 @@
 {
   "mode": "local_review",
-  "local_command": "pytest tests/"
+  "local_command": "/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/"
 }
