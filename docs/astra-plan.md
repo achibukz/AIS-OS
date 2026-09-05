@@ -296,9 +296,9 @@ The discussion should decide which daily decisions the board needs to support. C
 
 Use the existing owners and commands behind the interface. The board should read the versioned cohesion context and health records plus achiCore job state, and submit actions through the same validated handlers Telegram uses. It must not introduce a second task database, independent review loop or separate learning policy. The current tickets establish those contracts; the later session will decide navigation, Kanban columns, live updates, mobile use, access control and the first frontend slice.
 
-## Follow-up discussion topics with Astra: privileged testing, conflict handling, /towork audit, and TGDB overhaul
+## Follow-up discussion topics with Astra: privileged testing, conflict handling, /towork audit, TGDB overhaul, and worker optimization
 
-Aki identified four design areas to discuss with Astra to strengthen the autonomous execution loop and restore operational transcript capture before broader rollout:
+Aki identified five design areas to discuss with Astra to strengthen the autonomous execution loop, align worker engines, and restore operational transcript capture before broader rollout:
 
 ### 1. Privileged testing agent for HITL and administrative verification
 
@@ -354,6 +354,52 @@ Shutting off TGDB stopped the memory corruption, but it also cut off the primary
 - **Feeding the Background Learning Worker:** Designing the exact event schema that the scheduled review worker (`gemini-3.8-flash-high`) queries to extract candidate preferences, identify operational corrections (such as placement overrides), and recognize reusable technical procedures.
 - **Asynchronous Non-Blocking Pipeline:** Moving event recording off the critical message path into an async worker queue so database writes cannot slow down Telegram responses or crash turns on write failures.
 - **Fast Local Search without Markdown Grep:** Enabling SQLite FTS5 full-text indexing over stored conversation events so users or agents can query historical Telegram context (for example, through an Atlas `/tgdb search <query>` command) without scanning raw filesystem files.
+
+### 5. Aea and Luna optimization, runner prompt injection, and skill specialization across engines
+
+Aea and Luna are the primary implementation and review personas in achiOS and achiCore. While their personas define clear responsibilities, their execution across different agent engines (`agy`, `codex`, and `claude_code`) reveals prompt dilution, tool contradictions, and skill mismatches that impair autonomous execution.
+
+#### How agent engines handle system prompts and personas today
+
+achiCore composes a frozen system prompt (`build_frozen_system_prompt`) containing user profile text, persistent declarative memory, the active persona ([agents/aea.md](http://100.106.210.38:8999/Code/GitHub/achiCore/agents/aea.md) or [agents/luna.md](http://100.106.210.38:8999/Code/GitHub/achiCore/agents/luna.md)), the declared skill index, and tool invariants. However, each underlying CLI runner handles this prompt differently:
+
+1. **Claude Code (`src/claude_client.py`):**
+   - **System prompt behavior:** Claude Code runs with its native default instructions and reads the workspace `CLAUDE.md`. achiCore appends its frozen system prompt via the `--append-system-prompt` flag on **every single invocation** (`appends_system_prompt = True`).
+   - **Skills and isolation:** Scoped through a private configuration directory (`CLAUDE_CONFIG_DIR=~/.local/state/achicore/claude-homes/<agent>`) containing symlinks only to allowlisted skills. Auto-memory is explicitly disabled (`CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`), and subagent delegation is blocked (`--disallowed-tools Agent`).
+2. **Antigravity (`src/agy_client.py`):**
+   - **System prompt behavior:** Antigravity runs with its native system prompt and tools, reading `.agentrules` and `AGENTS.md`. achiCore injects its frozen system prompt by **prepending it as text to the user prompt only on the first turn** (`session.conversation_id is None`). On warm turns (`resume`), achiCore passes only the raw user prompt. Consequently, warm turns lose persona boundaries and updated declarative memory.
+   - **Skills and isolation:** Runs in the real user `$HOME` without on-disk skill isolation. It can see all 90+ installed skills under `~/.gemini/config/skills/`, relying entirely on prompt text to restrict usage.
+3. **Codex (`src/codex_client.py`):**
+   - **System prompt behavior:** Codex runs with its native system prompt and repository instructions. Like Antigravity, achiCore prepends the frozen system prompt only on turn 1. Resumed turns (`codex exec resume`) receive only the user prompt without the prepended persona.
+   - **Skills and isolation:** Scoped through private homes (`HOME` and `CODEX_HOME` redirected to `~/.local/state/achicore/codex-homes/<agent>`) with symlinked allowlisted skills. Codex excludes skills whose `SKILL.md` specifies `disable-model-invocation: true`. Built-in execution policies block `rm -rf` and `rm -f`.
+
+#### Current friction points and performance bottlenecks
+
+1. **Skill and Persona Contradictions:**
+   - Both Aea and Luna declare `code-review` in their skills list. However, `code-review/SKILL.md` explicitly commands the agent to spawn two parallel sub-agents (Standards and Spec) via `invoke_subagent`. This directly violates Aea and Luna's persona rule: *"Never launch, delegate to, or ask for subagents."* In Claude Code, attempting to spawn subagents fails because the `Agent` tool is denied. In Antigravity, it risks spawning unmanaged subagents and burning tokens.
+   - Aea's persona directs: *"Use `/implement`. It already chains `/tdd` for the red-green cycle and `/code-review` at the end."* But `implement` is a 16-line stub with `disable-model-invocation: true`. Codex drops it from its catalog entirely, and headless non-interactive CLI turns cannot execute interactive slash commands.
+2. **Warm Turn Prompt Amnesia in Antigravity and Codex:**
+   - In both `agy` and `codex`, conversational turns after turn 1 lose the injected persona and declarative memory block because the adapter appends nothing to resumed turns. Claude Code remains the only engine receiving current system prompts on every turn.
+3. **Reviewer Scope and Checkout Drift:**
+   - Luna's persona directs manual Git checkout commands (`git fetch origin && git checkout <headRefName>`), which can collide with the orchestrator's numbered worktree provisioning. Additionally, Luna frequently evaluates entire directory trees rather than bounding analysis to the three-dot pull request diff (`git diff <base>...HEAD`). This consumes unnecessary input tokens.
+4. **Environment Instability:**
+   - Worker provisioning historically created venvs lacking testing packages (`pytest`, `pytest-asyncio`). This caused workers to burn turn budgets on dependency discovery rather than implementation (addressed in W1 / achiCore #146).
+
+#### Improving Aea and Luna: Do we need more skills?
+
+Adding more skills is not the solution. Expanding the skill list increases prompt token overhead, inflates index size, and introduces conflicting behavioral rules.
+
+The path to optimizing Aea and Luna requires streamlining existing assets and aligning engine behaviors:
+- **Single-Session Review Runbook:** Replace or adapt `code-review` with a headless, single-session review skill that evaluates Spec and Standards sequentially within the same context without spawning subagents.
+- **Actionable Implementation Instructions:** Remove the dependency on interactive slash command chaining (`/implement -> /tdd -> /code-review`) in favor of direct, procedural execution steps embedded in the persona or a headless-safe skill.
+- **Consistent Warm Turn Injection:** Update `agy_client.py` and `codex_client.py` to ensure persona rules, write boundaries, and current memory remain present across multi-turn sessions, to match Claude Code's reliability.
+- **Strict Diff-Only Reviewing:** Enforce diff-scoped prompts for Luna so reviews examine only changed hunks and acceptance criteria, to avoid full-tree token waste.
+- **Model-to-Role Assignment:** Pair implementation tasks with high-reasoning models (Claude Opus 4.6 or Sonnet 3.7) while assigning fast, adversarial review to models specialized for diff inspection (such as GPT-5.6 Luna or Gemini 3.8 Flash High).
+
+**Topics for Astra:**
+- **Single-Pass vs Multi-Agent Review in Headless Runs:** How should Luna's review workflow be structured to preserve rigorous two-axis evaluation (Spec and Standards) without spawning subagents or exceeding token budgets?
+- **Unifying Prompt Injection Across Engines:** What is the cleanest mechanism to ensure `agy` and `codex` retain persona constraints on warm turns without triggering full prefix cache invalidation?
+- **Skill Pruning and Headless Normalization:** Which declared skills should be removed from Aea and Luna to eliminate dead stubs and avoid slash-command dependencies in unattended batch jobs?
 
 ## Tests and activation
 

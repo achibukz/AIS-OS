@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-09-05 10:10 [saved]
+Goal: Incorporate Aea and Luna optimization, CLI runner prompt injection analysis, and skill specialization into astra-plan.md discussion topics.
+
+Decisions:
+- Added Topic 5 to [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) detailing runner prompt injection mechanics, friction points, and optimization paths for Aea and Luna across agy, codex, and claude_code.
+- Analyzed prompt handling differences: Claude Code appends frozen system prompts on every turn via `--append-system-prompt`, while Antigravity and Codex prepend on turn 1 only and lose persona boundaries on warm turns.
+- Identified core friction points: subagent contradictions in `code-review` vs persona rules, slash-command dependencies in headless `implement`, full-tree reviewing vs diff scoping for Luna, and lack of test dependencies in worker environments.
+- Clarified that adding more skills is counter-productive; optimization requires streamlining existing skills, enforcing single-pass headless review, and maintaining consistent prompt injection across multi-turn sessions.
+- Updated active task tracking in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) and recorded architectural rationale in [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
+
+Rejected:
+- Adding more skills to solve Aea/Luna execution gaps: adding skills inflates prompt context and introduces behavioral conflicts.
+
+Open:
+- Discuss Topic 5 during the upcoming design review with Astra.
+
 ## 2026-09-05 09:55 [saved]
 Goal: Incorporate follow-up discussion topics for Astra into astra-plan.md covering privileged testing, conflict handling, and /towork workflow audit.
 

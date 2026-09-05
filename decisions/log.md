@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-05 — Astra Plan Additions for Aea and Luna Optimization across CLI Runners
+
+**Decision:** Expanded `docs/astra-plan.md` with Topic 5 analyzing Aea and Luna optimization, runner prompt injection mechanics, and skill specialization across `agy`, `codex`, and `claude_code`.
+
+**Why:** Aea and Luna suffer from engine-specific behavioral discrepancies and internal contradictions. Claude Code appends system prompts on every turn, whereas Antigravity and Codex only inject personas on turn 1, losing persona rules and memory on warm turns. Furthermore, existing skills contradict persona guidelines (`code-review` requires subagents while personas forbid them, and `implement` relies on headless-incompatible slash commands). Rather than adding more skills (which causes token bloat and behavioral conflicts), optimization requires streamlining existing skills, enforcing single-pass diff review, and unifying prompt injection across multi-turn sessions.
+
+**Alternatives considered:** Adding more skills or skill hubs (rejected due to context bloat and prompt conflicts), or treating Aea/Luna execution issues purely as model reasoning limitations.
+
+**Owner:** Agi / Aki.
+
 ## 2026-09-05 — Astra Plan Additions for Privileged Testing, Conflict Management, and /ToWork Audit
 
 **Decision:** Expanded `docs/astra-plan.md` with explicit discussion frameworks for: (1) an administrative verification/testing agent for HITL tasks requiring elevated permissions, (2) trade-off analysis between an autonomous conflict resolution agent vs a simple feature button (#143) for parallel `/towork` jobs, (3) a systematic workflow audit of `/towork` covering preflight, readiness polling, review diffs, and completion sync, and (4) a comprehensive TGDB overhaul to restore reliable conversation capture as the primary telemetry feeding the autonomous self-learning loop without vault bloat or memory poisoning.
