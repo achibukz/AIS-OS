@@ -23,6 +23,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 - [ ] Hold a separate planning session for a control board or Kanban frontend connecting the Astra workflow and learning records, per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md#follow-up-planning-session-for-a-control-board) #achios #achicore #planning !med
+- [ ] Discuss privileged testing, conflict handling, and /towork workflow audit with Astra per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md#follow-up-discussion-topics-with-astra-privileged-testing-conflict-handling-and-towork-workflow-audit) #systems #achicore #planning !med
 - [ ] Ship the [Astra learning and worker-reliability plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md), achiCore #146-#149 and AIS-OS #13-#18, with revised achiCore #128/#113 and AIS-OS #11 #systems #achios #achicore !high
 - [ ] Fix Claude Code quota and auto-refresh stale provider tokens in /usage (achiCore #135-#136) #achicore #ux #bug !high
 - [ ] Align and copy global instructions from Claude (CLAUDE.md) to Antigravity and Codex #systems #tooling !med

@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-09-05 09:55 [saved]
+Goal: Incorporate follow-up discussion topics for Astra into astra-plan.md covering privileged testing, conflict handling, and /towork workflow audit.
+
+Decisions:
+- Updated [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) with three targeted discussion frameworks for the upcoming Astra review:
+  1. Administrative verification agent for HITL test execution vs trusted daemon manifests.
+  2. Autonomous conflict resolution agent vs card button feature (achiCore #143) for parallel `/towork` jobs.
+  3. Comprehensive workflow audit of the `/towork` execution loop (preflight, drift detection, review efficiency, deterministic resume, and completion sync).
+- Added corresponding tracking item in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) and architectural rationale in [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
+
+Rejected:
+- Treating conflict resolution purely as an unguided agent task: deterministic merge drivers must be evaluated first to resolve append-only log drift before invoking LLMs.
+
+Open:
+- Hold the design discussion with Astra once available and finalize the conflict resolution approach.
+
 ## 2026-09-05 08:29 [saved]
 Goal: Audit Telegram, achiCore, achiOS and achiMem; replace the Astra plan with autonomous-learning and workflow implementation slices.
 

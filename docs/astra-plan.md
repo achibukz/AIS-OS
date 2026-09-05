@@ -296,6 +296,48 @@ The discussion should decide which daily decisions the board needs to support. C
 
 Use the existing owners and commands behind the interface. The board should read the versioned cohesion context and health records plus achiCore job state, and submit actions through the same validated handlers Telegram uses. It must not introduce a second task database, independent review loop or separate learning policy. The current tickets establish those contracts; the later session will decide navigation, Kanban columns, live updates, mobile use, access control and the first frontend slice.
 
+## Follow-up discussion topics with Astra: privileged testing, conflict handling, and /towork workflow audit
+
+Aki identified three design areas to discuss with Astra to strengthen the autonomous execution loop before broader rollout:
+
+### 1. Privileged testing agent for HITL and administrative verification
+
+Current worker sandboxes enforce strict Landlock confinement and restricted user privileges. While essential for containment, this architecture creates an execution barrier for tickets containing a `## Manual testing (HITL)` section that touches administrative tasks:
+- Managing or querying systemd user and system services (`systemctl --user restart`, daemon health inspections).
+- Reading journald system logs without token redaction leaks.
+- Validating network ports, Docker daemon configurations, or local firewall states.
+- Running live OAuth handshakes or verifying file mode changes requiring elevated rights.
+
+When a ticket reaches this stage, the loop stalls and forces Aki to manually execute verification commands on his phone or via SSH terminal.
+
+**Topics for Astra:**
+- **Dedicated Admin Test Agent vs. Scoped Privileged Capabilities:** Should achiOS introduce a dedicated verification agent (such as an `#Atlas-Tester` or elevated executor) equipped with restricted sudoers permissions, or should the trusted parent daemon execute a discrete, pre-declared verification manifest outside the untrusted worker subprocess?
+- **Bounding Privileged Execution:** What security boundaries prevent prompt-injected or untrusted ticket code from abusing administrative test credentials while still allowing automated verification of systemd and infrastructure updates?
+
+### 2. Merge conflict resolution: dedicated agent vs. feature-level button (achiCore #143)
+
+When multiple `/towork` jobs execute in parallel across separate branches and worktrees, merging one pull request inevitably causes the remaining PRs to diverge from `main`. This triggers merge conflicts, most frequently on append-only files (`session-log.md`, `decisions/log.md`) or shared package imports.
+
+[achiCore #143](https://github.com/achibukz/achiCore/issues/143) proposes adding an inline `Fix conflicts` button to Atlas status cards, delegating the resolution turn back to Aea.
+
+**Topics for Astra (Is an agent better than a simple feature?):**
+- **Option A: Simple Feature (Card Button delegating to Aea):** Atlas detects `merge_recheck_failed` or `CONFLICTING`, renders an inline button, and triggers a one-shot rebase/merge prompt in Aea's existing worktree.
+  - *Trade-offs:* Minimal architectural complexity, no extra topic configuration, preserves Aea's current working diff context. However, it remains reactive, requires manual human button tapping, and forces Aea (an implementation specialist) to perform three-way Git reconciliations.
+- **Option B: Autonomous Conflict Resolution Agent:** A specialized background reconciler (such as `#Rebase` or a concurrency manager) that monitors active pull requests, detects base branch updates immediately upon merge, autonomously fetches `origin/main`, executes semantic AST-aware merges, preserves reverse-chronological log orders, validates the test suite, and pushes the updated head without human intervention.
+  - *Trade-offs:* Fully autonomous multi-ticket pipeline, eliminates idle wait times on stale branches, allows model optimization (running expensive reasoning models only on genuine semantic conflicts). However, it adds daemon state complexity and potential race conditions if multiple workers attempt concurrent rebases against a fast-moving base.
+- **Deterministic Pre-Filters:** Whether custom Git merge drivers (for example, for `session-log.md`) can resolve 80% of log drift deterministically before delegating genuine code conflicts to either an agent or a feature button.
+
+### 3. Workflow audit of `/towork` and targeted loop improvements
+
+An end-to-end review of the `/towork` lifecycle (`JobStage`, `WorkerPair`, `readiness`, and `review_loop`) identifies several operational bottlenecks:
+
+1. **Input and Specification Flexibility:** The coordinator strictly requires `owner/repo#123` or full URLs. It lacks support for multi-issue batching, branch re-targeting, or subtask decomposition.
+2. **Proactive Drift Detection:** Currently, branch staleness is only discovered when a merge is attempted (`merge_recheck_failed`). The loop needs continuous background mergeability checks so conflicts surface while reviews are underway rather than at the final merge step.
+3. **Environment and Dependency Preflight:** Worktree provisioning frequently creates environments missing key test dependencies (`pytest`, `pytest-asyncio`), causing Aea or Luna to fail during test collection rather than code execution (addressed in W1 / achiCore #146).
+4. **Review Loop Efficiency:** Luna reviews currently evaluate full working checkouts rather than isolated patch diffs, burning context tokens and occasionally repeating style critiques on unchanged files. The loop needs incremental diff scoping and stricter bounds on cyclical review ping-pong.
+5. **Deterministic Resume without Token Burn:** Resuming a parked job historically reset `approved_head_sha` and re-triggered full implementation prompts even when code was already complete and only CI timed out. W2 (#147) must ensure resumption preserves validated evidence and resumes only the exact unfinished stage.
+6. **Automated Completion Sync:** When a `/towork` pull request merges, the corresponding item in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) and the midnight debrief must update automatically (connected to AIS-OS #11 and T6) without requiring manual status cleanup.
+
 ## Tests and activation
 
 Build fixtures with the implementation, starting at T1. Keep real personal content outside public test files. Sanitized fixtures need distinct actor roles and stable source IDs.

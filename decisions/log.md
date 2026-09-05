@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-05 — Astra Plan Additions for Privileged Testing, Conflict Management, and /ToWork Audit
+
+**Decision:** Expanded `docs/astra-plan.md` with explicit discussion frameworks for: (1) an administrative verification/testing agent for HITL tasks requiring elevated permissions, (2) trade-off analysis between an autonomous conflict resolution agent vs a simple feature button (#143) for parallel `/towork` jobs, and (3) a systematic workflow audit of `/towork` covering preflight, readiness polling, review diffs, and completion sync.
+
+**Why:** Parallel `/towork` jobs inevitably trigger merge conflicts upon upstream merges, and tickets with administrative HITL testing currently block autonomous completion. Structuring these discussion areas allows a concrete decision with Astra on whether specialized agents or deterministic feature extensions provide the most robust, token-efficient solution.
+
+**Alternatives considered:** Implementing a simple `Fix conflicts` button alone without evaluating a proactive background conflict agent, or keeping HITL testing entirely manual.
+
+**Owner:** Agi / Aki.
+
 ## 2026-09-05 — Specific Repository Option for sync-repos and Telegram /sync
 
 **Decision:** Designed and published tracer-bullet implementation tickets AIS-OS #12 (`Add --repo option to sync-repos to target a specific repository`) and achiCore #145 (`Accept optional repository argument in /sync and /syncres commands`).
