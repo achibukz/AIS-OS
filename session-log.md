@@ -4,10 +4,11 @@
 Goal: Incorporate follow-up discussion topics for Astra into astra-plan.md covering privileged testing, conflict handling, and /towork workflow audit.
 
 Decisions:
-- Updated [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) with three targeted discussion frameworks for the upcoming Astra review:
+- Updated [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) with four targeted discussion frameworks for the upcoming Astra review:
   1. Administrative verification agent for HITL test execution vs trusted daemon manifests.
   2. Autonomous conflict resolution agent vs card button feature (achiCore #143) for parallel `/towork` jobs.
   3. Comprehensive workflow audit of the `/towork` execution loop (preflight, drift detection, review efficiency, deterministic resume, and completion sync).
+  4. Complete TGDB overhaul to restore reliable conversation capture as the primary telemetry feeding the autonomous self-learning loop without vault bloat or memory poisoning.
 - Added corresponding tracking item in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) and architectural rationale in [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
 
 Rejected:

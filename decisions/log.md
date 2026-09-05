@@ -20,11 +20,11 @@ Keep it terse. Future-you will thank present-you for capturing the *why*, not ju
 
 ## 2026-09-05 — Astra Plan Additions for Privileged Testing, Conflict Management, and /ToWork Audit
 
-**Decision:** Expanded `docs/astra-plan.md` with explicit discussion frameworks for: (1) an administrative verification/testing agent for HITL tasks requiring elevated permissions, (2) trade-off analysis between an autonomous conflict resolution agent vs a simple feature button (#143) for parallel `/towork` jobs, and (3) a systematic workflow audit of `/towork` covering preflight, readiness polling, review diffs, and completion sync.
+**Decision:** Expanded `docs/astra-plan.md` with explicit discussion frameworks for: (1) an administrative verification/testing agent for HITL tasks requiring elevated permissions, (2) trade-off analysis between an autonomous conflict resolution agent vs a simple feature button (#143) for parallel `/towork` jobs, (3) a systematic workflow audit of `/towork` covering preflight, readiness polling, review diffs, and completion sync, and (4) a comprehensive TGDB overhaul to restore reliable conversation capture as the primary telemetry feeding the autonomous self-learning loop without vault bloat or memory poisoning.
 
-**Why:** Parallel `/towork` jobs inevitably trigger merge conflicts upon upstream merges, and tickets with administrative HITL testing currently block autonomous completion. Structuring these discussion areas allows a concrete decision with Astra on whether specialized agents or deterministic feature extensions provide the most robust, token-efficient solution.
+**Why:** Parallel `/towork` jobs inevitably trigger merge conflicts upon upstream merges, and tickets with administrative HITL testing currently block autonomous completion. Furthermore, pausing TGDB removed the operational evidence stream needed for self-learning; restoring it in SQLite decouples telemetry from the Obsidian vault while providing clean input lineage for the background reviewer. Structuring these discussion areas allows concrete decisions with Astra on whether specialized agents or deterministic feature extensions provide the most robust, token-efficient solution.
 
-**Alternatives considered:** Implementing a simple `Fix conflicts` button alone without evaluating a proactive background conflict agent, or keeping HITL testing entirely manual.
+**Alternatives considered:** Implementing a simple `Fix conflicts` button alone without evaluating a proactive background conflict agent, keeping HITL testing entirely manual, or keeping TGDB disabled without a telemetry replacement.
 
 **Owner:** Agi / Aki.
 

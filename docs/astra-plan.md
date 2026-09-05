@@ -296,9 +296,9 @@ The discussion should decide which daily decisions the board needs to support. C
 
 Use the existing owners and commands behind the interface. The board should read the versioned cohesion context and health records plus achiCore job state, and submit actions through the same validated handlers Telegram uses. It must not introduce a second task database, independent review loop or separate learning policy. The current tickets establish those contracts; the later session will decide navigation, Kanban columns, live updates, mobile use, access control and the first frontend slice.
 
-## Follow-up discussion topics with Astra: privileged testing, conflict handling, and /towork workflow audit
+## Follow-up discussion topics with Astra: privileged testing, conflict handling, /towork audit, and TGDB overhaul
 
-Aki identified three design areas to discuss with Astra to strengthen the autonomous execution loop before broader rollout:
+Aki identified four design areas to discuss with Astra to strengthen the autonomous execution loop and restore operational transcript capture before broader rollout:
 
 ### 1. Privileged testing agent for HITL and administrative verification
 
@@ -337,6 +337,23 @@ An end-to-end review of the `/towork` lifecycle (`JobStage`, `WorkerPair`, `read
 4. **Review Loop Efficiency:** Luna reviews currently evaluate full working checkouts rather than isolated patch diffs, burning context tokens and occasionally repeating style critiques on unchanged files. The loop needs incremental diff scoping and stricter bounds on cyclical review ping-pong.
 5. **Deterministic Resume without Token Burn:** Resuming a parked job historically reset `approved_head_sha` and re-triggered full implementation prompts even when code was already complete and only CI timed out. W2 (#147) must ensure resumption preserves validated evidence and resumes only the exact unfinished stage.
 6. **Automated Completion Sync:** When a `/towork` pull request merges, the corresponding item in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) and the midnight debrief must update automatically (connected to AIS-OS #11 and T6) without requiring manual status cleanup.
+
+### 4. TGDB overhaul: restoring transcript capture to feed the self-learning loop
+
+Automatic TGDB logging (`ACHICORE_TGDB_LOGGING=0`) was paused across achiCore and `scripts/vault_inbox_sync.py` after the initial implementation produced three critical system failures:
+- **Memory Poisoning Loops:** Transcripts saved rendered conversation buffers that included prepended memories and frozen prompts. When the harvester scanned `achiMem/tgdb/`, it re-ingested rules it had written in prior passes, multiplying prefixes into runaway memory corruption.
+- **Vault Bloat and Git Sync Churn:** Dumping raw turn Markdown files directly into `achiMem/tgdb/` created hundreds of Git commits, clogged Syncthing replication with mobile devices, and polluted Obsidian global search with fragmented dialogue.
+- **Runtime Crashes:** Turn logging in `src/bot.py` threw unhandled runtime exceptions (`NameError: name 'context' is not defined`), producing warning noise and risking turn degradation.
+
+**Why fixing TGDB is essential for autonomous self-learning:**
+Shutting off TGDB stopped the memory corruption, but it also cut off the primary source of operational evidence. A working self-learning loop cannot function in a vacuum. It requires an unpolluted, reliable stream of real-world dialogue, explicit corrections, negative constraints, and verified workflow outcomes. If TGDB is redesigned properly, this raw conversational telemetry becomes the high-value training and refinement data that drives autonomous adaptation across the entire operating system.
+
+**Topics for Astra:**
+- **Decoupling Raw Telemetry from the Knowledge Vault:** Raw conversation turns belong in the local append-only coordination database (`~/.local/state/achios/cohesion.sqlite3` under `events`) rather than as Markdown notes in `achiMem`. The Obsidian vault should only receive curated knowledge, verified notes, or explicitly requested session summaries via the destination writer, keeping the human second brain uncluttered.
+- **Strict Input Lineage (Anti-Poisoning):** TGDB events must capture only the clean human prompt and assistant response text, completely excluding injected memory blocks, topic persona prompts, or delegation wrappers. Every record receives an immutable `source_event_id` to prevent circular re-extraction by the learning reviewer.
+- **Feeding the Background Learning Worker:** Designing the exact event schema that the scheduled review worker (`gemini-3.8-flash-high`) queries to extract candidate preferences, identify operational corrections (such as placement overrides), and recognize reusable technical procedures.
+- **Asynchronous Non-Blocking Pipeline:** Moving event recording off the critical message path into an async worker queue so database writes cannot slow down Telegram responses or crash turns on write failures.
+- **Fast Local Search without Markdown Grep:** Enabling SQLite FTS5 full-text indexing over stored conversation events so users or agents can query historical Telegram context (for example, through an Atlas `/tgdb search <query>` command) without scanning raw filesystem files.
 
 ## Tests and activation
 
