@@ -31,6 +31,25 @@ Verification: the audit command recorded in the audit returned 488 passed in 34.
 
 Open: finish learning-scope and retention decisions, then revise the learning acceptance criteria as needed. Staging credentials and the initial real-phone checks belong to implementation. No learning rules, provider credentials, production state or vault pages were changed.
 
+## 2026-09-06 03:56 [saved]
+Goal: Add `--repo` and `-r` options to `scripts/sync-repos.sh` to target a single repository and verify with unit tests (AIS-OS #12).
+
+Decisions:
+- Implemented argument parsing in `scripts/sync-repos.sh` supporting `--repo <target>`, `-r <target>`, and their equals syntax variants (`--repo=...`, `-r=...`).
+- Added direct repository directory targeting: if the target argument is an existing directory containing `.git`, use that repository directly without scanning roots.
+- Added candidate repository discovery and filtering across roots when the target is a repository folder name or relative path fragment.
+- Added error handling with status code 1 when `--repo` or `-r` is missing an argument, or when no matching repository is found.
+- Isolated test git commits in `tests/test_sync_repos.py` with `-c core.hooksPath=` to prevent the user's global pre-commit hook from triggering on fresh test repositories.
+- Added 11 unit tests in `tests/test_sync_repos.py` covering folder name matching, short flag, equals syntax, direct path targeting, error exits, and baseline multi-repo sync.
+- Recorded architecture decision in [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
+
+Verification:
+- Full repository test suite: 311 passed in 18.78s via `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/`.
+- All 23 unit tests in `tests/test_sync_repos.py` pass cleanly.
+
+Open:
+- achiCore #145 companion ticket for `/sync <repo>` in Telegram bot.
+
 ## 2026-09-05 20:25 [saved]
 Goal: Declare AIS-OS reviewed locally so an achiCore `/ToWork` run reaches Luna instead of polling GitHub for checks this repository never produces.
 
@@ -1718,3 +1737,25 @@ Its argument-path criterion uses `gpt-5.6-sol` instead of Astra.
 Open:
 - Nothing published against `CARD_AGY_MODELS` in `src/topic_models.py`. Astra reaches the
   `/topicmodels` card through the codex branch of `catalog()` with no edit.
+
+## 2026-09-05 [saved]
+Goal: Address Luna's review on PR #22 (AIS-OS #12, `--repo`/`-r` targeting for sync-repos.sh).
+
+Decisions:
+- Should-fix: deleted the dead `for root in "${roots[@]}"` fallback branch in the candidate
+  matching loop (`scripts/sync-repos.sh`). Luna showed every candidate it could match is
+  already caught by the preceding `*"/$clean_target"` wildcard elif, and instrumented the
+  branch with a stderr marker across the full test suite to confirm it never fires.
+- Nit: removed `--repo=`, `-r=`, and the `--` root terminator. Issue #12 only asked for
+  `--repo <target>` and `-r <target>`; the equals syntax and terminator were unrequested
+  parsing surface, and two of the three forms had no test coverage. Removed the
+  `test_targets_specific_repo_with_equals_syntax` test along with the `--repo=` support.
+
+Verification:
+- `pytest tests/test_sync_repos.py -q`: 22 passed in 5.65s (was 23; removed the equals-syntax
+  test along with the feature).
+- `pytest tests/ -q`: 310 passed in 12.95s (was 311, same delta).
+- `.githooks/pre-commit`: markdown links pass.
+
+Open:
+- Nothing outstanding from Luna's review. `--repo`/`-r` now match the ticket exactly.
