@@ -558,3 +558,7 @@ duplicates code or build rationale. One canonical home per fact.
 - **Default Shift:** when he brings a new task, ask "to what extent could AI be leveraged here?" before assuming he'll do it the old way.
 - Don't add comments, dead code, backwards-compat shims, or speculative abstractions. Match the project's coding standards in his global `~/.claude/CLAUDE.md`.
 - Suggest model switches proactively: Haiku for mechanical, Sonnet default, Opus only when warranted (per his global preferences).
+
+## Assisted feature live testing
+
+When a ticket or PR needs a human action to establish acceptance, use the `assisted-live-testing` skill and the ticket section in `skills/assisted-live-testing/assets/ticket-section.md`. This includes CLI/backend, API, device, browser and Telegram testing. Separate unattended implementation from the human acceptance steps. Name the environment and required actions; hand over a copyable skill prompt. The outputs are a redacted Markdown interaction/evidence record and a PR comment. Automated-only tickets and design discussions do not need this section. See `docs/assisted-live-testing.md` and the skill's Telegram reference for the existing Testing Grounds hub.

@@ -1,5 +1,11 @@
 # Session Log
 
+## 2026-09-06 03:05 [saved]
+
+Goal: Create the assisted live-testing skill. Entry time is Asia/Manila; the linked evidence uses UTC.
+
+Created the model-independent assisted-live-testing skill from Aki's PR #154 testing experience. It covers CLI/backend, API, browser, device and Telegram steps, with one human action at a time, observable receipts and resume checkpoints. Outputs are a redacted Markdown interaction record and a PR comment. Added a reusable Testing Grounds reference, ticket section and retrospective. Local walkthroughs do not establish a live model benchmark. Main planning and task documents receive the self-learning next-work pointers separately, preserving their existing uncommitted edits.
+
 ## 2026-09-05 20:25 [saved]
 Goal: Declare AIS-OS reviewed locally so an achiCore `/ToWork` run reaches Luna instead of polling GitHub for checks this repository never produces.
 
