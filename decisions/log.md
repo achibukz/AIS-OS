@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-05 — Specific Repository Targeting via --repo and -r in sync-repos.sh (AIS-OS #12)
+
+**Decision:** Added `--repo <target>` and `-r <target>` CLI options to `scripts/sync-repos.sh` supporting direct repository directory paths (bypassing discovery) as well as candidate filtering by folder name or relative path across scanned roots. If no matching repository is found, the script outputs an error message and exits with status code 1. Default invocation without `--repo` remains unchanged.
+
+**Why:** When working on a single repository or running automated repository sync commands (such as the `/sync <repo>` command in achiCore #145), fetching and fast-forwarding all repositories across all default roots is unnecessary overhead and slows down focused workflows. Supporting direct paths allows targeting repositories located anywhere on the filesystem, while name and relative path filtering allows targeting familiar workspace projects without typing full paths.
+
+**Alternatives considered:** Requiring full paths only (rejected because typing repository names like `AIS-OS` or `achiCore` is much faster in interactive and Telegram workflows), or creating a separate script (rejected because repository synchronization rules and safeguards should live in one place).
+
+**Owner:** Aea (AIS-OS #12).
+
 ## 2026-09-05 — Astra Plan Additions for Aea and Luna Optimization across CLI Runners
 
 **Decision:** Expanded `docs/astra-plan.md` with Topic 5 analyzing Aea and Luna optimization, runner prompt injection mechanics, and skill specialization across `agy`, `codex`, and `claude_code`.
