@@ -1,0 +1,4 @@
+{
+  "mode": "local_review",
+  "local_command": "pytest tests/"
+}

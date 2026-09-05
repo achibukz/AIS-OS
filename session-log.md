@@ -1,5 +1,17 @@
 # Session Log
 
+## 2026-09-05 20:25 [saved]
+Goal: Declare AIS-OS reviewed locally so an achiCore `/ToWork` run reaches Luna instead of polling GitHub for checks this repository never produces.
+
+Decisions:
+- Added [.achicore/review-policy.json](http://100.106.210.38:8999/Code/GitHub/AIS-OS/.achicore/review-policy.json) on `main` with `mode: local_review` and `local_command: pytest tests/`.
+- Chose `pytest tests/` because `tests/conftest.py` puts `scripts/` on `sys.path` itself, so the command works from any worktree without extra environment setup.
+- The suite is green at this revision: 300 passed in 17s.
+- The document has to live on `main`. achiCore reads it from the base branch, and its downgrade guard refuses a branch that declares itself CI-free.
+
+Open:
+- `pytest` is not installed for this repository. The command resolves only through the achiCore daemon's own virtualenv on `PATH`. A dedicated environment for AIS-OS would remove that coupling.
+
 ## 2026-09-05 10:10 [saved]
 Goal: Incorporate Aea and Luna optimization, CLI runner prompt injection analysis, and skill specialization into astra-plan.md discussion topics.
 
