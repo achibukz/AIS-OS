@@ -1706,3 +1706,25 @@ Its argument-path criterion uses `gpt-5.6-sol` instead of Astra.
 Open:
 - Nothing published against `CARD_AGY_MODELS` in `src/topic_models.py`. Astra reaches the
   `/topicmodels` card through the codex branch of `catalog()` with no edit.
+
+## 2026-09-05 [saved]
+Goal: Address Luna's review on PR #22 (AIS-OS #12, `--repo`/`-r` targeting for sync-repos.sh).
+
+Decisions:
+- Should-fix: deleted the dead `for root in "${roots[@]}"` fallback branch in the candidate
+  matching loop (`scripts/sync-repos.sh`). Luna showed every candidate it could match is
+  already caught by the preceding `*"/$clean_target"` wildcard elif, and instrumented the
+  branch with a stderr marker across the full test suite to confirm it never fires.
+- Nit: removed `--repo=`, `-r=`, and the `--` root terminator. Issue #12 only asked for
+  `--repo <target>` and `-r <target>`; the equals syntax and terminator were unrequested
+  parsing surface, and two of the three forms had no test coverage. Removed the
+  `test_targets_specific_repo_with_equals_syntax` test along with the `--repo=` support.
+
+Verification:
+- `pytest tests/test_sync_repos.py -q`: 22 passed in 5.65s (was 23; removed the equals-syntax
+  test along with the feature).
+- `pytest tests/ -q`: 310 passed in 12.95s (was 311, same delta).
+- `.githooks/pre-commit`: markdown links pass.
+
+Open:
+- Nothing outstanding from Luna's review. `--repo`/`-r` now match the ticket exactly.

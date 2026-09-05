@@ -319,18 +319,6 @@ class TestSync:
         assert result.returncode == 1
         assert "no repository matching 'nonexistent' found" in result.stdout
 
-    def test_targets_specific_repo_with_equals_syntax(self, multi_workspace):
-        commit(multi_workspace["seed_a"], "remote-a")
-        git(multi_workspace["seed_a"], "push", "-q", "origin", "main")
-
-        result = run_sync(
-            "--repo=repo_a", multi_workspace["root"], home=multi_workspace["tmp"]
-        )
-
-        assert result.returncode == 0
-        assert "1 repos" in result.stdout
-        assert (multi_workspace["clone_a"] / "remote-a").exists()
-
     def test_targets_nested_repo_by_path_fragment(self, tmp_path):
         upstream = tmp_path / "upstream_nested.git"
         git(tmp_path, "init", "--bare", "-b", "main", str(upstream))

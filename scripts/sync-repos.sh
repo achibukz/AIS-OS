@@ -29,15 +29,6 @@ while [ $# -gt 0 ]; do
       target_repo_set=true
       shift 2
       ;;
-    --repo=*)
-      target_repo="${1#*=}"
-      if [ -z "$target_repo" ]; then
-        echo "error: --repo requires an argument"
-        exit 1
-      fi
-      target_repo_set=true
-      shift
-      ;;
     -r)
       if [ $# -lt 2 ]; then
         echo "error: -r requires an argument"
@@ -46,23 +37,6 @@ while [ $# -gt 0 ]; do
       target_repo="$2"
       target_repo_set=true
       shift 2
-      ;;
-    -r=*)
-      target_repo="${1#*=}"
-      if [ -z "$target_repo" ]; then
-        echo "error: -r requires an argument"
-        exit 1
-      fi
-      target_repo_set=true
-      shift
-      ;;
-    --)
-      shift
-      while [ $# -gt 0 ]; do
-        roots+=("$1")
-        shift
-      done
-      break
       ;;
     *)
       roots+=("$1")
@@ -103,14 +77,6 @@ else
         match=true
       elif [[ "$candidate" == *"/$clean_target" ]]; then
         match=true
-      else
-        for root in "${roots[@]}"; do
-          rel_root="${candidate#"$root"/}"
-          if [ "$rel_root" = "$clean_target" ]; then
-            match=true
-            break
-          fi
-        done
       fi
 
       if [ "$match" = true ]; then

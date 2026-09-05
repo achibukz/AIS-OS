@@ -18,6 +18,24 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-05 — Trim sync-repos --repo parsing to the ticket's scope
+
+**Decision:** In response to Luna's PR #22 review, removed the dead fallback loop in the
+candidate-matching branch of `scripts/sync-repos.sh`, and removed `--repo=`, `-r=`, and the
+`--` root terminator, keeping only `--repo <target>` and `-r <target>`.
+
+**Why:** The dead branch could never match, since every candidate it could satisfy is already
+caught by the preceding wildcard elif; Luna confirmed with an instrumented run against the
+full test suite (0 hits). The equals-syntax and terminator forms were never requested by issue
+#12, and `-r=`/`--` had no test coverage at all, so they were unrequested surface area rather
+than a tested convenience.
+
+**Alternatives considered:** Adding test coverage for `-r=` and `--` to keep them (rejected:
+issue #12 never asked for them, and keeping unrequested parsing surface just because it can be
+tested is the wrong direction).
+
+**Owner:** Aea / Luna.
+
 ## 2026-09-06 — Single-Repository Flag Support in sync-repos
 
 **Decision:** Implemented `--repo <target>` and `-r <target>` options in `scripts/sync-repos.sh` with direct directory check and candidate discovery filtering across roots, and isolated test git subprocesses from global `core.hooksPath`.
