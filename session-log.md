@@ -1,5 +1,29 @@
 # Session Log
 
+## 2026-09-06, closed Google auth timer ticket AIS-OS #5
+
+Closed GitHub issue [AIS-OS #5](https://github.com/achibukz/AIS-OS/issues/5) ("Build the Google auth health check and its timer") per Aki's instruction. Moving `achiclaude` OAuth consent to In Production eliminated the 7-day token expiration ceiling and routine re-auth nudges. Updated [AIS-OS #7](https://github.com/achibukz/AIS-OS/issues/7) to record that all prerequisite blockers (#3, #4, #5) are resolved.
+
+## 2026-09-06, legacy Google token removal ticket tracking
+
+Mapped legacy Google token cleanup to existing GitHub issue [AIS-OS #7](https://github.com/achibukz/AIS-OS/issues/7) ("Delete the legacy Google token path"). Expanded scope to remove stale un-namespaced single-account directory `~/.config/gws/` alongside `~/.config/achios/google_token*.json` and code fallbacks. Logged active task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+## 2026-09-06, EAF tracking and gws token validation
+
+Located AY 2026-2027 Term 1 EAF at `~/Documents/Files/academic/AY2627-T1/Term 10.pdf` and provided email draft for thesis partner Ethan Axl Burayag (`ethan_burayag@dlsu.edu.ph`). Verified Google Workspace CLI (`gws`) OAuth tokens across all four profiles (`main`, `personal`, `work`, `dlsu`) remain fully authenticated and valid in production; confirmed the earlier permission error was isolated to read-only sandbox restrictions on `~/.config` rather than token expiration. Added task to send the EAF in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+## 2026-09-06, published achiCore ticket #162 for /topicmodels Gemini Flash effort submenu
+
+Aki approved unifying Gemini 3.8 Flash and 3.7 Flash into base models in `MODEL_REGISTRY` and `src/topic_models.py` to trigger the reasoning effort submenu in `/topicmodels`. Ensured labels and published [achiCore #162](https://github.com/achibukz/achiCore/issues/162). Added tracking task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+## 2026-09-06, ING medical certificate completion
+
+Moved the ING physical exam and "Fit to Work" medical certificate task to done in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+## 2026-09-05, sync repo scoping, Astra ticket audit, and vendor lock-in tasks
+
+Logged three active tasks in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md): a ticket for /sync to support a configurable repo include/exclude list so it stops syncing repos that don't need it, having Astra audit whether open AIS-OS and achiCore tickets are still accurate against current code, and auditing slash commands/scripts for vendor lock-in (triggered by /tasks failing outside Claude Code) to design a cross-vendor fallback.
+
 ## 2026-09-05, global instruction sync and Canvas integration tasks
 
 Logged active tasks in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) for automated propagation of global agent instructions across CLI harnesses (~/.claude/CLAUDE.md to Antigravity and Codex) and DLSU Canvas Instructure data/announcements extraction into achiSchooNounce with searchable query capability. Moved the completed one-time instruction alignment copy to done.

@@ -22,6 +22,8 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Send AY 2026-2027 Term 1 EAF to Ethan Burayag (ethan_burayag@dlsu.edu.ph) #school #thesis !high
+- [ ] Remove legacy Google tokens (~/.config/achios/google_token*.json and stale ~/.config/gws) through [AIS-OS #7](https://github.com/achibukz/AIS-OS/issues/7) #infra #security !med
 - [ ] Review [AIS-OS PR #21](https://github.com/achibukz/AIS-OS/pull/21) and exercise assisted-live-testing on the next eligible PR, checking the Markdown interaction record and posted PR comment #systems #testing !med
 - [ ] Hold a separate planning session for a control board or Kanban frontend connecting the Astra workflow and learning records, per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md#follow-up-planning-session-for-a-control-board) #achios #achicore #planning !med
 - [ ] Discuss privileged testing, conflict handling, /towork workflow audit, TGDB overhaul, and worker engine optimization with Astra per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md#follow-up-discussion-topics-with-astra-privileged-testing-conflict-handling-towork-audit-tgdb-overhaul-and-worker-optimization) #systems #achicore #planning !med
@@ -33,7 +35,6 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Design and build DLSU Canvas Instructure integration to sync data, files, and announcements into achiSchooNounce with searchable query access (needs Astra discussion) #school #automation #infra #planning !med
 - [ ] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-09-07
 - [ ] Complete 5-month ING Internship Agreement Form (signatures: Aki, Parent/Guardian, DLSU coordinator, then notarize) #career #school !high
-- [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
 - [ ] Complete active Systems & Engineering backlog tasks per [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md) #systems #engineering #achicore #infra !high
 - [ ] Complete active Asa & Research workflows backlog tasks per [tasks-asa-research.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-asa-research.md) #asa #research #workflows !high
 - [ ] Cancel current Google One subscription ahead of renewal #finances #personal !low @2026-10-13
@@ -41,12 +42,19 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Fix conflict-repair budgets and Atlas repair/merge-queue status through [achiCore #155](https://github.com/achibukz/achiCore/issues/155) #achicore #infra #ux !high
 - [ ] Invalidate worker probes after virtualenv deletion or replacement through [achiCore #156](https://github.com/achibukz/achiCore/issues/156) #achicore #infra !high
 - [ ] Ship specific-repo sync across AIS-OS #12 and achiCore #145 (/sync <repo>) #achios #achicore #infra !med
+- [ ] Unify Gemini Flash models with reasoning effort submenu in /topicmodels ([achiCore #162](https://github.com/achibukz/achiCore/issues/162)) #achicore #ux !med
 - [ ] Hold grill-me session to design and build GitHub trending repos scanner cron (star surge tracking, adoption driver analysis, workflow integration) #automation #tooling #infra !med
 - [ ] Check Google OAuth tokens after 7 days to verify permanent production validity without re-auth #infra #security #achicore !med @2026-09-12
+- [ ] Write a ticket for /sync to support a configurable repo include/exclude list, so it stops syncing repos that don't need it #achios #tooling !med
+- [ ] Have Astra audit whether open AIS-OS and achiCore tickets are still accurate against current code #systems #achios #achicore #planning !med
+- [ ] Audit slash commands and scripts for vendor lock-in (e.g. /tasks unavailable outside Claude Code), starting with LLM-calling scripts, and design a fallback so they work across AI vendors #systems #achios #arch !med
+- [ ] Write a ticket: when a loop finishes a ticket without success after 3 tries, add a button to switch the model working the ticket #achicore #ux !med
+- [ ] Upgrade sync-repos --repo/-r to accept multiple repo names in one call (e.g. /sync achiCore, AIS-OS) #achios #tooling !med
 
 ## Blocked
 
 ## Done
+- [x] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med (done 2026-09-06)
 - [x] Align and copy global instructions from Claude (CLAUDE.md) to Antigravity and Codex #systems #tooling !med (done 2026-09-05)
 - [x] Capture the reusable Telegram testing hub, audit the worker-test lessons and create [assisted-live-testing](http://100.106.210.38:8999/.config/skillshare/skills/assisted-live-testing/SKILL.md) for CLI/backend and other human acceptance, with Markdown records and PR comments; source review in AIS-OS PR #21, issue #20 #systems #testing (done 2026-09-05)
 - [x] Merge achiCore PR #154, deploy `bbb8fb7`, restart the main hub and close #153 at Aki's request; partial acceptance and follow-ups remain in the deployment record #systems #achicore !high (done 2026-09-05)
