@@ -30,3 +30,24 @@ def test_build_evening_debrief_two_messages():
     if rules_msg:
         assert "🧠 Self-Learning & Harvested Rules" in rules_msg
         assert "Concluded: Aug 18, 2026" in rules_msg
+
+
+def test_missing_gws_binary_is_a_hard_error(monkeypatch, tmp_path):
+    import evening_debrief as debrief
+
+    missing = tmp_path / "gws"
+    monkeypatch.setattr(debrief, "GWS_BIN", missing)
+    try:
+        debrief.fetch_tomorrow_events(dt.date(2026, 8, 19))
+    except RuntimeError as exc:
+        assert str(missing) in str(exc)
+    else:
+        raise AssertionError("missing gws binary was accepted")
+
+
+def test_no_code_path_attempts_to_read_a_token_file():
+    source = (Path(__file__).resolve().parents[1] / "scripts" / "evening_debrief.py").read_text()
+    assert "google_token" not in source
+    for banned in ("google.oauth2", "googleapiclient", "google.auth"):
+        assert banned not in source
+
