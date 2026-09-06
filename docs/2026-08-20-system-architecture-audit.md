@@ -150,7 +150,7 @@ All background operations run as systemd user services (`systemctl --user`) back
 * **Hardware & OS:** HP 14-ac137TX (`achibuntu`), Intel Core i5-6200U, 8 GB RAM, 240 GB SSD running Ubuntu 24.04 LTS headless.
 * **Remote Access:** Tailscale mesh network + Termius SSH access on iPhone/Mac; hardened SSH (key-only authentication, root login disabled).
 * **Vault Multi-Writer Sync:** `achimem_capture.py` handles two-machine git sync (Mac ↔ Linux server) with autostash rebase and conflict-abort protection (51 test cases).
-* **Google Workspace Multi-Account OAuth:** OAuth2 helper (`auth_google_account.py`) supporting headless pasteable redirect URLs for Personal (`akibukuhan10`), DLSU (`@dlsu.edu.ph`), and Work Google accounts.
+* **Google Workspace Multi-Account OAuth:** Standardized on `gws` CLI profiles (`main`, `personal`, `work`, `dlsu`) in production mode; legacy `auth_google_account.py` deleted.
 * **CasaOS Dashboard:** Deployed with Filebrowser, Code-Server, and container monitoring.
 
 ---

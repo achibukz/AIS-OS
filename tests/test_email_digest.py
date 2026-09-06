@@ -16,6 +16,29 @@ def test_missing_gws_binary_exits_nonzero(monkeypatch, tmp_path, capsys):
     assert ed.main() == 1
     assert str(missing) in capsys.readouterr().err
 
+
+def test_no_code_path_attempts_to_read_a_token_file():
+    source = (Path(__file__).resolve().parents[1] / "scripts" / "email_digest.py").read_text()
+    assert "google_token" not in source
+    for banned in ("google.oauth2", "googleapiclient", "google.auth"):
+        assert banned not in source
+    for acc in ed.ACCOUNT_CONFIGS:
+        assert "tokens" not in acc
+        assert "token" not in acc
+
+
+def test_email_fetch_never_accesses_token_files(monkeypatch):
+    opened_files = []
+    real_open = Path.open
+
+    def tracking_open(path_obj, *args, **kwargs):
+        opened_files.append(str(path_obj))
+        return real_open(path_obj, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", tracking_open)
+    ed.fetch_account_emails(account_type="school", gws_profile="dlsu")
+    assert not any("google_token" in f for f in opened_files)
+
 TZ = ZoneInfo("Asia/Manila")
 
 

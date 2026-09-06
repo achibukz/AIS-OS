@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-06 — Delete legacy Google OAuth tokens and standardize scripts on gws CLI
+
+**Decision:** Deleted `scripts/auth_google_account.py`, removed legacy token and direct google-auth fallback patterns, documented operator deletion for legacy `~/.config/achios/google_token*.json` and `~/.config/gws/`, and updated `CLAUDE.md`, `AGENTS.md`, and skills documentation to reflect `gws` CLI multi-profile OAuth (`main`, `personal`, `work`, `dlsu`) in production mode as the sole Google auth path. Added unit tests verifying hard error when `gws` is absent and ensuring no code path attempts to read legacy token files or import legacy Google auth libraries.
+
+**Why:** Google Workspace OAuth in production mode with named `gws` profiles (`~/.config/gws-*`) is now canonical across all services. The legacy `google_token*.json` files were dead, and having two disparate Google auth paths was prone to silent fallback failures and token confusion.
+
+**Alternatives considered:** Keeping `auth_google_account.py` as an emergency fallback (rejected: production OAuth screen eliminates weekly expiration and gws ciphertext credentials cannot be loaded by legacy python scripts anyway).
+
+**Owner:** Aea / Aki.
+
 ## 2026-09-05 — Trim sync-repos --repo parsing to the ticket's scope
 
 **Decision:** In response to Luna's PR #22 review, removed the dead fallback loop in the
