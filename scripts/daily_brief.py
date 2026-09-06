@@ -17,6 +17,7 @@ import argparse
 import datetime as dt
 import html
 import json
+import os
 import re
 import subprocess
 import sys
@@ -28,7 +29,15 @@ from zoneinfo import ZoneInfo
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 from telegram_notify import send
-from google_auth_health import gws_env
+
+
+def gws_env(profile: str) -> dict[str, str]:
+    return {
+        **os.environ,
+        "GOOGLE_WORKSPACE_CLI_CONFIG_DIR": str(Path.home() / ".config" / f"gws-{profile}"),
+        "GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND": "file",
+    }
+
 
 GWS_BIN = Path.home() / ".npm-global" / "bin" / "gws"
 GWS_PROFILES = ["personal", "dlsu", "main", "work"]

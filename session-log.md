@@ -24,6 +24,25 @@ Moved the ING physical exam and "Fit to Work" medical certificate task to done i
 
 Logged three active tasks in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md): a ticket for /sync to support a configurable repo include/exclude list so it stops syncing repos that don't need it, having Astra audit whether open AIS-OS and achiCore tickets are still accurate against current code, and auditing slash commands/scripts for vendor lock-in (triggered by /tasks failing outside Claude Code) to design a cross-vendor fallback.
 
+## 2026-09-06, delete legacy Google token path and standardize on gws CLI (AIS-OS #7)
+
+Goal: Remove the legacy Google auth system across achiOS, delete dead tokens and authenticator script, standardize briefing scripts on canonical `gws` CLI profiles, update documentation and add regression tests.
+
+Decisions:
+- Removed `scripts/auth_google_account.py` via git rm.
+- Removed legacy token fallback patterns and defined clean local `gws_env` helpers in `scripts/daily_brief.py`, `scripts/email_digest.py`, and `scripts/evening_debrief.py`, eliminating imports that matched the banned library pattern.
+- Updated [CLAUDE.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/CLAUDE.md), [AGENTS.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/AGENTS.md), and skills documentation to reference `gws` CLI profiles rather than legacy `google_token*.json` files.
+- Added comprehensive unit tests across `tests/test_daily_brief.py`, `tests/test_email_digest.py`, and `tests/test_evening_debrief.py` verifying hard error when `gws` binary is absent and confirming that no code path attempts to read token files or import legacy Google auth libraries.
+- Noted the operator deletion step for Landlock-protected files (`~/.config/achios/google_token*.json` and `~/.config/gws/`).
+
+Verification:
+- `grep -rn "google_token" scripts/ CLAUDE.md`: returned 0 matches (exit 1).
+- `grep -rn "google.oauth2\|googleapiclient\|google.auth" scripts/`: returned 0 matches (exit 1).
+- `scripts/auth_google_account.py`: verified non-existent.
+- `python scripts/daily_brief.py --dry-run` and `python scripts/email_digest.py --dry-run`: both exit 0 and produce valid briefing output.
+- Missing `GWS_BIN` verification: both scripts exit non-zero (exit 1) and name the missing path in stderr.
+- `pytest tests/`: 316 passed in 17.07s.
+
 ## 2026-09-05, global instruction sync and Canvas integration tasks
 
 Logged active tasks in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) for automated propagation of global agent instructions across CLI harnesses (~/.claude/CLAUDE.md to Antigravity and Codex) and DLSU Canvas Instructure data/announcements extraction into achiSchooNounce with searchable query capability. Moved the completed one-time instruction alignment copy to done.

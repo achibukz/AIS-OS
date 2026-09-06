@@ -149,7 +149,7 @@ It is meant to read loose on a phone, not dense.
   store-and-forward is `docs/ROADMAP.md` item 3.
 - Model call: Gemini via `agy -p`, run from `~/.local/share/achios/llm`
   so no project instruction file and no capture hook loads.
-- Secrets: `~/.config/achios/` — `telegram.env` plus Google OAuth token files (`google_token_{dlsu,work,}.json`). Mode 700.
+- Secrets: `~/.config/achios/` — `telegram.env`. Mode 700.
   Isolated from Hermes on purpose; nothing here reads `~/.hermes`.
 - Log: `~/.local/state/achios/daily_brief.log` (the unit appends both streams there)
 - Run it now: `systemctl --user start achios-daily-brief.service`. Next fire:

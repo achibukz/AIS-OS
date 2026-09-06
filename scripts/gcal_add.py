@@ -10,7 +10,7 @@ too and not only in the register.
 Re-running with the same title and date is a no-op, so it is safe to retry.
 
 Credentials come from the gws CLI profiles in ~/.config/gws-<profile>. gws stores its
-tokens encrypted, so they cannot be loaded by google-auth; every call shells out to the
+tokens encrypted, so they cannot be loaded by direct Python auth libraries; every call shells out to the
 binary instead.
 """
 

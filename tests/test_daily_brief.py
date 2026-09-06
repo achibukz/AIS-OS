@@ -1,4 +1,5 @@
 import datetime as dt
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import daily_brief as brief
@@ -90,6 +91,25 @@ class TestGoogleAuthPath:
             assert str(missing) in str(exc)
         else:
             raise AssertionError("missing gws binary was accepted")
+
+    def test_no_code_path_attempts_to_read_a_token_file(self):
+        source = (Path(__file__).resolve().parents[1] / "scripts" / "daily_brief.py").read_text()
+        assert "google_token" not in source
+        for banned in ("google.oauth2", "googleapiclient", "google.auth"):
+            assert banned not in source
+
+    def test_calendar_fetch_never_accesses_token_files(self, monkeypatch):
+        opened_files = []
+        real_open = Path.open
+
+        def tracking_open(path_obj, *args, **kwargs):
+            opened_files.append(str(path_obj))
+            return real_open(path_obj, *args, **kwargs)
+
+        monkeypatch.setattr(Path, "open", tracking_open)
+        start = dt.datetime(2026, 8, 16, tzinfo=TZ)
+        events, errors = brief.fetch_calendar_events(start, start + dt.timedelta(days=1))
+        assert not any("google_token" in f for f in opened_files)
 
 
 class TestDailyBriefMessage:
