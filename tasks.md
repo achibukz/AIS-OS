@@ -23,7 +23,6 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 - [ ] Send AY 2026-2027 Term 1 EAF to Ethan Burayag (ethan_burayag@dlsu.edu.ph) #school #thesis !high
-- [ ] Remove legacy Google tokens (~/.config/achios/google_token*.json and stale ~/.config/gws) through [AIS-OS #7](https://github.com/achibukz/AIS-OS/issues/7) #infra #security !med
 - [ ] Review [AIS-OS PR #21](https://github.com/achibukz/AIS-OS/pull/21) and exercise assisted-live-testing on the next eligible PR, checking the Markdown interaction record and posted PR comment #systems #testing !med
 - [ ] Hold a separate planning session for a control board or Kanban frontend connecting the Astra workflow and learning records, per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md#follow-up-planning-session-for-a-control-board) #achios #achicore #planning !med
 - [ ] Discuss privileged testing, conflict handling, /towork workflow audit, TGDB overhaul, and worker engine optimization with Astra per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md#follow-up-discussion-topics-with-astra-privileged-testing-conflict-handling-towork-audit-tgdb-overhaul-and-worker-optimization) #systems #achicore #planning !med
@@ -54,6 +53,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 ## Blocked
 
 ## Done
+- [x] Remove legacy Google tokens (~/.config/achios/google_token*.json and stale ~/.config/gws) through [AIS-OS #7](https://github.com/achibukz/AIS-OS/issues/7) #infra #security !med (done 2026-09-06)
 - [x] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med (done 2026-09-06)
 - [x] Align and copy global instructions from Claude (CLAUDE.md) to Antigravity and Codex #systems #tooling !med (done 2026-09-05)
 - [x] Capture the reusable Telegram testing hub, audit the worker-test lessons and create [assisted-live-testing](http://100.106.210.38:8999/.config/skillshare/skills/assisted-live-testing/SKILL.md) for CLI/backend and other human acceptance, with Markdown records and PR comments; source review in AIS-OS PR #21, issue #20 #systems #testing (done 2026-09-05)
