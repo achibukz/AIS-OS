@@ -1,5 +1,9 @@
 # Session Log
 
+## 2026-09-06, diagnosed gws sandbox write restriction, filed ticket
+
+Attempted to send a test email via `gws gmail users messages send` on the `personal` profile from inside this Claude Code session; it failed with `os error 13` (EACCES) writing the token cache. Ruled out stale file ownership/permissions and a read-only mount; `dangerouslyDisableSandbox` did not change the outcome. Landlock-style restriction inherited by the whole Claude Code process tree is the best-supported hypothesis (`no_new_privs` set, AppArmor `unconfined`, restriction survives the per-call sandbox toggle) but not independently proven. Full transcript and reasoning in [2026-09-06-gws-sandbox-write-restriction.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-09-06-gws-sandbox-write-restriction.md). Logged a ticket task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) to scope a bypass.
+
 ## 2026-09-06, closed Google auth timer ticket AIS-OS #5
 
 Closed GitHub issue [AIS-OS #5](https://github.com/achibukz/AIS-OS/issues/5) ("Build the Google auth health check and its timer") per Aki's instruction. Moving `achiclaude` OAuth consent to In Production eliminated the 7-day token expiration ceiling and routine re-auth nudges. Updated [AIS-OS #7](https://github.com/achibukz/AIS-OS/issues/7) to record that all prerequisite blockers (#3, #4, #5) are resolved.

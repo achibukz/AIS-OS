@@ -48,6 +48,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Have Astra audit whether open AIS-OS and achiCore tickets are still accurate against current code #systems #achios #achicore #planning !med
 - [ ] Audit slash commands and scripts for vendor lock-in (e.g. /tasks unavailable outside Claude Code), starting with LLM-calling scripts, and design a fallback so they work across AI vendors #systems #achios #arch !med
 - [ ] Write a ticket: when a loop finishes a ticket without success after 3 tries, add a button to switch the model working the ticket #achicore #ux !med
+- [ ] Write a ticket to bypass the Claude Code sandbox's Landlock restriction on writing to `~/.config/gws-*` token caches (child processes inherit it and can't lift it, even with the sandbox flag off), so `gws gmail send` and other write actions work from inside a Claude Code session, not just from a plain terminal or systemd unit; evidence in [2026-09-06-gws-sandbox-write-restriction.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-09-06-gws-sandbox-write-restriction.md) #achios #infra !med
 - [ ] Upgrade sync-repos --repo/-r to accept multiple repo names in one call (e.g. /sync achiCore, AIS-OS) #achios #tooling !med
 
 ## Blocked
