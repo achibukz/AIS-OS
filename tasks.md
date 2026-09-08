@@ -22,6 +22,7 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Fix shared Telegram message splitting through [AIS-OS #34](https://github.com/achibukz/AIS-OS/issues/34), preserving long-message tails without duplicate prefixes #systems #bug !med
 - [ ] Send AY 2026-2027 Term 1 EAF to Ethan Burayag (ethan_burayag@dlsu.edu.ph) #school #thesis !high
 - [ ] Review [AIS-OS PR #21](https://github.com/achibukz/AIS-OS/pull/21) and exercise assisted-live-testing on the next eligible PR, checking the Markdown interaction record and posted PR comment #systems #testing !med
 - [ ] Hold a separate planning session for a control board or Kanban frontend connecting the Astra workflow and learning records, per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md#follow-up-planning-session-for-a-control-board) #achios #achicore #planning !med
@@ -31,7 +32,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Prepare AIS-OS #18 replay fixtures during early learning work; run its real Flash acceptance later with assisted-live-testing, a Markdown interaction record and a PR comment #systems #achios #testing !high
 - [ ] Fix Claude Code quota and auto-refresh stale provider tokens in /usage (achiCore #135-#136) #achicore #ux #bug !high
 - [ ] Build a sync script so global agent instructions propagate from ~/.claude/CLAUDE.md to Antigravity (~/.gemini/config/GEMINI.md, AGENTS.md) and Codex (~/.codex/AGENTS.md) automatically (needs design discussion: shared-core file vs generated marker blocks vs symlink; current state is one-time manual copy done 2026-09-05) #systems #tooling !med
-- [ ] Implement the approved Canvas first release through [#24](https://github.com/achibukz/AIS-OS/issues/24), current-term subjects #25 merged. Source for #26, #28 and #29 is implemented on ticket/26-canvas-data-notifications for one PR, with 398 full-suite tests passing. Live mapping is pending an authenticated session; phone login and deployment remain separate. #school #automation #infra !med
+- [ ] Implement the approved Canvas first release through [#24](https://github.com/achibukz/AIS-OS/issues/24), current-term subjects #25 merged. Source for #26, #28 and #29 is in [draft PR #33](https://github.com/achibukz/AIS-OS/pull/33), with 398 full-suite tests passing. Aki deferred live verification until a later session. Live mapping needs a restored session; phone login and deployment remain separate. #school #automation #infra !med
 - [ ] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-09-07
 - [ ] Complete 5-month ING Internship Agreement Form (signatures: Aki, Parent/Guardian, DLSU coordinator, then notarize) #career #school !high
 - [ ] Complete active Systems & Engineering backlog tasks per [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md) #systems #engineering #achicore #infra !high
