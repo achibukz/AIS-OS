@@ -31,7 +31,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Prepare AIS-OS #18 replay fixtures during early learning work; run its real Flash acceptance later with assisted-live-testing, a Markdown interaction record and a PR comment #systems #achios #testing !high
 - [ ] Fix Claude Code quota and auto-refresh stale provider tokens in /usage (achiCore #135-#136) #achicore #ux #bug !high
 - [ ] Build a sync script so global agent instructions propagate from ~/.claude/CLAUDE.md to Antigravity (~/.gemini/config/GEMINI.md, AGENTS.md) and Codex (~/.codex/AGENTS.md) automatically (needs design discussion: shared-core file vs generated marker blocks vs symlink; current state is one-time manual copy done 2026-09-05) #systems #tooling !med
-- [ ] Design and build DLSU Canvas Instructure integration to sync data, files, and announcements into achiSchooNounce with searchable query access (needs Astra discussion) #school #automation #infra #planning !med
+- [ ] Implement the approved Canvas first release through [#24](https://github.com/achibukz/AIS-OS/issues/24), starting with current-term subjects [#25](https://github.com/achibukz/AIS-OS/issues/25). Phone login, live course mapping and deployment remain pending. #school #automation #infra !med
 - [ ] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-09-07
 - [ ] Complete 5-month ING Internship Agreement Form (signatures: Aki, Parent/Guardian, DLSU coordinator, then notarize) #career #school !high
 - [ ] Complete active Systems & Engineering backlog tasks per [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md) #systems #engineering #achicore #infra !high
@@ -54,6 +54,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 ## Blocked
 
 ## Done
+- [x] Review and approve the Canvas implementation plan with incremental tickets. #school #automation (done 2026-09-08)
 - [x] Remove legacy Google tokens (~/.config/achios/google_token*.json and stale ~/.config/gws) through [AIS-OS #7](https://github.com/achibukz/AIS-OS/issues/7) #infra #security !med (done 2026-09-06)
 - [x] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med (done 2026-09-06)
 - [x] Align and copy global instructions from Claude (CLAUDE.md) to Antigravity and Codex #systems #tooling !med (done 2026-09-05)

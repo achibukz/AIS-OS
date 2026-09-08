@@ -1,5 +1,12 @@
 # achiOS roadmap
 
+## 2026-09-08 Canvas first release
+
+[Canvas #24](https://github.com/achibukz/AIS-OS/issues/24) now has an approved [implementation plan](canvas-implementation-plan.md). Start with the schoolWiki subject manifest #25 and HTTP client/mappings #26. Phone reauthentication #27 is a release blocker and can proceed alongside factual storage/queries #28. Notifications #29 and [achiCore #173](https://github.com/achibukz/achiCore/issues/173) feed the scheduled release gate #30. Course materials #31 follow later.
+
+The selected term is AY2627-T1. Refresh is every two hours with manual refresh, four-hour staleness and no scheduled model calls. No Canvas deployment is claimed by this roadmap update.
+
+
 ## 2026-09-05 deployment update
 
 [achiCore #153](https://github.com/achibukz/achiCore/issues/153) is closed at Aki's request. [PR #154](https://github.com/achibukz/achiCore/pull/154) is merged as `bbb8fb73a6b1ba3632187df3b9ee45b31b4d3af1` and the main hub restarted on that code at 18:45 UTC. Telegram polling succeeded. Bindings and conversation IDs were preserved.
