@@ -1,5 +1,15 @@
 # Session Log
 
+## 2026-09-08 12:31 [saved]
+
+Canvas scope and first implementation increment.
+
+Approved factual Telegram queries first, two-hour sync, manual refresh, four-hour staleness, Asia/Manila calendar weeks and phone reauthentication over Tailscale. Read AY2627-T1 subjects from schoolWiki. Created AIS-OS #25 through #31 and achiCore #173 under epic #24, with explicit dependencies and acceptance checks. Preserved the original research below the revised approved plan.
+
+Started the offline subject manifest on ticket/25-canvas-subject-manifest. Existing unrelated edits in tasks, logs and Astra documents are preserved. Rejected implicit term selection, broad enrolled-course import and weakening the worker write boundary. Live course IDs, phone login, the Canvas client and production deployment remain pending. Automated validation: `uv run --with pytest python -m pytest tests/test_canvas_subjects.py -q` returned `24 passed in 0.10s`. Read-only local acceptance with `python3 scripts/canvas_subjects.py --wiki /home/achibukz/Documents/Obsidian/schoolMem/wiki` returned the five expected subject/section pairs. Canvas access, phone login, notification delivery and the full repository suite were not exercised.
+
+
+
 ## 2026-09-06, diagnosed gws sandbox write restriction, filed ticket
 
 Attempted to send a test email via `gws gmail users messages send` on the `personal` profile from inside this Claude Code session; it failed with `os error 13` (EACCES) writing the token cache. Ruled out stale file ownership/permissions and a read-only mount; `dangerouslyDisableSandbox` did not change the outcome. Landlock-style restriction inherited by the whole Claude Code process tree is the best-supported hypothesis (`no_new_privs` set, AppArmor `unconfined`, restriction survives the per-call sandbox toggle) but not independently proven. Full transcript and reasoning in [2026-09-06-gws-sandbox-write-restriction.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-09-06-gws-sandbox-write-restriction.md). Logged a ticket task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) to scope a bypass.

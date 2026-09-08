@@ -1175,3 +1175,13 @@ Why: Aki found the step-by-step phone testing useful and wants the same help fro
 Alternatives: A dedicated persistent agent, or a bare HITL label with a manual checklist. Start with a skill; revisit an agent only if it needs its own queue, scheduling or identity.
 
 Owner: Aki. Next implementation work is the self-learning loop, with existing worker defects still tracked separately. This procedure applies beyond this repository; any achiMem promotion remains a separate sourced action.
+
+## 2026-09-08, approve the first Canvas Telegram release
+
+Decision: Build factual Canvas queries and notifications before document ingestion. Select the active schoolWiki term, refresh every two hours with manual refresh, and flag data older than four hours. Use Monday-to-Sunday weeks in Asia/Manila and include submitted assignment status. Require working phone reauthentication through a protected Ubuntu browser reachable over Tailscale. Keep the cache writer outside the bound-agent write boundary. Accept rare notification duplicates when delivery is uncertain.
+
+Why: Aki wants useful Telegram answers with manageable sync frequency and no dependency on opening his Mac to restore access.
+
+Alternatives: Document search before Telegram, 30-minute polling, all enrolled Canvas courses, optional phone login and a strict no-duplicate delivery claim. The approved plan replaces those proposals.
+
+Owner: Aki. [Plan](../docs/canvas-implementation-plan.md), [epic #24](https://github.com/achibukz/AIS-OS/issues/24). This records this integration's design, not a broader personal workflow policy.
