@@ -1830,3 +1830,54 @@ Verification:
 
 Open:
 - Nothing outstanding from Luna's review. `--repo`/`-r` now match the ticket exactly.
+
+## 2026-09-08 23:52 [saved]
+Goal: Address luna-achiCore's second-pass review on PR #33 (head `8a62ced`), which found 0
+blockers, 2 should-fix, and 4 nits across `scripts/canvas_store.py`, `scripts/canvas_events.py`
+and `scripts/canvas.py`.
+
+Decisions:
+- Should-fix 1: `query_record` (`canvas_store.py`) indexed `grade_available` and
+  `grade_success_at` with `value[key]`, raising `KeyError` on any record written before this
+  revision. Switched to `value.get(key)`. Regression `test_grades_query_tolerates_pre_migration_records_without_grade_fields`
+  writes an old-shape record straight into the `records` table and confirmed it reproduces the
+  exact `KeyError: 'grade_available'` before the fix.
+- Should-fix 2: `record_changes` (`canvas_events.py`) required `old["grade_success_at"] is not
+  None` before emitting `assignment_grade_changed`, so the first real grade posted after a
+  grade-less baseline stayed silent. Added a `became_available` branch (`grade_available` flips
+  false to true) so that first posting now fires. Had to update
+  `test_hidden_grade_fields_do_not_hide_deadlines_or_erase_saved_grades` in
+  `tests/test_canvas_store.py`, which had asserted `count(*) FROM events == 0` across exactly
+  that transition, locking in the bug luna found.
+- Tried a `has_grade` guard (grade or score must be non-null) to match luna's wording literally,
+  then proved it against a dedicated test and found removing it changed nothing: given
+  `merge_saved_grade`'s invariant that `grade_success_at` is null only when grade and score have
+  always been null, `grade_changed` already excludes the null-to-null case. Deleted the guard as
+  decoration rather than keep unproven complexity.
+- Nit: `query`'s per-category `success_at` required `all(fetched)` across every assignment's
+  `grade_success_at`, so one assignment with a permanently unavailable grade forced the whole
+  category to report `stale_data` forever even seconds after a clean sync. Changed to take the
+  min of whichever fetch times are known, while `assignment_grades_unavailable` still reports the
+  real reason for the gap.
+- Nit: `save_snapshot` and `record_changes` each ran the identical `SELECT id,data FROM records
+  WHERE course_id=? AND category=?` for the assignments category. `record_changes` now accepts
+  an optional `previous` map and `save_snapshot` passes the one it already built.
+- Nit: renamed `assignment_grades` to `merge_saved_grade` in `canvas_store.py`; the old name read
+  like it returned a collection.
+- Nit: in `canvas.py`, if `open_writer` itself raised while recording an `authentication_expired`
+  transition, that new exception replaced the original in the `except CanvasError` block and
+  `receipt.json` was never written, the receipt an operator most needs right after an expiry.
+  Wrapped the auth-state write in its own `try/except` so the original error's receipt still
+  lands. New CLI test monkeypatches `canvas.open_writer` to always raise and confirms the receipt
+  still carries `authentication_expired` rather than the writer's own error.
+
+Verification:
+- `uv run --with pytest --with requests python -m pytest tests/ -q`: 426 passed in 33.73s (was
+  422 at `8a62ced`; +4 new regressions across should-fix 1, should-fix 2, and the has_grade
+  guard check).
+- Confirmed each new/changed test is red without its matching fix by temporarily reverting the
+  relevant file (`git stash push -- <file>`) and rerunning just that test, then restoring.
+
+Open:
+- Nothing outstanding from this review pass. Not yet pushed or commented back on PR #33; Aki
+  has not asked for that yet.

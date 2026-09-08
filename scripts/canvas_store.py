@@ -119,7 +119,7 @@ def save_failure(db, course_id, category, kind, at):
                    (at, kind, course_id, category))
 
 
-def assignment_grades(row, previous, at):
+def merge_saved_grade(row, previous, at):
     available = row.get("grade_available", True)
     return {**row, "grade_available": available,
             "grade": row["grade"] if available else previous.get("grade"),
@@ -131,11 +131,12 @@ def save_snapshot(db, course_id, category, records, at):
     if category not in CATEGORIES or len({row['id'] for row in records}) != len(records):
         raise CanvasError("malformed_response")
     with db:
+        previous = None
         if category == "assignments":
             previous = {row["id"]: json.loads(row["data"]) for row in db.execute(
                 "SELECT id,data FROM records WHERE course_id=? AND category=?", (course_id, category))}
-            records = [assignment_grades(row, previous.get(row["id"], {}), at) for row in records]
-        record_changes(db, course_id, category, records, at)
+            records = [merge_saved_grade(row, previous.get(row["id"], {}), at) for row in records]
+        record_changes(db, course_id, category, records, at, previous)
         db.execute("UPDATE records SET active=0 WHERE course_id=? AND category=?", (course_id, category))
         for row in records:
             db.execute("""INSERT INTO records VALUES(?,?,?,?,1)
@@ -236,7 +237,7 @@ def query_record(record, course, command, item, unfinished, start):
     if command not in ("detail", "announcements"):
         value.pop("description", None)
     if command == "grades" and value["category"] == "assignments":
-        return {key: value[key] for key in ("id", "subject", "category", "name", "grade", "score", "points_possible", "source_url", "grade_available", "grade_success_at")}
+        return {key: value.get(key) for key in ("id", "subject", "category", "name", "grade", "score", "points_possible", "source_url", "grade_available", "grade_success_at")}
     if command == "announcements" and item is None and value.get("message"):
         value["message_truncated"] = len(value["message"]) > 1000
         value["message"] = value["message"][:1000]
@@ -266,8 +267,8 @@ def query(db, command, *, course=None, item=None, period="week", unfinished=Fals
             grades = [json.loads(record[0]) for record in db.execute(
                 "SELECT data FROM records WHERE course_id=? AND category='assignments' AND active=1", (row["course_id"],))]
             if grades:
-                fetched = [record.get("grade_success_at") for record in grades]
-                value["success_at"] = min(fetched) if all(fetched) else None
+                fetched = [record.get("grade_success_at") for record in grades if record.get("grade_success_at")]
+                value["success_at"] = min(fetched) if fetched else None
                 if any(not record.get("grade_available", False) for record in grades):
                     value["error"] = "assignment_grades_unavailable"
         value["stale"] = value["success_at"] is None or now - parse_time(value["success_at"]) > timedelta(hours=4)

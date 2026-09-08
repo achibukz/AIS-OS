@@ -197,6 +197,19 @@ def test_incomplete_submission_without_state_is_rejected():
         project_record("assignments", raw, 42, 7)
 
 
+def test_grades_query_tolerates_pre_migration_records_without_grade_fields(db):
+    old_shape = {"id": 1, "name": "Old", "grade": "88", "score": 88, "points_possible": 10,
+                 "source_url": "https://dlsu.instructure.com/courses/42/assignments/1"}
+    with db:
+        db.execute("""UPDATE coverage SET success_at=?,attempted_at=?,baseline=1
+            WHERE course_id=42 AND category='assignments'""", (AT, AT))
+        db.execute("INSERT INTO records VALUES(42,'assignments',1,?,1)", (json.dumps(old_shape),))
+    result = query(db, "grades", now=NOW)
+    assert result["data"][0]["grade"] == "88"
+    assert result["data"][0]["grade_available"] is None
+    assert result["data"][0]["grade_success_at"] is None
+
+
 def test_course_grades_remain_visible_beyond_assignment_page(db):
     save_snapshot(db, 42, "assignments", [assignment(i) for i in range(1, 61)], AT)
     save_snapshot(db, 42, "grades", [{"id": 900, "current_grade": "A", "current_score": 95,
@@ -220,7 +233,8 @@ def test_hidden_grade_fields_do_not_hide_deadlines_or_erase_saved_grades(db):
     assert "incomplete_coverage" in grades["warnings"]
     raw["submission"].update({"grade": "5", "score": 5})
     save_snapshot(db, 42, "assignments", [project_record("assignments", raw, 42, 7)], AT)
-    assert db.execute("SELECT count(*) FROM events").fetchone()[0] == 0
+    kinds = [row["kind"] for row in db.execute("SELECT kind FROM events")]
+    assert kinds == ["assignment_grade_changed"]
     raw["submission"].pop("grade")
     raw["submission"].pop("score")
     later = "2026-09-09T10:00:00+00:00"
@@ -230,4 +244,4 @@ def test_hidden_grade_fields_do_not_hide_deadlines_or_erase_saved_grades(db):
     assert result["data"][0]["grade_available"] is False
     assert result["data"][0]["grade_success_at"] == AT
     assert "stale_data" in result["warnings"]
-    assert db.execute("SELECT count(*) FROM events").fetchone()[0] == 0
+    assert db.execute("SELECT count(*) FROM events").fetchone()[0] == 1

@@ -99,8 +99,11 @@ def main(argv=None):
                 atomic_write(args.config / "receipt.json", json.dumps(result))
             except CanvasError as exc:
                 if exc.kind == "authentication_expired" and args.command != "sync":
-                    with open_writer(args.db) as db:
-                        save_auth(db, "expired", timestamp())
+                    try:
+                        with open_writer(args.db) as db:
+                            save_auth(db, "expired", timestamp())
+                    except (CanvasError, OSError, sqlite3.Error):
+                        pass
                 atomic_write(args.config / "receipt.json", json.dumps({"command": args.command,
                              "error": exc.kind, "checked_at": timestamp()}))
                 raise

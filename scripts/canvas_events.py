@@ -13,13 +13,14 @@ def enqueue(db, course_id, kind, data, at):
                (course_id, kind, json.dumps(data, ensure_ascii=False), at))
 
 
-def record_changes(db, course_id, category, records, at):
+def record_changes(db, course_id, category, records, at, previous=None):
     coverage = db.execute("SELECT baseline FROM coverage WHERE course_id=? AND category=?",
                           (course_id, category)).fetchone()
     if not coverage or not coverage["baseline"]:
         return
-    previous = {row["id"]: json.loads(row["data"]) for row in db.execute(
-        "SELECT id,data FROM records WHERE course_id=? AND category=?", (course_id, category))}
+    if previous is None:
+        previous = {row["id"]: json.loads(row["data"]) for row in db.execute(
+            "SELECT id,data FROM records WHERE course_id=? AND category=?", (course_id, category))}
     for record in records:
         old = previous.get(record["id"])
         if category == "assignments":
@@ -28,8 +29,10 @@ def record_changes(db, course_id, category, records, at):
                 continue
             if old["due_at"] != record["due_at"]:
                 enqueue(db, course_id, "due_date_changed", {**record, "previous_due_at": old["due_at"]}, at)
-            if (record.get("grade_available", True) and old.get("grade_success_at") is not None
-                    and (old["grade"], old["score"]) != (record["grade"], record["score"])):
+            grade_available = record.get("grade_available", True)
+            became_available = grade_available and not old.get("grade_available", True)
+            grade_changed = (old["grade"], old["score"]) != (record["grade"], record["score"])
+            if grade_available and grade_changed and (old.get("grade_success_at") is not None or became_available):
                 enqueue(db, course_id, "assignment_grade_changed", record, at)
         elif category == "announcements" and old is None:
             enqueue(db, course_id, "new_announcement", record, at)

@@ -3,6 +3,7 @@ import json
 import pytest
 
 import canvas
+from canvas_client import CanvasError
 from canvas_store import configure_courses, open_writer, save_auth, save_snapshot
 from test_canvas_store import AT, MAPPING, assignment
 
@@ -98,6 +99,17 @@ def test_online_commands_write_receipts_and_verified_mapping(online, capsys):
     assert json.loads((config / 'course-candidates.json').read_text())[0]['id'] == 42
     assert (config / 'mappings.json').stat().st_mode & 0o777 == 0o600
     assert output == {'complete_categories': 4, 'failures': []}
+
+
+def test_receipt_is_written_even_when_auth_state_write_fails(online, capsys, monkeypatch):
+    Client, config, dbpath, args = online
+    Client.error = 'authentication_expired'
+    def broken_writer(path):
+        raise CanvasError('unsafe_database')
+    monkeypatch.setattr(canvas, 'open_writer', broken_writer)
+    assert canvas.main(args + ['probe']) == 1
+    assert json.loads(capsys.readouterr().err)['error'] == 'authentication_expired'
+    assert json.loads((config / 'receipt.json').read_text())['error'] == 'authentication_expired'
 
 
 def test_probe_expiry_and_recovery_update_cached_state_without_freshening_facts(online, capsys):

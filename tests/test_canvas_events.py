@@ -4,7 +4,8 @@ import sqlite3
 import pytest
 
 from canvas_events import deliver, preview
-from canvas_store import configure_courses, open_reader, open_writer, query, save_auth, save_failure, save_snapshot
+from canvas_store import (configure_courses, open_reader, open_writer, project_record, query,
+                          save_auth, save_failure, save_snapshot)
 from test_canvas_store import AT, MAPPING, NOW, assignment
 
 
@@ -137,6 +138,25 @@ def test_grades_and_new_announcements_emit_events(db):
     save_snapshot(db, 42, "announcements", [{"id": 1, "title": "Hello", "source_url": "https://dlsu.instructure.com/courses/42/discussion_topics/1"}], AT)
     kinds = [r[0] for r in db.execute("SELECT kind FROM events ORDER BY id")]
     assert kinds == ["assignment_grade_changed", "new_announcement"]
+
+
+def test_first_posted_grade_after_grade_less_baseline_emits_once(db):
+    raw = {"id": 1, "name": "Lab", "due_at": "2026-09-08T00:00:00Z",
+           "submission": {"user_id": 7, "workflow_state": "unsubmitted"}}
+    save_snapshot(db, 42, "assignments", [project_record("assignments", raw, 42, 7)], AT)
+    raw["submission"].update({"grade": "95", "score": 95})
+    save_snapshot(db, 42, "assignments", [project_record("assignments", raw, 42, 7)], AT)
+    kinds = [r[0] for r in db.execute("SELECT kind FROM events")]
+    assert kinds == ["assignment_grade_changed"]
+
+
+def test_grade_becoming_available_with_no_value_stays_silent(db):
+    raw = {"id": 1, "name": "Lab", "due_at": "2026-09-08T00:00:00Z",
+           "submission": {"user_id": 7, "workflow_state": "unsubmitted"}}
+    save_snapshot(db, 42, "assignments", [project_record("assignments", raw, 42, 7)], AT)
+    raw["submission"].update({"grade": None, "score": None})
+    save_snapshot(db, 42, "assignments", [project_record("assignments", raw, 42, 7)], AT)
+    assert db.execute("SELECT count(*) FROM events").fetchone()[0] == 0
 
 
 def test_failed_head_does_not_block_later_events(db):
