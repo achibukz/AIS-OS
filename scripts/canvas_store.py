@@ -119,10 +119,22 @@ def save_failure(db, course_id, category, kind, at):
                    (at, kind, course_id, category))
 
 
+def assignment_grades(row, previous, at):
+    available = row.get("grade_available", True)
+    return {**row, "grade_available": available,
+            "grade": row["grade"] if available else previous.get("grade"),
+            "score": row["score"] if available else previous.get("score"),
+            "grade_success_at": at if available else previous.get("grade_success_at")}
+
+
 def save_snapshot(db, course_id, category, records, at):
     if category not in CATEGORIES or len({row['id'] for row in records}) != len(records):
         raise CanvasError("malformed_response")
     with db:
+        if category == "assignments":
+            previous = {row["id"]: json.loads(row["data"]) for row in db.execute(
+                "SELECT id,data FROM records WHERE course_id=? AND category=?", (course_id, category))}
+            records = [assignment_grades(row, previous.get(row["id"], {}), at) for row in records]
         record_changes(db, course_id, category, records, at)
         db.execute("UPDATE records SET active=0 WHERE course_id=? AND category=?", (course_id, category))
         for row in records:
@@ -177,7 +189,7 @@ def project_record(category, row, course_id, user_id):
             raise CanvasError("malformed_response")
         submission = row.get("submission")
         if (not isinstance(submission, dict) or submission.get("user_id") != user_id
-                or any(key not in submission for key in ("workflow_state", "grade", "score"))):
+                or "workflow_state" not in submission):
             raise CanvasError("submission_unavailable")
         return {"id": item_id, "name": clean_text(row["name"], 300),
                 "description": clean_text(row.get("description")), "due_at": date_value(row["due_at"]),
@@ -187,6 +199,7 @@ def project_record(category, row, course_id, user_id):
                 "missing": submission.get("missing") if type(submission.get("missing")) is bool else None,
                 "excused": submission.get("excused") if type(submission.get("excused")) is bool else None,
                 "grade": clean_text(submission.get("grade"), 100), "score": numeric(submission.get("score")),
+                "grade_available": "grade" in submission and "score" in submission,
                 "source_url": f"{base}/assignments/{item_id}"}
     if category == "grades":
         if row.get("user_id") != user_id or row.get("type") != "StudentEnrollment":
@@ -205,6 +218,29 @@ def project_record(category, row, course_id, user_id):
                 "message": clean_text(row["message"]), "posted_at": date_value(row.get("posted_at")),
                 "source_url": f"{base}/discussion_topics/{item_id}"}
     raise CanvasError("invalid_category")
+
+
+def query_record(record, course, command, item, unfinished, start):
+    value = json.loads(record["data"])
+    value.update({"subject": course["code"], "category": record["category"]})
+    if item is not None and value["id"] != item:
+        return None
+    if unfinished and (value.get("submitted_at") or value.get("excused")
+                       or value.get("submission_status") in ("submitted", "pending_review", "graded")):
+        return None
+    if command == "due":
+        if value.get("due_at") is None or not start <= parse_time(value["due_at"]) < start + timedelta(days=7):
+            return None
+    if command == "courses":
+        value.update({"term": course["term"], "section": course["section"]})
+    if command not in ("detail", "announcements"):
+        value.pop("description", None)
+    if command == "grades" and value["category"] == "assignments":
+        return {key: value[key] for key in ("id", "subject", "category", "name", "grade", "score", "points_possible", "source_url", "grade_available", "grade_success_at")}
+    if command == "announcements" and item is None and value.get("message"):
+        value["message_truncated"] = len(value["message"]) > 1000
+        value["message"] = value["message"][:1000]
+    return value
 
 
 def query(db, command, *, course=None, item=None, period="week", unfinished=False, now=None, limit=50, offset=0):
@@ -226,8 +262,16 @@ def query(db, command, *, course=None, item=None, period="week", unfinished=Fals
             continue
         value = dict(row)
         value["subject"] = ids[row["course_id"]]["code"]
-        value["stale"] = row["success_at"] is None or now - parse_time(row["success_at"]) > timedelta(hours=4)
-        value["coverage"] = "unavailable" if not row["baseline"] else ("saved_after_failure" if row["error"] else "complete")
+        if command == "grades" and row["category"] == "assignments":
+            grades = [json.loads(record[0]) for record in db.execute(
+                "SELECT data FROM records WHERE course_id=? AND category='assignments' AND active=1", (row["course_id"],))]
+            if grades:
+                fetched = [record.get("grade_success_at") for record in grades]
+                value["success_at"] = min(fetched) if all(fetched) else None
+                if any(not record.get("grade_available", False) for record in grades):
+                    value["error"] = "assignment_grades_unavailable"
+        value["stale"] = value["success_at"] is None or now - parse_time(value["success_at"]) > timedelta(hours=4)
+        value["coverage"] = "unavailable" if not row["baseline"] else ("saved_after_failure" if value["error"] else "complete")
         coverage.append(value)
     auth = db.execute("SELECT state,checked_at FROM authentication WHERE singleton=1").fetchone()
     warnings = []
@@ -239,38 +283,25 @@ def query(db, command, *, course=None, item=None, period="week", unfinished=Fals
         warnings.append("incomplete_coverage")
     if auth and auth["state"] == "expired":
         warnings.append("authentication_expired")
+    local = now.astimezone(MANILA)
+    start = local.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=local.weekday()) if period == "week" else local
     rows = []
     if command != "status":
         for record in db.execute("SELECT * FROM records WHERE active=1 ORDER BY course_id,id"):
             if record["course_id"] not in ids or record["category"] not in categories:
                 continue
-            value = json.loads(record["data"])
-            value.update({"subject": ids[record["course_id"]]["code"], "category": record["category"]})
-            if command == "courses":
-                value.update({"term": ids[record["course_id"]]["term"], "section": ids[record["course_id"]]["section"]})
-            if item is not None and value["id"] != item:
-                continue
-            if unfinished and (value.get("submitted_at") or value.get("excused")
-                               or value.get("submission_status") in ("submitted", "pending_review", "graded")):
-                continue
-            if command == "due":
-                if value.get("due_at") is None:
-                    continue
-                local = now.astimezone(MANILA)
-                start = local.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=local.weekday()) if period == "week" else local
-                if not start <= parse_time(value["due_at"]) < start + timedelta(days=7):
-                    continue
-            if command not in ("detail", "announcements"):
-                value.pop("description", None)
-            if command == "grades" and value["category"] == "assignments":
-                value = {key: value[key] for key in ("id", "subject", "category", "name", "grade", "score", "points_possible", "source_url")}
-            if command == "announcements" and item is None and value.get("message"):
-                value["message_truncated"] = len(value["message"]) > 1000
-                value["message"] = value["message"][:1000]
-            rows.append(value)
+            value = query_record(record, ids[record["course_id"]], command, item, unfinished, start)
+            if value is not None:
+                rows.append(value)
     if command == "due":
         rows.sort(key=lambda row: (parse_time(row["due_at"]), row["subject"], row["id"]))
+    course_grades = [row for row in rows if row["category"] == "grades"] if command == "grades" else []
+    if command == "grades":
+        rows = [row for row in rows if row["category"] == "assignments"]
     total = len(rows)
-    return {"data": rows[offset:offset + limit], "total": total,
+    result = {"data": rows[offset:offset + limit], "total": total,
             "next_offset": offset + limit if offset + limit < total else None, "coverage": coverage, "authentication": dict(auth) if auth else {"state": "unknown"},
             "warnings": warnings, "timezone": "Asia/Manila", "queried_at": now.isoformat()}
+    if command == "grades":
+        result["course_grades"] = course_grades
+    return result

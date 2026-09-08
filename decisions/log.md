@@ -1195,3 +1195,13 @@ Why: these tickets share the same client and snapshot lifecycle. Cached reads mu
 Alternatives: separate PRs would require repeated handoffs. Phone login, achiCore integration and scheduling remain in their existing tickets.
 
 Owner: Aki approved the scope; Codex implements and records verification.
+
+## 2026-09-09, Canvas review corrections
+
+Decision: keep course grades outside assignment pagination, retry least-attempted deliveries first, and distinguish missing grade fields from missing assignments.
+
+Why: the review reproduced hidden course totals and a blocked delivery queue; live Canvas responses exposed homework without grade fields. Earlier verified grades retain their timestamps when unavailable.
+
+Alternatives: dropping failed notifications would lose alerts. Rejecting the whole assignment category would hide valid deadlines. Unavailable grades remain explicit rather than invented.
+
+Owner: Codex implements the review fixes at Aki's request.

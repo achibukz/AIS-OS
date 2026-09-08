@@ -1,5 +1,13 @@
 # Session Log
 
+## 2026-09-09 07:27 [saved]
+
+Address Luna's review on Canvas PR #33. Course grades now remain outside assignment pagination; delivery continues after failures and rotates retries by attempt count; probe records auth transitions without refreshing facts. Added online CLI, mapping-validation and receipt tests, rejected irrelevant flags, and documented an assisted live-testing handoff.
+
+Live acceptance on the prior head restored Ubuntu authentication, matched all five courses and confirmed CCINOV8 deadlines and no posted grade. Aki clarified that the displayed 0/0 was a What-If score. STDISCM announcements and assignments were accessible even though some grade fields were absent. Corrected the initial overbroad diagnosis: grade unavailability must not hide homework. Added explicit grade availability/timestamps while preserving previously fetched values. Existing rejection coverage now checks a submission missing its required state; new live-shape tests check optional grade omission, preserved scores and no false grade events.
+
+Canvas regression command returned 106 passed. `uv run --with pytest --with requests python -m pytest tests/ -q` returned 422 passed in 32.83s. Final-head live receipts follow in the PR comment. No live Telegram messages or deployment occurred.
+
 ## 2026-09-09 02:27 [saved]
 
 Canvas client, cached queries and notifications

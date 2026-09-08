@@ -191,7 +191,43 @@ def test_compact_pages_report_remaining_rows(db):
         query(db, "assignments", limit=0)
 
 
-def test_incomplete_submission_does_not_replace_previous_grade():
-    raw = {"id": 1, "name": "Lab", "due_at": None, "submission": {"user_id": 7, "workflow_state": "graded"}}
+def test_incomplete_submission_without_state_is_rejected():
+    raw = {"id": 1, "name": "Lab", "due_at": None, "submission": {"user_id": 7}}
     with pytest.raises(CanvasError, match="submission_unavailable"):
         project_record("assignments", raw, 42, 7)
+
+
+def test_course_grades_remain_visible_beyond_assignment_page(db):
+    save_snapshot(db, 42, "assignments", [assignment(i) for i in range(1, 61)], AT)
+    save_snapshot(db, 42, "grades", [{"id": 900, "current_grade": "A", "current_score": 95,
+                                     "final_grade": None, "final_score": None}], AT)
+    for offset in (0, 50):
+        result = query(db, "grades", course="STDISCM", offset=offset, now=NOW)
+        assert result["course_grades"][0]["current_score"] == 95
+        assert all(r["category"] == "assignments" for r in result["data"])
+        assert result["total"] == 60
+
+
+def test_hidden_grade_fields_do_not_hide_deadlines_or_erase_saved_grades(db):
+    raw = {"id": 1, "name": "Join Discord", "due_at": "2026-09-14T15:59:59Z",
+           "submission": {"user_id": 7, "workflow_state": "unsubmitted"}}
+    row = project_record("assignments", raw, 42, 7)
+    save_snapshot(db, 42, "assignments", [row], AT)
+    assert query(db, "assignments", now=NOW)["data"][0]["due_at"] == "2026-09-14T15:59:59+00:00"
+    grades = query(db, "grades", now=NOW)
+    assert grades["data"][0]["grade"] is None
+    assert grades["data"][0]["grade_success_at"] is None
+    assert "incomplete_coverage" in grades["warnings"]
+    raw["submission"].update({"grade": "5", "score": 5})
+    save_snapshot(db, 42, "assignments", [project_record("assignments", raw, 42, 7)], AT)
+    assert db.execute("SELECT count(*) FROM events").fetchone()[0] == 0
+    raw["submission"].pop("grade")
+    raw["submission"].pop("score")
+    later = "2026-09-09T10:00:00+00:00"
+    save_snapshot(db, 42, "assignments", [project_record("assignments", raw, 42, 7)], later)
+    result = query(db, "grades", now=datetime.fromisoformat(later))
+    assert result["data"][0]["score"] == 5
+    assert result["data"][0]["grade_available"] is False
+    assert result["data"][0]["grade_success_at"] == AT
+    assert "stale_data" in result["warnings"]
+    assert db.execute("SELECT count(*) FROM events").fetchone()[0] == 0

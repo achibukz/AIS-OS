@@ -28,7 +28,8 @@ def record_changes(db, course_id, category, records, at):
                 continue
             if old["due_at"] != record["due_at"]:
                 enqueue(db, course_id, "due_date_changed", {**record, "previous_due_at": old["due_at"]}, at)
-            if (old["grade"], old["score"]) != (record["grade"], record["score"]):
+            if (record.get("grade_available", True) and old.get("grade_success_at") is not None
+                    and (old["grade"], old["score"]) != (record["grade"], record["score"])):
                 enqueue(db, course_id, "assignment_grade_changed", record, at)
         elif category == "announcements" and old is None:
             enqueue(db, course_id, "new_announcement", record, at)
@@ -77,7 +78,7 @@ def format_event(event):
 def pending(db, limit=50):
     return list(db.execute("""SELECT events.*,courses.code AS subject FROM events
         LEFT JOIN courses ON events.course_id=courses.id
-        WHERE state IN ('pending','uncertain') ORDER BY events.id LIMIT ?""", (limit,)))
+        WHERE state IN ('pending','uncertain') ORDER BY events.attempts,events.id LIMIT ?""", (limit,)))
 
 
 def preview(db):
@@ -95,6 +96,7 @@ def deliver(db, sender=None):
             raise CanvasError("notification_config_unavailable")
         sender = lambda message: send(message, env_path=env_path)
     sent = 0
+    failed = []
     for event in pending(db):
         message = format_event(event)
         with db:
@@ -102,13 +104,17 @@ def deliver(db, sender=None):
                        (timestamp(), event["id"]))
         try:
             count = sender(message)
-            if count != 1:
+            if type(count) is not int or count < 1:
                 raise CanvasError("unconfirmed_delivery")
         except (Exception, SystemExit):
             with db:
                 db.execute("UPDATE events SET error='delivery_unconfirmed' WHERE id=?", (event["id"],))
-            return {"sent": sent, "error": "delivery_unconfirmed", "event_id": event["id"]}
+            failed.append(event["id"])
+            continue
         with db:
             db.execute("UPDATE events SET state='sent',sent_at=?,error=NULL WHERE id=?", (timestamp(), event["id"]))
         sent += 1
-    return {"sent": sent, "remaining": db.execute("SELECT count(*) FROM events WHERE state!='sent'").fetchone()[0]}
+    result = {"sent": sent, "remaining": db.execute("SELECT count(*) FROM events WHERE state!='sent'").fetchone()[0]}
+    if failed:
+        result.update({"error": "delivery_unconfirmed", "event_id": failed[0], "failed_event_ids": failed})
+    return result

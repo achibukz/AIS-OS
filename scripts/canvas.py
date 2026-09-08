@@ -10,7 +10,7 @@ from pathlib import Path
 
 from canvas_client import CONFIG, CanvasClient, CanvasError, atomic_write, match_courses, timestamp, writer_lock
 from canvas_subjects import read_subjects
-from canvas_store import DATABASE, open_reader, open_writer, query
+from canvas_store import DATABASE, open_reader, open_writer, query, save_auth
 from canvas_sync import load_mapping, sync
 from canvas_events import deliver, preview
 
@@ -36,11 +36,11 @@ def main(argv=None):
     parser.add_argument("--config", type=Path, default=CONFIG)
     parser.add_argument("--wiki", type=Path, default=WIKI)
     parser.add_argument("--db", type=Path, default=DATABASE)
-    parser.add_argument("--limit", type=int, default=50)
-    parser.add_argument("--offset", type=int, default=0)
+    parser.add_argument("--limit", type=int)
+    parser.add_argument("--offset", type=int)
     parser.add_argument("--course")
     parser.add_argument("--id", type=int)
-    parser.add_argument("--period", choices=["week", "next-seven-days"], default="week")
+    parser.add_argument("--period", choices=["week", "next-seven-days"])
     parser.add_argument("--unfinished", action="store_true")
     parser.add_argument("--send", action="store_true", help="Send pending events through achiSchooNounce")
     parser.add_argument("command", choices=["probe", "map", "sync", "status", "courses", "due",
@@ -49,6 +49,17 @@ def main(argv=None):
     try:
         if args.send and args.command != "deliver":
             raise CanvasError("send_requires_deliver")
+        allowed = {
+            "limit": {"courses", "assignments", "grades", "announcements", "due"},
+            "offset": {"courses", "assignments", "grades", "announcements", "due"},
+            "period": {"due"}, "unfinished": {"due", "assignments"},
+            "course": {"status", "courses", "assignments", "detail", "grades", "announcements", "due"},
+            "id": {"detail", "announcements"},
+        }
+        for flag, commands in allowed.items():
+            value = getattr(args, flag)
+            if value is not None and value is not False and args.command not in commands:
+                raise CanvasError(f"{flag}_not_supported_for_command")
         if args.command == "deliver":
             if args.send:
                 if not args.db.is_file():
@@ -65,7 +76,8 @@ def main(argv=None):
                 raise CanvasError("detail_requires_course_and_id")
             with open_reader(args.db) as db:
                 result = query(db, args.command, course=args.course, item=args.id,
-                               period=args.period, unfinished=args.unfinished, limit=args.limit, offset=args.offset)
+                               period=args.period or "week", unfinished=args.unfinished,
+                               limit=args.limit if args.limit is not None else 50, offset=args.offset or 0)
             print(json.dumps(result, ensure_ascii=False))
             return 0
         with CanvasClient(args.config) as client:
@@ -81,8 +93,14 @@ def main(argv=None):
                     if not isinstance(profile, dict) or type(profile.get("id")) is not int:
                         raise CanvasError("malformed_profile")
                     result = {"authentication": "valid", "checked_at": timestamp()}
+                if args.command in ("probe", "map"):
+                    with open_writer(args.db) as db:
+                        save_auth(db, "valid", timestamp())
                 atomic_write(args.config / "receipt.json", json.dumps(result))
             except CanvasError as exc:
+                if exc.kind == "authentication_expired" and args.command != "sync":
+                    with open_writer(args.db) as db:
+                        save_auth(db, "expired", timestamp())
                 atomic_write(args.config / "receipt.json", json.dumps({"command": args.command,
                              "error": exc.kind, "checked_at": timestamp()}))
                 raise

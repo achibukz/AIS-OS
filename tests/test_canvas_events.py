@@ -137,3 +137,30 @@ def test_grades_and_new_announcements_emit_events(db):
     save_snapshot(db, 42, "announcements", [{"id": 1, "title": "Hello", "source_url": "https://dlsu.instructure.com/courses/42/discussion_topics/1"}], AT)
     kinds = [r[0] for r in db.execute("SELECT kind FROM events ORDER BY id")]
     assert kinds == ["assignment_grade_changed", "new_announcement"]
+
+
+def test_failed_head_does_not_block_later_events(db):
+    save_auth(db, "expired", AT)
+    save_auth(db, "valid", AT)
+    def sender(message):
+        if "expired" in message:
+            raise SystemExit("rejected")
+        return 1
+    result = deliver(db, sender)
+    assert result["sent"] == 1 and result["remaining"] == 1
+    assert result["error"] == "delivery_unconfirmed"
+    assert db.execute("SELECT state FROM events ORDER BY id").fetchall()[1][0] == "sent"
+
+
+def test_retry_rotation_reaches_events_beyond_first_batch(db):
+    for i in range(60):
+        save_auth(db, "expired" if i % 2 == 0 else "valid", AT)
+    deliver(db, lambda message: 0)
+    result = deliver(db, lambda message: 1)
+    assert result["sent"] == 50
+    assert db.execute("SELECT count(*) FROM events WHERE id>50 AND state='sent'").fetchone()[0] == 10
+
+
+def test_successful_multipart_receipt_is_accepted(db):
+    save_auth(db, "expired", AT)
+    assert deliver(db, lambda message: 2)["sent"] == 1
