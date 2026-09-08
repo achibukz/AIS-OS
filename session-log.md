@@ -1,5 +1,11 @@
 # Session Log
 
+## 2026-09-09 02:27 [saved]
+
+Canvas client, cached queries and notifications
+
+Aki approved #26, #28 and #29 in sequence in one PR. Work runs in a separate worktree on ticket/26-canvas-data-notifications because the main checkout has unrelated edits. The client uses origin checks, private cookie persistence and one writer lock. Initial client and manifest checks returned 49 passed with `uv run --with pytest --with requests python -m pytest tests/test_canvas_client.py tests/test_canvas_subjects.py -q`. A live Ubuntu probe at 18:26 UTC returned authentication_expired. Course mapping and factual sampling remain pending; no notifications or services were activated. Storage and event work continues with fixtures.
+
 ## 2026-09-08 12:31 [saved]
 
 Canvas scope and first implementation increment.

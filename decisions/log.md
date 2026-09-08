@@ -1185,3 +1185,13 @@ Why: Aki wants useful Telegram answers with manageable sync frequency and no dep
 Alternatives: Document search before Telegram, 30-minute polling, all enrolled Canvas courses, optional phone login and a strict no-duplicate delivery claim. The approved plan replaces those proposals.
 
 Owner: Aki. [Plan](../docs/canvas-implementation-plan.md), [epic #24](https://github.com/achibukz/AIS-OS/issues/24). This records this integration's design, not a broader personal workflow policy.
+
+## 2026-09-08, Canvas data work in one PR
+
+Decision: implement AIS-OS #26, #28 and #29 sequentially on one branch, with a shared writer lock and read-only SQLite queries.
+
+Why: these tickets share the same client and snapshot lifecycle. Cached reads must work under the achiCore boundary without creating SQLite sidecars.
+
+Alternatives: separate PRs would require repeated handoffs. Phone login, achiCore integration and scheduling remain in their existing tickets.
+
+Owner: Aki approved the scope; Codex implements and records verification.
