@@ -156,7 +156,7 @@ class FakeClient:
     def list(self, path):
         if "assignments" in path:
             return [{"id": 1, "name": "Lab", "due_at": None,
-                     "submission": {"user_id": 7, "workflow_state": "unsubmitted"}}]
+                     "submission": {"user_id": 7, "workflow_state": "unsubmitted", "grade": None, "score": None}}]
         if "enrollments" in path:
             raise CanvasError("permission_denied")
         return []
@@ -180,3 +180,18 @@ def test_auth_expiry_preserves_all_categories(db):
     result = query(db, "assignments")
     assert len(result["data"]) == 1
     assert "authentication_expired" in result["warnings"]
+
+
+def test_compact_pages_report_remaining_rows(db):
+    save_snapshot(db, 42, "assignments", [assignment(i) for i in range(1, 6)], AT)
+    result = query(db, "assignments", limit=2, offset=2, now=NOW)
+    assert [r["id"] for r in result["data"]] == [3, 4]
+    assert result["total"] == 5 and result["next_offset"] == 4
+    with pytest.raises(CanvasError, match="invalid_query_page"):
+        query(db, "assignments", limit=0)
+
+
+def test_incomplete_submission_does_not_replace_previous_grade():
+    raw = {"id": 1, "name": "Lab", "due_at": None, "submission": {"user_id": 7, "workflow_state": "graded"}}
+    with pytest.raises(CanvasError, match="submission_unavailable"):
+        project_record("assignments", raw, 42, 7)

@@ -12,6 +12,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from canvas_client import CanvasError, ORIGIN, private_directory
+from canvas_events import enqueue, record_changes
 
 DATABASE = Path.home() / ".local/share/achios/canvas/canvas.sqlite3"
 CATEGORIES = ("courses", "assignments", "grades", "announcements")
@@ -35,6 +36,13 @@ CREATE TABLE authentication (
     singleton INTEGER PRIMARY KEY CHECK (singleton = 1), state TEXT NOT NULL,
     checked_at TEXT NOT NULL
 );
+CREATE TABLE events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, course_id INTEGER REFERENCES courses(id),
+    kind TEXT NOT NULL, data TEXT NOT NULL, observed_at TEXT NOT NULL,
+    state TEXT NOT NULL DEFAULT 'pending' CHECK(state IN ('pending','uncertain','sent')),
+    attempts INTEGER NOT NULL DEFAULT 0, last_attempt_at TEXT, sent_at TEXT, error TEXT
+);
+CREATE INDEX events_delivery ON events(state,id);
 PRAGMA user_version=1;
 """
 
@@ -53,7 +61,7 @@ def open_writer(path: Path):
         db.execute("PRAGMA foreign_keys=ON")
         version = db.execute("PRAGMA user_version").fetchone()[0]
         if version == 0:
-            db.executescript(SCHEMA)
+            db.executescript("BEGIN IMMEDIATE;\n" + SCHEMA + "COMMIT;")
         elif version != 1:
             raise CanvasError("unsupported_schema")
         if db.execute("PRAGMA journal_mode").fetchone()[0] != "delete":
@@ -94,6 +102,12 @@ def configure_courses(db, mapping):
 
 def save_auth(db, state, at):
     with db:
+        previous = db.execute("SELECT state FROM authentication WHERE singleton=1").fetchone()
+        old = previous["state"] if previous else "unknown"
+        if state == "expired" and old != "expired":
+            enqueue(db, None, "authentication_expired", {}, at)
+        elif state == "valid" and old == "expired":
+            enqueue(db, None, "authentication_restored", {}, at)
         db.execute("""INSERT INTO authentication VALUES(1,?,?)
             ON CONFLICT(singleton) DO UPDATE SET state=excluded.state,checked_at=excluded.checked_at""",
             (state, at))
@@ -109,6 +123,7 @@ def save_snapshot(db, course_id, category, records, at):
     if category not in CATEGORIES or len({row['id'] for row in records}) != len(records):
         raise CanvasError("malformed_response")
     with db:
+        record_changes(db, course_id, category, records, at)
         db.execute("UPDATE records SET active=0 WHERE course_id=? AND category=?", (course_id, category))
         for row in records:
             db.execute("""INSERT INTO records VALUES(?,?,?,?,1)
@@ -161,7 +176,8 @@ def project_record(category, row, course_id, user_id):
         if "due_at" not in row or "name" not in row:
             raise CanvasError("malformed_response")
         submission = row.get("submission")
-        if not isinstance(submission, dict) or submission.get("user_id") != user_id:
+        if (not isinstance(submission, dict) or submission.get("user_id") != user_id
+                or any(key not in submission for key in ("workflow_state", "grade", "score"))):
             raise CanvasError("submission_unavailable")
         return {"id": item_id, "name": clean_text(row["name"], 300),
                 "description": clean_text(row.get("description")), "due_at": date_value(row["due_at"]),
@@ -176,7 +192,7 @@ def project_record(category, row, course_id, user_id):
         if row.get("user_id") != user_id or row.get("type") != "StudentEnrollment":
             raise CanvasError("unexpected_enrollment")
         grades = row.get("grades")
-        if not isinstance(grades, dict):
+        if not isinstance(grades, dict) or any(key not in grades for key in ("current_score", "final_score")):
             raise CanvasError("grades_unavailable")
         return {"id": item_id, "current_grade": clean_text(grades.get("current_grade"), 100),
                 "current_score": numeric(grades.get("current_score")),
@@ -191,7 +207,9 @@ def project_record(category, row, course_id, user_id):
     raise CanvasError("invalid_category")
 
 
-def query(db, command, *, course=None, item=None, period="week", unfinished=False, now=None):
+def query(db, command, *, course=None, item=None, period="week", unfinished=False, now=None, limit=50, offset=0):
+    if not 1 <= limit <= 200 or offset < 0:
+        raise CanvasError("invalid_query_page")
     now = now or datetime.now(timezone.utc)
     categories = {"status": CATEGORIES, "courses": ("courses",), "due": ("assignments",),
                   "assignments": ("assignments",), "detail": ("assignments",),
@@ -228,6 +246,8 @@ def query(db, command, *, course=None, item=None, period="week", unfinished=Fals
                 continue
             value = json.loads(record["data"])
             value.update({"subject": ids[record["course_id"]]["code"], "category": record["category"]})
+            if command == "courses":
+                value.update({"term": ids[record["course_id"]]["term"], "section": ids[record["course_id"]]["section"]})
             if item is not None and value["id"] != item:
                 continue
             if unfinished and (value.get("submitted_at") or value.get("excused")
@@ -244,8 +264,13 @@ def query(db, command, *, course=None, item=None, period="week", unfinished=Fals
                 value.pop("description", None)
             if command == "grades" and value["category"] == "assignments":
                 value = {key: value[key] for key in ("id", "subject", "category", "name", "grade", "score", "points_possible", "source_url")}
+            if command == "announcements" and item is None and value.get("message"):
+                value["message_truncated"] = len(value["message"]) > 1000
+                value["message"] = value["message"][:1000]
             rows.append(value)
     if command == "due":
         rows.sort(key=lambda row: (parse_time(row["due_at"]), row["subject"], row["id"]))
-    return {"data": rows, "coverage": coverage, "authentication": dict(auth) if auth else {"state": "unknown"},
+    total = len(rows)
+    return {"data": rows[offset:offset + limit], "total": total,
+            "next_offset": offset + limit if offset + limit < total else None, "coverage": coverage, "authentication": dict(auth) if auth else {"state": "unknown"},
             "warnings": warnings, "timezone": "Asia/Manila", "queried_at": now.isoformat()}

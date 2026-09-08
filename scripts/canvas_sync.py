@@ -9,10 +9,14 @@ from canvas_subjects import read_subjects
 def load_mapping(config, wiki):
     mapping = json.loads((config / "mappings.json").read_text())
     manifest = read_subjects(wiki)
+    if not isinstance(mapping, dict):
+        raise CanvasError("mapping_requires_verification")
     if (mapping.get("term") != manifest["term"] or type(mapping.get("user_id")) is not int
             or mapping["user_id"] <= 0 or not isinstance(mapping.get("subjects"), list)):
         raise CanvasError("mapping_requires_verification")
     expected = [(s["code"], s["section"], s["overview"]) for s in manifest["subjects"]]
+    if any(not isinstance(s, dict) for s in mapping["subjects"]):
+        raise CanvasError("mapping_requires_verification")
     actual = [(s.get("code"), s.get("section"), s.get("overview")) for s in mapping["subjects"]]
     if actual != expected or any(type(s.get("course_id")) is not int or s["course_id"] <= 0 for s in mapping["subjects"]):
         raise CanvasError("mapping_requires_verification")
@@ -21,7 +25,7 @@ def load_mapping(config, wiki):
     return mapping
 
 
-def fetch_category(client, course_id, category):
+def fetch_category(client, course_id, category, user_id):
     base = f"/api/v1/courses/{course_id}"
     if category == "courses":
         row, _ = client.get(base)
@@ -29,7 +33,7 @@ def fetch_category(client, course_id, category):
     if category == "assignments":
         return client.list(base + "/assignments?include[]=submission&per_page=100")
     if category == "grades":
-        return client.list(base + "/enrollments?user_id=self&type[]=StudentEnrollment&per_page=100")
+        return client.list(base + f"/enrollments?user_id={user_id}&type[]=StudentEnrollment&per_page=100")
     return client.list(base + "/discussion_topics?only_announcements=true&per_page=100")
 
 
@@ -56,7 +60,7 @@ def sync(client, db, mapping):
             try:
                 if expired:
                     raise CanvasError("authentication_expired")
-                raw = fetch_category(client, course_id, category)
+                raw = fetch_category(client, course_id, category, mapping["user_id"])
                 records = [project_record(category, row, course_id, mapping["user_id"]) for row in raw]
                 save_snapshot(db, course_id, category, records, timestamp())
                 complete += 1

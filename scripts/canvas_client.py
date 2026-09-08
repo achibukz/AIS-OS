@@ -224,7 +224,10 @@ def match_courses(manifest: dict, courses: list[dict]) -> dict:
         for course in courses:
             label = str(course.get("course_code", "")).upper()
             name = str(course.get("name", "")).upper()
-            term_name = str((course.get("term") or {}).get("name", "")).upper()
+            canvas_term = course.get("term") or {}
+            if not isinstance(canvas_term, dict):
+                raise CanvasError("malformed_course")
+            term_name = str(canvas_term.get("name", "")).upper()
             if (re.search(rf"(?<![A-Z0-9]){code}(?![A-Z0-9])", label)
                     and re.search(rf"(?<![A-Z0-9]){re.escape(subject['section'])}(?![A-Z0-9])", label + " " + name)
                     and re.search(term_pattern, term_name)):

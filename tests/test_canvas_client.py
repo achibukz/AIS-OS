@@ -120,3 +120,36 @@ def test_matching_requires_course_section_and_term():
                     [{**course, "course_code": "STDISCM S030"}]):
         with pytest.raises(CanvasError, match="mapping_missing_or_ambiguous"):
             match_courses(manifest, courses)
+
+
+@pytest.mark.parametrize("header", ["garbage", '<https://dlsu.instructure.com/api/v1/courses>',
+    '</api/v1/courses?p=2>; rel="next", </api/v1/courses?p=3>; rel="next"'])
+def test_malformed_pagination_is_not_complete(header):
+    with pytest.raises(CanvasError, match="malformed_pagination"):
+        next_page(header, ORIGIN + '/api/v1/courses')
+
+
+def test_repeated_page_is_refused(client, monkeypatch):
+    monkeypatch.setattr(client.session, "get", lambda *a, **k: response('[]', Link='</api/v1/courses>; rel="next"'))
+    with pytest.raises(CanvasError, match="pagination_limit"):
+        client.list('/api/v1/courses')
+
+
+def test_response_size_is_bounded(client, monkeypatch):
+    monkeypatch.setattr('canvas_client.MAX_RESPONSE_BYTES', 8)
+    monkeypatch.setattr(client.session, 'get', lambda *a, **k: response('[{"id":12345}]'))
+    with pytest.raises(CanvasError, match="response_too_large"):
+        client.list('/api/v1/courses')
+
+
+def test_failed_atomic_cookie_save_preserves_previous_file(client, monkeypatch):
+    before = (client.config / 'cookies.txt').read_bytes()
+    def fail(*args):
+        raise OSError('injected rename failure')
+    monkeypatch.setattr('canvas_client.os.replace', fail)
+    monkeypatch.setattr(client.session, 'get', lambda *a, **k: response())
+    with pytest.raises(OSError):
+        client.get('/api/v1/courses')
+    assert (client.config / 'cookies.txt').read_bytes() == before
+    assert not list(client.config.glob('.cookies-*'))
+    assert not list(client.config.glob('.canvas-*'))
