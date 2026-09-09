@@ -342,6 +342,39 @@ TGDB mainly supplies evidence to self-learning, with searchable history as a sec
 
 Aki wants corrections such as "don't make this mistake again" and repeated task/document placement instructions to affect later matching work without repeating himself. Capture the current correction, identify the narrow supported scope, store a source-backed revision and retrieve it before the next matching action. An explicit durable instruction can apply immediately within existing permissions. A proposed change to AGENTS.md or a shared skill still follows the repository's reviewed-change contract. Learning cannot expand its own write permissions.
 
+### Write boundary inventory and downstream feature impact
+
+The failure of `gws` under agent turns revealed that Landlock write boundaries can silently break tool integrations that rely on persistent cache or state writes. A comprehensive audit of current boundaries and exposed features is needed before hardening worker permissions.
+
+#### Current write boundaries in achiCore (`src/write_boundary.py`)
+
+1. **`ALWAYS_PROTECTED_ROOTS`:**
+   - `~/.ssh` and `~/.gnupg`: Keys and cryptographic identities.
+   - `~/.config`: Global configuration tree across all CLI tools.
+   - `~/.local/share` and `~/.local/bin`: User application data and custom binaries.
+   - `~/.npm-global`, `~/bin`, `~/.cargo/bin`: Global execution surfaces.
+   - `~/.claude`: Harness settings, authentication, and state.
+2. **`DEFAULT_PROTECTED_ROOTS`:**
+   - `~/Documents/Obsidian`: Protected by default for engineering agents (Aea, Luna), overridden only by vault-specific agents (`schoolmem`, `achimem`, `ara`).
+3. **Ancestor Invariance:**
+   - Landlock deny-lists work via complement grants. Because `$HOME` is an ancestor of protected roots, `$HOME` receives no write grant of its own. Agents cannot create new entries directly in `$HOME` (e.g. creating loose dotfiles or missing directories such as `~/.cache` if not pre-created by the coordinator).
+
+#### Features and tools at risk under current write constraints
+
+- **`gws` (Google Workspace CLI):** Blocked because `token_cache.json` updates and schema cache writes target `~/.config/gws-*` and `~/.config/gws/cache/`. Addressed via [achiCore #131](https://github.com/achibukz/achiCore/issues/131) by permitting subdirectories under `~/.config/gws-*`.
+- **`gh` (GitHub CLI):** Stores authentication tokens and state in `~/.config/gh/`. If `gh` attempts credential renewal or state updates during an agent turn, it hits `Permission denied (os error 13)`.
+- **Systemd User Units:** `scripts/install_units.sh` writes units to `~/.config/systemd/user/`. Agent turns running deployment or unit management fail at the copy step.
+- **Git Global State:** Any command touching `~/.config/git/` or `~/.gitconfig` (directly in `$HOME`) is blocked.
+- **`gcloud` CLI:** Credential caching and active configuration live under `~/.config/gcloud/`. Interactive or agent-driven `gcloud` operations risk failure on token refresh.
+- **Package Manager Caches (`uv`, `pip`, `cargo`):** While `~/.cargo` is partially open, `~/.cargo/bin` is blocked; `uv` or `pip` writing to `~/.config/uv` or `$HOME` loose caches will fail if directories are missing.
+- **Syncthing and Tailscale:** Tooling querying or modifying configs in `~/.config/syncthing` is blocked.
+
+#### Discussion points for Astra
+
+- **Granular sub-path allowlists:** Rather than wholesale protection of `~/.config`, should `write_boundary.py` support an explicit allowlist mechanism for safe child directories (e.g. `~/.config/gws-*`, `~/.config/gh`) while keeping sensitive roots (`~/.config/systemd`, `~/.config/gcloud`, `~/.ssh`) locked?
+- **Pre-flight write capability probes:** Should workers run proactive write probes during job provisioning to verify that necessary state directories exist and are writable before assigning tickets?
+- **Out-of-band privileged delegation:** When an agent legitimately needs to install a systemd unit or update a global config, should it dispatch a privileged request to an out-of-band coordinator rather than widening agent write boundaries?
+
 ### Questions still to settle
 
 - When "don't do this again" leaves the category unclear, should the system ask immediately about future scope or save only the current correction until the category becomes clear? The current plan recommends preserving the item repair and asking one narrow scope question.

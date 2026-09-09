@@ -23,6 +23,90 @@ Approved factual Telegram queries first, two-hour sync, manual refresh, four-hou
 Started the offline subject manifest on ticket/25-canvas-subject-manifest. Existing unrelated edits in tasks, logs and Astra documents are preserved. Rejected implicit term selection, broad enrolled-course import and weakening the worker write boundary. Live course IDs, phone login, the Canvas client and production deployment remain pending. Automated validation: `uv run --with pytest python -m pytest tests/test_canvas_subjects.py -q` returned `24 passed in 0.10s`. Read-only local acceptance with `python3 scripts/canvas_subjects.py --wiki /home/achibukz/Documents/Obsidian/schoolMem/wiki` returned the five expected subject/section pairs. Canvas access, phone login, notification delivery and the full repository suite were not exercised.
 
 
+## 2026-09-08, added STSP002 schedule and milestone events to Google Calendar
+
+Added six course events to the `STSP002` Google Calendar from the AY2627-T1 syllabus ingest:
+- Diagnostic Exam (Cloud School, ungraded): Friday, September 11, 2026, 09:15–10:45 AM PHT
+- Midterm Exam (LS226, proctored): Friday, October 23, 2026, 09:15–10:45 AM PHT
+- MCO1 monolith project due: Wednesday, October 28, 2026, all-day
+- Independent Learning Period (ILP): Thursday, October 29 to Wednesday, November 4, 2026, all-day
+- MCO2 capstone demo and defense due: Tuesday, December 1, 2026, 09:15–10:45 AM PHT
+- Final Exam (Comprehensive, written): Friday, December 4, 2026, 08:00–11:00 AM PHT
+
+## 2026-09-07, resolved vault sync timeout and updated Term 1 calendar events
+
+Diagnosed transient network timeout failure in `achios-vault-sync.service` (`git pull --rebase` against `github.com:443` timed out after 136s). Re-ran the unit successfully once network connectivity recovered. Delegated removal of untracked `inbox/delegation-test.md` in `achiMem` to `#achiMem`, which committed and pushed `eccc58e` to clean the inbox watch state.
+
+Added STDISCM + GDPARCM Online Master Class orientation event to `STDISCM` Google Calendar on Wednesday, September 9, 2026, 6:30 PM – 8:00 PM PHT (identifying Dr. Del Gallego's "Wednesday, September 3" notice as a recycled 2025 template typo).
+
+Updated GELITPH recurring Tuesday and Friday online sessions (2:30 PM – 4:00 PM PHT) with instructor Ana Margarita Nunez's Zoom credentials and delegated the course overview update to `#schoolMem`. Changed STDISCM calendar color from colliding pale mint (`#cbeec8`) to Pastel Apricot (`#ffcba4`, `colorId=11`) via `gws`.
+
+
+Delegated from #General. Established the root cause of the truncation banner appearing on a complete #achiMem deletion report. `tui.log_error` runs only in the `error` branch (`src/bot.py:5941`) and the achiMem topic log holds no error panel for that turn, which places it in the `result` branch: agy emitted one `result` event carrying the finished receipt in `response` together with `status: ERROR` and `The stream was interrupted`. `is_recoverable_stream_error` matched, so `recovered_stream_drop` was set and `src/bot.py:6019` prepended the banner unconditionally. The report was never truncated.
+
+Found a second entry point the original ticket missed: `src/agy_client.py:508-518` yields a recoverable `error` event when the process exits non-zero after a clean result, setting the same flag with no later event to reset it. Confirmed #167's reset on a clean `SUCCESS` result at `src/bot.py:5926-5929` is intact, so Luna's should-fix from PR #169 was addressed and is not part of this bug.
+
+Rewrote [achiCore #172](https://github.com/achibukz/achiCore/issues/172) in place rather than filing a duplicate, since it was still open, unassigned, and had no worker job. Replaced the vague "clean terminal structure" wording with a specified rule: odd code-fence count as a hard veto, receipt status line searched only in the trailing 15 non-empty lines, terminal punctuation fallback so receipt-free prose reports are not banner-tagged forever.
+
+## 2026-09-07, diagnosed the stranded aea1/luna1 pair and filed the standby retry ticket
+
+Job `364b578fd9d822c7625cfe8d-6` (achiCore #6, PR #166) sat at `release_pending` holding aea1 and luna1. Luna approved at 18:15 PHT, Aki merged PR #166 on github.com at 18:53, then stopped the job from the Atlas status card at 21:23. Merging outside Telegram meant the daemon never ran its merge path, which is the branch that calls `stand_by` and returns both workers automatically, so the stop routed through abandon into `release_pending`. The release attempt then recorded `git fetch origin --prune timed out after 120s`.
+
+Verified the blocker is gone: the same fetch in `achiCore-aea1` now takes 1.6s, both worktrees are clean, luna1 is already detached, and neither slot has a live worker process. The release has to be re-triggered from the Recheck and release button, because `JobStore` loads `_records` once at construction and the running daemon holds them in memory, so editing `to_work_jobs.json` on disk would be overwritten and the slots would still read as occupied by `reserve_pair`.
+
+Filed [achiCore #171](https://github.com/achibukz/achiCore/issues/171) for the underlying fault: `_git` in `src/standby.py` raises on the first timeout with no retry, so one transient stall strands a worker pair until a human intervenes. Logged an active task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+## 2026-09-07, delegated trailing stream error ticket to Atlas
+
+Delegated issue creation to Atlas via agy-tickets for the trailing stream drop bug encountered during #General to #achiMem delegation. The work succeeded in disk artifacts (delegation-test.md created and linted), but an upstream SSE disconnect at stream close caused agy to emit status: ERROR, which run_delegated_turn forwarded as a failure receipt. Logged an active task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+## 2026-09-07, added Canvas implementation plan and logged Astra discussion task
+
+Added comprehensive technical specification and 19-ticket roadmap (Tickets A-S under [Ticket #24](https://github.com/achibukz/AIS-OS/issues/24)) to [canvas-implementation-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/canvas-implementation-plan.md). Documented SQLite+FTS5 architecture, 0-token sync invariant, and hardened HTTP client boundaries. Logged an active task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) to discuss the plan with Astra.
+
+## 2026-09-07, Canvas content and PDF probe
+
+Verified announcements, assignment and enrollment endpoint access from Ubuntu. A discussion returned 44 top-level entries, but Aki made discussions optional. An authenticated PDF download returned 632,460 bytes with a valid header and matching Canvas metadata. Rejected an earlier HTTP 200 login response from a request without cookies. Some Files listings return 403; linked-file discovery remains untested. Updated [the plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/canvas-sync-plan.md). No production code, scheduled job or vault import was created.
+
+## 2026-09-07, Canvas access verified with Mac closed
+
+Ubuntu returned HTTP 200 and valid course JSON using the privately transferred Canvas session, both before and after Aki reported closing Arc and his Mac. The second check ran at 08:51:41 UTC. No browser or personal API token was used. Session lifetime and content downloads remain untested. Recorded evidence in [the Canvas plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/canvas-sync-plan.md).
+
+## 2026-09-07, sent Term 1 EAF to Ethan Burayag
+
+Moved the task to send AY 2026-2027 Term 1 EAF to Ethan Burayag (`ethan_burayag@dlsu.edu.ph`) to done in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+## 2026-09-07, BPI account setup and ING onboarding proof completed
+
+Moved the BPI account creation and funding task to done in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md). Aki opened a traditional BPI savings account (acct `0119145716`, Grace Park 2nd Ave branch) funded with ₱3,000 and dispatched account details/proof to Vans for ING onboarding. Financial setup and maintaining balance rules are recorded in [banking-setup.md](http://100.106.210.38:8999/Documents/Obsidian/achiMem/wiki/personal/money/banking-setup.md).
+
+## 2026-09-07, filed eye grades and optical history
+
+Filed optical exam history (2023-01-13, 2024-05-05, and 2026-09-07) to [2026-09-07-eye-grades-history.md](http://100.106.210.38:8999/Documents/Files/personal/health/2026-09-07-eye-grades-history.md) under `~/Documents/Files/personal/health/` (synced via Syncthing `achi-files`). Noted Landlock write restriction on `~/Documents/Obsidian/` in `#General` preventing direct edits to `achiMem/wiki/personal/health/`.
+
+## 2026-09-07, sent Canvas integration plan to Andrei
+
+Dispatched the DLSU Canvas sync plan ([canvas-sync-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/canvas-sync-plan.md)) via `gws gmail +send` from `aki.bukz12@gmail.com` (`~/.config/gws-main`) to Anthony Andrei Tan (`anthony.andrei.tan@gmail.com`) with the markdown plan file attached. Sent message ID `1a07a8836672a372`. Saved draft record in [2026-09-07-andrei-canvas-sync-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/output/2026-09-07-andrei-canvas-sync-plan.md).
+
+## 2026-09-07, smart model routing discussion task
+
+Logged an active task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) to discuss how to implement smart model routing for daily Telegram conversations in achiCore.
+
+## 2026-09-06, Canvas sync planning checkpoint
+
+Saved [the resume plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/canvas-sync-plan.md) and filed [#24](https://github.com/achibukz/AIS-OS/issues/24). Aki verified a course export and session-authenticated JSON in his browser. Token creation is unavailable; Google login requires MFA. He accepts a private server session file and a possible Telegram-opened authentication flow. Next work is an Ubuntu HTTP-client experiment and session lifetime measurement with the Mac closed. No server session, sync, remote login or deployment was tested. Calendar feeds remain excluded. Updated the existing task; implementation remains pending.
+
+## 2026-09-06, sent test email to personal Gmail via gws
+
+Successfully sent a test email from `aki.bukz12@gmail.com` to personal inbox `akibukuhan10@gmail.com` using `gws gmail +send` with `GOOGLE_WORKSPACE_CLI_CONFIG_DIR=~/.config/gws-main` and `KEYRING_BACKEND=file`. Verified message reception in `akibukuhan10@gmail.com` inbox (Message ID `1a07902bf9a40148`, thread `1a07902bf9a40148`). Confirmed execution succeeds cleanly in this environment without `os error 13` (EACCES) sandbox restrictions.
+
+## 2026-09-06, documented write boundary inventory and feature audit topics
+
+Added a comprehensive inventory and risk analysis section to [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md#write-boundary-inventory-and-downstream-feature-impact) documenting achiCore Landlock write boundaries (`src/write_boundary.py`), ancestor invariance in `$HOME`, and downstream tools at risk of `Permission denied (os error 13)` failures (`gh`, systemd user units, `git` global state, `gcloud`, package manager caches). Added audit tracking item in [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md) and updated Astra discussion scope in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+## 2026-09-06, updated achiCore #131 scope and rejected custom gws fork
+
+Updated task registers in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) and [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md) to reflect the cancellation of the custom `gws` Rust fork (PR #164). Replaced the approach with reverting `~/.npm-global/bin/gws` to stock version 0.22.5 and granting write boundary permissions directly to `~/.config/gws-*` under Landlock per the reset scope on [achiCore #131](https://github.com/achibukz/achiCore/issues/131).
 
 ## 2026-09-06, diagnosed gws sandbox write restriction, filed ticket
 

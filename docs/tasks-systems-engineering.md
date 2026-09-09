@@ -24,8 +24,9 @@ Modular register for achiOS, achiCore, infrastructure, and engineering sub-tasks
 - [ ] Repair tests/test_daily_brief.py, all 44 tests fail against the refactored daily_brief module (no attribute parse_tasks, tasks_message, schedule_message, color_dot, polish_with_claude) #infra #testing !med
 - [ ] Test whether `ssh -L` port-forward re-auth works for gws on achibuntu, so the four logins run server-side and no credential copy is needed #achios #infra !med
 - [ ] Write `references/model-selection.md` — research-grounded model tier hierarchy and use-case reference guide (Opus, Sonnet, Flash, Flash-lite, etc. across achiOS, achiAgy, Asa, and daily tasks), then update AGENTS.md model guidance sections to match — current AGENTS.md mentions are undetailed and not grounded in research #achios #reference #arch !med
-- [ ] Allow permitted subdirectories beneath protected roots in write boundary (~/.config/gws-*) (achiCore #131) #achicore #security #bug !high
+- [ ] Allow permitted subdirectories beneath protected roots in write boundary (~/.config/gws-*) and restore stock gws 0.22.5 (achiCore #131, rejecting PR #164 custom fork) #achicore #security #bug !high
 - [ ] Automate completed GitHub PR and issue sync into tasks.md and evening debrief (AIS-OS #11) #achios #automation #telegram !high
 - [ ] Add show-me skill to Aea and Luna and mandate visual architecture diagrams in PR descriptions and reviews (achiCore #133-#134) #achicore #agents #ux !med
 - [ ] Fix Claude Code quota and auto-refresh stale provider tokens in /usage (achiCore #135-#136) #achicore #ux #bug !high
 - [ ] Hold grill-me session to design and build GitHub trending repos scanner cron (star surge tracking, adoption driver analysis, workflow integration) #automation #tooling #infra !med
+- [ ] Audit CLI tools and integrations against Landlock write boundary constraints (gh, git, systemd, gcloud, uv) to prevent silent Permission denied failures per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md#write-boundary-inventory-and-downstream-feature-impact) #achicore #infra #security !high

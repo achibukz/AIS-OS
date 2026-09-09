@@ -1176,6 +1176,26 @@ Alternatives: A dedicated persistent agent, or a bare HITL label with a manual c
 
 Owner: Aki. Next implementation work is the self-learning loop, with existing worker defects still tracked separately. This procedure applies beyond this repository; any achiMem promotion remains a separate sourced action.
 
+## 2026-09-06, preserve the Canvas sync investigation
+
+Decision: Keep the user-tested browser exporter available and investigate session-authenticated HTTP reads from Ubuntu before building browser automation. This is a conditional experiment, not a final deployment design.
+
+Why: Aki confirmed DLSU returns course JSON under his browser session despite unavailable personal token creation. He needs access while his Mac is closed and accepts private session storage plus manual Google MFA when needed.
+
+Alternatives: Calendar feeds were explicitly rejected. A large extension/backend stack is unnecessary for proving server access. A Telegram link to Canvas alone authenticates the phone, not the server.
+
+Owner: Aki. Evidence and open decisions are in [the plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/canvas-sync-plan.md) and [#24](https://github.com/achibukz/AIS-OS/issues/24).
+
+## 2026-09-07, Canvas discussions are optional
+
+Decision: Treat discussion topics and replies as best effort. Do not delay announcements, assignments, grades or files to add discussion-specific workarounds.
+
+Why: Aki explicitly prioritized the other content types and requested no extra engineering for discussions. Basic discussion access already succeeded in a live sample.
+
+Alternatives: Full reply coverage as a required release gate. Rejected by Aki.
+
+Owner: Aki. See [the Canvas plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/canvas-sync-plan.md).
+
 ## 2026-09-08, approve the first Canvas Telegram release
 
 Decision: Build factual Canvas queries and notifications before document ingestion. Select the active schoolWiki term, refresh every two hours with manual refresh, and flag data older than four hours. Use Monday-to-Sunday weeks in Asia/Manila and include submitted assignment status. Require working phone reauthentication through a protected Ubuntu browser reachable over Tailscale. Keep the cache writer outside the bound-agent write boundary. Accept rare notification duplicates when delivery is uncertain.
