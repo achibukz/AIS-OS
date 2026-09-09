@@ -8,7 +8,7 @@ Decisions:
 - Queried work Gmail profile via `gws gmail users messages` and retrieved message `1a085a979d414420` (`Internship Agreement Submission - Abram Aki Bukuhan`).
 - Extracted key details: deadline is September 11, 2026, at 1:00 PM; signatures needed from Aki and Parent/Guardian; PDF password is `INGHUBSPH2026`; notarization guidelines will follow in a separate update.
 - Updated `tasks.md` line to reflect the exact 1:00 PM deadline, password, and signing parties.
-- Added deadline event `Submit ING Internship Agreement` on 2026-09-11 to the `ING` Google Calendar.
+- Updated event on `ING` Google Calendar to a timed deadline event: `Deadline: Submit ING Internship Agreement (1:00 PM)` on 2026-09-11 13:00–13:30 PHT with password, signing requirements, and default reminders.
 
 ## 2026-09-09 14:11 [saved]
 
