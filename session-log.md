@@ -1,5 +1,15 @@
 # Session Log
 
+## 2026-09-09 20:33 [saved]
+
+Goal: verify uploaded signed ING Internship Agreement form and review agreement terms.
+
+Decisions:
+- Verified signed document `Abram Aki R. Bukuhan - Internship Agreement.pdf` in `~/Documents/Files/career/ing/` with password `INGHUBSPH2026`. Confirmed both intern (Aki) and parent/guardian (Michael Bukuhan) signatures are present.
+- Deleted the old unsigned agreement copies per Aki's instruction.
+- Reviewed and summarized key legal, operational, and intellectual property terms from all 8 pages of the agreement.
+- Updated `tasks.md` to reflect that signatures are complete and only final email submission to Vans remains.
+
 ## 2026-09-09 18:20 [saved]
 
 Goal: inspect work email from Vans (ING Hubs Philippines) and update Internship Agreement task and calendar.
