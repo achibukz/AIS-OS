@@ -1,5 +1,17 @@
 # Session Log
 
+## 2026-09-09 Canvas phone login implementation
+
+Goal: implement AIS-OS #27 and prepare assisted phone acceptance in the current Codex session.
+
+Decisions: work in AIS-OS-phone on ticket/27-canvas-phone-reauth to preserve unrelated main-checkout edits. Inspected the existing Obsidian/Selkies container and chose a separate temporary Chromium container. Added Tailscale peer identity checks, a bounded login window, independent systemd cleanup, and validated Canvas-only cookie replacement under the existing writer lock. No worker write boundary or vault policy changed.
+
+Verification: initial replacement tests failed because the implementation did not exist, then 21 focused tests passed. `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` returned 447 passed in 39.45s. A live existing-session profile probe at 00:18:21 UTC returned valid authentication. This is a baseline, not proof of phone reauthentication.
+
+Further verification: the updated full suite returned 451 passed in 33.42s. The wrong-account regression failed when its account check was temporarily removed and passed after restoration. Live HTTPS controls and desktop returned 200; loopback-source and foreign-Origin requests returned 403. The remote desktop displayed Google sign-in through a real WebSocket. A 60-second window expired and removed its container. A separate 15-second container expired after its launcher exited. Certificate setup initially failed until Aki enabled HTTPS Certificates in Tailscale and issued the certificate interactively.
+
+Open: phone Google/MFA acceptance with the Mac closed, session replacement and final cleanup. No schoolMem deployment, scheduled sync or Telegram message occurred.
+
 ## 2026-09-09 07:27 [saved]
 
 Address Luna's review on Canvas PR #33. Course grades now remain outside assignment pagination; delivery continues after failures and rotates retries by attempt count; probe records auth transitions without refreshing facts. Added online CLI, mapping-validation and receipt tests, rejected irrelevant flags, and documented an assisted live-testing handoff.
