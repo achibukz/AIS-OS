@@ -83,6 +83,17 @@ def test_bad_probe_preserves_last_jar(tmp_path, monkeypatch, body, error):
     assert not list(tmp_path.glob("reauth-candidate-*"))
 
 
+def test_mapping_without_user_id_is_typed_error_not_keyerror(tmp_path, monkeypatch):
+    saved = tmp_path / "cookies.txt"
+    saved.write_bytes(b"old jar")
+    (tmp_path / "mappings.json").write_text('{"term":"AY2627-T1"}')
+    monkeypatch.setattr(requests.Session, "get", lambda *a, **k: response({"id": 7}))
+    with pytest.raises(CanvasError, match="account_mapping_unusable"):
+        replace_session([cookie()], tmp_path)
+    assert saved.read_bytes() == b"old jar"
+    assert not list(tmp_path.glob("reauth-candidate-*"))
+
+
 def test_network_failure_preserves_jar(tmp_path, monkeypatch):
     (tmp_path / "cookies.txt").write_bytes(b"old jar")
     monkeypatch.setattr("canvas_client.time.sleep", lambda _: None)

@@ -58,8 +58,10 @@ def replace_session(rows: list[dict], config: Path = CONFIG, *, deadline: float 
                     raise CanvasError("malformed_profile")
                 mapping = config / "mappings.json"
                 if mapping.exists():
-                    expected = json.loads(mapping.read_text())["user_id"]
-                    if type(expected) is not int or expected != profile["id"]:
+                    expected = json.loads(mapping.read_text()).get("user_id")
+                    if type(expected) is not int:
+                        raise CanvasError("account_mapping_unusable")
+                    if expected != profile["id"]:
                         raise CanvasError("wrong_canvas_account")
                 for cookie in list(client.jar):
                     if cookie.domain not in (HOST, "." + HOST):

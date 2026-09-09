@@ -1,5 +1,19 @@
 # Session Log
 
+## 2026-09-09 14:11 [saved]
+
+Goal: fix Luna's should-fix and nit findings on Canvas phone reauth PR #35.
+
+Decisions:
+- Narrowed the gateway's Sec-Fetch-Site cross-site block to exempt only GET requests carrying Sec-Fetch-Mode: navigate, since a top-level navigation from a link (the Telegram delivery path in #27) carries no CSRF risk and POST/WebSocket keep the existing Origin check.
+- `replace_session` now raises a typed `CanvasError("account_mapping_unusable")` when `mappings.json` exists but has no usable `user_id`, instead of leaking a bare `KeyError` as an untyped 500.
+- Forwarded the proxy's `Location` header, removed the duplicate deadline computation between `Login.__init__` and `serve` (deadline is now passed in once), looped the CDP export until the `Storage.getCookies` reply (`id == 1`) instead of trusting the first WebSocket frame, and corrected the `connections.md` last-checked date to 2026-09-09.
+- Added regression tests for both should-fix findings; confirmed each fails against the pre-fix code (KeyError on a mapping missing `user_id`; 403 on a cross-site navigation GET) and passes with the fix.
+- Did not touch blocker 1 (missing assisted acceptance evidence for the shipped one-page layout) — that needs a live phone step from Aki, not a code change.
+
+Open:
+- Blocker 1 is unresolved: no redacted evidence record exists for the current one-page layout, and the PR body has no "Assisted feature live testing" section. Needs Aki's phone participation before this can ship.
+
 ## 2026-09-09 Canvas phone login implementation
 
 Goal: implement AIS-OS #27 and prepare assisted phone acceptance in the current Codex session.

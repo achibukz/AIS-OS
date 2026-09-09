@@ -56,6 +56,8 @@ async def main():
         async with client.ws_connect(endpoint) as ws:
             await ws.send_json({'id':1,'method':'Storage.getCookies'})
             result = await ws.receive_json()
+            while result.get('id') != 1:
+                result = await ws.receive_json()
             rows = result['result']['cookies']
             print(json.dumps([r for r in rows if r.get('domain') in
                   ('dlsu.instructure.com','.dlsu.instructure.com') and 'partitionKey' not in r]))
@@ -159,10 +161,10 @@ class Browser:
 
 class Login:
     def __init__(self, origin: str, operator: int, upstream: str, browser: Browser,
-                 config: Path, seconds: int):
+                 config: Path, deadline: float):
         self.origin, self.operator, self.upstream = origin, operator, upstream
         self.browser, self.config = browser, config
-        self.deadline = time.monotonic() + seconds
+        self.deadline = deadline
         self.finished = asyncio.Event()
         self.verifying = False
         self.result = None
@@ -181,7 +183,8 @@ class Login:
         origin = request.headers.get("Origin")
         if origin is not None and origin != self.origin:
             raise web.HTTPForbidden(text="Access denied")
-        if request.headers.get("Sec-Fetch-Site") in ("cross-site", "same-site"):
+        navigating = request.method == "GET" and request.headers.get("Sec-Fetch-Mode") == "navigate"
+        if not navigating and request.headers.get("Sec-Fetch-Site") in ("cross-site", "same-site"):
             raise web.HTTPForbidden(text="Access denied")
         if request.method != "GET" or request.headers.get("Upgrade", "").lower() == "websocket":
             if origin != self.origin:
@@ -249,7 +252,7 @@ class Login:
                     return downstream
             async with self.client.get(target, allow_redirects=False) as response:
                 headers = {key: value for key, value in response.headers.items()
-                           if key.lower() in ("content-type", "content-encoding")}
+                           if key.lower() in ("content-type", "content-encoding", "location")}
                 return web.Response(body=await response.read(), status=response.status, headers=headers)
         except (ClientError, OSError, asyncio.TimeoutError):
             raise web.HTTPBadGateway(text="Browser unavailable") from None
@@ -287,8 +290,7 @@ async def serve(args):
     try:
         upstream = await asyncio.to_thread(browser.start)
         origin = f"{'https' if tls else 'http'}://{hostname}:{args.port}"
-        login = Login(origin, owner, upstream, browser, args.config, args.seconds)
-        login.deadline = deadline
+        login = Login(origin, owner, upstream, browser, args.config, deadline)
         runner = web.AppRunner(login.app(), access_log=None, shutdown_timeout=5)
         await runner.setup()
         await web.TCPSite(runner, args.listen, args.port, ssl_context=tls).start()

@@ -18,7 +18,7 @@ class Browser:
 
 def test_gateway_denies_unknown_identity_spoofed_headers_and_cross_site(tmp_path, monkeypatch):
     async def run():
-        login = canvas_login.Login("http://login.test", 7, "http://127.0.0.1:1", Browser(), tmp_path, 1200)
+        login = canvas_login.Login("http://login.test", 7, "http://127.0.0.1:1", Browser(), tmp_path, time.monotonic() + 1200)
         identity = {}
         async def identify(peer):
             assert peer == "127.0.0.1"
@@ -44,9 +44,24 @@ def test_gateway_denies_unknown_identity_spoofed_headers_and_cross_site(tmp_path
     asyncio.run(run())
 
 
+def test_cross_site_navigation_get_is_allowed_but_post_is_not(tmp_path, monkeypatch):
+    async def run():
+        login = canvas_login.Login("http://login.test", 7, "http://127.0.0.1:1", Browser(), tmp_path, time.monotonic() + 1200)
+        async def identify(peer):
+            return {"UserProfile": {"ID": 7}}
+        monkeypatch.setattr(canvas_login, "identify", identify)
+        async with TestServer(login.app()) as server, ClientSession() as client:
+            navigate = {"Host": "login.test", "Sec-Fetch-Site": "cross-site", "Sec-Fetch-Mode": "navigate"}
+            response = await client.get(server.make_url('/canvas'), headers=navigate)
+            assert response.status == 200 and "Canvas login" in await response.text()
+            response = await client.post(server.make_url('/canvas/verify'), headers=navigate)
+            assert response.status == 403
+    asyncio.run(run())
+
+
 def test_duplicate_verify_failed_retry_and_cancel(tmp_path, monkeypatch):
     async def run():
-        login = canvas_login.Login("http://login.test", 7, "http://127.0.0.1:1", Browser(), tmp_path, 1200)
+        login = canvas_login.Login("http://login.test", 7, "http://127.0.0.1:1", Browser(), tmp_path, time.monotonic() + 1200)
         async def identify(peer):
             return {"UserProfile":{"ID":7}}
         monkeypatch.setattr(canvas_login, "identify", identify)
@@ -86,7 +101,7 @@ def test_proxy_relays_websocket_only_after_identity_and_origin(tmp_path, monkeyp
         upstream = web.Application()
         upstream.router.add_get('/socket', socket)
         async with TestServer(upstream) as backend:
-            login = canvas_login.Login("http://login.test", 7, str(backend.make_url('')).rstrip('/'), Browser(), tmp_path, 1200)
+            login = canvas_login.Login("http://login.test", 7, str(backend.make_url('')).rstrip('/'), Browser(), tmp_path, time.monotonic() + 1200)
             async def identify(peer):
                 return {"UserProfile":{"ID":7}}
             monkeypatch.setattr(canvas_login, "identify", identify)
@@ -237,7 +252,7 @@ def test_phone_controls_stay_on_root_and_canvas_page(tmp_path, monkeypatch):
         async def identify(peer): return {'UserProfile':{'ID':7}}
         monkeypatch.setattr(canvas_login,'identify',identify)
         async with TestServer(upstream) as backend:
-            login=canvas_login.Login('https://login.test',7,str(backend.make_url('')).rstrip('/'),Browser(),tmp_path,60)
+            login=canvas_login.Login('https://login.test',7,str(backend.make_url('')).rstrip('/'),Browser(),tmp_path,time.monotonic()+60)
             async with TestServer(login.app()) as server, ClientSession() as client:
                 for path in ('/','/canvas'):
                     response=await client.get(server.make_url(path),headers={'Host':'login.test'})
