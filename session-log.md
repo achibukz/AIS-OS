@@ -1,5 +1,13 @@
 # Session Log
 
+## 2026-09-09 18:20 [saved]
+
+Goal: update ING Internship Agreement task and schedule calendar deadline from Vans's email notice.
+
+Decisions:
+- Updated the ING Internship Agreement task in `tasks.md` with due date `@2026-09-11` and note to check email per Vans.
+- Added all-day deadline event `Submit ING Internship Agreement` on 2026-09-11 to the `ING` Google Calendar via `scripts/gcal_add.py`.
+
 ## 2026-09-09 14:11 [saved]
 
 Goal: fix Luna's should-fix and nit findings on Canvas phone reauth PR #35.
