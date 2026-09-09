@@ -2,11 +2,13 @@
 
 ## 2026-09-09 18:20 [saved]
 
-Goal: update ING Internship Agreement task and schedule calendar deadline from Vans's email notice.
+Goal: inspect work email from Vans (ING Hubs Philippines) and update Internship Agreement task and calendar.
 
 Decisions:
-- Updated the ING Internship Agreement task in `tasks.md` with due date `@2026-09-11` and note to check email per Vans.
-- Added all-day deadline event `Submit ING Internship Agreement` on 2026-09-11 to the `ING` Google Calendar via `scripts/gcal_add.py`.
+- Queried work Gmail profile via `gws gmail users messages` and retrieved message `1a085a979d414420` (`Internship Agreement Submission - Abram Aki Bukuhan`).
+- Extracted key details: deadline is September 11, 2026, at 1:00 PM; signatures needed from Aki and Parent/Guardian; PDF password is `INGHUBSPH2026`; notarization guidelines will follow in a separate update.
+- Updated `tasks.md` line to reflect the exact 1:00 PM deadline, password, and signing parties.
+- Added deadline event `Submit ING Internship Agreement` on 2026-09-11 to the `ING` Google Calendar.
 
 ## 2026-09-09 14:11 [saved]
 
