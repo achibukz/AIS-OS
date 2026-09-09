@@ -4,7 +4,7 @@ from http.cookiejar import MozillaCookieJar
 import pytest
 import requests
 
-from canvas_client import CanvasClient, CanvasError, writer_lock
+from canvas_client import CanvasError, writer_lock
 from canvas_reauth import canvas_cookies, replace_session
 
 

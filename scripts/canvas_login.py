@@ -26,18 +26,24 @@ from canvas_reauth import replace_session
 
 IMAGE = "lscr.io/linuxserver/chromium@sha256:27f41698ae1e6193c54f8d0176f9049d3620b3d4bd6bf4eb600dc2577d76d7af"
 PAGE = """<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Canvas login</title><style>body{font:18px system-ui;margin:24px;max-width:650px}button,a{display:block;margin:20px 0;padding:12px}button{font:inherit}</style>
-<h1>Canvas login</h1><p>This browser runs on Ubuntu. Open it, sign in to Canvas, then return here.</p>
-<a href="/" target="_blank" rel="noopener">Open Ubuntu browser</a>
-<button id="verify">Verify and save Canvas session</button><button id="cancel">Cancel login</button>
-<p id="result" role="status"></p><script>
+<title>Canvas login</title><style>
+html,body{height:100%;margin:0}body{font:16px system-ui;display:flex;flex-direction:column;height:100dvh}
+header{padding:8px 12px;background:#fff}h1{font-size:18px;margin:0}p{margin:6px 0}
+nav{display:flex;gap:8px}button{font:inherit;padding:8px}iframe{flex:1;width:100%;border:0;min-height:0}
+</style><header><h1>Canvas login</h1><p>Sign in below, then verify. This browser runs on Ubuntu.</p>
+<nav><button id="verify">Verify and save</button><button id="cancel">Cancel login</button></nav>
+<p id="result" role="status"></p></header>
+<iframe title="Ubuntu Canvas browser" src="/desktop" allow="fullscreen"></iframe><script>
+let completed=false;const buttons=[...document.querySelectorAll('button')];
 for (const action of ['verify','cancel']) document.getElementById(action).onclick=async()=>{
-const button=document.getElementById(action);button.disabled=true;
+if(completed)return;for(const button of buttons)button.disabled=true;
 try{const response=await fetch('/canvas/'+action,{method:'POST',headers:{'X-Canvas-Action':'1'}});
-const data=await response.json();document.getElementById('result').textContent=
-data.authentication==='valid'?'Canvas session saved. You can close both tabs.':data.error||data.status;
+const data=await response.json();completed=data.authentication==='valid'||data.status==='Login cancelled';
+if(completed)document.querySelector('iframe').remove();
+document.getElementById('result').textContent=
+data.authentication==='valid'?'Canvas session saved. You can close this page.':data.error||data.status;
 }catch(e){document.getElementById('result').textContent='Login window closed or connection lost.';}
-finally{button.disabled=false;}};</script>"""
+finally{for(const button of buttons)button.disabled=completed;}};</script>"""
 
 # This runs inside the temporary browser. Only Canvas cookies leave the container.
 EXPORT = """
@@ -183,7 +189,7 @@ class Login:
         return await handler(request)
 
     async def controls(self, request):
-        if request.method == "GET" and request.path == "/canvas":
+        if request.method == "GET" and request.path in ("/", "/canvas"):
             return web.Response(text=PAGE, content_type="text/html")
         if request.method != "POST" or request.headers.get("X-Canvas-Action") != "1" or request.can_read_body:
             raise web.HTTPBadRequest(text="Invalid operation")
@@ -215,7 +221,7 @@ class Login:
     async def proxy(self, request):
         if request.method != "GET" or not request.raw_path.startswith("/") or request.raw_path.startswith("//"):
             raise web.HTTPForbidden()
-        target = self.upstream + request.raw_path
+        target = self.upstream + ("/" if request.path == "/desktop" else request.raw_path)
         try:
             if request.headers.get("Upgrade", "").lower() == "websocket":
                 async with self.client.ws_connect(target, origin=self.origin, max_msg_size=16*1024*1024) as upstream:
@@ -250,6 +256,7 @@ class Login:
 
     def app(self):
         app = web.Application(middlewares=[self.authorize], client_max_size=1024)
+        app.router.add_route("*", "/", self.controls)
         app.router.add_route("*", "/canvas", self.controls)
         app.router.add_route("*", "/canvas/{action}", self.controls)
         app.router.add_route("*", "/{path:.*}", self.proxy)

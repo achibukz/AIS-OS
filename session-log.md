@@ -10,7 +10,13 @@ Verification: initial replacement tests failed because the implementation did no
 
 Further verification: the updated full suite returned 451 passed in 33.42s. The wrong-account regression failed when its account check was temporarily removed and passed after restoration. Live HTTPS controls and desktop returned 200; loopback-source and foreign-Origin requests returned 403. The remote desktop displayed Google sign-in through a real WebSocket. A 60-second window expired and removed its container. A separate 15-second container expired after its launcher exited. Certificate setup initially failed until Aki enabled HTTPS Certificates in Tailscale and issued the certificate interactively.
 
-Open: phone Google/MFA acceptance with the Mac closed, session replacement and final cleanup. No schoolMem deployment, scheduled sync or Telegram message occurred.
+Live acceptance: Aki confirmed his Mac was closed and Canvas opened through the phone's remote browser. He could not recover the separate control tab. The server's routes passed an independent check, but the mobile navigation failed. Invoked the authorized Verify endpoint from Ubuntu; it returned valid authentication at 05:45:19 UTC, saved the candidate and removed the temporary browser. A second client probe at 05:46:22 UTC succeeded from the saved jar and matched the mapped account after the browser was gone. Replaced the two-tab layout with persistent controls above an embedded desktop, including controls at the root URL. Added a routing regression and checked the working stream and visible Verify button in a mobile viewport.
+
+Final validation: `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` returned 452 passed in 33.88s. No temporary login containers or gateway listener remain.
+
+Final controls: the server recorded another successful Verify at 05:49:17 UTC before the user reported a closed connection on Cancel. Completed pages now disable both controls so another click cannot replace the success message with a connection error. A live browser cancellation returned Login cancelled and removed the temporary container; a simulated success response verified the completed UI state.
+
+Published [PR #35](https://github.com/achibukz/AIS-OS/pull/35). GitHub reported no check runs; validation is local. No schoolMem deployment, scheduled sync or Telegram message occurred. Session lifetime remains unmeasured. The separate assisted-testing record retains the certificate setup failures, phone navigation problem and evidence distinctions.
 
 ## 2026-09-09 07:27 [saved]
 

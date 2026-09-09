@@ -1,6 +1,6 @@
 # Canvas phone login
 
-Issue [#27](https://github.com/achibukz/AIS-OS/issues/27) adds a temporary Ubuntu browser for operator login. Phone acceptance is pending. Adding these scripts does not deploy scheduled sync or schoolMem integration.
+Issue [#27](https://github.com/achibukz/AIS-OS/issues/27) adds a temporary Ubuntu browser for operator login. Phone Google login with the Mac closed and authenticated Ubuntu session replacement passed on 2026-09-09. Adding these scripts does not deploy scheduled sync or schoolMem integration.
 
 ## Start a login window
 
@@ -18,7 +18,7 @@ uv run scripts/canvas_login.py --listen 100.106.210.38 --operator-id 52814112589
 
 The numeric operator ID must own the selected Tailscale address. Check the host's current identity with `tailscale status --json` before using this command on another machine. No secret belongs in a command argument. Certificate issuance may require an interactive administrator step. The gateway checks private-key ownership and permissions and refuses to start without its TLS files. Renew the certificate through the same command before it expires.
 
-Open the emitted `/canvas` link in Safari or Chrome on a phone connected to Tailscale. Open the Ubuntu browser, sign in to Canvas with Google and complete MFA yourself. Return to the control tab and select Verify and save Canvas session. A successful response means the Ubuntu HTTP client received a valid profile from Canvas and committed the new cookies. A Canvas page appearing in the browser alone does not establish this.
+Open the emitted `/canvas` link in Safari or Chrome on a phone connected to Tailscale. The Ubuntu browser appears below the controls on the same page. Sign in to Canvas with Google and complete MFA yourself, then select Verify and save above the browser. The root URL also shows these controls, so reopening the link cannot strand you in a separate desktop tab. A successful response means the Ubuntu HTTP client received a valid profile from Canvas and committed the new cookies. A Canvas page appearing in the browser alone does not establish this.
 
 The default window lasts at most 20 minutes including browser startup. `--seconds` can shorten it. Cancel, successful verification, a termination signal or expiry closes the gateway and stops its temporary browser. Starting again creates a clean profile and a new window. The URL contains no session or access credential and cannot reopen an expired window.
 
@@ -48,12 +48,18 @@ The result and private `reauth-receipt.json` contain only authentication status 
 
 A worker cannot use this command to bypass the coordinator's write boundary. Issue #173 still owns the validated schoolMem control path. Do not expose the Docker socket, arbitrary config paths or shell arguments to a bound worker.
 
+## Live acceptance on 2026-09-09
+
+The operator reached Canvas through the Ubuntu browser on his phone and explicitly confirmed his Mac was closed. The first two-tab layout made the Verify control difficult to recover. The coordinator invoked the same Verify endpoint, which returned valid authentication at 05:45:19 UTC and saved the candidate. A second client probe at 05:46:22 UTC succeeded after the temporary browser was removed and matched the mapped account. This proves session transfer and browser-independent access; it does not establish session lifetime.
+
+The revised layout keeps the browser and controls on one page. Both the root URL and `/canvas` open it. An automated mobile viewport check found the Verify button visible above a working desktop stream. The interaction record retains the earlier navigation failure and distinguishes coordinator verification from a phone button press. A second successful Verify closed the revised window before the reported Cancel attempt. Completed pages now disable both buttons and remove the desktop frame, preserving the final message. A live browser click returned Login cancelled, disabled both controls and removed the temporary container; a simulated success response separately verified the saved-session message behavior.
+
 ## Verification
 
 ```bash
 uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q
 ```
 
-Automated tests exercise access denial, WebSocket origin checks, expiry, duplicate verification, cleanup configuration, cookie scope, wrong accounts, lock contention and failed replacement. Assisted acceptance must separately establish Google/MFA from the phone with the Mac closed, a valid Ubuntu API response afterward and actual container cleanup. If Google rejects the browser, keep #27 open and record the failure before trying another browser.
+The final full-suite run returned 452 passed in 33.88s. Automated tests exercise access denial, WebSocket origin checks, expiry, duplicate verification, cleanup configuration, cookie scope, wrong accounts, lock contention and failed replacement. Assisted acceptance must separately establish Google/MFA from the phone with the Mac closed, a valid Ubuntu API response afterward and actual container cleanup. If Google rejects the browser, keep #27 open and record the failure before trying another browser.
 
 Sources: [LinuxServer Chromium](https://docs.linuxserver.io/images/docker-chromium/) documents Selkies, its loopback proxy requirement and desktop controls. [Tailscale CLI](https://tailscale.com/docs/reference/tailscale-cli) documents peer identity lookup.

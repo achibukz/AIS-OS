@@ -225,3 +225,27 @@ def test_tls_private_key_must_be_private_and_owned(tmp_path, monkeypatch):
     key.chmod(0o644)
     with pytest.raises(CanvasError, match='unsafe_tls_key'):
         canvas_login.tls_configuration(tmp_path)
+
+
+def test_phone_controls_stay_on_root_and_canvas_page(tmp_path, monkeypatch):
+    async def run():
+        async def desktop(request):
+            assert request.path == '/'
+            return web.Response(text='desktop fixture')
+        upstream=web.Application()
+        upstream.router.add_get('/',desktop)
+        async def identify(peer): return {'UserProfile':{'ID':7}}
+        monkeypatch.setattr(canvas_login,'identify',identify)
+        async with TestServer(upstream) as backend:
+            login=canvas_login.Login('https://login.test',7,str(backend.make_url('')).rstrip('/'),Browser(),tmp_path,60)
+            async with TestServer(login.app()) as server, ClientSession() as client:
+                for path in ('/','/canvas'):
+                    response=await client.get(server.make_url(path),headers={'Host':'login.test'})
+                    body=await response.text()
+                    assert response.status == 200
+                    assert 'id="verify"' in body and 'src="/desktop"' in body
+                    assert 'target="_blank"' not in body
+                response=await client.get(server.make_url('/desktop'),headers={'Host':'login.test'})
+                assert await response.text() == 'desktop fixture'
+                assert response.headers['X-Frame-Options'] == 'SAMEORIGIN'
+    asyncio.run(run())
