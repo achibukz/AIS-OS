@@ -1225,3 +1225,14 @@ Why: the review reproduced hidden course totals and a blocked delivery queue; li
 Alternatives: dropping failed notifications would lose alerts. Rejecting the whole assignment category would hide valid deadlines. Unavailable grades remain explicit rather than invented.
 
 Owner: Codex implements the review fixes at Aki's request.
+
+
+## 2026-09-09 Canvas phone login isolation
+
+Decision: use a temporary Chromium/Selkies container behind a Tailscale peer-identity gateway. A transient systemd unit bounds its lifetime independently of the gateway. Keep the browser profile in tmpfs with no host mounts. Import only Canvas cookies after a serialized candidate probe and account check.
+
+Why: the existing Obsidian desktop mounts both vaults and should not become a login service. The existing Canvas writer lock prevents a sync from overwriting a newly imported session. A failed login must leave the usable session intact.
+
+Alternatives: reusing the live Obsidian desktop would expose unrelated data. Mac cookie export does not satisfy phone acceptance. A public or bearer-link desktop would grant access beyond the named operator.
+
+Owner: Aki. Phone Google/MFA acceptance remains open until an observed Ubuntu probe follows the human login.
