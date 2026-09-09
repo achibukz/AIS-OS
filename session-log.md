@@ -1,5 +1,13 @@
 # Session Log
 
+## 2026-09-09 20:46 [saved]
+
+Goal: record scheduled email submission of signed ING Internship Agreement form to Vans.
+
+Decisions:
+- Noted scheduled email delivery to Vans for the signed 5-month ING Internship Agreement Form.
+- Moved the submission task in `tasks.md` from Active to Done with scheduled status.
+
 ## 2026-09-09 20:33 [saved]
 
 Goal: verify uploaded signed ING Internship Agreement form and review agreement terms.

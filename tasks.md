@@ -36,7 +36,6 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Fix Claude Code quota and auto-refresh stale provider tokens in /usage (achiCore #135-#136) #achicore #ux #bug !high
 - [ ] Build a sync script so global agent instructions propagate from ~/.claude/CLAUDE.md to Antigravity (~/.gemini/config/GEMINI.md, AGENTS.md) and Codex (~/.codex/AGENTS.md) automatically (needs design discussion: shared-core file vs generated marker blocks vs symlink; current state is one-time manual copy done 2026-09-05) #systems #tooling !med
 - [ ] Implement the approved Canvas first release through [#24](https://github.com/achibukz/AIS-OS/issues/24), with current-term subjects [#25](https://github.com/achibukz/AIS-OS/issues/25) and client/queries/notifications [#26](https://github.com/achibukz/AIS-OS/issues/26), [#28](https://github.com/achibukz/AIS-OS/issues/28), [#29](https://github.com/achibukz/AIS-OS/issues/29) merged via [PR #33](https://github.com/achibukz/AIS-OS/pull/33). Phone login [#27](https://github.com/achibukz/AIS-OS/issues/27) passed Google login with the Mac closed and authenticated Ubuntu session replacement; [PR #35](https://github.com/achibukz/AIS-OS/pull/35) awaits review; achiCore integration #173 and deployment [#30](https://github.com/achibukz/AIS-OS/issues/30) remain pending. #school #automation #infra !med
-- [ ] Submit signed 5-month ING Internship Agreement Form to Vans by 1:00 PM (Aki and parent signatures done; coordinator signature & notarization to follow) #career #school !high @2026-09-11
 - [ ] Complete active Systems & Engineering backlog tasks per [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md) #systems #engineering #achicore #infra !high
 - [ ] Complete active Asa & Research workflows backlog tasks per [tasks-asa-research.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-asa-research.md) #asa #research #workflows !high
 - [ ] Cancel current Google One subscription ahead of renewal #finances #personal !low @2026-10-13
@@ -60,6 +59,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Done
 
+- [x] Submit signed 5-month ING Internship Agreement Form to Vans by 1:00 PM (scheduled email queued; Aki and parent signatures done; coordinator signature & notarization to follow) #career #school !high @2026-09-11 (done 2026-09-09)
 - [x] Review and approve the Canvas implementation plan with incremental tickets. #school #automation (done 2026-09-08)
 - [x] Send AY 2026-2027 Term 1 EAF to Ethan Burayag (ethan_burayag@dlsu.edu.ph) #school #thesis !high (done 2026-09-07)
 - [x] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-09-07 (done 2026-09-07)
