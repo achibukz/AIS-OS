@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-09-11 15:10 [saved]
+
+Goal: #37, deadline reminders, weekly and daily digests and a one-time catch-up in achiSchooNounce.
+
+Decisions:
+- Aki chose the Option D countdown and split messages by type: deadlines, announcements and course grades. Every Canvas item carries its `source_url` on the next line; Aki made that a standing rule.
+- New `canvas.py remind` writer command, run by `canvas_scheduled.py` between `sync` and `deliver --send`. Selection lives in `scripts/canvas_reminders.py`; rendering stays in `canvas_events.format_event`, which now computes countdowns at send time so a retried message never shows a stale "in 16h".
+- Schema version 2 adds `notices(key, created_at)`. A claimed key and its events commit together. Writers migrate version 1; readers accept both.
+- Weekly Monday 08:00 Manila with three messages; daily Tuesday to Sunday with deadlines plus announcements only when posted in the past 24 hours; empty days and weeks still send. 3h and 1h reminders key on `due_at`, so a date change re-arms them.
+- The run that sends the catch-up claims that day's digest silently. A preview on a copy of the live cache showed the catch-up followed by a redundant "Nothing due today" and a repeated announcement.
+- Extracted `unfinished()` from `query_record` so reminders and `--unfinished` share one rule.
+
+Open:
+- Suite: 488 passed with pytest, requests and aiohttp.
+- Live acceptance after deploy: catch-up once, next digest, one 3h or 1h reminder, no duplicates across two runs.
+
 ## 2026-09-11 13:45 [saved]
 
 Goal: #30, schedule the 30-minute Canvas sync and prepare the first Telegram release gate.
