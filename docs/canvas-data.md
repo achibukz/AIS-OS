@@ -91,6 +91,41 @@ The service exits nonzero only for local faults such as a missing mapping, unrea
 
 Email notifications from `email_digest.py` are unchanged until direct sync has shown reliability.
 
+### Reminders and digests
+
+Between `sync` and `deliver --send` the service runs `canvas.py remind` ([#37](https://github.com/achibukz/AIS-OS/issues/37)). It takes `writer.lock`, reads the cache and queues notices as ordinary events, so they share delivery, retry and the uncertain state. It runs after a failed sync too, which keeps reminders coming from saved facts during an outage. Unfinished work uses the same rule as `--unfinished`. Times are Asia/Manila.
+
+| Notice | When | Messages |
+|---|---|---|
+| Catch-up | First run that finds no `catchup:v1` key | Deadlines from now, latest announcement per course, course grades |
+| Weekly | Monday at or after 08:00 | Deadlines Monday through Sunday, announcements from the past 7 days, course grades |
+| Daily | Tuesday to Sunday at or after 08:00 | Deadlines before the next 08:00, plus announcements only when posted in the past 24 hours |
+| 3h reminder | Due in at most 3 hours and more than 1 hour | One per assignment and due date |
+| 1h reminder | Due in at most 1 hour | One per assignment and due date |
+
+Empty weeks and days still send "nothing due". The run that sends the catch-up claims that day's digest without sending it. Schema version 2 adds `notices(key, created_at)`; each claimed key commits with its events. Keys are `catchup:v1`, `weekly:<ISO year-week>`, `daily:<date>` and `reminder:<course>:<assignment>:<due_at>:<3h|1h>`. A changed due date is a new key, so its reminders re-arm. Only current windows count, so downtime never replays a missed day or an elapsed reminder. Writers migrate version 1 caches; readers accept both.
+
+Deadline messages are a countdown, soonest first, rendered when sent rather than when queued. Every assignment, announcement, grade or other Canvas item in any message is followed by its stored `source_url`. Auth notices name no item and carry no link.
+
+```text
+Due this week (2)
+• in 16h  STDISCM  Lab 3 (Mon 11:59 PM)
+  https://dlsu.instructure.com/courses/42/assignments/1
+• in 2d   CCINOV8  Pitch deck draft (Wed 08:00 AM)
+  https://dlsu.instructure.com/courses/43/assignments/7
+Data as of Mon 14 Sep, 07:30 AM
+```
+
+Preview what the next run would queue against a copy of the cache, never the live file:
+
+```bash
+tmp=$(mktemp -d); cp ~/.local/share/achios/canvas/canvas.sqlite3 "$tmp/cache.sqlite3"
+python scripts/canvas.py --config "$tmp/config" --db "$tmp/cache.sqlite3" remind
+python scripts/canvas.py --config "$tmp/config" --db "$tmp/cache.sqlite3" deliver
+```
+
+Roll back by redeploying the previous `canvas_scheduled.py`. The `notices` table can stay; a version 2 cache still serves reads.
+
 ### Preview, deploy and rollback
 
 Do not run `scripts/install_units.sh` for this. It re-enables every timer in `systemd/`, including ones deliberately left off.

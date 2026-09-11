@@ -13,6 +13,7 @@ from canvas_subjects import read_subjects
 from canvas_store import DATABASE, open_reader, open_writer, query, save_auth
 from canvas_sync import load_mapping, sync
 from canvas_events import deliver, preview
+from canvas_reminders import remind
 
 WIKI = Path.home() / "Documents/Obsidian/schoolMem/wiki"
 
@@ -44,7 +45,8 @@ def main(argv=None):
     parser.add_argument("--unfinished", action="store_true")
     parser.add_argument("--send", action="store_true", help="Send pending events through achiSchooNounce")
     parser.add_argument("command", choices=["probe", "map", "sync", "status", "courses", "due",
-                                            "assignments", "detail", "grades", "announcements", "deliver"])
+                                            "assignments", "detail", "grades", "announcements", "deliver",
+                                            "remind"])
     args = parser.parse_args(argv)
     try:
         if args.send and args.command != "deliver":
@@ -71,6 +73,13 @@ def main(argv=None):
                     result = preview(db)
             print(json.dumps(result, ensure_ascii=False))
             return 1 if result.get("error") else 0
+        if args.command == "remind":
+            if not args.db.is_file():
+                raise CanvasError("database_unavailable")
+            with writer_lock(args.config), open_writer(args.db) as db:
+                result = remind(db)
+            print(json.dumps(result, ensure_ascii=False))
+            return 0
         if args.command not in ("probe", "map", "sync"):
             if args.command == "detail" and (args.id is None or args.course is None):
                 raise CanvasError("detail_requires_course_and_id")

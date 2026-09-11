@@ -51,6 +51,7 @@ def main(argv=None):
     paths = sys.argv[1:] if argv is None else list(argv)
     report = {"sync": run(paths + ["sync"])}
     if report["sync"].get("error") != "busy":
+        report["remind"] = run(paths + ["remind"])
         report["delivery"] = run(paths + ["deliver", "--send"])
     print(json.dumps({"at": timestamp(), **report}, ensure_ascii=False))
     return 1 if any(local_fault(result) for result in report.values()) else 0

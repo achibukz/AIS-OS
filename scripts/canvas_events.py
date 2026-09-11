@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from canvas_client import CONFIG, CanvasError, timestamp
@@ -55,9 +55,67 @@ def grade_value(value):
     return "unavailable" if value is None else str(value)
 
 
-def format_event(event):
+def parse(value):
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def manila(value):
+    return parse(value).astimezone(ZoneInfo("Asia/Manila"))
+
+
+def countdown(due, now):
+    left = due - now
+    if left <= timedelta(0):
+        return "overdue"
+    if left < timedelta(hours=1):
+        return f"in {max(1, int(left.total_seconds() // 60))}m"
+    if left < timedelta(hours=48):
+        return f"in {int(left.total_seconds() // 3600)}h"
+    return f"in {left.days}d"
+
+
+def format_digest(kind, data, now):
+    items = data["items"]
+    if kind == "grade_digest":
+        lines = [data["title"]] if items else ["Course grades: none saved"]
+        for item in items:
+            posted = item["current_grade"] is not None or item["current_score"] is not None
+            value = f"{grade_value(item['current_grade'])}, {grade_value(item['current_score'])}" if posted else "not posted"
+            lines += [f"• {item['subject']}  {value}", f"  {item['source_url']}"]
+        return "\n".join(lines)
+    if not items:
+        return data["empty"]
+    lines = [f"{data['title']} ({len(items)})"]
+    for item in items:
+        if kind == "deadline_digest":
+            due = parse(item["due_at"])
+            lines.append(f"• {countdown(due, now):<7} {item['subject']}  {item['name'] or '(untitled)'} "
+                         f"({manila(item['due_at']):%a %I:%M %p})")
+        else:
+            posted = f"{manila(item['posted_at']):%a %d %b}" if item["posted_at"] else "no date"
+            lines.append(f"• {item['subject']}  {item['title'] or '(untitled)'} ({posted})")
+        lines.append(f"  {item['source_url']}")
+    if kind == "deadline_digest":
+        as_of = f"{manila(data['as_of']):%a %d %b, %I:%M %p}" if data["as_of"] else "unknown"
+        lines.append(f"Data as of {as_of}")
+    return "\n".join(lines)
+
+
+def format_reminder(data, now):
+    due = manila(data["due_at"])
+    when = f"{due:%I:%M %p} today" if due.date() == now.astimezone(due.tzinfo).date() else f"{due:%a %d %b, %I:%M %p}"
+    return (f"⏰ {countdown(due, now)}  {data['subject']}  {data['name'] or '(untitled)'}\n"
+            f"Due {when}\n{data['source_url']}")
+
+
+def format_event(event, now=None):
     kind = event["kind"]
     data = json.loads(event["data"])
+    now = now or datetime.now(timezone.utc)
+    if kind in ("deadline_digest", "announcement_digest", "grade_digest"):
+        return format_digest(kind, data, now)
+    if kind == "deadline_reminder":
+        return format_reminder(data, now)
     if kind == "authentication_expired":
         return "Canvas session expired. Saved facts remain available. Restore the private Ubuntu session before refreshing."
     if kind == "authentication_restored":

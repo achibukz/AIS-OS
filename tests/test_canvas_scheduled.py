@@ -13,6 +13,14 @@ from test_canvas_cli import online  # noqa: F401
 SYSTEMD = Path(__file__).resolve().parent.parent / "systemd"
 
 
+@pytest.fixture(autouse=True)
+def quiet_reminders(monkeypatch, request):
+    calls = []
+    if "real_reminders" not in request.keywords:
+        monkeypatch.setattr(canvas, "remind", lambda db: calls.append(1) or {"queued": {}})
+    return calls
+
+
 @pytest.fixture
 def sent(monkeypatch):
     messages = []
@@ -101,6 +109,31 @@ def test_a_held_writer_lock_skips_the_run_without_a_fault(online, sent, capsys):
     assert code == 0
     assert report["sync"]["error"] == "busy"
     assert "delivery" not in report
+
+
+def test_remind_runs_between_sync_and_delivery_even_after_a_failed_sync(online, sent, capsys, quiet_reminders):
+    Client, config, db, args = online
+    assert canvas.main(args + ["map"]) == 0
+    capsys.readouterr()
+    Client.error = "authentication_expired"
+    code, report = scheduled(args, capsys)
+    assert code == 0
+    assert list(report) == ["at", "sync", "remind", "delivery"]
+    assert quiet_reminders == [1]
+
+
+@pytest.mark.real_reminders
+def test_first_scheduled_run_sends_the_catch_up_once(online, sent, capsys):
+    Client, config, db, args = online
+    assert canvas.main(args + ["map"]) == 0
+    capsys.readouterr()
+    code, report = scheduled(args, capsys)
+    assert code == 0 and report["remind"]["queued"]["deadline_digest"] >= 1
+    first = len(sent[0])
+    assert first >= 3
+    code, report = scheduled(args, capsys)
+    assert report["remind"]["queued"].get("grade_digest") is None
+    assert len(sent[0]) == first
 
 
 def test_missing_mapping_is_a_local_fault(online, sent, capsys):

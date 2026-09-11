@@ -43,7 +43,10 @@ CREATE TABLE events (
     attempts INTEGER NOT NULL DEFAULT 0, last_attempt_at TEXT, sent_at TEXT, error TEXT
 );
 CREATE INDEX events_delivery ON events(state,id);
-PRAGMA user_version=1;
+"""
+NOTICES = """
+CREATE TABLE notices (key TEXT PRIMARY KEY, created_at TEXT NOT NULL);
+PRAGMA user_version=2;
 """
 
 
@@ -61,8 +64,10 @@ def open_writer(path: Path):
         db.execute("PRAGMA foreign_keys=ON")
         version = db.execute("PRAGMA user_version").fetchone()[0]
         if version == 0:
-            db.executescript("BEGIN IMMEDIATE;\n" + SCHEMA + "COMMIT;")
-        elif version != 1:
+            db.executescript("BEGIN IMMEDIATE;\n" + SCHEMA + NOTICES + "COMMIT;")
+        elif version == 1:
+            db.executescript("BEGIN IMMEDIATE;\n" + NOTICES + "COMMIT;")
+        elif version != 2:
             raise CanvasError("unsupported_schema")
         if db.execute("PRAGMA journal_mode").fetchone()[0] != "delete":
             raise CanvasError("unsupported_journal")
@@ -77,7 +82,7 @@ def open_reader(path: Path):
     db.row_factory = sqlite3.Row
     try:
         db.execute("PRAGMA query_only=ON")
-        if db.execute("PRAGMA user_version").fetchone()[0] != 1:
+        if db.execute("PRAGMA user_version").fetchone()[0] not in (1, 2):
             raise CanvasError("unsupported_schema")
         if db.execute("PRAGMA journal_mode").fetchone()[0] != "delete":
             raise CanvasError("unsupported_journal")
@@ -221,13 +226,17 @@ def project_record(category, row, course_id, user_id):
     raise CanvasError("invalid_category")
 
 
-def query_record(record, course, command, item, unfinished, start):
+def unfinished(value):
+    return not (value.get("submitted_at") or value.get("excused")
+                or value.get("submission_status") in ("submitted", "pending_review", "graded"))
+
+
+def query_record(record, course, command, item, only_unfinished, start):
     value = json.loads(record["data"])
     value.update({"subject": course["code"], "category": record["category"]})
     if item is not None and value["id"] != item:
         return None
-    if unfinished and (value.get("submitted_at") or value.get("excused")
-                       or value.get("submission_status") in ("submitted", "pending_review", "graded")):
+    if only_unfinished and not unfinished(value):
         return None
     if command == "due":
         if value.get("due_at") is None or not start <= parse_time(value["due_at"]) < start + timedelta(days=7):
