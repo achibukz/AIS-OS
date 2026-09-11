@@ -1236,3 +1236,13 @@ Why: the existing Obsidian desktop mounts both vaults and should not become a lo
 Alternatives: reusing the live Obsidian desktop would expose unrelated data. Mac cookie export does not satisfy phone acceptance. A public or bearer-link desktop would grant access beyond the named operator.
 
 Owner: Aki. Phone Google/MFA acceptance remains open until an observed Ubuntu probe follows the human login.
+
+## 2026-09-11, prioritize Asa and Sciel before semantic learning
+
+Decision: Apply the approved Telegram cohesion plan and ticket roadmap. General becomes Asa, Sciel names both isolated vault topics, semantic preferences use sourced immediate corrections and a daily 3 AM Manila Flash review, and daily/weekly learning reports go to achiNouncements. Keep midnight debriefs. Required HITL follows Luna SHIP through an independent Testing Grounds queue; Aki retains merge control. Preserve abandoned work and offer continue/fresh attempts.
+
+Why: Aki wants ordinary phrasing to imply the correct linked updates without repeating instructions or supervising each testing step. Source identity, deterministic mutations and explicit receipts prevent a smarter model's unsupported claims from becoming completed work.
+
+Alternatives: Rebuilding legacy Markdown TGDB, relying on session logs alone, duplicating existing learning tickets, treating SHIP as task completion, and stopping at a saved-but-unpushed update were rejected. See docs/telegram-cohesion-discussion-2026-09-11.md for the complete decisions and supersessions.
+
+Owner: Aki for product and merge decisions; Aea for implementation; Luna for review.

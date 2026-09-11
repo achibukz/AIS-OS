@@ -1,5 +1,14 @@
 # Session Log
 
+## 2026-09-11, approved Telegram cohesion roadmap and ticket workflow
+
+Recorded Aki's decisions in docs/telegram-cohesion-discussion-2026-09-11.md, replaced the active Astra plan with current scope and preserved its earlier version under docs/history. Published 16 new tickets and revised 15 existing ones across AIS-OS and achiCore. The roadmap includes every remaining open ticket. Closed achiCore #10 after source/test verification; kept #62 open for its remaining cross-store rollback defect. Kept #20 and Canvas #24 open where review or live evidence remains incomplete.
+
+Updated tracked agy-tickets instructions for approved publication authority, current model keys, dependency ordering, all-ticket inventory and post-SHIP self-guided HITL. Aki retains merge control. No runtime features or timers were deployed. Existing dirty main-checkout tasks and logs remain outside this change.
+
+Verification: focused achiCore command and 59 passing tests are recorded in the roadmap. Planning/skill validation and AIS-OS suite results are recorded in the PR and skill-check document. Open work remains the published implementation tickets, not a claim that this planning change ships their behavior.
+
+
 ## 2026-09-11 16:20 [saved]
 
 Goal: #37 follow-up. Aki asked to drop the grades message for now after seeing the resent catch-up.
