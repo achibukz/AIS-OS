@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-09-12 00:21 [saved]
+
+Goal: track achiCore #57 for /tasks parameter forwarding and close AIS-OS #55 in tasks.md per Aki's direction.
+
+Decisions:
+- Marked AIS-OS #55 done in `tasks.md` following merge of PR #56.
+- Added active tracking item in `tasks.md` under `## Active` for [achiCore #57](https://github.com/achibukz/achiCore/issues/57) (`Forward /tasks arguments in cmd_tasks and render area views turn-free`).
+- Retained existing open GitHub issue `achiCore #57` rather than opening a duplicate issue on GitHub.
+
+Rejected:
+- Opening duplicate issue on achibukz/achiCore.
+
+Open:
+- Implementation of achiCore #57 by Aea when ready.
+
 ## 2026-09-12 00:17 [saved]
 
 Goal: update persistent declarative memory and AGENTS.md with /tasks default exclusion filtering rules.

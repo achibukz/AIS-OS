@@ -24,7 +24,7 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
-- [ ] Filter systems and project research from default /tasks and support all and backlog views through [AIS-OS #55](https://github.com/achibukz/AIS-OS/issues/55) #systems !high
+- [ ] Forward /tasks arguments in cmd_tasks and render area views turn-free through [achiCore #57](https://github.com/achibukz/achiCore/issues/57) #achicore #systems !high
 - [ ] Deliver the approved Telegram cohesion batch, starting with Asa and Sciel, then semantic learning. [Roadmap](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-roadmap-2026-09-11.md) covers achiCore #194-#200 and AIS-OS #41-#49 plus revised existing tickets. #systems !high
 - [ ] Fix shared Telegram message splitting through [AIS-OS #34](https://github.com/achibukz/AIS-OS/issues/34), preserving long-message tails without duplicate prefixes #systems #bug !med
 - [ ] Fix false-positive delegation failure receipts on trailing agy stream disconnects, filed as [achiCore #167-#168](https://github.com/achibukz/achiCore/issues/167) #achicore #bug !high
@@ -88,6 +88,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Done
 
+- [x] Filter systems and project research from default /tasks and support all and backlog views through [AIS-OS #55](https://github.com/achibukz/AIS-OS/issues/55) #systems !high (done 2026-09-11)
 - [x] Audit and design end-to-end cohesion across achiOS daemons, email digest parser, task register, and calendar auto-sync with Claude Code #achios #audit #arch !high @2026-08-27 (done 2026-09-11)
 - [x] Audit Hermes research retrospective and orchestrator findings with Claude Code in asa [2026-08-24-hermes-research-and-orchestrator-audit.md](http://100.106.210.38:8999/Code/GitHub/asa/docs/reports/2026-08-24-hermes-research-and-orchestrator-audit.md) #asa #audit !high @2026-08-27 (done 2026-09-11)
 - [x] Audit and plan integration of Matt Pocock workflows (Wayfinder, Grilling, Codebase Design) with asa SCAN/STORM research pipeline in Claude Code per [2026-08-24-matt-pocock-workflow-integration-and-wayfinder-asa-audit.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-24-matt-pocock-workflow-integration-and-wayfinder-asa-audit.md) #achios #asa #workflows #audit !med @2026-08-27 (closed 2026-09-11)
