@@ -91,7 +91,7 @@ def remind(db, now=None):
         if local.weekday() == 0:
             year, week, _ = local.isocalendar()
             queue(f"weekly:{year}-W{week:02d}", [] if caught_up else [
-                deadlines("Due this week", f"📅 Week of {local:%a %d %b}: nothing due",
+                deadlines("Due this week", f"Week of {local:%a %d %b}: nothing due",
                           between(open_work, midnight, midnight + timedelta(days=7))),
                 announcements("Announcements this past week", "No announcements this past week",
                                between(items["announcements"], now - timedelta(days=7), now, "posted_at")),

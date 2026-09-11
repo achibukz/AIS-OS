@@ -105,15 +105,15 @@ Between `sync` and `deliver --send` the service runs `canvas.py remind` ([#37](h
 
 Empty weeks and days still send "nothing due". The run that sends the catch-up claims that day's digest without sending it. Schema version 2 adds `notices(key, created_at)`; each claimed key commits with its events. Keys are `catchup:v1`, `weekly:<ISO year-week>`, `daily:<date>` and `reminder:<course>:<assignment>:<due_at>:<3h|1h>`. A changed due date is a new key, so its reminders re-arm. Only current windows count, so downtime never replays a missed day or an elapsed reminder. Writers migrate version 1 caches; readers accept both.
 
-Deadline messages are a countdown, soonest first, rendered when sent rather than when queued. Every assignment, announcement, grade or other Canvas item in any message is followed by its stored `source_url`. Auth notices name no item and carry no link.
+Deadline messages are a countdown, soonest first, rendered when sent rather than when queued. Every Canvas message, change alerts included, uses the cron layout: a 33-dash separator, a bold header, then the body, with no emojis. Delivery sends Telegram HTML through `send(..., html=True)`; other senders stay plain text. Every assignment, announcement, grade or other Canvas item ends with a `[link]` to its stored `source_url`, and all Canvas text is HTML-escaped. Auth notices name no item and carry no link. As rendered in Telegram:
 
 ```text
+---------------------------------
 Due this week (2)
-• in 16h  STDISCM  Lab 3 (Mon 11:59 PM)
-  https://dlsu.instructure.com/courses/42/assignments/1
-• in 2d   CCINOV8  Pitch deck draft (Wed 08:00 AM)
-  https://dlsu.instructure.com/courses/43/assignments/7
 Data as of Mon 14 Sep, 07:30 AM
+
+• in 16h  STDISCM  Lab 3 (Mon 11:59 PM) [link]
+• in 2d   CCINOV8  Pitch deck draft (Wed 08:00 AM) [link]
 ```
 
 Preview what the next run would queue against a copy of the cache, never the live file:
