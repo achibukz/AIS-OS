@@ -1,5 +1,30 @@
 # Session Log
 
+## 2026-09-11 23:50 [saved]
+
+Goal: implement AIS-OS #55 to filter systems, bare tickets, and non-school research from default /tasks, and support all and backlog views.
+
+Decisions:
+- Added `raw_text` field to `Task` dataclass preserving original line content for ticket reference matching.
+- Added `TICKET_RE` and `BARE_TICKET_RE` regexes to detect issue/PR links and bare ticket references across AIS-OS, achiCore, achiAgy, schoolMem, and achiMem.
+- Added `_is_default_excluded(task)` in `scripts/task_engine.py` applying Predicate A (`#systems`), Predicate B (issue/PR links and bare ticket references), and Predicate C (non-school research with `#research` tag).
+- Extended `parse_tasks` in `scripts/task_engine.py` to parse `## Backlog` entries with `state="backlog"`, skipping completed `[x]` items and preserving `[ ]` and `[~]`.
+- Updated `render_tasks` in `scripts/task_engine.py`:
+  - `area is None`: filters tasks matching default exclusion predicates and excludes backlog.
+  - `area="all"`: renders all active and blocked tasks across categories without exclusions (backlog excluded).
+  - `area="backlog"` (and alias `"backlogs"`): renders only backlog tasks under a `BACKLOG` section header.
+  - Specific areas (e.g. `--area systems`): retain existing behavior without default exclusion filtering.
+  - Invalid area raises `ValueError` listing valid choices including `all` and `backlog`.
+- Updated `scripts/tasks_digest.py` `--area` argument choices to include `all` and `backlog`.
+- Added unit tests T1-T8 and T10 in `tests/test_task_engine.py` and T9 in `tests/test_tasks_digest.py`, achieving full test coverage with zero regressions across 530 tests.
+
+Rejected:
+- Separate predicate for engineering tasks (already covered by `#systems` area).
+- Including backlog tasks in `area="all"` (backlog remains strictly isolated to `area="backlog"`).
+
+Open:
+- Open PR for AIS-OS #55 and await review/merge before `achiCore #57` argument forwarding.
+
 ## 2026-09-11 23:35 [saved]
 
 Goal: publish AIS-OS implementation ticket for /tasks default exclusion of systems and tickets, all option, and backlog support per Aki's direction.
