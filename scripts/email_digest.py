@@ -33,7 +33,12 @@ from zoneinfo import ZoneInfo
 # Add scripts directory to sys.path to import telegram_notify
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
-from telegram_notify import send
+from telegram_notify import send, split_messages, TELEGRAM_LIMIT
+
+
+def split_digest_message(message: str, limit: int = TELEGRAM_LIMIT) -> list[str]:
+    """Split digest message preserving Telegram HTML anchors across chunks."""
+    return split_messages(message, limit=limit)
 
 
 def gws_env(profile: str) -> dict[str, str]:
@@ -49,11 +54,18 @@ LLM_DIR = Path.home() / ".local" / "share" / "achios" / "llm"
 LOCAL_TZ = ZoneInfo("Asia/Manila")
 GWS_BIN = Path.home() / ".npm-global" / "bin" / "gws"
 
+DEFAULT_ACCOUNT_EMAILS: dict[str, str] = {
+    "dlsu": "abram_bukuhan@dlsu.edu.ph",
+    "work": "akibukzwork@gmail.com",
+    "personal": "akibukuhan10@gmail.com",
+}
+
 ACCOUNT_CONFIGS = [
     {
         "id": "dlsu",
         "type": "school",
         "title": "🎓 DLSU School Email",
+        "email": "abram_bukuhan@dlsu.edu.ph",
         "gws_profile": "dlsu",
         "env_file": CONFIG_DIR / "telegram_school.env",
     },
@@ -61,6 +73,7 @@ ACCOUNT_CONFIGS = [
         "id": "work",
         "type": "work",
         "title": "💼 Work / Career Email",
+        "email": "akibukzwork@gmail.com",
         "gws_profile": "work",
         "env_file": None,
     },
@@ -68,6 +81,7 @@ ACCOUNT_CONFIGS = [
         "id": "personal",
         "type": "personal",
         "title": "📬 Personal & Security Alerts",
+        "email": "akibukuhan10@gmail.com",
         "gws_profile": "personal",
         "env_file": None,
     },
@@ -157,6 +171,31 @@ class EmailItem:
     snippet: str
     category: str = "general"
     date_str: str = ""
+    message_id: str = ""
+    thread_id: str = ""
+    account_email: str = ""
+
+    @property
+    def web_link(self) -> str | None:
+        """Construct account-aware Gmail web URL for this message or thread."""
+        target_id = (self.thread_id or self.message_id or "").strip()
+        account = (self.account_email or "").strip()
+        if not target_id or not account:
+            return None
+        # Strict validation: prevent credentials, injection, or query parameters
+        if not re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", account):
+            return None
+        if not re.match(r"^[a-zA-Z0-9_-]+$", target_id):
+            return None
+        return f"https://mail.google.com/mail/u/{account}/#all/{target_id}"
+
+
+def format_source_link(item: EmailItem) -> str:
+    """Render clickable HTML [link] or report missing identity."""
+    link = item.web_link
+    if link:
+        return f'<a href="{html.escape(link, quote=True)}">[link]</a>'
+    return "[missing ID]"
 
 
 def sanitize_text(text: str) -> str:
@@ -292,7 +331,11 @@ def categorize_email(from_hdr: str, subject: str, snippet: str, account_type: st
     return "general"
 
 
-def fetch_account_emails(account_type: str = "general", gws_profile: str | None = None) -> tuple[list[EmailItem], int, str | None]:
+def fetch_account_emails(
+    account_type: str = "general",
+    gws_profile: str | None = None,
+    account_email: str | None = None,
+) -> tuple[list[EmailItem], int, str | None]:
     """Fetch unread actionable emails for one gws profile."""
     actionable: list[EmailItem] = []
     filtered_noise_count = 0
@@ -302,6 +345,8 @@ def fetch_account_emails(account_type: str = "general", gws_profile: str | None 
         raise RuntimeError(f"gws binary missing: {GWS_BIN}")
     if not gws_profile:
         raise ValueError("gws profile is required")
+
+    email_addr = account_email or DEFAULT_ACCOUNT_EMAILS.get(gws_profile, "")
 
     cfg_dir = Path.home() / ".config" / f"gws-{gws_profile}"
     if not cfg_dir.is_dir():
@@ -323,7 +368,10 @@ def fetch_account_emails(account_type: str = "general", gws_profile: str | None 
             data = json.loads(stdout_clean)
             messages = data.get("messages", [])
             for m in messages:
-                mid = m["id"]
+                mid = m.get("id", "") if isinstance(m, dict) else ""
+                m_thread = m.get("threadId", "") if isinstance(m, dict) else ""
+                if not mid:
+                    continue
                 res_m = subprocess.run(
                     [
                         str(GWS_BIN), "gmail", "users", "messages", "get",
@@ -355,6 +403,8 @@ def fetch_account_emails(account_type: str = "general", gws_profile: str | None 
                     category = categorize_email(from_hdr, subject, snippet, account_type=account_type)
                     sender = clean_title(clean_sender(from_hdr))
                     clean_subj = clean_title(subject)
+                    item_id = msg_data.get("id") or mid
+                    item_thread = msg_data.get("threadId") or m_thread
                     actionable.append(
                         EmailItem(
                             sender=sender,
@@ -362,6 +412,9 @@ def fetch_account_emails(account_type: str = "general", gws_profile: str | None 
                             snippet=snippet[:250].strip(),
                             category=category,
                             date_str=date_hdr,
+                            message_id=item_id,
+                            thread_id=item_thread,
+                            account_email=email_addr,
                         )
                     )
             return actionable, filtered_noise_count, None
@@ -447,17 +500,188 @@ Rules:
     return None
 
 
-def build_account_message_raw(title: str, account_type: str, items: list[EmailItem], noise_count: int) -> str:
+def match_bullet_to_item(
+    bullet_text: str,
+    items: list[EmailItem],
+    used_indices: set[int],
+) -> tuple[int | None, EmailItem | None]:
+    """Match an LLM bullet line to an EmailItem by index or fuzzy content."""
+    # 1. Direct index match: [1], [2], etc.
+    idx_match = re.search(r"\[(\d+)\]", bullet_text)
+    if idx_match:
+        idx = int(idx_match.group(1)) - 1
+        if 0 <= idx < len(items):
+            return idx, items[idx]
+
+    # 2. If only one item exists, match it directly
+    if len(items) == 1:
+        return 0, items[0]
+
+    # 3. Content matching
+    clean = re.sub(r"<[^>]+>", " ", bullet_text)
+    clean = re.sub(r"\[.*?\](?:\(.*?\))?", " ", clean)
+    clean_lower = clean.lower()
+
+    best_score = -100
+    best_idx = None
+
+    for i, item in enumerate(items):
+        score = 0
+        if i in used_indices:
+            score -= 5
+
+        # Check sender match
+        s_lower = item.sender.lower().strip()
+        if s_lower and s_lower in clean_lower:
+            score += 10
+        else:
+            s_words = [w for w in re.split(r"\W+", s_lower) if len(w) > 2]
+            score += sum(3 for w in s_words if w in clean_lower)
+
+        # Check subject match
+        subj_lower = item.subject.lower().strip()
+        if subj_lower and subj_lower in clean_lower:
+            score += 10
+        else:
+            subj_words = [w for w in re.split(r"\W+", subj_lower) if len(w) > 2]
+            score += sum(2 for w in subj_words if w in clean_lower)
+
+        if score > best_score:
+            best_score = score
+            best_idx = i
+
+    if best_idx is not None and best_score >= 3:
+        return best_idx, items[best_idx]
+
+    return None, None
+
+
+def validate_and_render_llm_digest(
+    llm_body: str,
+    items: list[EmailItem],
+    account_type: str,
+) -> str | None:
+    """Parse, validate, and rebuild LLM digest text ensuring source links are canonical and escaped."""
+    if not llm_body or not items:
+        return None
+
+    sec2_header = "📚 COURSES & ACADEMICS" if account_type == "school" else ("💼 WORK & RECRUITING" if account_type == "work" else "🔒 SECURITY & FINANCE")
+    valid_headers = [
+        "⚡ HIGH PRIORITY & VIP",
+        sec2_header,
+        "📬 UPDATES & GENERAL",
+    ]
+
+    lines = llm_body.strip().splitlines()
+    sections: dict[str, list[tuple[str, str, EmailItem]]] = {h: [] for h in valid_headers}
+    current_header = valid_headers[0]
+    used_item_indices: set[int] = set()
+
+    current_bullet_text: str | None = None
+    current_summary_lines: list[str] = []
+
+    def commit_current_bullet():
+        nonlocal current_bullet_text, current_summary_lines
+        if current_bullet_text is None:
+            return
+        idx, matched_item = match_bullet_to_item(current_bullet_text, items, used_item_indices)
+        if matched_item is not None:
+            if idx is not None:
+                used_item_indices.add(idx)
+            summary_text = " ".join(line.strip() for line in current_summary_lines if line.strip())
+            sections[current_header].append((current_bullet_text, summary_text, matched_item))
+        current_bullet_text = None
+        current_summary_lines = []
+
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+
+        found_header = None
+        for vh in valid_headers:
+            vh_core = re.sub(r"[^\w\s&]", "", vh).strip().lower()
+            line_core = re.sub(r"[^\w\s&]", "", stripped).strip().lower()
+            if vh_core in line_core or line_core in vh_core:
+                found_header = vh
+                break
+
+        if found_header:
+            commit_current_bullet()
+            current_header = found_header
+            continue
+
+        is_bullet = bool(re.match(r"^\s*[•\*\-]\s*", line) or re.match(r"^\s*\[\d+\]", line))
+        if is_bullet:
+            commit_current_bullet()
+            current_bullet_text = stripped
+        elif current_bullet_text is not None:
+            current_summary_lines.append(stripped)
+
+    commit_current_bullet()
+
+    total_matched = sum(len(bullets) for bullets in sections.values())
+    if total_matched == 0:
+        return None
+
+    output_sections: list[str] = []
+    for header in valid_headers:
+        bullets = sections[header]
+        if not bullets:
+            continue
+        out_lines = [header]
+        for bullet_text, summary_text, item in bullets:
+            clean_b = re.sub(r"<a\b[^>]*>.*?</a>", "", bullet_text, flags=re.IGNORECASE)
+            clean_b = re.sub(r"<[^>]+>", "", clean_b)
+            clean_b = re.sub(r"\[.*?\](?:\(.*?\))?", "", clean_b)
+            clean_b = re.sub(r"^\s*[•\*\-]\s*", "", clean_b).strip()
+
+            if " — " in clean_b:
+                s_part, subj_part = clean_b.split(" — ", 1)
+            elif " - " in clean_b:
+                s_part, subj_part = clean_b.split(" - ", 1)
+            elif ": " in clean_b:
+                s_part, subj_part = clean_b.split(": ", 1)
+            else:
+                s_part = item.sender
+                subj_part = clean_b or item.subject
+
+            disp_sender = s_part.strip() or item.sender
+            disp_subj = subj_part.strip() or item.subject
+            link_tag = format_source_link(item)
+
+            out_lines.append(f"• {html.escape(disp_sender)} — {html.escape(disp_subj)} {link_tag}")
+            if summary_text:
+                out_lines.append(f"      {html.escape(summary_text)}")
+            elif item.snippet:
+                snippet_preview = item.snippet[:120].replace("\n", " ").strip()
+                out_lines.append(f"      {html.escape(snippet_preview)}")
+        output_sections.append("\n".join(out_lines))
+
+    return "\n\n".join(output_sections)
+
+
+def build_account_message_raw(
+    title: str,
+    account_type: str,
+    items: list[EmailItem],
+    noise_count: int,
+    error: str | None = None,
+) -> str:
     """Deterministic fallback message builder when LLM is offline or in raw mode."""
     now = dt.datetime.now(LOCAL_TZ)
     date_str = now.strftime("%b %d, %Y (%I:%M %p Manila)")
 
     lines = [
         "---------------------------------",
-        f"{title} Debrief",
+        f"{html.escape(title)} Debrief",
         f"🗓 {date_str}",
         "",
     ]
+
+    if error:
+        lines.append(f"⚠️ Partial sync warning: {html.escape(error)}")
+        lines.append("")
 
     if not items:
         lines.append("🍃 Inbox clear. No unread VIP action items or urgent correspondence.")
@@ -471,31 +695,29 @@ def build_account_message_raw(title: str, account_type: str, items: list[EmailIt
     secondary_items = [it for it in items if it.category in ("academic", "work_recruiting")]
     general_items = [it for it in items if it.category == "general"]
 
-    if priority_items:
-        lines.append("⚡ HIGH PRIORITY & VIP:")
-        for it in priority_items:
-            lines.append(f"• {it.sender} — {it.subject}")
+    def render_items(group: list[EmailItem]) -> list[str]:
+        out = []
+        for it in group:
+            link_tag = format_source_link(it)
+            out.append(f"• {html.escape(it.sender)} — {html.escape(it.subject)} {link_tag}")
             if it.snippet:
                 snippet_preview = it.snippet[:120].replace("\n", " ").strip()
-                lines.append(f"      {snippet_preview}")
+                out.append(f"      {html.escape(snippet_preview)}")
+        return out
+
+    if priority_items:
+        lines.append("⚡ HIGH PRIORITY & VIP:")
+        lines.extend(render_items(priority_items))
         lines.append("")
 
     if secondary_items:
         lines.append(f"{sec2_title}:")
-        for it in secondary_items:
-            lines.append(f"• {it.sender} — {it.subject}")
-            if it.snippet:
-                snippet_preview = it.snippet[:120].replace("\n", " ").strip()
-                lines.append(f"      {snippet_preview}")
+        lines.extend(render_items(secondary_items))
         lines.append("")
 
     if general_items and not priority_items and not secondary_items:
         lines.append("📬 UPDATES & GENERAL:")
-        for it in general_items[:3]:
-            lines.append(f"• {it.sender} — {it.subject}")
-            if it.snippet:
-                snippet_preview = it.snippet[:120].replace("\n", " ").strip()
-                lines.append(f"      {snippet_preview}")
+        lines.extend(render_items(general_items[:3]))
         lines.append("")
 
     total_surfaced = len(priority_items) + len(secondary_items) + (min(len(general_items), 3) if not priority_items and not secondary_items else 0)
@@ -518,10 +740,10 @@ def build_account_message(
     if error and not items:
         lines = [
             "---------------------------------",
-            f"{title} Debrief",
+            f"{html.escape(title)} Debrief",
             f"🗓 {date_str}",
             "",
-            f"⚠️ Sync Warning: Unable to check inbox ({error}).",
+            f"⚠️ Sync Warning: Unable to check inbox ({html.escape(error)}).",
             "Please check your Google account credentials or run re-auth.",
         ]
         return "\n".join(lines).strip()
@@ -529,7 +751,7 @@ def build_account_message(
     if not items:
         lines = [
             "---------------------------------",
-            f"{title} Debrief",
+            f"{html.escape(title)} Debrief",
             f"🗓 {date_str}",
             "",
             "🍃 Inbox clear. No unread VIP action items or urgent correspondence.",
@@ -543,7 +765,7 @@ def build_account_message(
         if llm_body == "INBOX_CLEAR":
             lines = [
                 "---------------------------------",
-                f"{title} Debrief",
+                f"{html.escape(title)} Debrief",
                 f"🗓 {date_str}",
                 "",
                 "🍃 Inbox clear. All incoming items filtered as routine noise.",
@@ -553,20 +775,26 @@ def build_account_message(
             return "\n".join(lines).strip()
 
         if llm_body:
-            # Count bullet points surfaced by LLM
-            surfaced_count = llm_body.count("•")
-            lines = [
-                "---------------------------------",
-                f"{title} Debrief",
-                f"🗓 {date_str}",
-                "",
-                llm_body,
-                "",
-                f"💡 {surfaced_count} items surfaced • {noise_count} routine/promo emails filtered",
-            ]
-            return "\n".join(lines).strip()
+            rendered_llm = validate_and_render_llm_digest(llm_body, items, account_type)
+            if rendered_llm:
+                surfaced_count = rendered_llm.count("•")
+                lines = [
+                    "---------------------------------",
+                    f"{html.escape(title)} Debrief",
+                    f"🗓 {date_str}",
+                    "",
+                ]
+                if error:
+                    lines.append(f"⚠️ Partial sync warning: {html.escape(error)}")
+                    lines.append("")
+                lines.extend([
+                    rendered_llm,
+                    "",
+                    f"💡 {surfaced_count} items surfaced • {noise_count} routine/promo emails filtered",
+                ])
+                return "\n".join(lines).strip()
 
-    return build_account_message_raw(title, account_type, items, noise_count)
+    return build_account_message_raw(title, account_type, items, noise_count, error=error)
 
 
 def main() -> int:
@@ -601,6 +829,7 @@ def main() -> int:
         items, noise_count, fetch_error = fetch_account_emails(
             account_type=acc["type"],
             gws_profile=acc.get("gws_profile"),
+            account_email=acc.get("email"),
         )
 
         # For personal account: only dispatch if high-priority/security items exist or if there is an error
@@ -641,7 +870,7 @@ def main() -> int:
         env_target = env_file if env_file and env_file.exists() else None
         if env_target:
             print(f"Using dedicated credentials from {env_target} for {title}...")
-        sent_count = send(msg, env_path=env_target)
+        sent_count = send(msg, env_path=env_target, html=True)
         total_sent += sent_count
         time.sleep(0.5)
 

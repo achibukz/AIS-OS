@@ -1,5 +1,23 @@
 # Session Log
 
+## 2026-09-11 21:20 [saved]
+
+Goal: implement AIS-OS #41 to attach account-aware source links to concise email digests across all rendering paths.
+
+Decisions:
+- Preserved `message_id`, `thread_id`, and `account_email` in `EmailItem` and attached clickable `<a href="...">[link]</a>` to each item via `format_source_link`.
+- Constructed Gmail web links as `https://mail.google.com/mail/u/<account>/#all/<id>` for the exact authenticated Google profile (DLSU, Work, Personal). If message identity is absent, reported `[missing ID]` without guessing search queries.
+- Added structured validation (`validate_and_render_llm_digest`) to re-anchor LLM synthesis output, stripping model-hallucinated links or attaching missing canonical links deterministically.
+- Applied HTML escaping to untrusted email attributes (sender, subject, snippet) and enabled `html=True` for Telegram delivery while guarding against anchor tag slicing during long message splitting in `telegram_notify.py`.
+
+Rejected:
+- Prompting the LLM to invent or format arbitrary URLs directly (rejected: prone to hallucinations, dropped anchors, or token exposure).
+- Guessing Gmail search URLs from email subject when IDs are missing (rejected: acceptance criteria explicitly require reporting missing identity).
+
+Open:
+- Verification: all 35 tests in `tests/test_email_digest.py` and all 504 tests across repository test suite passed.
+- Open pull request with required mentions and prepare assisted live testing checklist.
+
 ## 2026-09-11 20:12 [saved]
 
 Goal: implement AIS-OS #6 in an isolated worktree before the dependent cohesion tickets.

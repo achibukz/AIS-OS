@@ -79,8 +79,21 @@ def split_messages(message: str, limit: int = TELEGRAM_LIMIT) -> list[str]:
         if current:
             chunks.append(current)
         while len(block) > limit:
-            head, _, block = block[:limit].rpartition("\n")
-            chunks.append(head or block[:limit])
+            head, _, tail = block[:limit].rpartition("\n")
+            if not head:
+                last_open = block[:limit].rfind("<")
+                last_close = block[:limit].rfind(">")
+                if last_open > last_close:
+                    head = block[:last_open].rstrip()
+                    tail = block[last_open:]
+                else:
+                    head = block[:limit]
+                    tail = block[limit:]
+                chunks.append(head or block[:limit])
+                block = tail.lstrip("\n")
+            else:
+                chunks.append(head)
+                block = tail
         current = block
     if current:
         chunks.append(current)
