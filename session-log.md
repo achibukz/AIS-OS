@@ -18,7 +18,7 @@ Rejected:
 Open:
 - Verification: `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` passed 523 tests with one existing unknown-marker warning. `uvx ruff check scripts/cohesion.py tests/test_cohesion.py` passed.
 - The partial-retry sabotage check removed the pending-only operation filter, observed the retry test fail because it replayed the task write, restored the filter, and observed the test pass.
-- Open a stacked pull request against the #6 branch and record GitHub's check state.
+- Opened [PR #52](https://github.com/achibukz/AIS-OS/pull/52) against the #6 branch. GitHub reported no checks on the head branch.
 - Aki limited this session to AIS-OS #13. achiCore #148 was not started and still waits for #56 and #197 in addition to this ticket.
 
 ## 2026-09-11 20:12 [saved]
