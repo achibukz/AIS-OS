@@ -13,7 +13,7 @@ Priority is a scheduling preference. Blocked by is a hard dispatch constraint. P
 | Lane | Order | Can progress alongside | Landing caution |
 |---|---|---|---|
 | Personas | [ ] | [achiCore #56](https://github.com/achibukz/achiCore/issues/56) then [achiCore #198](https://github.com/achibukz/achiCore/issues/198) | AIS-OS renderer and checklist work | Coordinate prompt/config edits with [achiCore #197](https://github.com/achibukz/achiCore/issues/197) |
-| Task foundation | [ ] | [AIS-OS #6](https://github.com/achibukz/AIS-OS/issues/6) then [AIS-OS #13](https://github.com/achibukz/AIS-OS/issues/13) then [achiCore #148](https://github.com/achibukz/achiCore/issues/148) | Persona work until foreground joins it | Renderer changes also affect digests |
+| Task foundation | [ ] | [AIS-OS #6](https://github.com/achibukz/AIS-OS/issues/6) then [AIS-OS #55](https://github.com/achibukz/AIS-OS/issues/55) then [AIS-OS #13](https://github.com/achibukz/AIS-OS/issues/13) then [achiCore #148](https://github.com/achibukz/achiCore/issues/148) | Persona work until foreground joins it | Renderer changes also affect digests |
 | Evidence | [achiCore #56](https://github.com/achibukz/achiCore/issues/56) then [achiCore #197](https://github.com/achibukz/achiCore/issues/197) | Task CLI work | Foreground waits for capture and CLI |
 | Semantics | [ ] | [achiCore #148](https://github.com/achibukz/achiCore/issues/148) then [AIS-OS #14](https://github.com/achibukz/AIS-OS/issues/14) | Completion and Canvas reconciliation after foreground | Daily learning must not duplicate the old writer |
 | Persistence/notes | [ ] | [AIS-OS #13](https://github.com/achibukz/AIS-OS/issues/13) then [AIS-OS #45](https://github.com/achibukz/AIS-OS/issues/45); notes join learning via [AIS-OS #15](https://github.com/achibukz/AIS-OS/issues/15) | Completion and incident work | Serialize writes by repository; preserve dirty work |
@@ -35,6 +35,7 @@ All entries below remain open. AFK means unattended implementation, not permissi
 |:---:|---|---|---|---|---|
 | [achiCore #56](https://github.com/achibukz/achiCore/issues/56) | high | Make General Asa, give Sciel both vault topics, and enforce persona precedence | None | Automated + stated live acceptance |
 | [AIS-OS #6](https://github.com/achibukz/AIS-OS/issues/6) | high | Render all tasks by fixed area through one shared deterministic renderer | None | Automated / author checks |
+| [ ] | [AIS-OS #55](https://github.com/achibukz/AIS-OS/issues/55) | high | Filter systems and project research from default /tasks and support all and backlog views | None | Automated / author checks |
 | [ ] | [achiCore #194](https://github.com/achibukz/achiCore/issues/194) | med | Expose existing /sync and /syncres commands in Telegram menus | None | Automated + stated live acceptance |
 | [AIS-OS #20](https://github.com/achibukz/AIS-OS/issues/20) | high | Prepare copy-paste live-test checklists with expected results and resumable evidence | None | Automated + stated live acceptance |
 | [achiCore #195](https://github.com/achibukz/achiCore/issues/195) | med | Change writer and reviewer models on a safely paused /ToWork job | None | Automated + stated live acceptance |
@@ -45,7 +46,7 @@ All entries below remain open. AFK means unattended implementation, not permissi
 | [ ] | [achiCore #62](https://github.com/achibukz/achiCore/issues/62) | med | Finish transactional binding and session rollback for /bind and /unbind | None | Automated + stated live acceptance |
 | [AIS-OS #44](https://github.com/achibukz/AIS-OS/issues/44) | high | Compute tomorrow weekday in the morning brief from the Manila report date | None | Automated / author checks |
 | [ ] | [AIS-OS #8](https://github.com/achibukz/AIS-OS/issues/8) | med | Keep Calendar and email digest failures visible through shared Google health checks | None | Automated + stated live acceptance |
-| [ ] | [achiCore #57](https://github.com/achibukz/achiCore/issues/57) | high | Serve /tasks area views without a model turn and simplify /status | [AIS-OS #6](https://github.com/achibukz/AIS-OS/issues/6) | Automated + stated live acceptance |
+| [ ] | [achiCore #57](https://github.com/achibukz/achiCore/issues/57) | high | Serve /tasks area views without a model turn and simplify /status | [AIS-OS #55](https://github.com/achibukz/AIS-OS/issues/55) | Automated + stated live acceptance |
 | [achiCore #197](https://github.com/achibukz/achiCore/issues/197) | high | Capture Telegram conversations and execution outcomes durably for learning | [achiCore #56](https://github.com/achibukz/achiCore/issues/56) | Automated + stated live acceptance |
 | [AIS-OS #13](https://github.com/achibukz/AIS-OS/issues/13) | high | Reconcile task and Calendar intents with stable IDs and durable receipts | [AIS-OS #6](https://github.com/achibukz/AIS-OS/issues/6) | Automated + stated live acceptance |
 | [ ] | [achiCore #198](https://github.com/achibukz/achiCore/issues/198) | med | Load installed skills per conversation while keeping topic base skills scoped | [achiCore #56](https://github.com/achibukz/achiCore/issues/56) | Automated + stated live acceptance |

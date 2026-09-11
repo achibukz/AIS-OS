@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-11 — Exclude systems and tickets from default /tasks and add all and backlog views
+
+**Decision:** Specified and ticketed AIS-OS #55 to filter `#systems`, ticket/issue links (`#<id>` and issue references), and non-school project research from default `/tasks` invocations (`area=None`). Added `--area all` to render the full register without exclusions, and `--area backlog` (and alias `backlogs`) to parse and display `## Backlog` entries. Updated `achiCore #57` to forward Telegram command arguments and consume these views without model turns.
+
+**Why:** Aki requested removing systems tickets, engineering maintenance chores, and project research from the default `/tasks` output to keep mobile views focused on actionable academic, personal, and career priorities, while retaining full access via `/tasks all` and `/tasks systems`, and backlog access via `/tasks backlog`.
+
+**Alternatives considered:** Keeping full output as default (rejected: bloats mobile views with infrastructure tickets); deleting systems tasks (rejected: loses operational tracking).
+
+**Owner:** Aki.
+
 ## 2026-09-11 — Formalize task register Backlog section
 
 **Decision:** Introduced a dedicated `## Backlog` section in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) situated between `## Blocked` and `## Done`. `scripts/task_engine.py` restricts active and blocked task parsing to `{"active", "active tasks", "blocked", "blocked tasks"}`, thereby bypassing `## Backlog`. Backlog items do not appear in `/tasks`, scheduled task digests (`scripts/tasks_digest.py`), daily briefs, or Telegram announcements, and are surfaced only upon explicit query.

@@ -1,5 +1,22 @@
 # Session Log
 
+## 2026-09-11 23:35 [saved]
+
+Goal: publish AIS-OS implementation ticket for /tasks default exclusion of systems and tickets, all option, and backlog support per Aki's direction.
+
+Decisions:
+- Authored and published [AIS-OS #55](https://github.com/achibukz/AIS-OS/issues/55) ("Filter systems and project research from default /tasks and support all and backlog views") labeled `ready-for-agent` and `priority:high`.
+- Reconciled existing [achiCore #57](https://github.com/achibukz/achiCore/issues/57): posted dependency comment noting `achiCore #57` is blocked by `AIS-OS #55`, and requiring `cmd_tasks` in `src/bot.py` to forward arguments (`all`, `backlog`, and primary areas) without spending model turns.
+- Saved discussion record in [tasks-view-discussion-2026-09-11.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-view-discussion-2026-09-11.md) and updated [astra-roadmap-2026-09-11.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-roadmap-2026-09-11.md).
+- Added tracking item for [AIS-OS #55](https://github.com/achibukz/AIS-OS/issues/55) to [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) under `## Active`.
+
+Rejected:
+- Opening duplicate ticket in achiCore (reused and updated open issue #57 instead).
+- Permitting deferred backlog items in default or scheduled views (strictly gated behind explicit `--area backlog`).
+
+Open:
+- Implementation of AIS-OS #55 and subsequent achiCore #57 integration.
+
 ## 2026-09-11 23:25 [saved]
 
 Goal: triage and refine active task register, formalize Backlog section, and update task statuses per Aki's review.
