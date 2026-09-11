@@ -17,6 +17,15 @@ class TestSplitMessages:
         assert all(len(p) <= 100 for p in parts)
         assert len(parts) > 1
 
+    def test_multiline_block_exceeding_limit_does_not_drop_lines(self):
+        lines = [f"Line {i:02d}: some descriptive text here" for i in range(25)]
+        block = "\n".join(lines)
+        parts = tg.split_messages(block, limit=150)
+        assert all(len(p) <= 150 for p in parts)
+        joined = "\n".join(parts)
+        for line in lines:
+            assert line in joined
+
 
 class TestReadEnv:
     def test_parses_keys_and_ignores_comments_and_blanks(self, tmp_path, monkeypatch):

@@ -1,5 +1,41 @@
 # Session Log
 
+## 2026-09-11 21:42 [saved]
+
+Goal: repair Luna review findings on PR #54 (ticket #41 email digest source links).
+
+Decisions:
+- Fixed remainder data loss in `scripts/telegram_notify.py` `split_messages`: replaced `rpartition("\n")` slice with `rfind("\n")` against full `block`, preserving all trailing lines and preventing drops when multiline blocks exceed the limit.
+- Anchored index matching in `scripts/email_digest.py` `match_bullet_to_item` to bullet start (`^\s*(?:[•\*\-]\s*)?\[\d+\]`), preventing bracketed numbers in subject text from misidentifying items.
+- Fixed section header routing in `validate_and_render_llm_digest`: prioritized `is_bullet` checks before section headers, skipped markdown horizontal rules, and required non-empty `line_core` to prevent separator lines from matching headers.
+- Restricted bracket stripping in `validate_and_render_llm_digest` and `match_bullet_to_item` to markdown link syntax and link tokens (`[link]`, `[missing ID]`), preserving course code brackets like `[CSOPESY]`.
+- Strengthened unit tests in `tests/test_telegram_notify.py` and `tests/test_email_digest.py` covering multiline block preservation, bracketed subject numbers, course code preservation, and section isolation.
+
+Rejected:
+- Using `rpartition` on substrings without tracking full block tails.
+- Stripping all bracketed text globally from digest bullets.
+
+Open:
+- Push repairs, update PR body with copyable assisted live testing invocation, and comment review resolution on PR #54.
+
+## 2026-09-11 21:20 [saved]
+
+Goal: implement AIS-OS #41 to attach account-aware source links to concise email digests across all rendering paths.
+
+Decisions:
+- Preserved `message_id`, `thread_id`, and `account_email` in `EmailItem` and attached clickable `<a href="...">[link]</a>` to each item via `format_source_link`.
+- Constructed Gmail web links as `https://mail.google.com/mail/u/<account>/#all/<id>` for the exact authenticated Google profile (DLSU, Work, Personal). If message identity is absent, reported `[missing ID]` without guessing search queries.
+- Added structured validation (`validate_and_render_llm_digest`) to re-anchor LLM synthesis output, stripping model-hallucinated links or attaching missing canonical links deterministically.
+- Applied HTML escaping to untrusted email attributes (sender, subject, snippet) and enabled `html=True` for Telegram delivery while guarding against anchor tag slicing during long message splitting in `telegram_notify.py`.
+
+Rejected:
+- Prompting the LLM to invent or format arbitrary URLs directly (rejected: prone to hallucinations, dropped anchors, or token exposure).
+- Guessing Gmail search URLs from email subject when IDs are missing (rejected: acceptance criteria explicitly require reporting missing identity).
+
+Open:
+- Verification: all 35 tests in `tests/test_email_digest.py` and all 504 tests across repository test suite passed.
+- Open pull request with required mentions and prepare assisted live testing checklist.
+
 ## 2026-09-11 21:20 [saved]
 
 Goal: implement AIS-OS #42 to resolve Obsidian wikilinks natively in Tailscale web viewer.

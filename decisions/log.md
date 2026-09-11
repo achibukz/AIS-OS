@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-11 — Preserve account-aware source links in concise email digests
+
+**Decision:** Attached clickable Gmail web permalinks (`https://mail.google.com/mail/u/<account>/#all/<id>`) to all surfaced emails in `scripts/email_digest.py` across LLM synthesis and deterministic fallback rendering paths. If message identity is absent, reported `[missing ID]` rather than constructing a guessed search query. Rebuilt LLM output with structured validation to prevent hallucinated URLs or dropped links, applied HTML escaping to untrusted email fields, and delivered via Telegram HTML mode while safeguarding anchor integrity during message chunking.
+
+**Why:** Issue #41 and Astra plan require one-tap access from phone notifications to the exact source message in the correct Google profile (DLSU, Work, Personal) without private auth leakages or hallucinated URLs.
+
+**Alternatives considered:** Asking LLM to generate raw URLs directly (rejected: prone to hallucinations, dropped anchors, and security leaks) or guessing search links when IDs are absent (rejected: guessing obscures missing data).
+
+**Owner:** Aea / Aki.
+
 ## 2026-09-11 — Resolve Obsidian wikilinks natively in Tailscale web viewer
 
 **Decision:** Implemented native server-side Obsidian wikilink resolution in `scripts/achi_viewer.py` for [[note]], [[note|label]], and heading anchors. Links are resolved within their enclosing vault (`find_vault`, `VaultIndex`), verifying vault boundaries, checking blocked patterns, slugifying heading anchors, and safely handling spaces and Unicode. Ambiguous duplicate basenames, missing notes, and path traversal attempts remain visibly unresolved styled spans (`<span class="wiki-link unresolved is-unresolved">[[...]]</span>`). Marked.js client renderer receives the resolved Markdown while copying or raw mode retains untouched original Markdown.
