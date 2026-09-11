@@ -93,15 +93,6 @@ def item_line(subject, title, url, detail=""):
 
 def format_digest(kind, data, now):
     items = data["items"]
-    if kind == "grade_digest":
-        if not items:
-            return card("Course grades", "None saved yet.")
-        rows = []
-        for item in items:
-            posted = item["current_grade"] is not None or item["current_score"] is not None
-            value = f"{grade_value(item['current_grade'])}, {grade_value(item['current_score'])}" if posted else "not posted"
-            rows.append("• " + item_line(item["subject"], value, item["source_url"]))
-        return card("Course grades", "", *rows)
     if not items:
         return card(data["empty"])
     rows = []
@@ -132,7 +123,7 @@ def format_event(event, now=None):
     kind = event["kind"]
     data = json.loads(event["data"])
     now = now or datetime.now(timezone.utc)
-    if kind in ("deadline_digest", "announcement_digest", "grade_digest"):
+    if kind in ("deadline_digest", "announcement_digest"):
         return format_digest(kind, data, now)
     if kind == "deadline_reminder":
         return format_reminder(data, now)

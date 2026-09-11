@@ -130,9 +130,9 @@ def test_first_scheduled_run_sends_the_catch_up_once(online, sent, capsys):
     code, report = scheduled(args, capsys)
     assert code == 0 and report["remind"]["queued"]["deadline_digest"] >= 1
     first = len(sent[0])
-    assert first >= 3
+    assert first >= 2
     code, report = scheduled(args, capsys)
-    assert report["remind"]["queued"].get("grade_digest") is None
+    assert report["remind"]["queued"].get("announcement_digest") is None
     assert len(sent[0]) == first
 
 
