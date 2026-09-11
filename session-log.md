@@ -1,5 +1,33 @@
 # Session Log
 
+## 2026-09-11 20:45 [saved]
+
+Goal: add issue completion checklist to the Astra cohesion roadmap and resolve merge conflicts with main (#50).
+
+Decisions:
+- Added a structured completion checklist and status column to docs/astra-roadmap-2026-09-11.md covering all 43 issues across implementation and retained backlog.
+- Checked off completed issues: achiCore #56 and AIS-OS #6.
+- Resolved merge conflicts in tasks.md and session-log.md against main after PR #51 merged.
+
+## 2026-09-11 20:12 [saved]
+
+Goal: implement AIS-OS #6 in an isolated worktree before the dependent cohesion tickets.
+
+Decisions:
+- Added `scripts/task_engine.py` as the deterministic parser and full renderer for active and blocked tasks. Five fixed primary areas are separate from repository and subject tags. Missing or conflicting primary areas remain visible under `uncategorized`.
+- Replaced the capped `tasks_digest.py` focus buckets with the shared full renderer. `--area` selects one fixed area, and `--dry-run` performs no Telegram send.
+- Migrated 30 unique active items from the two legacy backlog files into [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md). Two existing duplicate lines were not copied. The legacy files remain as link-safe migration markers.
+
+Rejected:
+- Restoring model-generated task categories. The September 11 issue body supersedes the older Gemini classifier proposal.
+- Guessing primary areas for legacy tasks whose existing tags do not select exactly one of the five fixed areas.
+
+Open:
+- Verification: `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` passed 506 tests with one existing unknown-marker warning. `uvx ruff check scripts/task_engine.py scripts/tasks_digest.py tests/test_task_engine.py tests/test_tasks_digest.py` passed.
+- The losslessness sabotage check restored a one-item deadline cap, observed the far-future fixture fail, restored the implementation, and observed the test pass.
+- Open the pull request and record live CI state.
+- AIS-OS #13 remains blocked until #6 merges. achiCore #148 also waits for achiCore #56 and #197.
+
 ## 2026-09-11, approved Telegram cohesion roadmap and ticket workflow
 
 Recorded Aki's decisions in docs/telegram-cohesion-discussion-2026-09-11.md, replaced the active Astra plan with current scope and preserved its earlier version under docs/history. Published 16 new tickets and revised 15 existing ones across AIS-OS and achiCore. The roadmap includes every remaining open ticket. Closed achiCore #10 after source/test verification; kept #62 open for its remaining cross-store rollback defect. Kept #20 and Canvas #24 open where review or live evidence remains incomplete.
@@ -7,7 +35,6 @@ Recorded Aki's decisions in docs/telegram-cohesion-discussion-2026-09-11.md, rep
 Updated tracked agy-tickets instructions for approved publication authority, current model keys, dependency ordering, all-ticket inventory and post-SHIP self-guided HITL. Aki retains merge control. No runtime features or timers were deployed. Existing dirty main-checkout tasks and logs remain outside this change.
 
 Verification: focused achiCore command and 59 passing tests are recorded in the roadmap. Planning/skill validation and AIS-OS suite results are recorded in the PR and skill-check document. Open work remains the published implementation tickets, not a claim that this planning change ships their behavior.
-
 
 ## 2026-09-11 16:20 [saved]
 
