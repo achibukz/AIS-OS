@@ -1,5 +1,12 @@
 # Assisted feature live testing
 
+## September 11 workflow update
+
+The [approved discussion](telegram-cohesion-discussion-2026-09-11.md) changes the default handoff to a self-guided checklist with copyable actions, expected output and blank actual fields. AI-guided troubleshooting remains available. The [roadmap](astra-roadmap-2026-09-11.md) separates the documentation work in #20 from the planned achiCore Testing Grounds queue and /ToWork adapter.
+
+Only Luna SHIP automatically qualifies for required HITL. SHIP WITH FIXES continues repair, with an explicit nits-only bypass. Pass or Skip reaches Aki merge readiness, never automatic merge. Existing hub readiness must still be checked manually until the new queue implementation ships. The remainder of this guide describes the currently available assisted procedure.
+
+
 Use the `assisted-live-testing` skill when a feature needs a human action or observation to establish acceptance. This includes a backend CLI, API credentials, an external event, a device, a browser or Telegram. Automated-only tickets keep their existing test workflow. A design decision is still a discussion, not a live test.
 
 The assistant prepares the environment, explains one action at a time, waits for the result, verifies available evidence and keeps a resume checkpoint. The outputs are a redacted Markdown interaction record and a comment on the tested PR. Source: [skill](http://100.106.210.38:8999/.config/skillshare/skills/assisted-live-testing/SKILL.md), [ticket section](http://100.106.210.38:8999/.config/skillshare/skills/assisted-live-testing/assets/ticket-section.md), [run record](http://100.106.210.38:8999/.config/skillshare/skills/assisted-live-testing/assets/run-record.md).
