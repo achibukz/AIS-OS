@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import datetime as dt
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from zoneinfo import ZoneInfo
 
 PRIMARY_AREAS = ("school", "projects", "personal", "career", "systems")
-FILTER_AREAS = (*PRIMARY_AREAS, "uncategorized")
+CATEGORY_AREAS = (*PRIMARY_AREAS, "uncategorized")
+FILTER_AREAS = (*CATEGORY_AREAS, "all", "backlog")
 
 TASK_RE = re.compile(r"^\s*-\s*\[([ x~])\]\s+(.*\S)\s*$")
 DUE_RE = re.compile(r"@(\d{4}-\d{2}-\d{2})")
@@ -20,6 +21,14 @@ WIKI_LINK_RE = re.compile(r"\[\[([^\]|]+)(?:\|[^\]]*)?\]\]")
 MARKDOWN_LINK_RE = re.compile(r"\[([^\[\]]+)\]\([^\)]+\)")
 BOLD_RE = re.compile(r"\*\*(.+?)\*\*")
 CODE_RE = re.compile(r"`([^`]+)`")
+TICKET_RE = re.compile(
+    r"\[(?:AIS-OS|achiCore|achiAgy|schoolMem|achiMem)\s*#\d+",
+    re.IGNORECASE,
+)
+BARE_TICKET_RE = re.compile(
+    r"(?:AIS-OS|achiCore|achiAgy|schoolMem|achiMem)\s*#\d+",
+    re.IGNORECASE,
+)
 
 PRIORITY_ORDER = {"high": 0, "med": 1, "low": 2}
 LOCAL_TZ = ZoneInfo("Asia/Manila")
@@ -34,6 +43,7 @@ class Task:
     area: str | None = None
     tags: tuple[str, ...] = ()
     task_id: str | None = None
+    raw_text: str = field(default="", compare=False)
 
 
 def strip_markup(text: str) -> str:
@@ -42,6 +52,21 @@ def strip_markup(text: str) -> str:
     text = BOLD_RE.sub(r"\1", text)
     text = CODE_RE.sub(r"\1", text)
     return re.sub(r"\s+", " ", text).strip()
+
+
+def _is_default_excluded(task: Task) -> bool:
+    if task.area == "systems":
+        return True
+    if (
+        bool(TICKET_RE.search(task.raw_text))
+        or bool(TICKET_RE.search(task.text))
+        or bool(BARE_TICKET_RE.search(task.raw_text))
+        or bool(BARE_TICKET_RE.search(task.text))
+    ):
+        return True
+    if task.area != "school" and any(tag.lower() == "research" for tag in task.tags):
+        return True
+    return False
 
 
 def parse_tasks(body: str) -> list[Task]:
@@ -59,7 +84,14 @@ def parse_tasks(body: str) -> list[Task]:
         if line.startswith("## "):
             current_section = line[3:].strip().lower()
             continue
-        if current_section not in {"active", "active tasks", "blocked", "blocked tasks"}:
+        if current_section not in {
+            "active",
+            "active tasks",
+            "blocked",
+            "blocked tasks",
+            "backlog",
+            "backlog tasks",
+        }:
             continue
 
         match = TASK_RE.match(line)
@@ -84,15 +116,23 @@ def parse_tasks(body: str) -> list[Task]:
             PRIORITY_RE.sub("", DUE_RE.sub("", raw_without_id)),
         )
 
+        if current_section.startswith("backlog"):
+            state = "backlog"
+        elif marker == "~" or current_section.startswith("blocked"):
+            state = "blocked"
+        else:
+            state = "active"
+
         tasks.append(
             Task(
                 text=strip_markup(text),
-                state="blocked" if marker == "~" or current_section.startswith("blocked") else "active",
+                state=state,
                 priority=priority_match.group(1).lower() if priority_match else "med",
                 due=dt.date.fromisoformat(due_match.group(1)) if due_match else None,
                 area=area,
                 tags=remaining_tags,
                 task_id=task_id_match.group(1) if task_id_match else None,
+                raw_text=raw,
             )
         )
 
@@ -126,18 +166,50 @@ def render_tasks(
     today: dt.date | None = None,
 ) -> str:
     """Render a deterministic, lossless active-task view."""
+    if area == "backlogs":
+        area = "backlog"
+
     if area is not None and area not in FILTER_AREAS:
         choices = ", ".join(FILTER_AREAS)
         raise ValueError(f"unknown area {area!r}; valid choices: {choices}")
 
     today = today or dt.datetime.now(LOCAL_TZ).date()
-    selected = [
-        task
-        for task in tasks
-        if area is None
-        or task.area == area
-        or (area == "uncategorized" and task.area is None)
-    ]
+
+    if area == "backlog":
+        selected = [task for task in tasks if task.state == "backlog"]
+        lines = ["TASKS", f"As of {today.isoformat()}", ""]
+        if selected:
+            lines.append("BACKLOG")
+            lines.extend(_format_task(task) for task in sorted(selected, key=_sort_key))
+            lines.append("")
+        count = len(selected)
+        if count == 0:
+            lines.extend(["No backlog tasks.", ""])
+        noun = "task" if count == 1 else "tasks"
+        lines.append(f"{count} {noun}")
+        return "\n".join(lines).strip()
+
+    if area == "all":
+        selected = [task for task in tasks if task.state != "backlog"]
+    elif area is None:
+        selected = [
+            task
+            for task in tasks
+            if task.state != "backlog" and not _is_default_excluded(task)
+        ]
+    elif area == "uncategorized":
+        selected = [
+            task
+            for task in tasks
+            if task.state != "backlog" and task.area is None
+        ]
+    else:
+        selected = [
+            task
+            for task in tasks
+            if task.state != "backlog" and task.area == area
+        ]
+
     lines = ["TASKS", f"As of {today.isoformat()}", ""]
 
     active = [task for task in selected if task.state == "active"]
@@ -155,7 +227,7 @@ def render_tasks(
             lines.append("")
 
     undated = [task for task in active if task.due is None]
-    area_order = FILTER_AREAS if area is None else (area,)
+    area_order = CATEGORY_AREAS if area in {None, "all"} else (area,)
     for area_name in area_order:
         group = [
             task

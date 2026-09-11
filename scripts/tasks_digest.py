@@ -33,7 +33,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--area",
         choices=FILTER_AREAS,
-        help="Show one primary area or the uncategorized migration view",
+        help="Show one primary area, uncategorized, all, or backlog view",
     )
     args = parser.parse_args(argv)
 
