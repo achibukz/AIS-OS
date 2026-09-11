@@ -87,8 +87,11 @@ def split_messages(message: str, limit: int = TELEGRAM_LIMIT) -> list[str]:
     return chunks
 
 
-def send(*messages: str, env_path: Path | str | None = None) -> int:
+def send(*messages: str, env_path: Path | str | None = None, html: bool = False) -> int:
     """Send each message, splitting any that exceed Telegram's limit.
+
+    `html` sends with Telegram's HTML parse mode, so the caller must escape its
+    text. Splits fall on line breaks, so keep each tag on one line.
 
     Returns the number of Telegram messages actually sent.
     """
@@ -97,11 +100,11 @@ def send(*messages: str, env_path: Path | str | None = None) -> int:
     token, chat_id = load_config(env_path=env_path)
     parts = [part for message in messages for part in split_messages(message)]
     for part in parts:
-        _send_one(requests, token, chat_id, part)
+        _send_one(requests, token, chat_id, part, html)
     return len(parts)
 
 
-def _send_one(requests, token: str, chat_id: str, part: str) -> None:
+def _send_one(requests, token: str, chat_id: str, part: str, html: bool = False) -> None:
     """Post one message, retrying only what a retry can actually fix.
 
     Network errors, 429 and 5xx are transient, so they are retried with a growing
@@ -110,14 +113,13 @@ def _send_one(requests, token: str, chat_id: str, part: str) -> None:
     """
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     last_error = ""
+    payload = {"chat_id": chat_id, "text": part, "disable_web_page_preview": True}
+    if html:
+        payload["parse_mode"] = "HTML"
 
     for attempt in range(1, MAX_ATTEMPTS + 1):
         try:
-            response = requests.post(
-                url,
-                json={"chat_id": chat_id, "text": part, "disable_web_page_preview": True},
-                timeout=30,
-            )
+            response = requests.post(url, json=payload, timeout=30)
         except requests.RequestException as exc:
             last_error = redact(f"{type(exc).__name__}: {exc}", token)
         else:

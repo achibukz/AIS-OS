@@ -1,5 +1,17 @@
 # Session Log
 
+## 2026-09-11 16:00 [saved]
+
+Goal: #37 follow-up. Aki asked for shorter links, the cron separator layout and no emojis in Canvas messages.
+
+Decisions:
+- `telegram_notify.send` gained an opt-in `html=True` that sets Telegram's HTML parse mode. Only Canvas delivery uses it, so the other crons keep sending plain text.
+- Every Canvas message, change alerts and auth notices included, is now a card: the 33-dash separator the crons use, a bold header, then the body. Items end with `<a href>[link]</a>` instead of a raw URL line. All Canvas text passes through `html.escape`, and each anchor stays on one line so the sender's newline splitting cannot cut a tag.
+- Removed the reminder and empty-week emojis.
+
+Open:
+- Live check of the new layout waits for the next real event or digest after deploy.
+
 ## 2026-09-11 15:10 [saved]
 
 Goal: #37, deadline reminders, weekly and daily digests and a one-time catch-up in achiSchooNounce.

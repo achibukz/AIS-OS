@@ -3,9 +3,13 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta, timezone
+from html import escape
 from zoneinfo import ZoneInfo
 
 from canvas_client import CONFIG, CanvasError, timestamp
+
+
+SEPARATOR = "---------------------------------"
 
 
 def enqueue(db, course_id, kind, data, at):
@@ -74,38 +78,54 @@ def countdown(due, now):
     return f"in {left.days}d"
 
 
+def link(url):
+    return f'<a href="{escape(url, quote=True)}">[link]</a>'
+
+
+def card(header, *lines):
+    """Telegram HTML in the cron layout: separator, bold header, body."""
+    return "\n".join([SEPARATOR, f"<b>{escape(header)}</b>", *lines])
+
+
+def item_line(subject, title, url, detail=""):
+    return f"{escape(subject or '')}  {escape(title or '(untitled)')}{detail} {link(url)}"
+
+
 def format_digest(kind, data, now):
     items = data["items"]
     if kind == "grade_digest":
-        lines = [data["title"]] if items else ["Course grades: none saved"]
+        if not items:
+            return card("Course grades", "None saved yet.")
+        rows = []
         for item in items:
             posted = item["current_grade"] is not None or item["current_score"] is not None
             value = f"{grade_value(item['current_grade'])}, {grade_value(item['current_score'])}" if posted else "not posted"
-            lines += [f"• {item['subject']}  {value}", f"  {item['source_url']}"]
-        return "\n".join(lines)
+            rows.append("• " + item_line(item["subject"], value, item["source_url"]))
+        return card("Course grades", "", *rows)
     if not items:
-        return data["empty"]
-    lines = [f"{data['title']} ({len(items)})"]
+        return card(data["empty"])
+    rows = []
     for item in items:
         if kind == "deadline_digest":
-            due = parse(item["due_at"])
-            lines.append(f"• {countdown(due, now):<7} {item['subject']}  {item['name'] or '(untitled)'} "
-                         f"({manila(item['due_at']):%a %I:%M %p})")
+            when = f" ({manila(item['due_at']):%a %I:%M %p})"
+            rows.append(f"• {countdown(parse(item['due_at']), now):<7} "
+                        + item_line(item["subject"], item["name"], item["source_url"], when))
         else:
-            posted = f"{manila(item['posted_at']):%a %d %b}" if item["posted_at"] else "no date"
-            lines.append(f"• {item['subject']}  {item['title'] or '(untitled)'} ({posted})")
-        lines.append(f"  {item['source_url']}")
+            posted = f" ({manila(item['posted_at']):%a %d %b})" if item["posted_at"] else " (no date)"
+            rows.append("• " + item_line(item["subject"], item["title"], item["source_url"], posted))
+    header = f"{data['title']} ({len(items)})"
     if kind == "deadline_digest":
         as_of = f"{manila(data['as_of']):%a %d %b, %I:%M %p}" if data["as_of"] else "unknown"
-        lines.append(f"Data as of {as_of}")
-    return "\n".join(lines)
+        return card(header, f"Data as of {as_of}", "", *rows)
+    return card(header, "", *rows)
 
 
 def format_reminder(data, now):
     due = manila(data["due_at"])
     when = f"{due:%I:%M %p} today" if due.date() == now.astimezone(due.tzinfo).date() else f"{due:%a %d %b, %I:%M %p}"
-    return (f"⏰ {countdown(due, now)}  {data['subject']}  {data['name'] or '(untitled)'}\n"
-            f"Due {when}\n{data['source_url']}")
+    return card("Deadline reminder",
+                f"{countdown(due, now)}  " + item_line(data["subject"], data["name"], data["source_url"]),
+                f"Due {when}")
 
 
 def format_event(event, now=None):
@@ -117,23 +137,26 @@ def format_event(event, now=None):
     if kind == "deadline_reminder":
         return format_reminder(data, now)
     if kind == "authentication_expired":
-        return "Canvas session expired. Saved facts remain available. Restore the private Ubuntu session before refreshing."
+        return card("Canvas session expired",
+                    "Saved facts remain available. Restore the private Ubuntu session before refreshing.")
     if kind == "authentication_restored":
-        return "Canvas authentication restored. Check each category's fetch time before relying on saved facts."
-    subject = event["subject"]
+        return card("Canvas authentication restored",
+                    "Check each category's fetch time before relying on saved facts.")
     title = (data.get("name") or data.get("title") or "Course grades")[:160]
+    line = item_line(event["subject"], title, data["source_url"])
     if kind == "new_assignment":
-        body = f"New assignment: {title}\nDue: {local_date(data['due_at'])}"
-    elif kind == "due_date_changed":
-        body = f"Due date changed: {title}\nPrevious: {local_date(data['previous_due_at'])}\nNow: {local_date(data['due_at'])}"
-    elif kind == "new_announcement":
-        body = f"New announcement: {title}"
-    elif kind == "assignment_grade_changed":
-        body = f"Grade updated: {title}\nGrade: {grade_value(data['grade'])}\nScore: {grade_value(data['score'])}"
-    else:
-        body = (f"Course grades updated\nCurrent: {grade_value(data['current_grade'])}, score {grade_value(data['current_score'])}"
-                f"\nFinal: {grade_value(data['final_grade'])}, score {grade_value(data['final_score'])}")
-    return f"{subject}\n{body}\n{data['source_url']}"
+        return card("New assignment", line, f"Due: {local_date(data['due_at'])}")
+    if kind == "due_date_changed":
+        return card("Due date changed", line, f"Previous: {local_date(data['previous_due_at'])}",
+                    f"Now: {local_date(data['due_at'])}")
+    if kind == "new_announcement":
+        return card("New announcement", line)
+    if kind == "assignment_grade_changed":
+        return card("Grade updated", line, f"Grade: {escape(grade_value(data['grade']))}",
+                    f"Score: {escape(grade_value(data['score']))}")
+    return card("Course grades updated", line,
+                f"Current: {escape(grade_value(data['current_grade']))}, score {escape(grade_value(data['current_score']))}",
+                f"Final: {escape(grade_value(data['final_grade']))}, score {escape(grade_value(data['final_score']))}")
 
 
 def pending(db, limit=50):
@@ -155,7 +178,7 @@ def deliver(db, sender=None):
         values = read_env(env_path)
         if not values.get("TELEGRAM_BOT_TOKEN") or not values.get("TELEGRAM_CHAT_ID"):
             raise CanvasError("notification_config_unavailable")
-        sender = lambda message: send(message, env_path=env_path)
+        sender = lambda message: send(message, env_path=env_path, html=True)
     sent = 0
     failed = []
     for event in pending(db):

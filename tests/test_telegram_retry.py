@@ -122,3 +122,13 @@ class TestTokenRedaction:
 
     def test_redact_is_a_noop_without_a_token(self):
         assert tg.redact("nothing to hide", "") == "nothing to hide"
+
+
+@pytest.mark.parametrize("html,expected", [(False, None), (True, "HTML")])
+def test_html_parse_mode_is_opt_in(slept, monkeypatch, html, expected):
+    import requests
+
+    payloads = []
+    monkeypatch.setattr(requests, "post", lambda url, **kwargs: payloads.append(kwargs["json"]) or _Resp())
+    assert tg.send("<b>hi</b>", html=html) == 1
+    assert payloads[0].get("parse_mode") == expected

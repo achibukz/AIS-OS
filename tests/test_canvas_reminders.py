@@ -6,7 +6,7 @@ import pytest
 
 import canvas
 from canvas_client import writer_lock
-from canvas_events import format_event
+from canvas_events import SEPARATOR, format_event
 from canvas_reminders import remind
 from canvas_store import configure_courses, open_reader, open_writer, save_snapshot
 from test_canvas_store import AT, MAPPING, assignment
@@ -96,7 +96,8 @@ def test_empty_days_and_weeks_still_send_a_message(quiet):
     now = utc("2026-09-21T09:00:00+08:00")
     texts = [format_event({"kind": kind, "data": json.dumps(data), "subject": None}, now)
              for kind, data in events(quiet) if kind == "deadline_digest"]
-    assert texts == ["Nothing due today", "📅 Week of Mon 21 Sep: nothing due"]
+    assert [text.splitlines() for text in texts] == [
+        [SEPARATOR, "<b>Nothing due today</b>"], [SEPARATOR, "<b>Week of Mon 21 Sep: nothing due</b>"]]
 
 
 def test_daily_lists_work_due_before_tomorrow_eight_and_recent_announcements(quiet):
@@ -189,26 +190,42 @@ def test_version_one_cache_migrates_and_readers_accept_both(tmp_path):
         assert db.execute("SELECT count(*) FROM notices").fetchone()[0] == 0
 
 
-def test_formats_follow_option_d_and_every_item_carries_its_link():
+def anchor(url):
+    return f'<a href="{url}">[link]</a>'
+
+
+def test_formats_use_the_cron_layout_and_every_item_carries_a_short_link():
     now = utc("2026-09-14T08:00:00+08:00")
     lab = {"subject": "STDISCM", "name": "Lab 3", "due_at": "2026-09-15T15:59:00+00:00", "source_url": URL}
     digest = {"kind": "deadline_digest", "subject": None, "data": json.dumps(
         {"title": "Due this week", "empty": "", "as_of": "2026-09-13T23:30:00+00:00", "items": [lab]})}
     assert format_event(digest, now) == (
-        "Due this week (1)\n• in 39h  STDISCM  Lab 3 (Tue 11:59 PM)\n"
-        f"  {URL}\nData as of Mon 14 Sep, 07:30 AM")
+        f"{SEPARATOR}\n<b>Due this week (1)</b>\nData as of Mon 14 Sep, 07:30 AM\n\n"
+        f"• in 39h  STDISCM  Lab 3 (Tue 11:59 PM) {anchor(URL)}")
     reminder = {"kind": "deadline_reminder", "subject": "STDISCM", "data": json.dumps(lab)}
     assert format_event(reminder, utc("2026-09-15T22:59:00+08:00")) == (
-        f"⏰ in 1h  STDISCM  Lab 3\nDue 11:59 PM today\n{URL}")
+        f"{SEPARATOR}\n<b>Deadline reminder</b>\nin 1h  STDISCM  Lab 3 {anchor(URL)}\nDue 11:59 PM today")
     grades = {"kind": "grade_digest", "subject": None, "data": json.dumps({"title": "Course grades", "items": [
         {"subject": "STDISCM", "current_grade": "A-", "current_score": 92.5, "source_url": GRADE["source_url"]},
         {"subject": "GELITPH", "current_grade": None, "current_score": None, "source_url": GRADE["source_url"]}]})}
     assert format_event(grades, now) == (
-        f"Course grades\n• STDISCM  A-, 92.5\n  {GRADE['source_url']}\n• GELITPH  not posted\n  {GRADE['source_url']}")
+        f"{SEPARATOR}\n<b>Course grades</b>\n\n• STDISCM  A-, 92.5 {anchor(GRADE['source_url'])}\n"
+        f"• GELITPH  not posted {anchor(GRADE['source_url'])}")
     news = {"kind": "announcement_digest", "subject": None, "data": json.dumps({"title": "Latest announcements",
             "empty": "", "items": [{**post(1, "2026-09-05T00:00:00Z"), "subject": "STDISCM"}]})}
-    assert format_event(news, now).splitlines()[1:] == [
-        "• STDISCM  Midterm moved (Sat 05 Sep)", "  https://dlsu.instructure.com/courses/42/discussion_topics/1"]
+    assert format_event(news, now).splitlines()[3:] == [
+        "• STDISCM  Midterm moved (Sat 05 Sep) "
+        + anchor("https://dlsu.instructure.com/courses/42/discussion_topics/1")]
+
+
+def test_change_alerts_escape_canvas_text_and_carry_a_short_link():
+    event = {"kind": "new_assignment", "subject": "STDISCM", "data": json.dumps(
+        {"name": "Q&A <draft>", "due_at": None, "source_url": URL + "?a=1&b=2"})}
+    assert format_event(event).splitlines() == [
+        SEPARATOR, "<b>New assignment</b>",
+        f'STDISCM  Q&amp;A &lt;draft&gt; <a href="{URL}?a=1&amp;b=2">[link]</a>', "Due: no due date"]
+    expired = format_event({"kind": "authentication_expired", "subject": None, "data": "{}"})
+    assert expired.splitlines()[:2] == [SEPARATOR, "<b>Canvas session expired</b>"]
 
 
 def test_remind_command_takes_the_writer_lock(tmp_path, capsys):
