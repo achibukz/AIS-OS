@@ -410,12 +410,96 @@ class TestEmailSourceLinks:
         # Split with small limit to force multiple chunks
         chunks = ed.split_digest_message(msg, limit=500)
         assert len(chunks) > 1
+        assert sum(chunk.count("<a href=") for chunk in chunks) == 25
+        joined_chunks = "".join(chunks)
+        for i in range(25):
+            assert f"msg{i:04d}" in joined_chunks
         for idx, chunk in enumerate(chunks):
             assert len(chunk) <= 500
             # Every chunk must have matched <a> and </a>
             open_count = chunk.count("<a href=")
             close_count = chunk.count("</a>")
             assert open_count == close_count, f"Chunk {idx} has mismatched anchor tags: {chunk}"
+
+    def test_bracketed_number_in_subject_does_not_mismatch_item_index(self):
+        items = [
+            ed.EmailItem(
+                sender="Prof A",
+                subject="Syllabus and Policies",
+                snippet="Check the syllabus.",
+                category="academic",
+                message_id="id_0",
+                account_email="abram_bukuhan@dlsu.edu.ph",
+            ),
+            ed.EmailItem(
+                sender="Canvas Notifications",
+                subject="[CSOPESY] Project [1] Submission",
+                snippet="Submission deadline is Friday.",
+                category="academic",
+                message_id="id_1",
+                account_email="abram_bukuhan@dlsu.edu.ph",
+            ),
+        ]
+        bullet = "• Canvas Notifications — [CSOPESY] Project [1] Submission"
+        idx, matched = ed.match_bullet_to_item(bullet, items, set())
+        assert idx == 1
+        assert matched == items[1]
+
+    def test_course_code_brackets_preserved_in_llm_digest(self, monkeypatch):
+        item = ed.EmailItem(
+            sender="Dr. Samson",
+            subject="[CSOPESY] Midterm Exam Schedule",
+            snippet="Midterm exam will be next week.",
+            category="priority",
+            message_id="exam123",
+            account_email="abram_bukuhan@dlsu.edu.ph",
+        )
+        llm_output = (
+            "⚡ HIGH PRIORITY & VIP\n"
+            "• Dr. Samson — [CSOPESY] Midterm Exam Schedule\n"
+            "      Exam scheduled next week."
+        )
+        monkeypatch.setattr(ed, "synthesize_account_emails_llm", lambda *args, **kwargs: llm_output)
+        msg = ed.build_account_message("🎓 DLSU School Email", "school", [item], 0, raw_mode=False)
+        assert "[CSOPESY] Midterm Exam Schedule" in msg
+        assert '<a href="https://mail.google.com/mail/u/abram_bukuhan@dlsu.edu.ph/#all/exam123">[link]</a>' in msg
+
+    def test_separator_lines_and_bullet_starting_with_keyword_do_not_corrupt_sections(self, monkeypatch):
+        item_priority = ed.EmailItem(
+            sender="Boss",
+            subject="Updates & General notes on Roadmap",
+            snippet="Please review roadmap updates.",
+            category="priority",
+            message_id="msg_priority",
+            account_email="akibukzwork@gmail.com",
+        )
+        item_general = ed.EmailItem(
+            sender="Colleague",
+            subject="Lunch tomorrow",
+            snippet="Are we getting lunch?",
+            category="general",
+            message_id="msg_general",
+            account_email="akibukzwork@gmail.com",
+        )
+        llm_output = (
+            "⚡ HIGH PRIORITY & VIP\n"
+            "---\n"
+            "• Boss — Updates & General notes on Roadmap\n"
+            "      Review roadmap updates immediately.\n"
+            "\n"
+            "📬 UPDATES & GENERAL\n"
+            "• Colleague — Lunch tomorrow\n"
+            "      Lunch meetup inquiry."
+        )
+        monkeypatch.setattr(ed, "synthesize_account_emails_llm", lambda *args, **kwargs: llm_output)
+        msg = ed.build_account_message("💼 Work / Career Email", "work", [item_priority, item_general], 0, raw_mode=False)
+        lines = msg.splitlines()
+        high_idx = next(i for i, line in enumerate(lines) if "HIGH PRIORITY" in line)
+        updates_idx = next(i for i, line in enumerate(lines) if "UPDATES & GENERAL" in line)
+        boss_idx = next(i for i, line in enumerate(lines) if "Boss" in line)
+        colleague_idx = next(i for i, line in enumerate(lines) if "Colleague" in line)
+
+        assert high_idx < boss_idx < updates_idx < colleague_idx
 
     def test_dead_profile_surfaces_warning_while_unaffected_accounts_render(self, monkeypatch):
         # dlsu profile has error, work profile has valid email

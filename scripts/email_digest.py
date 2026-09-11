@@ -506,8 +506,8 @@ def match_bullet_to_item(
     used_indices: set[int],
 ) -> tuple[int | None, EmailItem | None]:
     """Match an LLM bullet line to an EmailItem by index or fuzzy content."""
-    # 1. Direct index match: [1], [2], etc.
-    idx_match = re.search(r"\[(\d+)\]", bullet_text)
+    # 1. Direct index match: [1], [2], etc. anchored to bullet start
+    idx_match = re.match(r"^\s*(?:[•\*\-]\s*)?\[(\d+)\]", bullet_text)
     if idx_match:
         idx = int(idx_match.group(1)) - 1
         if 0 <= idx < len(items):
@@ -519,7 +519,9 @@ def match_bullet_to_item(
 
     # 3. Content matching
     clean = re.sub(r"<[^>]+>", " ", bullet_text)
-    clean = re.sub(r"\[.*?\](?:\(.*?\))?", " ", clean)
+    clean = re.sub(r"\[[^\]]*\]\([^\)]+\)", " ", clean)
+    clean = re.sub(r"\[(?:link|missing ID)\]", " ", clean, flags=re.IGNORECASE)
+    clean = re.sub(r"^\s*(?:[•\*\-]\s*)?\[\d+\]", " ", clean)
     clean_lower = clean.lower()
 
     best_score = -100
@@ -598,24 +600,34 @@ def validate_and_render_llm_digest(
         if not stripped:
             continue
 
+        if re.match(r"^[-=_*~]{3,}$", stripped):
+            continue
+
+        is_bullet = bool(
+            re.match(r"^\s*(?:[•]|\*|-)\s+", line)
+            or re.match(r"^\s*•", line)
+            or re.match(r"^\s*\[\d+\]", line)
+        )
+        if is_bullet:
+            commit_current_bullet()
+            current_bullet_text = stripped
+            continue
+
         found_header = None
-        for vh in valid_headers:
-            vh_core = re.sub(r"[^\w\s&]", "", vh).strip().lower()
-            line_core = re.sub(r"[^\w\s&]", "", stripped).strip().lower()
-            if vh_core in line_core or line_core in vh_core:
-                found_header = vh
-                break
+        line_core = re.sub(r"[^\w\s&]", "", stripped).strip().lower()
+        if line_core:
+            for vh in valid_headers:
+                vh_core = re.sub(r"[^\w\s&]", "", vh).strip().lower()
+                if vh_core in line_core or (len(line_core) >= 4 and line_core in vh_core):
+                    found_header = vh
+                    break
 
         if found_header:
             commit_current_bullet()
             current_header = found_header
             continue
 
-        is_bullet = bool(re.match(r"^\s*[•\*\-]\s*", line) or re.match(r"^\s*\[\d+\]", line))
-        if is_bullet:
-            commit_current_bullet()
-            current_bullet_text = stripped
-        elif current_bullet_text is not None:
+        if current_bullet_text is not None:
             current_summary_lines.append(stripped)
 
     commit_current_bullet()
@@ -633,8 +645,10 @@ def validate_and_render_llm_digest(
         for bullet_text, summary_text, item in bullets:
             clean_b = re.sub(r"<a\b[^>]*>.*?</a>", "", bullet_text, flags=re.IGNORECASE)
             clean_b = re.sub(r"<[^>]+>", "", clean_b)
-            clean_b = re.sub(r"\[.*?\](?:\(.*?\))?", "", clean_b)
-            clean_b = re.sub(r"^\s*[•\*\-]\s*", "", clean_b).strip()
+            clean_b = re.sub(r"\[[^\]]*\]\([^\)]+\)", "", clean_b)
+            clean_b = re.sub(r"\[(?:link|missing ID)\]", "", clean_b, flags=re.IGNORECASE)
+            clean_b = re.sub(r"^\s*[•\*\-]\s*", "", clean_b)
+            clean_b = re.sub(r"^\s*\[\d+\]\s*", "", clean_b).strip()
 
             if " — " in clean_b:
                 s_part, subj_part = clean_b.split(" — ", 1)
