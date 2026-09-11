@@ -97,8 +97,8 @@ Between `sync` and `deliver --send` the service runs `canvas.py remind` ([#37](h
 
 | Notice | When | Messages |
 |---|---|---|
-| Catch-up | First run that finds no `catchup:v1` key | Deadlines from now, latest announcement per course, course grades |
-| Weekly | Monday at or after 08:00 | Deadlines Monday through Sunday, announcements from the past 7 days, course grades |
+| Catch-up | First run that finds no `catchup:v1` key | Deadlines from now, latest announcement per course |
+| Weekly | Monday at or after 08:00 | Deadlines Monday through Sunday, announcements from the past 7 days |
 | Daily | Tuesday to Sunday at or after 08:00 | Deadlines before the next 08:00, plus announcements only when posted in the past 24 hours |
 | 3h reminder | Due in at most 3 hours and more than 1 hour | One per assignment and due date |
 | 1h reminder | Due in at most 1 hour | One per assignment and due date |

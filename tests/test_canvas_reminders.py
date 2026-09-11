@@ -55,10 +55,10 @@ def test_catch_up_is_three_messages_queued_once(db):
     save_snapshot(db, 42, "announcements", [post(1, "2026-09-01T00:00:00Z", "Old"), post(2, "2026-09-05T00:00:00Z")], AT)
     save_snapshot(db, 42, "grades", [GRADE], AT)
     now = utc("2026-09-12T07:00:00+08:00")
-    assert remind(db, now)["queued"] == {"deadline_digest": 1, "announcement_digest": 1, "grade_digest": 1}
+    assert remind(db, now)["queued"] == {"deadline_digest": 1, "announcement_digest": 1}
     assert remind(db, now)["queued"] == {}
     kinds = events(db)
-    assert [kind for kind, _ in kinds] == ["deadline_digest", "announcement_digest", "grade_digest"]
+    assert [kind for kind, _ in kinds] == ["deadline_digest", "announcement_digest"]
     assert [item["name"] for item in kinds[0][1]["items"]] == ["Lab"]
     assert [item["title"] for item in kinds[1][1]["items"]] == ["Midterm moved"]
 
@@ -66,17 +66,17 @@ def test_catch_up_is_three_messages_queued_once(db):
 def test_catch_up_run_claims_that_days_digest_without_sending_it(db):
     save_snapshot(db, 42, "announcements", [post(1, "2026-09-15T00:00:00Z"), post(2, "2026-09-15T12:00:00Z")], AT)
     remind(db, utc("2026-09-15T09:00:00+08:00"))
-    assert [kind for kind, _ in events(db)] == ["deadline_digest", "announcement_digest", "grade_digest"]
+    assert [kind for kind, _ in events(db)] == ["deadline_digest", "announcement_digest"]
     assert db.execute("SELECT count(*) FROM notices WHERE key='daily:2026-09-15'").fetchone()[0] == 1
     remind(db, utc("2026-09-16T09:00:00+08:00"))
-    assert [kind for kind, _ in events(db)][3:] == ["deadline_digest", "announcement_digest"]
+    assert [kind for kind, _ in events(db)][2:] == ["deadline_digest", "announcement_digest"]
 
 
 def test_weekly_digest_starts_at_monday_eight_in_manila(quiet):
     save_snapshot(quiet, 42, "assignments", [todo(), todo(2, due="2026-09-21T01:00:00Z")], AT)
     assert remind(quiet, utc("2026-09-14T07:59:00+08:00"))["queued"] == {}
     queued = remind(quiet, utc("2026-09-14T08:00:00+08:00"))["queued"]
-    assert queued == {"deadline_digest": 1, "announcement_digest": 1, "grade_digest": 1}
+    assert queued == {"deadline_digest": 1, "announcement_digest": 1}
     weekly = events(quiet)[0][1]
     assert [item["due_at"] for item in weekly["items"]] == ["2026-09-16T15:59:00Z"]
     assert remind(quiet, utc("2026-09-14T20:00:00+08:00"))["queued"] == {}
@@ -205,12 +205,6 @@ def test_formats_use_the_cron_layout_and_every_item_carries_a_short_link():
     reminder = {"kind": "deadline_reminder", "subject": "STDISCM", "data": json.dumps(lab)}
     assert format_event(reminder, utc("2026-09-15T22:59:00+08:00")) == (
         f"{SEPARATOR}\n<b>Deadline reminder</b>\nin 1h  STDISCM  Lab 3 {anchor(URL)}\nDue 11:59 PM today")
-    grades = {"kind": "grade_digest", "subject": None, "data": json.dumps({"title": "Course grades", "items": [
-        {"subject": "STDISCM", "current_grade": "A-", "current_score": 92.5, "source_url": GRADE["source_url"]},
-        {"subject": "GELITPH", "current_grade": None, "current_score": None, "source_url": GRADE["source_url"]}]})}
-    assert format_event(grades, now) == (
-        f"{SEPARATOR}\n<b>Course grades</b>\n\n• STDISCM  A-, 92.5 {anchor(GRADE['source_url'])}\n"
-        f"• GELITPH  not posted {anchor(GRADE['source_url'])}")
     news = {"kind": "announcement_digest", "subject": None, "data": json.dumps({"title": "Latest announcements",
             "empty": "", "items": [{**post(1, "2026-09-05T00:00:00Z"), "subject": "STDISCM"}]})}
     assert format_event(news, now).splitlines()[3:] == [

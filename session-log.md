@@ -1,5 +1,16 @@
 # Session Log
 
+## 2026-09-11 16:20 [saved]
+
+Goal: #37 follow-up. Aki asked to drop the grades message for now after seeing the resent catch-up.
+
+Decisions:
+- Removed the course grades message from the catch-up and the Monday weekly, with its formatter branch and loader. Deadlines and announcements are unchanged.
+- Kept the instant grade change alerts (`assignment_grade_changed`, `course_grade_changed`). They carry new information, unlike a list of five "not posted" rows.
+
+Open:
+- Resent catch-up at 06:35 UTC in the new card format; Aki confirmed the layout and links.
+
 ## 2026-09-11 16:00 [saved]
 
 Goal: #37 follow-up. Aki asked for shorter links, the cron separator layout and no emojis in Canvas messages.

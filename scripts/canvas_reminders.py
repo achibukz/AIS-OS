@@ -17,7 +17,7 @@ HOUR = timedelta(hours=1)
 
 def load(db):
     courses = {row["id"]: row["code"] for row in db.execute("SELECT id,code FROM courses WHERE active=1")}
-    items = {"assignments": [], "announcements": [], "grades": []}
+    items = {"assignments": [], "announcements": []}
     for row in db.execute("SELECT course_id,category,data FROM records WHERE active=1 ORDER BY course_id,id"):
         if row["course_id"] in courses and row["category"] in items:
             items[row["category"]].append({**json.loads(row["data"]), "course_id": row["course_id"],
@@ -35,10 +35,6 @@ def announcement(item):
     return {key: item.get(key) for key in ("subject", "title", "posted_at", "source_url")}
 
 
-def grade(item):
-    return {key: item.get(key) for key in ("subject", "current_grade", "current_score", "source_url")}
-
-
 def between(items, start, end, field="due_at"):
     return [item for item in items if item.get(field) and start <= parse_time(item[field]) < end]
 
@@ -53,7 +49,6 @@ def remind(db, now=None):
     local = now.astimezone(MANILA)
     items, as_of = load(db)
     open_work = [item for item in items["assignments"] if item.get("due_at") and unfinished(item)]
-    grades = [grade(item) for item in items["grades"]]
     queued = {}
 
     def queue(key, events):
@@ -83,7 +78,6 @@ def remind(db, now=None):
     caught_up = queue("catchup:v1", [
         deadlines("Due from now", "Nothing due from now", between(open_work, now, datetime.max.replace(tzinfo=timezone.utc))),
         announcements("Latest announcements", "No announcements yet", list(latest.values())),
-        (None, "grade_digest", {"title": "Course grades", "items": grades}),
     ])
 
     if local.hour >= 8:
@@ -95,7 +89,6 @@ def remind(db, now=None):
                           between(open_work, midnight, midnight + timedelta(days=7))),
                 announcements("Announcements this past week", "No announcements this past week",
                                between(items["announcements"], now - timedelta(days=7), now, "posted_at")),
-                (None, "grade_digest", {"title": "Course grades", "items": grades}),
             ])
         else:
             recent = between(items["announcements"], now - timedelta(days=1), now, "posted_at")
