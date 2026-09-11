@@ -36,6 +36,26 @@ Open:
 - Verification: all 35 tests in `tests/test_email_digest.py` and all 504 tests across repository test suite passed.
 - Open pull request with required mentions and prepare assisted live testing checklist.
 
+## 2026-09-11 21:20 [saved]
+
+Goal: implement AIS-OS #42 to resolve Obsidian wikilinks natively in Tailscale web viewer.
+
+Decisions:
+- Replaced styled wikilink spans in `scripts/achi_viewer.py` with vault-relative link resolution for `[[note]]`, `[[note|label]]`, and heading anchors.
+- Added `find_vault` and `VaultIndex` to index notes and assets within the enclosing vault, ensuring links never cross vault boundaries.
+- Traversal attempts (`../`, `%2e%2e%2f`), symlinks pointing outside the vault or to sensitive files (`BLOCKED_PATTERNS`), missing notes, and duplicate basenames remain visibly unresolved styled spans (`<span class="wiki-link unresolved is-unresolved">[[...]]</span>`) rather than pointing at an arbitrary file.
+- Added heading slugification in both Python (`slugify_heading`) and client-side Marked.js renderer (`id="${slug}"`) so anchors match and jump cleanly.
+- Preserved untouched Markdown source in `raw-markdown-content` and `?raw=true` for clipboard copying and direct exports.
+
+Rejected:
+- Client-side resolution: browser has no filesystem access to verify duplicate basenames or traverse vault boundaries securely.
+- Cross-vault fallback searching: breaks vault isolation and causes cross-vault link pollution.
+
+Open:
+- Verification: `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` passed 517 tests with one existing unknown-marker warning.
+- Guard verification: sabotaged the duplicate basename guard, observed `test_wikilink_duplicate_basenames` fail, restored the guard, and observed the test pass.
+- Open pull request with `Closes #42` and required mentions.
+
 ## 2026-09-11 20:12 [saved]
 
 Goal: implement AIS-OS #6 in an isolated worktree before the dependent cohesion tickets.

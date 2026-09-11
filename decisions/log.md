@@ -28,6 +28,16 @@ Keep it terse. Future-you will thank present-you for capturing the *why*, not ju
 
 **Owner:** Aea / Aki.
 
+## 2026-09-11 — Resolve Obsidian wikilinks natively in Tailscale web viewer
+
+**Decision:** Implemented native server-side Obsidian wikilink resolution in `scripts/achi_viewer.py` for [[note]], [[note|label]], and heading anchors. Links are resolved within their enclosing vault (`find_vault`, `VaultIndex`), verifying vault boundaries, checking blocked patterns, slugifying heading anchors, and safely handling spaces and Unicode. Ambiguous duplicate basenames, missing notes, and path traversal attempts remain visibly unresolved styled spans (`<span class="wiki-link unresolved is-unresolved">[[...]]</span>`). Marked.js client renderer receives the resolved Markdown while copying or raw mode retains untouched original Markdown.
+
+**Why:** Styled spans in the web viewer previously had no navigation capability. Resolving wikilinks within the source vault allows Aki to navigate interconnected notes on mobile/desktop without installing Obsidian, while preventing directory traversal, arbitrary file guessing on ambiguous basenames, or crossing vault boundaries into protected documents.
+
+**Alternatives considered:** Client-side resolution in JavaScript (rejected: browser has no filesystem access to verify duplicate basenames or traverse vault boundaries securely). Searching across multiple vaults (rejected: breaks vault isolation and causes cross-vault link pollution).
+
+**Owner:** Aki / Aea.
+
 ## 2026-09-11 — Use one lossless deterministic task engine
 
 **Decision:** `scripts/task_engine.py` owns task parsing and full rendering. Every task may select one of five fixed primary areas while keeping other tags. Tasks with no valid primary area or several primary areas stay in the `uncategorized` migration view. The scheduled digest uses the same full renderer without a model call or item cap.
