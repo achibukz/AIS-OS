@@ -1,5 +1,26 @@
 # Session Log
 
+## 2026-09-11 20:29 [saved]
+
+Goal: implement AIS-OS #13 on top of the isolated #6 task-engine worktree.
+
+Decisions:
+- Added `scripts/cohesion.py` with versioned `submit`, `context`, and `capabilities` commands. A mode-600 SQLite store records source identity, items, preferences, operation snapshots, versions, retries, and pending clarifications before destination writes.
+- Seeded editable placement preferences for social plans, quick tasks, coding tickets, and school deadlines. A request-level placement overrides one item without changing its category preference.
+- Task writes use hidden stable IDs, a fresh content hash, and atomic replacement with preserved file permissions. Calendar writes use deterministic event IDs, private item identity, stored profile and calendar IDs, event versions, and timeout reconciliation.
+- Completion requires an item ID. It moves tasks to Done and updates owned Calendar metadata while preserving the event date or time.
+
+Rejected:
+- Title-based completion and generic file or shell operations.
+- Replaying a successful destination after a partial failure.
+- Testing against Aki's live task register or Calendar. Tests use temporary files, databases, and fixture transports.
+
+Open:
+- Verification: `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` passed 523 tests with one existing unknown-marker warning. `uvx ruff check scripts/cohesion.py tests/test_cohesion.py` passed.
+- The partial-retry sabotage check removed the pending-only operation filter, observed the retry test fail because it replayed the task write, restored the filter, and observed the test pass.
+- Opened [PR #52](https://github.com/achibukz/AIS-OS/pull/52) against the #6 branch. GitHub reported no checks on the head branch.
+- Aki limited this session to AIS-OS #13. achiCore #148 was not started and still waits for #56 and #197 in addition to this ticket.
+
 ## 2026-09-11 20:12 [saved]
 
 Goal: implement AIS-OS #6 in an isolated worktree before the dependent cohesion tickets.

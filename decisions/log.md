@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-11 — Coordinate task and Calendar writes through durable typed operations
+
+**Decision:** `scripts/cohesion.py` accepts only versioned task and Calendar operations. It reserves the source and operation snapshot in SQLite before writes, uses stable task and event identities, retries only pending destinations, and returns applied and pending results separately.
+
+**Why:** Telegram retries, Calendar timeouts, and human edits can otherwise duplicate work or overwrite a newer change. A fixed contract gives achiCore a narrow privileged handoff without exposing shell or arbitrary file access.
+
+**Alternatives considered:** Let the foreground model edit files and invoke Calendar tools directly, match completions by title, or keep retry state in memory. Each option loses provenance or safe recovery after a restart.
+
+**Owner:** Aki.
+
 ## 2026-09-11 — Use one lossless deterministic task engine
 
 **Decision:** `scripts/task_engine.py` owns task parsing and full rendering. Every task may select one of five fixed primary areas while keeping other tags. Tasks with no valid primary area or several primary areas stay in the `uncategorized` migration view. The scheduled digest uses the same full renderer without a model call or item cap.
