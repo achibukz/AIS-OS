@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-11 — Formalize task register Backlog section
+
+**Decision:** Introduced a dedicated `## Backlog` section in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) situated between `## Blocked` and `## Done`. `scripts/task_engine.py` restricts active and blocked task parsing to `{"active", "active tasks", "blocked", "blocked tasks"}`, thereby bypassing `## Backlog`. Backlog items do not appear in `/tasks`, scheduled task digests (`scripts/tasks_digest.py`), daily briefs, or Telegram announcements, and are surfaced only upon explicit query.
+
+**Why:** Aki requested removing deferred tasks (stale deadlines, long-term architecture investigations, unstarted skills) from daily operational digests without losing tracked context or cluttering active registers.
+
+**Alternatives considered:** Moving deferred tasks to external Markdown files (previously done in `docs/tasks-*.md`, but rejected because it fragmented task storage across disparate docs); deleting dropped tasks (rejected: loses context and audit trail).
+
+**Owner:** Aki.
+
 ## 2026-09-11 — Preserve account-aware source links in concise email digests
 
 **Decision:** Attached clickable Gmail web permalinks (`https://mail.google.com/mail/u/<account>/#all/<id>`) to all surfaced emails in `scripts/email_digest.py` across LLM synthesis and deterministic fallback rendering paths. If message identity is absent, reported `[missing ID]` rather than constructing a guessed search query. Rebuilt LLM output with structured validation to prevent hallucinated URLs or dropped links, applied HTML escaping to untrusted email fields, and delivered via Telegram HTML mode while safeguarding anchor integrity during message chunking.

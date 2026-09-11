@@ -1,5 +1,22 @@
 # Session Log
 
+## 2026-09-11 23:25 [saved]
+
+Goal: triage and refine active task register, formalize Backlog section, and update task statuses per Aki's review.
+
+Decisions:
+- Created dedicated `## Backlog` section in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) between `## Blocked` and `## Done`. Bypassed by `scripts/task_engine.py` (which parses active/blocked only), suppressing backlog items from daily briefs, `/tasks`, and announcements until explicitly queried.
+- Moved 8 deferred tasks to `## Backlog` with stale August deadlines stripped: memory & persona budget optimization, Google Sheets schedule planner, Althea fact-checking benchmark, Asa implementation plan, Asa failure modes audit, AI-assisted learning architecture, Matt Pocock skills in Asa, and prior art discovery workflow.
+- Marked 7 tasks complete/closed in `## Done`: system cohesion audit, Hermes research retrospective audit, Matt Pocock research pipeline integration, achiAgy priority tickets (superseded), Claude Code quota & token refresh, AUTO Zoom Leaver Windows port, and Google auth & tasks batch.
+- Updated Canvas first release task in `## Active` to reflect 2 remaining tickets ([#31](https://github.com/achibukz/AIS-OS/issues/31) and [#47](https://github.com/achibukz/AIS-OS/issues/47)), with phone login (PR #35) merged and achiCore #173 / deployment #30 closed.
+
+Rejected:
+- Moving backlogged items to separate docs files (avoids fragmentation).
+- Deleting completed/cancelled tasks instead of appending to `## Done` (preserves audit trail).
+
+Open:
+- Active tasks reduced from 60 to 45.
+
 ## 2026-09-11 21:42 [saved]
 
 Goal: repair Luna review findings on PR #54 (ticket #41 email digest source links).
