@@ -4,7 +4,7 @@ This inventory includes all 43 open issues observed after publication in achibuk
 
 ## Start here
 
-[achiCore #56](https://github.com/achibukz/achiCore/issues/56) and [AIS-OS #6](https://github.com/achibukz/AIS-OS/issues/6) are completed. Next, prepare the small weekday and menu fixes ([AIS-OS #44](https://github.com/achibukz/AIS-OS/issues/44), [achiCore #194](https://github.com/achibukz/achiCore/issues/194)). Then complete the stable task/Calendar CLI ([AIS-OS #13](https://github.com/achibukz/AIS-OS/issues/13)) and captured-event path ([achiCore #197](https://github.com/achibukz/achiCore/issues/197)) before enabling automatic semantic learning.
+Deliver [achiCore #56](https://github.com/achibukz/achiCore/issues/56) first. In parallel, prepare [AIS-OS #6](https://github.com/achibukz/AIS-OS/issues/6) and the small weekday/menu fixes. These do not require learning to ship. Then complete the stable task/Calendar CLI and captured-event path before enabling automatic semantic learning.
 
 Priority is a scheduling preference. Blocked by is a hard dispatch constraint. Parallel means separate owned worktrees and compatible file changes; it does not mean two PRs may replace the same staging daemon.
 
@@ -12,8 +12,8 @@ Priority is a scheduling preference. Blocked by is a hard dispatch constraint. P
 
 | Lane | Order | Can progress alongside | Landing caution |
 |---|---|---|---|
-| Personas | [x] | [achiCore #56](https://github.com/achibukz/achiCore/issues/56) then [achiCore #198](https://github.com/achibukz/achiCore/issues/198) | AIS-OS renderer and checklist work | Coordinate prompt/config edits with [achiCore #197](https://github.com/achibukz/achiCore/issues/197) |
-| Task foundation | [x] | [AIS-OS #6](https://github.com/achibukz/AIS-OS/issues/6) then [AIS-OS #13](https://github.com/achibukz/AIS-OS/issues/13) then [achiCore #148](https://github.com/achibukz/achiCore/issues/148) | Persona work until foreground joins it | Renderer changes also affect digests |
+| Personas | [ ] | [achiCore #56](https://github.com/achibukz/achiCore/issues/56) then [achiCore #198](https://github.com/achibukz/achiCore/issues/198) | AIS-OS renderer and checklist work | Coordinate prompt/config edits with [achiCore #197](https://github.com/achibukz/achiCore/issues/197) |
+| Task foundation | [ ] | [AIS-OS #6](https://github.com/achibukz/AIS-OS/issues/6) then [AIS-OS #13](https://github.com/achibukz/AIS-OS/issues/13) then [achiCore #148](https://github.com/achibukz/achiCore/issues/148) | Persona work until foreground joins it | Renderer changes also affect digests |
 | Evidence | [achiCore #56](https://github.com/achibukz/achiCore/issues/56) then [achiCore #197](https://github.com/achibukz/achiCore/issues/197) | Task CLI work | Foreground waits for capture and CLI |
 | Semantics | [ ] | [achiCore #148](https://github.com/achibukz/achiCore/issues/148) then [AIS-OS #14](https://github.com/achibukz/AIS-OS/issues/14) | Completion and Canvas reconciliation after foreground | Daily learning must not duplicate the old writer |
 | Persistence/notes | [ ] | [AIS-OS #13](https://github.com/achibukz/AIS-OS/issues/13) then [AIS-OS #45](https://github.com/achibukz/AIS-OS/issues/45); notes join learning via [AIS-OS #15](https://github.com/achibukz/AIS-OS/issues/15) | Completion and incident work | Serialize writes by repository; preserve dirty work |
@@ -27,64 +27,11 @@ Priority is a scheduling preference. Blocked by is a hard dispatch constraint. P
 | Proof | Prepare [AIS-OS #18](https://github.com/achibukz/AIS-OS/issues/18) corpus early; run after listed blockers | All implementation lanes | Only observed real results satisfy activation |
 | Later extension | [ ] | [AIS-OS #17](https://github.com/achibukz/AIS-OS/issues/17) after recall and conversation skills | Pilot preparation | Shared guidance still goes through review |
 
-## Issue status checklist
-
-Use this checklist to track completed issues as they ship across achiCore and AIS-OS.
-
-### Published and revised implementation tickets (31)
-
-- [x] [achiCore #56](https://github.com/achibukz/achiCore/issues/56): Make General Asa, give Sciel both vault topics, and enforce persona precedence
-- [x] [AIS-OS #6](https://github.com/achibukz/AIS-OS/issues/6): Render all tasks by fixed area through one shared deterministic renderer
-- [ ] [achiCore #194](https://github.com/achibukz/achiCore/issues/194): Expose existing /sync and /syncres commands in Telegram menus
-- [ ] [AIS-OS #20](https://github.com/achibukz/AIS-OS/issues/20): Prepare copy-paste live-test checklists with expected results and resumable evidence
-- [ ] [achiCore #195](https://github.com/achibukz/achiCore/issues/195): Change writer and reviewer models on a safely paused /ToWork job
-- [ ] [achiCore #196](https://github.com/achibukz/achiCore/issues/196): Abandon jobs without losing dirty work and resume the same ticket through a new attempt
-- [ ] [AIS-OS #41](https://github.com/achibukz/AIS-OS/issues/41): Include source links in concise email digests on every rendering path
-- [ ] [AIS-OS #42](https://github.com/achibukz/AIS-OS/issues/42): Resolve Obsidian wikilinks natively in the Tailscale web viewer
-- [ ] [AIS-OS #43](https://github.com/achibukz/AIS-OS/issues/43): Update agy-tickets for approved grilling decisions, dependency roadmaps and post-review HITL
-- [ ] [achiCore #62](https://github.com/achibukz/achiCore/issues/62): Finish transactional binding and session rollback for /bind and /unbind
-- [ ] [AIS-OS #44](https://github.com/achibukz/AIS-OS/issues/44): Compute tomorrow weekday in the morning brief from the Manila report date
-- [ ] [AIS-OS #8](https://github.com/achibukz/AIS-OS/issues/8): Keep Calendar and email digest failures visible through shared Google health checks
-- [ ] [achiCore #57](https://github.com/achibukz/achiCore/issues/57): Serve /tasks area views without a model turn and simplify /status
-- [ ] [achiCore #197](https://github.com/achibukz/achiCore/issues/197): Capture Telegram conversations and execution outcomes durably for learning
-- [ ] [AIS-OS #13](https://github.com/achibukz/AIS-OS/issues/13): Reconcile task and Calendar intents with stable IDs and durable receipts
-- [ ] [achiCore #198](https://github.com/achibukz/achiCore/issues/198): Load installed skills per conversation while keeping topic base skills scoped
-- [ ] [achiCore #199](https://github.com/achibukz/achiCore/issues/199): Manage independent Testing Grounds cards and one isolated PR testing slot
-- [ ] [achiCore #148](https://github.com/achibukz/achiCore/issues/148): Apply sourced reconciliation to ordinary Telegram requests and corrections
-- [ ] [AIS-OS #45](https://github.com/achibukz/AIS-OS/issues/45): Commit and push owned task, log, note and writing updates automatically
-- [ ] [achiCore #200](https://github.com/achibukz/achiCore/issues/200): Wait for Testing Grounds after Luna SHIP and route live-test results back to /ToWork
-- [ ] [AIS-OS #46](https://github.com/achibukz/AIS-OS/issues/46): Group captured failures and automatically file actionable bug tickets with evidence
-- [ ] [AIS-OS #14](https://github.com/achibukz/AIS-OS/issues/14): Learn scoped semantic preferences immediately and consolidate daily at 3 AM Manila
-- [ ] [AIS-OS #11](https://github.com/achibukz/AIS-OS/issues/11): Reconcile verified GitHub and personal completions into tasks and debriefs
-- [ ] [AIS-OS #47](https://github.com/achibukz/AIS-OS/issues/47): Turn Canvas assignment events into linked tasks and reconcile later changes
-- [ ] [AIS-OS #15](https://github.com/achibukz/AIS-OS/issues/15): Apply linked task outcomes and sourced notes through permitted Sciel vault operations
-- [ ] [AIS-OS #16](https://github.com/achibukz/AIS-OS/issues/16): Deliver daily learning receipts and weekly evidence debriefs in achiNouncements
-- [ ] [AIS-OS #48](https://github.com/achibukz/AIS-OS/issues/48): Make daily briefs concise, truthful and consistent with Manila reporting windows
-- [ ] [achiCore #149](https://github.com/achibukz/achiCore/issues/149): Use current semantic preferences in warm turns and retire conflicting memory writers
-- [ ] [AIS-OS #17](https://github.com/achibukz/AIS-OS/issues/17): Publish verified procedures through reviewed skill PRs and scoped discovery
-- [ ] [AIS-OS #18](https://github.com/achibukz/AIS-OS/issues/18): Verify semantic learning with held-out requests and a recoverable Telegram pilot
-- [ ] [AIS-OS #49](https://github.com/achibukz/AIS-OS/issues/49): Reproducible GitHub Actions regression CI
-
-### Existing actionable backlog retained (12)
-
-- [ ] [AIS-OS #24](https://github.com/achibukz/AIS-OS/issues/24): Canvas first-release epic
-- [ ] [AIS-OS #31](https://github.com/achibukz/AIS-OS/issues/31): Canvas materials/cache/search follow-up
-- [ ] [AIS-OS #34](https://github.com/achibukz/AIS-OS/issues/34): Shared sender split corruption
-- [ ] [achiCore #9](https://github.com/achibukz/achiCore/issues/9): Atlas schedule and log paths live-discovery
-- [ ] [achiCore #91](https://github.com/achibukz/achiCore/issues/91): Immich discussion/spike product investigation
-- [ ] [achiCore #155](https://github.com/achibukz/achiCore/issues/155): Separate conflict budgets and merge-queue status
-- [ ] [achiCore #156](https://github.com/achibukz/achiCore/issues/156): Worker virtualenv probe cache invalidation
-- [ ] [achiCore #171](https://github.com/achibukz/achiCore/issues/171): Transient network fetch retry in standby
-- [ ] [achiCore #172](https://github.com/achibukz/achiCore/issues/172): Complete delegated reports truncation-warning handling
-- [ ] [achiCore #177](https://github.com/achibukz/achiCore/issues/177): Delegated streaming helper reuse
-- [ ] [achiCore #185](https://github.com/achibukz/achiCore/issues/185): Final/live response separation UX defect
-- [ ] [achiCore #186](https://github.com/achibukz/achiCore/issues/186): Effective Codex context capacity catalog/launcher defect
-
 ## Published and revised implementation tickets
 
-All entries below are tracked with their completion status. AFK means unattended implementation, not permission to merge. Each issue contains explicit test cases and its human acceptance requirements. This batch has 15 revised existing issues and 16 new issues.
+All entries below remain open. AFK means unattended implementation, not permission to merge. Each issue contains explicit test cases and its human acceptance requirements. This batch has 15 revised existing issues and 16 new issues.
 
-| Status | Ticket | Priority | Deliverable | Hard blockers | Verification gate |
+| [ ] | Ticket | Priority | Deliverable | Hard blockers | Verification gate |
 |:---:|---|---|---|---|---|
 | [achiCore #56](https://github.com/achibukz/achiCore/issues/56) | high | Make General Asa, give Sciel both vault topics, and enforce persona precedence | None | Automated + stated live acceptance |
 | [AIS-OS #6](https://github.com/achibukz/AIS-OS/issues/6) | high | Render all tasks by fixed area through one shared deterministic renderer | None | Automated / author checks |
@@ -125,7 +72,7 @@ AIS-OS #49 can start alongside Asa and Sciel. It declares the test environment a
 
 These tickets were read during the audit and left unchanged. Their current acceptance remains authoritative; inclusion here does not claim their gates passed. Read live bodies again before dispatch.
 
-| Status | Ticket | Priority | Remaining work / audit disposition | Declared dependency | Parallel guidance |
+| [ ] | Ticket | Priority | Remaining work / audit disposition | Declared dependency | Parallel guidance |
 |:---:|---|---|---|---|---|
 | [ ] | [AIS-OS #24](https://github.com/achibukz/AIS-OS/issues/24) | unlabelled | Canvas first-release epic has shipped components, but this audit did not establish every live acceptance criterion. Keep open. | Child implementation tickets and release evidence | Inspect current #30/#37 receipts before closure; no new duplicate epic. |
 | [ ] | [AIS-OS #31](https://github.com/achibukz/AIS-OS/issues/31) | unlabelled | Canvas materials/cache/search is optional follow-up beyond assignment reconciliation. | [AIS-OS #30](https://github.com/achibukz/AIS-OS/issues/30), closed; confirm release evidence | Independent later lane; preserve its scope. |
