@@ -1,6 +1,6 @@
 # Canvas client, cache and notifications
 
-This implements the source work for [#26](https://github.com/achibukz/AIS-OS/issues/26), [#28](https://github.com/achibukz/AIS-OS/issues/28) and [#29](https://github.com/achibukz/AIS-OS/issues/29). It does not install a service or connect schoolMem. Phone login remains [#27](https://github.com/achibukz/AIS-OS/issues/27), hub integration remains [achiCore #173](https://github.com/achibukz/achiCore/issues/173), and scheduling remains [#30](https://github.com/achibukz/AIS-OS/issues/30).
+This implements the source work for [#26](https://github.com/achibukz/AIS-OS/issues/26), [#28](https://github.com/achibukz/AIS-OS/issues/28) and [#29](https://github.com/achibukz/AIS-OS/issues/29). Phone login is [#27](https://github.com/achibukz/AIS-OS/issues/27) and hub integration is [achiCore #173](https://github.com/achibukz/achiCore/issues/173). The 30-minute timer from [#30](https://github.com/achibukz/AIS-OS/issues/30) is described under [Scheduled sync](#scheduled-sync).
 
 Run commands from the AIS-OS checkout with its existing requests dependency, or use `uv run --with requests python scripts/canvas.py ...`.
 
@@ -80,6 +80,47 @@ The Canvas tests cover hostile URLs, pagination failures, cookie persistence, bo
 A live Ubuntu probe on 2026-09-08 at 18:26 UTC returned `authentication_expired`. This is new evidence, not the successful September 7 experiment. At that checkpoint, course mapping and factual sampling were unverified. No live Telegram send, phone login or timer activation has passed in this work. The resumed session restored Ubuntu authentication at 22:34 UTC and matched all five subjects, which Aki confirmed. Aki also confirmed sampled CCINOV8 deadlines and clarified that the visible 0/0 was a What-If score, not a posted grade. STDISCM announcements and deadlines were visible through the API; missing grade fields exposed the validation issue corrected in this revision. Retest changed behavior at the new head and keep incomplete acceptance gates open. Notification unit tests and previews do not establish deployed delivery reliability.
 
 After the session is restored privately, run `probe`, then `map`. Inspect all five mappings privately. Run `sync` and compare sampled effective dates, submission states, grades and announcements against Canvas. Inspect `status` and `deliver` before any live sending. Production deployment remains gated by the phone-login and hub-integration tickets.
+
+## Scheduled sync
+
+`systemd/achios-canvas-sync.timer` starts `achios-canvas-sync.service` at :00 and :30. The service is a oneshot that runs `scripts/canvas_scheduled.py`: one `sync` across every mapped course and category, then `deliver --send`. Delivery follows a failed or partial sync too, because sync queues the session-expired notice before exiting nonzero. A run that finds the writer lock held skips delivery, since a manual Refresh now or an earlier run owns the cache. Both steps use the shared `writer.lock`, so the timer and Telegram's Refresh now never write at once.
+
+No model calls occur. Retries come from the client's three bounded attempts per request and from the next half-hour run; the unit has no `Restart=`. `TimeoutStartSec=10min` bounds a hung run, and killing the process releases the lock. `Persistent=true` makes systemd start one catch-up run after downtime, never one per missed slot. Events come only from the difference between the saved snapshot and the current fetch, so the catch-up run reports current changes rather than replaying obsolete ones. Expiry, network loss and failed courses keep saved facts. Four-hour staleness stays per course and category.
+
+The service exits nonzero only for local faults such as a missing mapping, unreadable cache, cookie store or school notification config. Those fire the existing `achios-failure-alert@`. Expired sessions, Canvas errors, partial categories, unconfirmed delivery and a held lock exit 0. They reach Aki through the one-time Canvas notices and stale flags instead of an alert every 30 minutes. Each run appends one JSON line with sync and delivery results to `~/.local/state/achios/canvas_sync.log`; the unit's `UMask=0077` keeps new files private. The line carries counts, subject codes and error kinds, never grades, cookies or URLs.
+
+Email notifications from `email_digest.py` are unchanged until direct sync has shown reliability.
+
+### Preview, deploy and rollback
+
+Do not run `scripts/install_units.sh` for this. It re-enables every timer in `systemd/`, including ones deliberately left off.
+
+```bash
+repo=~/Code/GitHub/AIS-OS
+dest=~/.config/systemd/user
+# Preview: pending notices the next run would send, and rendered-unit checks
+~/.local/share/achios/venv/bin/python "$repo/scripts/canvas.py" deliver
+for unit in achios-canvas-sync.service achios-canvas-sync.timer; do
+  sed "s|@REPO@|$repo|g" "$repo/systemd/$unit" > "/tmp/$unit"
+done
+systemd-analyze --user verify /tmp/achios-canvas-sync.service /tmp/achios-canvas-sync.timer
+# Deploy
+for unit in achios-canvas-sync.service achios-canvas-sync.timer; do
+  sed "s|@REPO@|$repo|g" "$repo/systemd/$unit" > "$dest/$unit"
+done
+systemctl --user daemon-reload
+systemctl --user enable --now achios-canvas-sync.timer
+systemctl --user list-timers achios-canvas-sync.timer --no-pager
+# One run on demand, then its result
+systemctl --user start achios-canvas-sync.service
+tail -n 1 ~/.local/state/achios/canvas_sync.log
+# Rollback
+systemctl --user disable --now achios-canvas-sync.timer
+rm "$dest/achios-canvas-sync.service" "$dest/achios-canvas-sync.timer"
+systemctl --user daemon-reload
+```
+
+Rollback leaves the cache, mappings, cookies and queued events in place. Telegram Refresh now keeps working without the timer.
 
 ## API references
 

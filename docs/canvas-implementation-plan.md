@@ -26,7 +26,7 @@ Read schoolWiki without modifying it. Match these subjects against authenticated
 
 ## Schedule and query rules
 
-- Refresh every two hours, with a manual Refresh now action.
+- Refresh every 30 minutes, with a manual Refresh now action. #30 shortened the approved two-hour interval.
 - Use Asia/Manila. This week means Monday 00:00 through next Monday 00:00, with an exclusive end. Next seven days is a separate request.
 - Include submitted assignments with their status unless unfinished work is explicitly requested.
 - Include relevant successful-fetch timestamps in factual answers. Flag data older than four hours, or authentication failure immediately when detected.
@@ -67,7 +67,7 @@ Persist pending deliveries and record successful sending afterward. A crash or n
 | [achibukz/AIS-OS#28](https://github.com/achibukz/AIS-OS/issues/28) | sync factual data into SQLite and expose compact queries |
 | [achibukz/AIS-OS#29](https://github.com/achibukz/AIS-OS/issues/29) | persist change events and deliver achiSchooNounce notifications |
 | [achibukz/achiCore#173](https://github.com/achibukz/achiCore/issues/173) | connect schoolMem factual queries and Refresh now |
-| [achibukz/AIS-OS#30](https://github.com/achibukz/AIS-OS/issues/30) | schedule two-hour sync and verify the first Telegram release |
+| [achibukz/AIS-OS#30](https://github.com/achibukz/AIS-OS/issues/30) | schedule 30-minute sync and verify the first Telegram release |
 | [achibukz/AIS-OS#31](https://github.com/achibukz/AIS-OS/issues/31) | follow-up course materials, file cache and FTS search |
 
 Start with #25, then #26. After #26, phone login #27 and factual storage/queries #28 can proceed independently. #29 follows #28. achiCore #173 follows #27 and #28. AIS-OS #30 waits for all first-release pieces; #31 is a later milestone.
