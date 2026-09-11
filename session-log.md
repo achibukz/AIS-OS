@@ -1,5 +1,19 @@
 # Session Log
 
+## 2026-09-12 00:17 [saved]
+
+Goal: update persistent declarative memory and AGENTS.md with /tasks default exclusion filtering rules.
+
+Decisions:
+- Replaced task tracking entry in `~/.config/achios/MEMORY.md` via `memory_engine.py replace` to explicitly mandate parsing via `scripts/task_engine.py` and enforcing default exclusions (#systems, repo tickets, non-school research) per PR #56 (AIS-OS #55).
+- Updated `/tasks` skill definition in `AGENTS.md` to document `task_engine.py` default exclusion behavior.
+
+Rejected:
+- None.
+
+Open:
+- None.
+
 ## 2026-09-12 00:15 [saved]
 
 Goal: triage 11 general and tooling active tasks to the Backlog section in tasks.md per Aki's instruction.
