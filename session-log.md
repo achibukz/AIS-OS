@@ -1,5 +1,24 @@
 # Session Log
 
+## 2026-09-11 20:12 [saved]
+
+Goal: implement AIS-OS #6 in an isolated worktree before the dependent cohesion tickets.
+
+Decisions:
+- Added `scripts/task_engine.py` as the deterministic parser and full renderer for active and blocked tasks. Five fixed primary areas are separate from repository and subject tags. Missing or conflicting primary areas remain visible under `uncategorized`.
+- Replaced the capped `tasks_digest.py` focus buckets with the shared full renderer. `--area` selects one fixed area, and `--dry-run` performs no Telegram send.
+- Migrated 30 unique active items from the two legacy backlog files into [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md). Two existing duplicate lines were not copied. The legacy files remain as link-safe migration markers.
+
+Rejected:
+- Restoring model-generated task categories. The September 11 issue body supersedes the older Gemini classifier proposal.
+- Guessing primary areas for legacy tasks whose existing tags do not select exactly one of the five fixed areas.
+
+Open:
+- Verification: `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` passed 506 tests with one existing unknown-marker warning. `uvx ruff check scripts/task_engine.py scripts/tasks_digest.py tests/test_task_engine.py tests/test_tasks_digest.py` passed.
+- The losslessness sabotage check restored a one-item deadline cap, observed the far-future fixture fail, restored the implementation, and observed the test pass.
+- Open the pull request and record live CI state.
+- AIS-OS #13 remains blocked until #6 merges. achiCore #148 also waits for achiCore #56 and #197.
+
 ## 2026-09-11 16:20 [saved]
 
 Goal: #37 follow-up. Aki asked to drop the grades message for now after seeing the resent catch-up.

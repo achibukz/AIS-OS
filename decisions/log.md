@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-11 — Use one lossless deterministic task engine
+
+**Decision:** `scripts/task_engine.py` owns task parsing and full rendering. Every task may select one of five fixed primary areas while keeping other tags. Tasks with no valid primary area or several primary areas stay in the `uncategorized` migration view. The scheduled digest uses the same full renderer without a model call or item cap.
+
+**Why:** The old focus buckets hid far-future tasks, capped upcoming and high-priority items, and reduced two legacy backlogs to anchor lines. A deterministic full view can prove its item count and gives achiCore one importable contract.
+
+**Alternatives considered:** Keep a short focus card with omitted counts, retain separate backlog files as live task sources, or classify legacy items with Gemini. The full view is simpler and lossless. The issue requires [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) to remain the sole register, and its September 11 body supersedes model classification.
+
+**Owner:** Aki.
+
 ## 2026-09-06 — Delete legacy Google OAuth tokens and standardize scripts on gws CLI
 
 **Decision:** Deleted `scripts/auth_google_account.py`, removed legacy token and direct google-auth fallback patterns, documented operator deletion for legacy `~/.config/achios/google_token*.json` and `~/.config/gws/`, and updated `CLAUDE.md`, `AGENTS.md`, and skills documentation to reflect `gws` CLI multi-profile OAuth (`main`, `personal`, `work`, `dlsu`) in production mode as the sole Google auth path. Added unit tests verifying hard error when `gws` is absent and ensuring no code path attempts to read legacy token files or import legacy Google auth libraries.
