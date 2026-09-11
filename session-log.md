@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-09-11 13:45 [saved]
+
+Goal: #30, schedule the 30-minute Canvas sync and prepare the first Telegram release gate.
+
+Decisions:
+- Added `scripts/canvas_scheduled.py` with `systemd/achios-canvas-sync.{service,timer}`. The wrapper runs `sync`, then `deliver --send` even after a failed or partial sync, because `sync` queues the session-expired event before exiting 1. A held writer lock skips delivery.
+- Aki chose local faults only for failure alerts. Remote outcomes (expiry, Canvas errors, partial categories, unconfirmed delivery, busy) exit 0 so an outage does not alert every 30 minutes; mapping, cache, cookie store and notify-config faults exit 1.
+- No `Restart=`; retries are the client's bounded attempts plus the next run. `TimeoutStartSec=10min`, `UMask=0077`, `Persistent=true` for one catch-up run.
+- Documented targeted deploy and rollback commands instead of `install_units.sh`, which would re-enable the deliberately inactive `achios-google-auth-health.timer`.
+- Updated the plan from a two-hour to a 30-minute interval to match the ticket.
+- The same delivery gap existed in achiCore Refresh now; Aki approved fixing it in a paired achiCore PR.
+
+Open:
+- `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q`: 462 passed. The documented command in `docs/canvas-data.md` lacks aiohttp, which `test_canvas_login.py` needs since #27.
+- Live gate not run: timer deployment, 30-minute activation, silent run, Telegram Refresh now, notification retry, sampled facts and phone login with the Mac closed.
+
 ## 2026-09-09 20:46 [saved]
 
 Goal: record scheduled email submission of signed ING Internship Agreement form to Vans.
