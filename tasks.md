@@ -39,17 +39,10 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Prepare AIS-OS #18 replay fixtures during early learning work; run its real Flash acceptance later with assisted-live-testing, a Markdown interaction record and a PR comment #systems #achios #testing !high
 - [ ] Build a sync script so global agent instructions propagate from ~/.claude/CLAUDE.md to Antigravity (~/.gemini/config/GEMINI.md, AGENTS.md) and Codex (~/.codex/AGENTS.md) automatically (needs design discussion: shared-core file vs generated marker blocks vs symlink; current state is one-time manual copy done 2026-09-05) #systems #tooling !med
 - [ ] Implement the approved Canvas first release through [#24](https://github.com/achibukz/AIS-OS/issues/24) (two tickets left: [#31](https://github.com/achibukz/AIS-OS/issues/31) and [#47](https://github.com/achibukz/AIS-OS/issues/47); queries/notifications merged via [PR #33](https://github.com/achibukz/AIS-OS/pull/33), phone login merged via [PR #35](https://github.com/achibukz/AIS-OS/pull/35), achiCore integration closed #173, deployment verified [#30](https://github.com/achibukz/AIS-OS/issues/30)) #school #automation #infra !med
-- [ ] Implement reflect skill and 3-subagent transcript review loop in achiOS (adapted from pstack/reflect) #achios #skills #learning !high
-- [ ] Build Tauri v2 desktop GUI for achiOS, achiCore, and achiMem connecting to Achibuntu over SSH/Tailscale per [2026-08-30-tauri-desktop-gui-architecture-and-blueprint.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-30-tauri-desktop-gui-architecture-and-blueprint.md) #achios #achicore #ui #infra !med
-- [ ] Build cron job that scans all repos for open GitHub tickets and surfaces the single most important one to action — Telegram message must include clickable links to each ticket so Aki can jump directly to it #achios #infra #engineering !med
 - [ ] Hold a grill-me session and implement model escalation fallback in achiCore to upgrade to a higher-tier model when a lower model fails #achicore #models #planning !med
 - [ ] Add codebase inspection skill to Aurora in achiCore #achicore #agents !med
 - [ ] Require @achibukz and @luna-achiCore on Aea PRs and @achibukz and @aea-achiCore on Luna reviews (achiCore #77) #achicore #github !med
 - [ ] Test fallback mechanism when Gemini 3.7 Flash and Codex hit quota limits #achicore #testing #models !med
-- [ ] Change Telegram command /newtopics to make /new the first command in autocomplete #achicore #telegram !med
-- [ ] Repair tests/test_daily_brief.py, all 44 tests fail against the refactored daily_brief module (no attribute parse_tasks, tasks_message, schedule_message, color_dot, polish_with_claude) #infra #testing !med
-- [ ] Test whether `ssh -L` port-forward re-auth works for gws on achibuntu, so the four logins run server-side and no credential copy is needed #achios #infra !med
-- [ ] Write `references/model-selection.md` — research-grounded model tier hierarchy and use-case reference guide (Opus, Sonnet, Flash, Flash-lite, etc. across achiOS, achiAgy, Asa, and daily tasks), then update AGENTS.md model guidance sections to match — current AGENTS.md mentions are undetailed and not grounded in research #achios #reference #arch !med
 - [ ] Allow permitted subdirectories beneath protected roots in write boundary (~/.config/gws-*) and restore stock gws 0.22.5 (achiCore #131, rejecting PR #164 custom fork) #achicore #security #bug !high
 - [ ] Automate completed GitHub PR and issue sync into tasks.md and evening debrief (AIS-OS #11) #achios #automation #telegram !high
 - [ ] Add show-me skill to Aea and Luna and mandate visual architecture diagrams in PR descriptions and reviews (achiCore #133-#134) #achicore #agents #ux !med
@@ -61,15 +54,12 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Invalidate worker probes after virtualenv deletion or replacement through [achiCore #156](https://github.com/achibukz/achiCore/issues/156) #achicore #infra !high
 - [ ] Ship specific-repo sync across AIS-OS #12 and achiCore #145 (/sync <repo>) #achios #achicore #infra !med
 - [ ] Unify Gemini Flash models with reasoning effort submenu in /topicmodels ([achiCore #162](https://github.com/achibukz/achiCore/issues/162)) #achicore #ux !med
-- [ ] Hold grill-me session to design and build GitHub trending repos scanner cron (star surge tracking, adoption driver analysis, workflow integration) #automation #tooling #infra !med
 - [ ] Check Google OAuth tokens after 7 days to verify permanent production validity without re-auth #infra #security #achicore !med @2026-09-12
-- [ ] Write a ticket for /sync to support a configurable repo include/exclude list, so it stops syncing repos that don't need it #achios #tooling !med
 - [ ] Have Astra audit whether open AIS-OS and achiCore tickets are still accurate against current code #systems #achios #achicore #planning !med
 - [ ] Audit slash commands and scripts for vendor lock-in (e.g. /tasks unavailable outside Claude Code), starting with LLM-calling scripts, and design a fallback so they work across AI vendors #systems #achios #arch !med
 - [ ] Write a ticket: when a loop finishes a ticket without success after 3 tries, add a button to switch the model working the ticket #achicore #ux !med
 - [ ] Restore stock gws 0.22.5 and grant write access to ~/.config/gws-* under Landlock write boundary per [achiCore #131](https://github.com/achibukz/achiCore/issues/131) (cancelling PR #164 custom fork) #achicore #infra #security !high
-- [ ] Upgrade sync-repos --repo/-r to accept multiple repo names in one call (e.g. /sync achiCore, AIS-OS) #achios #tooling !med
-- [ ] Discuss how to do smart model routing in daily conversations in Telegram for achiCore #achicore #planning !med
+
 
 
 ## Blocked
@@ -84,6 +74,17 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Design and build AI-Assisted Learning Architecture project using achiMem and schoolMem as ground-truth knowledge bases with Claude Code / agy / asa subagents (adapted from amosblomqvist/learn DAG and probing mechanics) #achios #learning #arch #schoolmem #achimem !high
 - [ ] Implement Matt Pocock skills into Asa skills library and apply writing-for-agents standards to improve subagent prompt quality #asa #skills #agents !high
 - [ ] Hold a grill-me session and design an Asa skill/workflow for prior art discovery, competitive market analysis, and idea viability evaluation (check if an idea already exists, analyze competitors, and assess market viability) #asa #skills #research #planning !med
+- [ ] Implement reflect skill and 3-subagent transcript review loop in achiOS (adapted from pstack/reflect) #achios #skills #learning !high
+- [ ] Build Tauri v2 desktop GUI for achiOS, achiCore, and achiMem connecting to Achibuntu over SSH/Tailscale per [2026-08-30-tauri-desktop-gui-architecture-and-blueprint.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-30-tauri-desktop-gui-architecture-and-blueprint.md) #achios #achicore #ui #infra !med
+- [ ] Build cron job that scans all repos for open GitHub tickets and surfaces the single most important one to action — Telegram message must include clickable links to each ticket so Aki can jump directly to it #achios #infra #engineering !med
+- [ ] Change Telegram command /newtopics to make /new the first command in autocomplete #achicore #telegram !med
+- [ ] Repair tests/test_daily_brief.py, all 44 tests fail against the refactored daily_brief module (no attribute parse_tasks, tasks_message, schedule_message, color_dot, polish_with_claude) #infra #testing !med
+- [ ] Test whether `ssh -L` port-forward re-auth works for gws on achibuntu, so the four logins run server-side and no credential copy is needed #achios #infra !med
+- [ ] Write `references/model-selection.md` — research-grounded model tier hierarchy and use-case reference guide (Opus, Sonnet, Flash, Flash-lite, etc. across achiOS, achiAgy, Asa, and daily tasks), then update AGENTS.md model guidance sections to match — current AGENTS.md mentions are undetailed and not grounded in research #achios #reference #arch !med
+- [ ] Hold grill-me session to design and build GitHub trending repos scanner cron (star surge tracking, adoption driver analysis, workflow integration) #automation #tooling #infra !med
+- [ ] Write a ticket for /sync to support a configurable repo include/exclude list, so it stops syncing repos that don't need it #achios #tooling !med
+- [ ] Upgrade sync-repos --repo/-r to accept multiple repo names in one call (e.g. /sync achiCore, AIS-OS) #achios #tooling !med
+- [ ] Discuss how to do smart model routing in daily conversations in Telegram for achiCore #achicore #planning !med
 
 ## Done
 

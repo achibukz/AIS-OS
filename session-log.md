@@ -1,5 +1,19 @@
 # Session Log
 
+## 2026-09-12 00:15 [saved]
+
+Goal: triage 11 general and tooling active tasks to the Backlog section in tasks.md per Aki's instruction.
+
+Decisions:
+- Moved 11 tasks from `## Active` to `## Backlog` in `tasks.md`: reflect skill integration, Tauri desktop GUI, open tickets scanner cron, /new autocomplete order, daily brief test repair, gws port-forward test, model selection reference, trending repos scanner cron, sync include/exclude list ticket, multi-repo sync command, and Telegram smart model routing discussion.
+- Verified parsing and filtering through `task_engine.render_tasks(..., area="backlog")` and confirmed all 26 test suite tests pass.
+
+Rejected:
+- Modifying other active tasks or moving tickets not explicitly requested.
+
+Open:
+- None.
+
 ## 2026-09-11 23:50 [saved]
 
 Goal: implement AIS-OS #55 to filter systems, bare tickets, and non-school research from default /tasks, and support all and backlog views.
