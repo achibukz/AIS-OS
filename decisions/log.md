@@ -1316,3 +1316,21 @@ Why: Aki wants ordinary phrasing to imply the correct linked updates without rep
 Alternatives: Rebuilding legacy Markdown TGDB, relying on session logs alone, duplicating existing learning tickets, treating SHIP as task completion, and stopping at a saved-but-unpushed update were rejected. See docs/telegram-cohesion-discussion-2026-09-11.md for the complete decisions and supersessions.
 
 Owner: Aki for product and merge decisions; Aea for implementation; Luna for review.
+
+## 2026-09-12, remove Gmail deep links from email digest instead of fixing them
+
+Decision: file AIS-OS #57 to delete `EmailItem.web_link`, `format_source_link`, and the
+`[link]` tags they render, rather than continue trying to construct a working Gmail URL.
+
+Why: tested three URL shapes against real accounts and a real message id
+(`/mail/u/{email}/#all/{thread_id}`, `/mail/u/{email}/#inbox`, `/mail/?authuser={email}#inbox`)
+and all three served Gmail's "account temporarily unavailable" 404 page. The only shape that
+worked in Aki's own testing uses a numeric `/mail/u/N/` sign-in slot, and that index tracks
+device sign-in order, not the account itself — the script has no stable value to build it
+from, so no portable link exists.
+
+Alternatives: keeping the numeric-index form was rejected, it would point to the wrong
+account on a different device or after re-auth. Keeping the email-based forms was rejected,
+none of them load.
+
+Owner: Aki decided to remove; Aea implements AIS-OS #57.

@@ -33,6 +33,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Deliver the approved Telegram cohesion batch, starting with Asa and Sciel, then semantic learning. [Roadmap](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-roadmap-2026-09-11.md) covers achiCore #194-#200 and AIS-OS #41-#49 plus revised existing tickets. #systems !high
 - [ ] Fix shared Telegram message splitting through [AIS-OS #34](https://github.com/achibukz/AIS-OS/issues/34), preserving long-message tails without duplicate prefixes #systems #bug !med
 - [ ] Fix false-positive delegation failure receipts on trailing agy stream disconnects, filed as [achiCore #167-#168](https://github.com/achibukz/achiCore/issues/167) #achicore #bug !high
+- [ ] Remove broken Gmail links from email digest, filed as [AIS-OS #57](https://github.com/achibukz/AIS-OS/issues/57) #systems #bug !high
 - [ ] Retry transient git fetch failures in standby so a stalled fetch stops stranding a worker pair, filed as [achiCore #171](https://github.com/achibukz/achiCore/issues/171) #achicore #bug !high
 - [ ] Suppress the stream drop truncation warning when the recovered delegation report is complete, filed as [achiCore #172](https://github.com/achibukz/achiCore/issues/172) #achicore #bug !med
 - [ ] Tap Recheck and release on the achiCore #6 status card in #Atlas to free aea1 and luna1 #achicore !high

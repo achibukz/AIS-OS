@@ -2355,3 +2355,29 @@ Verification:
 Open:
 - Nothing outstanding from this review pass. Not yet pushed or commented back on PR #33; Aki
   has not asked for that yet.
+
+## 2026-09-12, diagnosed and ticketed broken Gmail links in email digest
+
+Goal: Aki reported the "your account is temporarily unavailable" 404 when clicking a
+link from an email digest cron.
+
+Findings: `EmailItem.web_link` (`scripts/email_digest.py`) builds Gmail deep links as
+`/mail/u/{account}/#all/{target_id}` using the account's email address as the `/u/`
+path segment. That segment is a numeric sign-in slot index, not an email address.
+Tested three candidate fixes against a real message (`aki.bukz12@gmail.com`,
+message id `1a09764c387c8095`) and two other accounts:
+- `/mail/u/{email}/#all/{thread_id}` — 404.
+- `/mail/u/{email}/#inbox` — 404.
+- `/mail/?authuser={email}#inbox` — 404.
+None worked. Only a numeric `/mail/u/N/` slot worked in Aki's own manual testing, and
+that index is tied to device sign-in order, not the account, so the script has no
+stable value to build it from.
+
+Decision: remove the link feature rather than keep shipping broken links. Logged in
+`decisions/log.md`.
+
+Filed [AIS-OS #57](https://github.com/achibukz/AIS-OS/issues/57), `ready-for-agent` +
+`priority:high`, to delete `EmailItem.web_link`, `format_source_link`, and every
+`[link]` render call site.
+
+Open: #57 not yet picked up by Aea.
