@@ -24,6 +24,11 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Submit GELITPH Family Story #school #GELITPH !high @2026-09-14
+- [ ] Complete CCINOV8 Self-Assessment Test #school #CCINOV8 !high @2026-09-15
+- [ ] Submit CCINOV8 Team Contract #school #CCINOV8 !high @2026-09-18
+- [ ] Submit STDISCM Practice Test Case Upload Check #school #STDISCM !high @2026-09-18
+- [ ] Work on NAIST application requirements #career !high @2026-09-14
 - [ ] Forward /tasks arguments in cmd_tasks and render area views turn-free through [achiCore #57](https://github.com/achibukz/achiCore/issues/57) #achicore #systems !high
 - [ ] Deliver the approved Telegram cohesion batch, starting with Asa and Sciel, then semantic learning. [Roadmap](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-roadmap-2026-09-11.md) covers achiCore #194-#200 and AIS-OS #41-#49 plus revised existing tickets. #systems !high
 - [ ] Fix shared Telegram message splitting through [AIS-OS #34](https://github.com/achibukz/AIS-OS/issues/34), preserving long-message tails without duplicate prefixes #systems #bug !med
@@ -88,6 +93,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Done
 
+- [x] Submit GELITPH Index Card (virtual) #school #GELITPH !high @2026-09-13 (done 2026-09-13)
 - [x] Filter systems and project research from default /tasks and support all and backlog views through [AIS-OS #55](https://github.com/achibukz/AIS-OS/issues/55) #systems !high (done 2026-09-11)
 - [x] Audit and design end-to-end cohesion across achiOS daemons, email digest parser, task register, and calendar auto-sync with Claude Code #achios #audit #arch !high @2026-08-27 (done 2026-09-11)
 - [x] Audit Hermes research retrospective and orchestrator findings with Claude Code in asa [2026-08-24-hermes-research-and-orchestrator-audit.md](http://100.106.210.38:8999/Code/GitHub/asa/docs/reports/2026-08-24-hermes-research-and-orchestrator-audit.md) #asa #audit !high @2026-08-27 (done 2026-09-11)
