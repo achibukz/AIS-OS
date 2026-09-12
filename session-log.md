@@ -1,5 +1,23 @@
 # Session Log
 
+## 2026-09-12 14:30
+
+Goal: find why the 08:36 DLSU email debrief asked for a re-auth, and fix the email digest's LLM pass and error handling.
+
+Decisions:
+- The 08:36 failure was a network outage, not a credential. gws failed with `No route to host (os error 113)` before reaching Google. Telegram, systemd-resolved and tailscaled logged network failures on the box from 00:22 UTC. The dlsu profile worked on a live call afterwards.
+- `achios-email-digest.service` set PATH without `~/.local/bin`, so every scheduled run failed to find `agy` and silently sent the raw layout. `email_digest.log` held 138 of these warnings. Added `~/.local/bin` to the tracked and installed unit.
+- The LLM pass now runs a chain, Gemini 3.8 Flash medium on agy, then Claude Haiku, then Codex `gpt-5.6-luna` medium, with absolute binary paths. Every failed engine logs its reason and the engine that answered is logged.
+- A gws error whose text names a network failure is retried once after 45 seconds. If it still fails, the message says the network was down and the login is fine. Other errors keep the re-auth hint.
+- The other scheduled jobs make no LLM calls, and their logs show clean sends.
+
+Rejected:
+- Importing achiCore `src/failover.py`. It is async, session-bound and lives in another venv.
+
+Open:
+- The Codex leg is covered by a mocked test only. Its account hit the usage limit until 09:44 on 2026-09-12.
+- `achios-google-auth-health.service` and `.timer` are tracked but not installed. Nine other installed units differ from their tracked copies.
+
 ## 2026-09-12 00:21 [saved]
 
 Goal: track achiCore #57 for /tasks parameter forwarding and close AIS-OS #55 in tasks.md per Aki's direction.

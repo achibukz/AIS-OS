@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-12 — Email digest LLM fallback chain and network-aware sync warnings
+
+**Decision:** The email digest synthesizes with Gemini 3.8 Flash medium on agy, then Claude Haiku, then Codex `gpt-5.6-luna` medium, and falls back to the deterministic layout only when all three fail. A gws network error is retried once, and a network failure no longer tells Aki to re-auth.
+
+**Why:** A missing `~/.local/bin` on the unit PATH made every scheduled digest skip its LLM pass without anyone noticing, and a Wi-Fi outage produced a re-auth warning for a healthy credential.
+
+**Alternatives considered:** Reusing achiCore's async failover module, which needs the bot's sessions and venv.
+
+**Owner:** Aki
+
 ## 2026-09-11 — Exclude systems and tickets from default /tasks and add all and backlog views
 
 **Decision:** Specified and ticketed AIS-OS #55 to filter `#systems`, ticket/issue links (`#<id>` and issue references), and non-school project research from default `/tasks` invocations (`area=None`). Added `--area all` to render the full register without exclusions, and `--area backlog` (and alias `backlogs`) to parse and display `## Backlog` entries. Updated `achiCore #57` to forward Telegram command arguments and consume these views without model turns.

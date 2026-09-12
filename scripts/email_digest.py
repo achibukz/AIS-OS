@@ -25,7 +25,9 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -53,6 +55,82 @@ CONFIG_DIR = Path.home() / ".config" / "achios"
 LLM_DIR = Path.home() / ".local" / "share" / "achios" / "llm"
 LOCAL_TZ = ZoneInfo("Asia/Manila")
 GWS_BIN = Path.home() / ".npm-global" / "bin" / "gws"
+AGY_BIN = Path.home() / ".local" / "bin" / "agy"
+CLAUDE_BIN = Path.home() / ".npm-global" / "bin" / "claude"
+CODEX_BIN = Path("/usr/bin/codex")
+LLM_TIMEOUT_SECONDS = 60
+NETWORK_RETRY_DELAY_SECONDS = 45
+
+# A gws failure with one of these in its message never reached Google, so the
+# credential is not the problem and a re-auth prompt would send Aki the wrong way.
+NETWORK_ERROR_MARKERS = (
+    "no route to host",
+    "network is unreachable",
+    "temporary failure in name resolution",
+    "name or service not known",
+    "dns error",
+    "connection refused",
+    "connection reset",
+    "error sending request",
+    "timed out",
+)
+
+
+def is_network_error(error: str | None) -> bool:
+    return bool(error) and any(marker in error.lower() for marker in NETWORK_ERROR_MARKERS)
+
+
+def llm_chain(prompt: str, codex_out: Path) -> list[tuple[str, list[str], Path | None]]:
+    """Gemini 3.8 Flash on agy, then Claude Haiku, then Codex Luna. Each entry is (label, argv, output file)."""
+    return [
+        (
+            "agy gemini-3.8-flash",
+            [str(AGY_BIN), "-p", prompt, "--model", "gemini-3.8-flash", "--effort", "medium", "--disable-slash-commands"],
+            None,
+        ),
+        (
+            "claude haiku",
+            [
+                str(CLAUDE_BIN), "-p", prompt, "--model", "claude-haiku-4-5",
+                "--setting-sources", "", "--disallowed-tools", "Bash,Edit,Write,Read,WebFetch,WebSearch",
+            ],
+            None,
+        ),
+        (
+            "codex gpt-5.6-luna",
+            [
+                str(CODEX_BIN), "exec", "--skip-git-repo-check", "-m", "gpt-5.6-luna",
+                "-c", "model_reasoning_effort=medium", "-s", "read-only", "-c", "approval_policy=never",
+                "-o", str(codex_out), prompt,
+            ],
+            codex_out,
+        ),
+    ]
+
+
+def run_llm(prompt: str, accept: Callable[[str], bool]) -> str | None:
+    """Return the first chain output that `accept` takes, logging every engine that fails."""
+    LLM_DIR.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory() as tmp:
+        for label, argv, out_file in llm_chain(prompt, Path(tmp) / "codex-last-message.txt"):
+            try:
+                res = subprocess.run(argv, cwd=str(LLM_DIR), capture_output=True, text=True, timeout=LLM_TIMEOUT_SECONDS)
+            except (OSError, subprocess.TimeoutExpired) as exc:
+                print(f"[WARN] LLM {label} failed: {exc}", file=sys.stderr)
+                continue
+            if res.returncode != 0:
+                lines = [line for line in (res.stderr or "").splitlines() if line.strip()]
+                reason = lines[-1][:200] if lines else "no stderr"
+                print(f"[WARN] LLM {label} exited {res.returncode}: {reason}", file=sys.stderr)
+                continue
+            output = out_file.read_text().strip() if out_file and out_file.exists() else res.stdout.strip()
+            if not accept(output):
+                print(f"[WARN] LLM {label} returned unusable output ({len(output)} chars)", file=sys.stderr)
+                continue
+            print(f"[INFO] LLM synthesis used {label}", file=sys.stderr)
+            return output
+    print("[WARN] every LLM in the chain failed; using the deterministic layout", file=sys.stderr)
+    return None
 
 DEFAULT_ACCOUNT_EMAILS: dict[str, str] = {
     "dlsu": "abram_bukuhan@dlsu.edu.ph",
@@ -478,26 +556,10 @@ Rules:
 6. If all items were filtered out as noise, output exactly: INBOX_CLEAR
 """
 
-    try:
-        LLM_DIR.mkdir(parents=True, exist_ok=True)
-        res = subprocess.run(
-            ["agy", "-p", prompt],
-            cwd=str(LLM_DIR),
-            capture_output=True,
-            text=True,
-            timeout=45,
-        )
-        if res.returncode == 0 and res.stdout.strip():
-            output = res.stdout.strip()
-            if output == "INBOX_CLEAR":
-                return "INBOX_CLEAR"
-            # Ensure it contains bullet points
-            if "•" in output or "HIGH PRIORITY" in output or "UPDATES" in output:
-                return output
-    except Exception as e:
-        print(f"LLM synthesis warning: {e}", file=sys.stderr)
-
-    return None
+    return run_llm(
+        prompt,
+        lambda out: out == "INBOX_CLEAR" or "•" in out or "HIGH PRIORITY" in out or "UPDATES" in out,
+    )
 
 
 def match_bullet_to_item(
@@ -757,9 +819,17 @@ def build_account_message(
             f"{html.escape(title)} Debrief",
             f"🗓 {date_str}",
             "",
-            f"⚠️ Sync Warning: Unable to check inbox ({html.escape(error)}).",
-            "Please check your Google account credentials or run re-auth.",
         ]
+        if is_network_error(error):
+            lines += [
+                f"⚠️ Sync Warning: Network unavailable, could not reach Google ({html.escape(error)}).",
+                "Your Google login is fine. The next scheduled run will try again.",
+            ]
+        else:
+            lines += [
+                f"⚠️ Sync Warning: Unable to check inbox ({html.escape(error)}).",
+                "Please check your Google account credentials or run re-auth.",
+            ]
         return "\n".join(lines).strip()
 
     if not items:
@@ -840,11 +910,19 @@ def main() -> int:
         if args.account and acc["id"] != args.account:
             continue
 
-        items, noise_count, fetch_error = fetch_account_emails(
-            account_type=acc["type"],
-            gws_profile=acc.get("gws_profile"),
-            account_email=acc.get("email"),
-        )
+        fetch_kwargs = {
+            "account_type": acc["type"],
+            "gws_profile": acc.get("gws_profile"),
+            "account_email": acc.get("email"),
+        }
+        items, noise_count, fetch_error = fetch_account_emails(**fetch_kwargs)
+        if is_network_error(fetch_error):
+            print(
+                f"[WARN] {acc['id']} fetch hit a network error, retrying in {NETWORK_RETRY_DELAY_SECONDS}s: {fetch_error}",
+                file=sys.stderr,
+            )
+            time.sleep(NETWORK_RETRY_DELAY_SECONDS)
+            items, noise_count, fetch_error = fetch_account_emails(**fetch_kwargs)
 
         # For personal account: only dispatch if high-priority/security items exist or if there is an error
         if acc["type"] == "personal" and not fetch_error:

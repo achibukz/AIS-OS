@@ -558,3 +558,108 @@ class TestEmailSourceLinks:
         assert item_bad_email.web_link is None
         assert ed.format_source_link(item_bad_email) == "[missing ID]"
 
+
+class _Done:
+    def __init__(self, returncode=0, stdout="", stderr=""):
+        self.returncode = returncode
+        self.stdout = stdout
+        self.stderr = stderr
+
+
+class TestLlmChain:
+    @pytest.fixture(autouse=True)
+    def _llm_dir(self, monkeypatch, tmp_path):
+        monkeypatch.setattr(ed, "LLM_DIR", tmp_path / "llm")
+
+    def test_falls_back_to_claude_when_agy_is_missing(self, monkeypatch, capsys):
+        calls = []
+
+        def fake_run(argv, **kwargs):
+            calls.append(argv[0])
+            if argv[0] == str(ed.AGY_BIN):
+                raise FileNotFoundError(2, "No such file or directory", "agy")
+            return _Done(stdout="• Prof — Letter\n      Reply needed.")
+
+        monkeypatch.setattr(ed.subprocess, "run", fake_run)
+
+        assert ed.run_llm("p", lambda out: "•" in out) == "• Prof — Letter\n      Reply needed."
+        assert calls == [str(ed.AGY_BIN), str(ed.CLAUDE_BIN)]
+        err = capsys.readouterr().err
+        assert "agy gemini-3.8-flash failed" in err
+        assert "used claude haiku" in err
+
+    def test_reads_codex_answer_from_its_output_file(self, monkeypatch):
+        def fake_run(argv, **kwargs):
+            if argv[0] == str(ed.AGY_BIN):
+                return _Done(returncode=1, stderr="quota exhausted")
+            if argv[0] == str(ed.CLAUDE_BIN):
+                raise ed.subprocess.TimeoutExpired(argv, 60)
+            Path(argv[argv.index("-o") + 1]).write_text("INBOX_CLEAR\n")
+            return _Done(stdout="")
+
+        monkeypatch.setattr(ed.subprocess, "run", fake_run)
+
+        assert ed.run_llm("p", lambda out: out == "INBOX_CLEAR") == "INBOX_CLEAR"
+
+    def test_chain_passes_the_pinned_models_and_efforts(self, tmp_path):
+        chain = ed.llm_chain("p", tmp_path / "out.txt")
+        agy, claude, codex = (argv for _, argv, _ in chain)
+        assert agy[agy.index("--model") + 1] == "gemini-3.8-flash"
+        assert agy[agy.index("--effort") + 1] == "medium"
+        assert claude[claude.index("--model") + 1] == "claude-haiku-4-5"
+        assert codex[codex.index("-m") + 1] == "gpt-5.6-luna"
+        assert "model_reasoning_effort=medium" in codex
+
+    def test_every_failure_is_logged_and_none_returned(self, monkeypatch, capsys):
+        monkeypatch.setattr(ed.subprocess, "run", lambda argv, **kw: _Done(stdout="no bullets here"))
+
+        assert ed.run_llm("p", lambda out: "•" in out) is None
+        err = capsys.readouterr().err
+        for label in ("agy gemini-3.8-flash", "claude haiku", "codex gpt-5.6-luna"):
+            assert f"LLM {label} returned unusable output" in err
+        assert "every LLM in the chain failed" in err
+
+
+class TestFetchErrorHandling:
+    NETWORK = (
+        "gws dlsu error: error[discovery]: error sending request for url "
+        "(https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest): client error (Connect): "
+        "tcp connect error: No route to host (os error 113)"
+    )
+
+    def test_network_error_does_not_ask_for_reauth(self):
+        msg = ed.build_account_message("🎓 DLSU School Email", "school", [], 0, error=self.NETWORK)
+        assert "Network unavailable" in msg
+        assert "re-auth" not in msg
+
+    def test_auth_error_keeps_the_reauth_hint(self):
+        msg = ed.build_account_message(
+            "🎓 DLSU School Email", "school", [], 0, error="gws dlsu error: invalid_grant: Token has been expired or revoked"
+        )
+        assert "run re-auth" in msg
+
+    def test_timeout_counts_as_network(self):
+        assert ed.is_network_error("gws dlsu error: Command '['gws']' timed out after 10 seconds")
+        assert not ed.is_network_error(None)
+
+    def test_main_retries_a_network_failure_once(self, monkeypatch, tmp_path, capsys):
+        gws = tmp_path / "gws"
+        gws.write_text("")
+        monkeypatch.setattr(ed, "GWS_BIN", gws)
+        monkeypatch.setattr(ed.time, "sleep", lambda s: None)
+        results = iter([([], 0, self.NETWORK), ([], 2, None)])
+        calls = []
+
+        def fake_fetch(**kwargs):
+            calls.append(kwargs["gws_profile"])
+            return next(results)
+
+        monkeypatch.setattr(ed, "fetch_account_emails", fake_fetch)
+        monkeypatch.setattr("sys.argv", ["email_digest.py", "--dry-run", "--account", "dlsu"])
+
+        assert ed.main() == 0
+        assert calls == ["dlsu", "dlsu"]
+        out = capsys.readouterr().out
+        assert "Inbox clear" in out
+        assert "Sync Warning" not in out
+
