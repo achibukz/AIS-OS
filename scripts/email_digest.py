@@ -114,7 +114,11 @@ def run_llm(prompt: str, accept: Callable[[str], bool]) -> str | None:
     with tempfile.TemporaryDirectory() as tmp:
         for label, argv, out_file in llm_chain(prompt, Path(tmp) / "codex-last-message.txt"):
             try:
-                res = subprocess.run(argv, cwd=str(LLM_DIR), capture_output=True, text=True, timeout=LLM_TIMEOUT_SECONDS)
+                # An inherited open pipe on stdin makes agy print nothing and exit 0.
+                res = subprocess.run(
+                    argv, cwd=str(LLM_DIR), stdin=subprocess.DEVNULL,
+                    capture_output=True, text=True, timeout=LLM_TIMEOUT_SECONDS,
+                )
             except (OSError, subprocess.TimeoutExpired) as exc:
                 print(f"[WARN] LLM {label} failed: {exc}", file=sys.stderr)
                 continue

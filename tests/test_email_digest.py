@@ -576,6 +576,7 @@ class TestLlmChain:
 
         def fake_run(argv, **kwargs):
             calls.append(argv[0])
+            assert kwargs["stdin"] is ed.subprocess.DEVNULL
             if argv[0] == str(ed.AGY_BIN):
                 raise FileNotFoundError(2, "No such file or directory", "agy")
             return _Done(stdout="• Prof — Letter\n      Reply needed.")

@@ -18,6 +18,8 @@ Open:
 - The Codex leg is covered by a mocked test only. Its account hit the usage limit until 09:44 on 2026-09-12.
 - `achios-google-auth-health.service` and `.timer` are tracked but not installed. Nine other installed units differ from their tracked copies.
 
+Follow-up the same day: a live Telegram run through `systemd-run --pipe` showed agy printing nothing with exit 0. The open stdin pipe caused it; a timer-like run with stdin from `/dev/null` used agy normally. `run_llm` now passes `stdin=DEVNULL` so manual runs from a pipe behave like the timer.
+
 ## 2026-09-12 00:21 [saved]
 
 Goal: track achiCore #57 for /tasks parameter forwarding and close AIS-OS #55 in tasks.md per Aki's direction.
