@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-12 — Astra roadmap uses explicit delivery states
+
+**Decision:** Replaced bare checkbox-like table cells in the Astra implementation roadmap with explicit Done, Ongoing, Queued and Blocked states. Added real Markdown task lists for completed and active work, refreshed from GitHub issue state and observed worktrees.
+
+**Why:** `[ ]` in Markdown tables renders as ordinary text and the prior document falsely presented closed issues as unfinished. A state column can represent partial lanes without claiming a whole chain is complete.
+
+**Alternatives considered:** Marking each table row with informal checked boxes. Rejected because tables do not reliably render task-list controls and cannot represent blocked versus merely unstarted work.
+
+**Owner:** Aki
+
 ## 2026-09-12 — Email digest LLM fallback chain and network-aware sync warnings
 
 **Decision:** The email digest synthesizes with Gemini 3.8 Flash medium on agy, then Claude Haiku, then Codex `gpt-5.6-luna` medium, and falls back to the deterministic layout only when all three fail. A gws network error is retried once, and a network failure no longer tells Aki to re-auth.

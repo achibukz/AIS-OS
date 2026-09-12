@@ -1,5 +1,74 @@
 # Session Log
 
+## 2026-09-12
+
+Goal: repair the Astra roadmap status display and reconcile it with current ticket work.
+
+Decisions:
+- Replaced non-functional bare table checkboxes with explicit delivery states and added real Markdown checklists for Done and Ongoing work.
+- Marked closed GitHub tickets as Done, including achiCore #56, #172, #177 and #185; AIS-OS #6, #41 to #43 and #55; and Canvas #25 to #30 plus #37.
+- Recorded AIS-OS #13, achiCore #57, achiCore #194, AIS-OS #44/#8 and AIS-OS #20 as ongoing. Marked dependency-constrained work as Blocked rather than ready.
+
+Rejected:
+- Treating an open issue or a dirty worktree as proof of completion.
+- Keeping `[ ]` cells in tables, which do not provide reliable Markdown checkboxes.
+
+Open:
+- Finish and review the active #13, #57 and #194 work before beginning their dependent tickets.
+
+## 2026-09-13
+
+Goal: record Aki's GELITPH Index Card submission.
+
+Decisions:
+- Moved the Canvas-tracked GELITPH Index Card (virtual) task to Done after Aki confirmed submission.
+
+Rejected:
+- None.
+
+Open:
+- None.
+
+## 2026-09-13
+
+Goal: correct the weekly Canvas deadline update.
+
+Decisions:
+- Added the omitted GELITPH Index Card (virtual), due September 13 at 11:59 PM PHT, to `tasks.md` and the DLSU calendar.
+
+Rejected:
+- The earlier conclusion that the item should be omitted. Canvas provided a due date and it is unsubmitted.
+
+Open:
+- None.
+
+## 2026-09-13
+
+Goal: add Canvas-confirmed school deadlines for September 14 to 20 to the task register and DLSU calendar.
+
+Decisions:
+- Added four unsubmitted Canvas assignments with dated deadlines: GELITPH Family Story, CCINOV8 Self-Assessment Test, CCINOV8 Team Contract, and STDISCM Practice Test Case Upload Check.
+- Routed all four calendar events to the writable personal-account DLSU calendar, as required for academic items.
+
+Rejected:
+- Assignments without a Canvas due date, including CCINOV8 Self-Introduction and several GELITPH activities, were not added.
+
+Open:
+- None.
+
+## 2026-09-12
+
+Goal: schedule work on the NAIST application requirements for Monday, September 14.
+
+Decisions:
+- Added the NAIST requirements work to `tasks.md` as a high-priority career task due 2026-09-14.
+
+Rejected:
+- None.
+
+Open:
+- Sciel will confirm the specific NAIST requirements so the task can be expanded if needed.
+
 ## 2026-09-12 14:30
 
 Goal: find why the 08:36 DLSU email debrief asked for a re-auth, and fix the email digest's LLM pass and error handling.
