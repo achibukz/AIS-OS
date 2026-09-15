@@ -1,5 +1,22 @@
 # Session Log
 
+## 2026-09-15 13:20 [saved]
+
+Goal: decide a start order for the meeting ingest cohesion tickets.
+
+Decisions:
+- Start achiCore #213 and schoolMem #2 in parallel. They share no files and neither has a blocker.
+- Route schoolMem #2 to Sciel in #schoolMem, not Aea. write_boundary.py protects ~/Documents/Obsidian by default and agents/aea.md declares no override, so Landlock denies Aea every vault write.
+- Treat opening the pull request for AIS-OS #13 as the real next step on the #58 lane. Its worktree is clean, the branch is pushed, and tests/test_cohesion.py passed 17 tests in 0.18s.
+
+Rejected:
+- Reading achiCore branch ticket/6-delegate-block-trigger as a conflict with #213. Its issue is closed and the branch is stale against master.
+- Treating 17 passing tests as proof that #13 meets its acceptance criteria. Redelivery, timeout, concurrent edits and unknown ownership stay unverified until Luna reviews.
+
+Open:
+- AIS-OS #13 still has no pull request.
+- The stale gpt-5.6-terra recommendation on the September 11 batch still needs Aki's call.
+
 ## 2026-09-15 13:08 [saved]
 
 Goal: scope meeting-ingest cohesion and publish its tickets through agy-tickets.
