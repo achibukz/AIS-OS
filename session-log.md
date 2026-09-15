@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-09-15 15:20 [saved]
+
+Goal: state the safe repair design for Telegram /syncres.
+
+Decisions:
+- Make /syncres restart only after a successful repository sync.
+- Use a Repair sync button that gives an LLM read-only Git evidence, then requires explicit approval before it writes, pulls, and restarts.
+
+Rejected Approaches:
+- Restarting after a failed or held-back sync.
+- Silently discarding or committing tracked local changes.
+
+Open:
+- Aki must choose whether an approved repair may stash tracked changes automatically or may only apply an LLM-proposed patch or commit.
+- Implement the design in achiCore.
+
 ## 2026-09-15 15:15 [saved]
 
 Goal: inspect the Telegram /syncres command and record the requested recovery path.
