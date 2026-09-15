@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-09-16 05:22 [saved]
+
+Goal: add orchestration mixin to achimem and sophie personas in achiCore per delegation from #General.
+
+Decisions:
+
+- Executed delegated task in achiCore on branch `ticket/orchestration-achimem-sophie`.
+- Added `orchestration` to `mixins:` in `agents/achimem.md` and `agents/sophie.md`.
+- Updated [AGENTS.md](http://100.106.210.38:8999/Code/GitHub/achiCore/AGENTS.md) and related tests in achiCore.
+- Verified test suite and opened achiCore PR #218.
+
+Open:
+
+- Review and merge achiCore PR #218.
+
 ## 2026-09-16 05:05 [saved]
 
 Goal: resolve the uncommitted Immich watch sync files that were keeping the session stop hook firing.
