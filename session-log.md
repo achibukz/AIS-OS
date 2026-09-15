@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-09-15 15:25 [saved]
+
+Goal: choose how Telegram /syncres recovers tracked local changes.
+
+Decisions:
+- Use an LLM-proposed commit as the primary recovery action.
+- Keep stashing as a clearly labeled emergency option with a restore action.
+
+Rejected Approaches:
+- Making stash the normal recovery path because it conceals work and defers cleanup.
+- Restarting before the proposed commit and fast-forward complete successfully.
+
+Open:
+- Implement the repair card and its approval flow in achiCore.
+
 ## 2026-09-15 15:20 [saved]
 
 Goal: state the safe repair design for Telegram /syncres.
