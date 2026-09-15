@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-09-16 03:20 [saved]
+
+Goal: record the working tree status for Immich multi-root watch sync automation.
+
+Decisions:
+- Preserved working tree modifications for Immich multi-root synchronization and systemd path watcher units without unprompted commits.
+- Kept the session active per explicit user instruction.
+
+Rejected Approaches:
+- Committing functional changes in scripts and systemd units without direct user request or manual test verification.
+- Archiving this session.
+
+Open:
+- Review and verify the multi-root Immich folder watch sync automation before staging it for commit.
+
 ## 2026-09-15 15:35 [saved]
 
 Goal: preserve the publication receipt for achiCore #215.
