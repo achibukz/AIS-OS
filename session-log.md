@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-09-15 15:00 [saved]
+
+Goal: diagnose vault inbox sync fast-forwarding and missing Telegram logs.
+
+Decisions:
+- Treat the current vault-sync schedule as healthy. Both vaults matched origin/main at inspection.
+- Keep the diagnosis separate from a repair. No service, vault, or notification configuration changed.
+
+Rejected Approaches:
+- Running sync-repos or a manual pull because neither vault was behind and achiMem has tracked local edits.
+- Sending a test Telegram alert while DNS failures remain the verified cause of undelivered alerts.
+
+Open:
+- Vault sync must fetch and fast-forward before its inbox-only change check if it should receive remote commits without a new capture.
+- Decide whether successful vault-sync summaries should reach Telegram. Failure alerts did not arrive because DNS could not resolve api.telegram.org.
+
 ## 2026-09-15 13:54 [saved]
 
 Goal: document the status of the Immich watch sync automation in the working tree.
