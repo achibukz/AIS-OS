@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-09-15 15:35 [saved]
+
+Goal: preserve the publication receipt for achiCore #215.
+
+Decisions:
+- Published one high-priority ticket for the complete /syncres recovery flow.
+- Linked the active task to the GitHub ticket.
+
+Rejected Approaches:
+- Splitting the restart defect and the recovery UI into separate tickets. They require one ordered workflow.
+- Editing achiCore directly from the general topic.
+
+Open:
+- achiCore #215 awaits implementation, review, and its phone acceptance test.
+
 ## 2026-09-15 15:30 [saved]
 
 Goal: create the tracked implementation ticket for Telegram /syncres recovery.
