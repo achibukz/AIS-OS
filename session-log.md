@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-09-16 04:52 [saved]
+
+Goal: fast-forward achiCore to master after PR #217 and inspect latest commits.
+
+Decisions:
+- Switched achiCore from ticket/216-sophie to master.
+- Fast-forwarded master via git pull to commit 524cc71.
+- Left AIS-OS working tree modifications for Immich watch sync uncommitted.
+
+Rejected Approaches:
+- Discarding local lockfile differences before validating fast-forward status.
+
+Open:
+- Verify and stage the Immich watch sync scripts when ready.
+
 ## 2026-09-16 03:20 [saved]
 
 Goal: record the working tree status for Immich multi-root watch sync automation.
