@@ -24,13 +24,12 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
-- [ ] Submit GELITPH Family Story #school #GELITPH !high @2026-09-14
-- [ ] Complete CCINOV8 Self-Assessment Test #school #CCINOV8 !high @2026-09-15
 - [ ] Submit CCINOV8 Team Contract #school #CCINOV8 !high @2026-09-18
 - [ ] Submit STDISCM Practice Test Case Upload Check #school #STDISCM !high @2026-09-18
 - [ ] Work on NAIST application requirements #career !high @2026-09-14
 - [ ] Forward /tasks arguments in cmd_tasks and render area views turn-free through [achiCore #57](https://github.com/achibukz/achiCore/issues/57) #achicore #systems !high
 - [ ] Deliver the approved Telegram cohesion batch, starting with Asa and Sciel, then semantic learning. [Roadmap](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-roadmap-2026-09-11.md) covers achiCore #194-#200 and AIS-OS #41-#49 plus revised existing tickets. #systems !high
+- [ ] Deliver the meeting ingest cohesion batch: [schoolMem #2](https://github.com/achibukz/schoolMem/issues/2), [AIS-OS #58](https://github.com/achibukz/AIS-OS/issues/58) and [achiCore #213](https://github.com/achibukz/achiCore/issues/213). [Discussion](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/meeting-ingest-cohesion-discussion-2026-09-15.md) #systems !med
 - [ ] Fix shared Telegram message splitting through [AIS-OS #34](https://github.com/achibukz/AIS-OS/issues/34), preserving long-message tails without duplicate prefixes #systems #bug !med
 - [ ] Fix false-positive delegation failure receipts on trailing agy stream disconnects, filed as [achiCore #167-#168](https://github.com/achibukz/achiCore/issues/167) #achicore #bug !high
 - [ ] Remove broken Gmail links from email digest, filed as [AIS-OS #57](https://github.com/achibukz/AIS-OS/issues/57) #systems #bug !high
@@ -60,7 +59,6 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Invalidate worker probes after virtualenv deletion or replacement through [achiCore #156](https://github.com/achibukz/achiCore/issues/156) #achicore #infra !high
 - [ ] Ship specific-repo sync across AIS-OS #12 and achiCore #145 (/sync <repo>) #achios #achicore #infra !med
 - [ ] Unify Gemini Flash models with reasoning effort submenu in /topicmodels ([achiCore #162](https://github.com/achibukz/achiCore/issues/162)) #achicore #ux !med
-- [ ] Check Google OAuth tokens after 7 days to verify permanent production validity without re-auth #infra #security #achicore !med @2026-09-12
 - [ ] Have Astra audit whether open AIS-OS and achiCore tickets are still accurate against current code #systems #achios #achicore #planning !med
 - [ ] Audit slash commands and scripts for vendor lock-in (e.g. /tasks unavailable outside Claude Code), starting with LLM-calling scripts, and design a fallback so they work across AI vendors #systems #achios #arch !med
 - [ ] Write a ticket: when a loop finishes a ticket without success after 3 tries, add a button to switch the model working the ticket #achicore #ux !med
@@ -72,6 +70,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Backlog
 
+- [ ] Set up secure public Immich album sharing with a Cloudflare Tunnel and a public HTTPS URL #systems #immich !med
 - [ ] Audit and refine ~/.config/achios/USER.md and MEMORY.md with Claude Code to optimize structure, conciseness, and 2,500-char budget utilization #achios #memory #audit !high
 - [ ] Build Google Sheets Schedule Planner skill for Claude Code / achiOS based on Hermes OAuth and Sheets v4 API spec in [2026-08-24-google-sheets-schedule-planner-skill-spec.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-24-google-sheets-schedule-planner-skill-spec.md) #skills #automation #achios !high
 - [ ] Benchmark Althea fact-checking on gemini-3.1-pro-high vs gemini-3.7-flash-high across claim granularity, latency, and tool fidelity in asa #asa #eval #benchmark !med
@@ -93,7 +92,13 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Discuss how to do smart model routing in daily conversations in Telegram for achiCore #achicore #planning !med
 
 ## Done
+- [x] Complete CCINOV8 Self-Assessment Test #school #CCINOV8 !high @2026-09-15 (done 2026-09-15)
 
+- [x] Submit GELITPH Family Story #school #GELITPH !high @2026-09-14 (done 2026-09-13)
+- [x] Extend automatic Immich watcher to both Memories roots #systems !med (done 2026-09-14)
+- [x] Add a settled-transfer watcher for Memories 2 Immich sync #systems !med (done 2026-09-14)
+- [x] Extend Immich folder-to-album sync to Memories 2 #systems !med (done 2026-09-14)
+- [x] Check Google OAuth tokens after 7 days to verify permanent production validity without re-auth #infra #security #achicore !med @2026-09-12 (done 2026-09-13)
 - [x] Submit GELITPH Index Card (virtual) #school #GELITPH !high @2026-09-13 (done 2026-09-13)
 - [x] Filter systems and project research from default /tasks and support all and backlog views through [AIS-OS #55](https://github.com/achibukz/AIS-OS/issues/55) #systems !high (done 2026-09-11)
 - [x] Audit and design end-to-end cohesion across achiOS daemons, email digest parser, task register, and calendar auto-sync with Claude Code #achios #audit #arch !high @2026-08-27 (done 2026-09-11)

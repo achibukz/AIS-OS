@@ -18,6 +18,36 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-14 — Use one watcher for both Memories roots
+
+**Decision:** Watch both `/home/achibukz/Documents/Files/personal/memories` and `/mnt/Achi120/Main Folders/Pictures/Memories 2` in the same systemd path unit and wait for either tree to settle.
+
+**Why:** Both paths feed one Immich library and one album-sync job. One watcher avoids overlapping scans when media arrives in both locations.
+
+**Alternatives considered:** Maintaining one service per root, which can start duplicate full-library scans.
+
+**Owner:** Aki.
+
+## 2026-09-14 — Trigger Immich sync after Memories 2 transfers settle
+
+**Decision:** Add `achios-immich-watch.path` and its one-shot service to detect changes at the Memories 2 root, wait two quiet minutes, then call the existing sync.
+
+**Why:** The nightly run delays new albums by up to a day. A settling interval avoids scanning a folder while a transfer is still writing files.
+
+**Alternatives considered:** Immediate scans on every filesystem event, which can import a partial folder, and a recurring short-interval timer, which needlessly rescans unchanged media.
+
+**Owner:** Aki.
+
+## 2026-09-14 — Include both Memories roots in folder album sync
+
+**Decision:** Run `immich-folder-album-creator` once per mapped external-library root: `/mnt/media/memories` and `/mnt/media/memories2`.
+
+**Why:** The single-root configuration could scan new files in Memories 2, but it could not map their Immich paths back to an album source. The separate run found and populated the Bowling event album.
+
+**Alternatives considered:** Mounting both source roots into one container path, which breaks source-to-asset path matching, or relying on Immich to create albums, which it does not do for external-library folders.
+
+**Owner:** Aki.
+
 ## 2026-09-12 — Astra roadmap uses explicit delivery states
 
 **Decision:** Replaced bare checkbox-like table cells in the Astra implementation roadmap with explicit Done, Ongoing, Queued and Blocked states. Added real Markdown task lists for completed and active work, refreshed from GitHub issue state and observed worktrees.
@@ -1334,3 +1364,30 @@ account on a different device or after re-auth. Keeping the email-based forms wa
 none of them load.
 
 Owner: Aki decided to remove; Aea implements AIS-OS #57.
+
+## 2026-09-15, route meeting ingest through the existing cohesion writer, and let Sciel reach Asa
+
+Decision: an ingested meeting proposes tasks and Calendar deadlines through the AIS-OS #13
+cohesion writer as a sibling source adapter of Canvas #47, never through a new mechanism.
+Scope is meetings, not lectures. Dated announcements become a task plus a linked event;
+undated ones become a line in the subject `_overview.md`. No date is emitted that the source
+did not state, and every record waits for approval. Sciel in #schoolMem gains the
+orchestration mixin so it can hand a request to Asa.
+
+Why: the extraction half already exists as schoolMem's THESIS MEETING INGEST, scoped to
+`raw/<Term>/THSST*/` and three thesis files, and the writing half is #13. Building a queue
+file or a second writer would duplicate identity, dedup and receipt rules that #13 already
+owns. On delegation, reading the code showed Sciel cannot emit a delegate block at all:
+`dispatch_delegate_block` drops it unless the persona declares the orchestration mixin, and
+the drop is silent. Aki was shown that a returning hop is refused as circular anyway and
+asked for the capability regardless, so the two paths are specified separately.
+
+Alternatives: a queue file Asa polls was rejected as a mechanism the daemon does not need.
+Auto-applying high-confidence dated records was rejected because transcripts are noisy and a
+wrong Calendar entry lands on Aki's phone. Extending the trigger to lecture transcripts was
+rejected for this release. Giving achiMem's Sciel and Ara the same mixin was left out of
+scope.
+
+Owner: Aki for product and merge decisions; Aea for implementation; Luna for review. Full
+record in docs/meeting-ingest-cohesion-discussion-2026-09-15.md.
+

@@ -88,6 +88,18 @@ The status column was refreshed from GitHub and observed worktrees on September 
 
 | Queued | [AIS-OS #49](https://github.com/achibukz/AIS-OS/issues/49) | high | Reproducible GitHub Actions regression CI | None | Actual CI run plus local regression checks |
 
+## Meeting ingest cohesion batch, September 15, 2026
+
+Three tickets published from the [meeting ingest cohesion discussion](meeting-ingest-cohesion-discussion-2026-09-15.md). The meeting adapter is a sibling source on the [AIS-OS #13](https://github.com/achibukz/AIS-OS/issues/13) writer, exactly as Canvas [AIS-OS #47](https://github.com/achibukz/AIS-OS/issues/47) is. It does not add a second reconciliation path.
+
+| Status | Ticket | Priority | Deliverable | Hard blockers | Verification gate |
+|:---:|---|---|---|---|---|
+| Queued | [schoolMem #2](https://github.com/achibukz/schoolMem/issues/2) | high | Extract meeting commitments into an approved records proposal during INGEST | None | Fixture ingest evidence + stated live acceptance |
+| Blocked | [AIS-OS #58](https://github.com/achibukz/AIS-OS/issues/58) | high | Turn ingested meeting proposals into linked tasks and Calendar deadlines | [AIS-OS #13](https://github.com/achibukz/AIS-OS/issues/13), [schoolMem #2](https://github.com/achibukz/schoolMem/issues/2) | Automated + stated live acceptance |
+| Queued | [achiCore #213](https://github.com/achibukz/achiCore/issues/213) | med | Let Sciel hand a request to Asa and stop discarding rejected delegate payloads | None | Automated + stated live acceptance |
+
+schoolMem #2 and achiCore #213 can start now and in parallel; they share no files. AIS-OS #58 waits for the cohesion writer in #13 and for the proposal format in schoolMem #2. schoolMem had no `ready-for-agent` or `priority:*` labels before this batch; they were created.
+
 AIS-OS #49 can start alongside Asa and Sciel. It declares the test environment and command so future PR regressions run in CI. This planning change files the ticket only; it does not install CI.
 
 ## Existing actionable backlog retained

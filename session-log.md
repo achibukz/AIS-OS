@@ -1,5 +1,104 @@
 # Session Log
 
+## 2026-09-15
+
+Goal: scope meeting-ingest cohesion and publish its tickets through agy-tickets.
+
+Decisions:
+- Meetings only for the first release; lecture transcripts excluded because unowned instructions would flood tasks.md.
+- Dated announcements become task plus Calendar event; undated ones become a line in the subject `_overview.md`, which needs no cross-topic handoff.
+- No invented dates, and no auto-apply tier. Every proposed record waits for Aki's approval.
+- Sciel gets the orchestration mixin so it can hand a request to Asa. Aki asked for this after being shown the circularity constraint.
+- Published schoolMem #2, AIS-OS #58 and achiCore #213. Created schoolMem's ready-for-agent and priority labels, which did not exist.
+
+Rejected:
+- A parallel queue-file mechanism, and a second reconciliation path beside AIS-OS #13. The meeting adapter is a sibling source on that writer, like Canvas #47.
+
+Open:
+- The September 11 batch recommends `gpt-5.6-terra`, which is not in achiCore's MODEL_REGISTRY. The registered Codex key is `gpt-6-astra`. Left unedited pending Aki's call.
+- Whether achiMem's Sciel also gets the orchestration mixin. Scoped to schoolMem only.
+
+## 2026-09-15
+
+Goal: record completion of the CCINOV8 Self-Assessment Test.
+
+Decisions:
+- Moved the completed, due-today task from Active to Done after Aki confirmed completion.
+
+Rejected:
+- None.
+
+Open:
+- The CCINOV8 Team Contract remains due 2026-09-18.
+
+## 2026-09-14
+
+Goal: defer public Immich sharing and synchronize AIS-OS and achiCore.
+
+Decisions:
+- Added secure public Immich album sharing through a Cloudflare Tunnel to Backlog. Aki does not want to expose the service yet.
+
+Rejected:
+- Pulling either repository over tracked local changes. Fast-forwarding would be unsafe until those changes are committed, stashed, or otherwise resolved.
+
+Open:
+- Both remotes were fetched and are already up to date. AIS-OS still has five modified and three untracked files from the Immich work; achiCore has one modified `uv.lock`.
+
+## 2026-09-14
+
+Goal: apply the automatic Immich watcher to both Memories roots.
+
+Decisions:
+- Added the primary Memories root to the systemd path watcher and settling check. Any new event folder in either root now starts the same sync.
+
+Rejected:
+- Maintaining separate watchers for the two roots. One path unit prevents concurrent duplicate scans.
+
+Open:
+- None.
+
+## 2026-09-14
+
+Goal: trigger Immich scans and folder-album synchronization after new Memories 2 folders arrive.
+
+Decisions:
+- Added and enabled `achios-immich-watch.path`, which starts a one-shot watcher service when the Memories 2 root changes.
+- The watcher waits for two minutes without filesystem changes before invoking the existing sync. This prevents a scan while a folder transfer is still underway.
+- Extended `scripts/install_units.sh` to install and enable systemd path units alongside services and timers.
+
+Rejected:
+- Scanning immediately on directory creation, which can index a partial copy.
+
+Open:
+- None.
+
+## 2026-09-14
+
+Goal: extend the Immich album sync to the second Memories external-library root.
+
+Decisions:
+- Added `/mnt/Achi120/Main Folders/Pictures/Memories 2` to `scripts/immich_folder_sync.sh`, mapped as `/mnt/media/memories2` to match Immich asset paths.
+- Verified the folder-to-album tool detected `26.09.14- Bukz Bowling w Ninang` and created its album with 57 assets.
+
+Rejected:
+- Treating the third-party tool's `--dry-run` option as non-mutating. It created the album and added assets during validation.
+
+Open:
+- A filesystem watcher could run the scan and album sync after new media arrives, instead of waiting for the nightly timer.
+
+## 2026-09-13
+
+Goal: record completion of the seven-day Google OAuth validity check.
+
+Decisions:
+- Moved the Google OAuth token check to Done after Aki confirmed it was finished.
+
+Rejected:
+- Treating the overdue date as evidence that the check had run.
+
+Open:
+- None.
+
 ## 2026-09-12
 
 Goal: repair the Astra roadmap status display and reconcile it with current ticket work.
