@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-09-16 04:55 [saved]
+
+Goal: diagnose the recurring session stop hook trigger and document its provenance in achiCore.
+
+Decisions:
+- Identified uncommitted files in AIS-OS (scripts/immich_folder_sync.sh, install_units.sh, and untracked watch units) as the continuous trigger for SessionStopHook.
+- Traced the stop hook implementation to achiCore commits c930e25 and de28627 from August 28, 2026.
+
+Rejected Approaches:
+- Guessing the hook source without inspecting git history and daemon execution paths in achiCore.
+
+Open:
+- Resolve uncommitted Immich sync modifications by either stashing, committing, or discarding them.
+
+
 ## 2026-09-16 04:54 [saved]
 
 Goal: preserve the session state and record Immich watch sync automation status.
