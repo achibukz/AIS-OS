@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-09-15 15:15 [saved]
+
+Goal: inspect the Telegram /syncres command and record the requested recovery path.
+
+Decisions:
+- Record a high-priority achiCore task for /syncres recovery.
+- Do not let a sync failure restart the hub. The current handler restarts even after sync-repos exits 1.
+
+Rejected Approaches:
+- Treating scheduled vault sync as the source of this report.
+- Auto-discarding or auto-committing tracked local work without Aki's explicit approval.
+
+Open:
+- Choose the approval model for an LLM repair. Recommended: show the diagnosis and proposed patch or commit, then require a tap before it changes files, pulls, and restarts.
+- Implement in achiCore. Its master branch is one commit behind origin and has a tracked uv.lock edit, so this topic did not alter it.
+
 ## 2026-09-15 15:00 [saved]
 
 Goal: diagnose vault inbox sync fast-forwarding and missing Telegram logs.
