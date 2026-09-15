@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-09-15 15:30 [saved]
+
+Goal: create the tracked implementation ticket for Telegram /syncres recovery.
+
+Decisions:
+- Created achiCore #215 for a commit-first repair card and conditional hub restart.
+- Used authenticated GitHub CLI because agy-tickets is unavailable on PATH.
+
+Rejected Approaches:
+- Creating a duplicate ticket. GitHub returned no matching open issue.
+- Using stash as the standard recovery path.
+
+Open:
+- Implement and test achiCore #215, then complete its Telegram HITL check.
+
 ## 2026-09-15 15:25 [saved]
 
 Goal: choose how Telegram /syncres recovers tracked local changes.

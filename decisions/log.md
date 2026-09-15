@@ -1391,3 +1391,16 @@ scope.
 Owner: Aki for product and merge decisions; Aea for implementation; Luna for review. Full
 record in docs/meeting-ingest-cohesion-discussion-2026-09-15.md.
 
+## 2026-09-15 — Commit-first recovery for Telegram /syncres
+
+**Decision:** Use an LLM-proposed commit as the normal recovery path when `/syncres` finds
+tracked local changes. Restart the hub only after the approved commit and a successful
+fast-forward. Keep stash as an explicit emergency option with restoration.
+
+**Why:** A stash hides the work that blocked the pull. An inspected commit preserves the
+change, makes the recovery auditable, and leaves Git history coherent.
+
+**Alternatives considered:** Making stash the default recovery path. Rejected because it
+defers cleanup and can leave meaningful work invisible.
+
+**Owner:** Aki for approval; Aea for implementation; Luna for review.

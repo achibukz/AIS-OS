@@ -24,7 +24,7 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
-- [ ] Repair Telegram /syncres so it never restarts after a failed sync and can prepare a safe, approval-gated recovery for tracked local changes #achicore #telegram #bug !high
+- [ ] Repair Telegram /syncres through [achiCore #215](https://github.com/achibukz/achiCore/issues/215) so it never restarts after a failed sync and can prepare a safe, approval-gated recovery for tracked local changes #achicore #telegram #bug !high
 - [ ] Submit CCINOV8 Team Contract #school #CCINOV8 !high @2026-09-18
 - [ ] Submit STDISCM Practice Test Case Upload Check #school #STDISCM !high @2026-09-18
 - [ ] Work on NAIST application requirements #career !high @2026-09-14
