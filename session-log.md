@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-09-15 13:54 [saved]
+
+Goal: document the status of the Immich watch sync automation in the working tree.
+
+Decisions:
+- Keep the Immich multi-root sync scripts and systemd path units staged separately from documentation logs so Aki can review and commit them intentionally.
+- Stage and commit session-log.md to maintain state without touching working tree scripts unprompted.
+
+Rejected Approaches:
+- Committing the modified Immich scripts and units without explicit verification.
+- Stashing or reverting the working tree files.
+
+Open:
+- AIS-OS has two modified and three untracked files for Immich folder watch sync awaiting review and commit.
+- AIS-OS #13 still needs a pull request.
+
 ## 2026-09-15 13:20 [saved]
 
 Goal: decide a start order for the meeting ingest cohesion tickets.
