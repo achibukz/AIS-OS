@@ -1,5 +1,15 @@
 # Session Log
 
+## 2026-09-16 05:05 [saved]
+
+Goal: resolve the uncommitted Immich watch sync files that were keeping the session stop hook firing.
+
+Decisions:
+- Committed scripts/immich_folder_sync.sh, scripts/install_units.sh, scripts/immich_folder_watch_sync.sh, systemd/achios-immich-watch.path, and systemd/achios-immich-watch.service as one feature: multi-root Memories sync plus a path-triggered watcher.
+
+Open:
+- Deploy: run scripts/install_units.sh on achibuntu to install and enable the new path unit, then verify a file drop under either Memories root triggers achios-immich-watch.service after the quiet period.
+
 ## 2026-09-16 04:55 [saved]
 
 Goal: diagnose the recurring session stop hook trigger and document its provenance in achiCore.
