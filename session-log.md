@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-09-16 04:54 [saved]
+
+Goal: preserve the session state and record Immich watch sync automation status.
+
+Decisions:
+- Recorded working tree status for Immich multi-root synchronization in session-log.md.
+- Kept modified scripts and untracked systemd units uncommitted until manual verification completes.
+
+Rejected Approaches:
+- Staging unverified path watcher units and sync scripts prematurely.
+
+Open:
+- Run manual test on achios-immich-watch.path and achios-immich-watch.service.
+
+
 ## 2026-09-16 04:52 [saved]
 
 Goal: fast-forward achiCore to master after PR #217 and inspect latest commits.
