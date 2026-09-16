@@ -1,5 +1,27 @@
 # Session Log
 
+## 2026-09-16 20:38 [saved]
+
+Goal: repair the latest Luna blocker on AIS-OS PR #59.
+
+Decisions:
+
+- Read the complete PR review history, issue #13, the closed #6 blocker, repository instructions, current code, and overlap branches. The latest blocker concerns existing-item placement and Calendar target changes.
+- Chose the review-approved clarification path. A new source cannot change an existing item's placement or stored Calendar profile and ID. The service leaves the item and destinations untouched and records the request as pending.
+- Added regressions for Calendar-to-tasks and Calendar A-to-Calendar B updates.
+
+Verification:
+
+- Added the regressions before the source change. The focused suite failed with 18 passed and 2 failed because both requests were accepted and wrote destinations.
+- After the guard, `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/test_cohesion.py -q` passed 20 tests in 0.27s.
+- `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` passed. `git diff --check` passed.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q` returned 566 passed, 4 unrelated `gws`-path failures, and 1 pre-existing unknown-marker warning.
+
+Open:
+
+- Commit and push the repair, update PR #59 with the new head and review evidence, then wait for Luna's re-review.
+- Real `gws` Calendar acceptance remains unverified. Keep AIS-OS #13 active until the PR and required live gate are complete.
+
 ## 2026-09-16 20:22 [saved]
 
 Goal: repair the AIS-OS PR #59 review findings and verify the cohesion changes.

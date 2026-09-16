@@ -302,6 +302,96 @@ def test_same_item_update_preserves_calendar_identity_and_checks_ownership(tmp_p
     assert calendar.update_calls == 0
 
 
+def test_existing_calendar_item_rejects_placement_change_without_writes(tmp_path):
+    calendar = FakeCalendar()
+    app = service(tmp_path, calendar)
+    first = app.submit(
+        request(
+            "calendar-to-tasks-before",
+            "social_plan",
+            "Dinner",
+            start="2026-09-12T19:00:00",
+            end="2026-09-12T20:00:00",
+            calendar={"profile": "personal", "id": "calendar-a"},
+        )
+    )
+    item_id = first["item_id"]
+    event_id = first["applied"][0]["result"]["event_id"]
+    tasks_before = app.tasks_path.read_text()
+    event_before = dict(calendar.events[event_id])
+
+    second = app.submit(
+        request(
+            "calendar-to-tasks-after",
+            "social_plan",
+            "Dinner as a task",
+            item_id=item_id,
+            placement="tasks",
+            area="personal",
+        )
+    )
+
+    assert second["applied"] == []
+    assert "placement or Calendar target change requires clarification" in second["pending"][0][
+        "error"
+    ]
+    assert app.tasks_path.read_text() == tasks_before
+    assert calendar.events[event_id] == event_before
+    assert app.context()["items"] == [
+        {
+            "item_id": item_id,
+            "category": "social_plan",
+            "title": "Dinner",
+            "state": "active",
+            "due": None,
+            "placement": "calendar",
+        }
+    ]
+
+
+def test_existing_calendar_item_rejects_calendar_target_change_without_writes(tmp_path):
+    calendar = FakeCalendar()
+    app = service(tmp_path, calendar)
+    first = app.submit(
+        request(
+            "calendar-target-before",
+            "social_plan",
+            "Dinner",
+            start="2026-09-12T19:00:00",
+            end="2026-09-12T20:00:00",
+            calendar={"profile": "personal", "id": "calendar-a"},
+        )
+    )
+    item_id = first["item_id"]
+    event_id = first["applied"][0]["result"]["event_id"]
+
+    second = app.submit(
+        request(
+            "calendar-target-after",
+            "social_plan",
+            "Dinner moved",
+            item_id=item_id,
+            placement="calendar",
+            start="2026-09-12T20:00:00",
+            end="2026-09-12T21:00:00",
+            calendar={"profile": "personal", "id": "calendar-b"},
+        )
+    )
+
+    assert second["applied"] == []
+    assert "placement or Calendar target change requires clarification" in second["pending"][0][
+        "error"
+    ]
+    assert calendar.insert_calls == 1
+    assert calendar.update_calls == 0
+    assert calendar.events[event_id]["summary"] == "Dinner"
+    with app._connect() as connection:
+        item = connection.execute(
+            "SELECT calendar_id FROM items WHERE item_id = ?", (item_id,)
+        ).fetchone()
+    assert item["calendar_id"] == "calendar-a"
+
+
 def test_calendar_update_refuses_a_concurrent_human_edit(tmp_path):
     calendar = FakeCalendar()
     app = service(tmp_path, calendar)

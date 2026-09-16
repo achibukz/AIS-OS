@@ -332,12 +332,15 @@ class CohesionService:
             existing_item = connection.execute(
                 "SELECT * FROM items WHERE item_id = ?", (item_id,)
             ).fetchone()
+            transition_error = None
+            if existing_item and existing_operations is None:
+                transition_error = self._item_transition_error(existing_item, normalized)
             if existing_item and existing_source is None:
                 task_id = existing_item["task_id"]
             if existing_operations is not None and existing_item is not None:
                 placement = existing_item["placement"]
 
-            if existing_operations is None:
+            if existing_operations is None and transition_error is None:
                 if existing_item:
                     connection.execute(
                         """UPDATE items SET category = ?, title = ?, area = ?, tags_json = ?,
@@ -395,8 +398,24 @@ class CohesionService:
                         ),
                     )
 
+        if transition_error is not None:
+            return self._pending_receipt(source_id, transition_error)
+
         self._run_pending(source_id)
         return self._receipt(source_id, placement)
+
+    @staticmethod
+    def _item_transition_error(existing_item: sqlite3.Row, normalized: tuple) -> str | None:
+        new_calendar_profile = normalized[8]
+        new_calendar_id = normalized[9]
+        new_placement = normalized[10]
+        if (
+            existing_item["placement"] != new_placement
+            or existing_item["calendar_profile"] != new_calendar_profile
+            or existing_item["calendar_id"] != new_calendar_id
+        ):
+            return "existing item placement or Calendar target change requires clarification"
+        return None
 
     def _pending_receipt(self, source_id: str, error: str) -> dict:
         with self._connect() as connection:

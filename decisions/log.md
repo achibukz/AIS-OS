@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-16 — Clarify destination changes for existing cohesion items
+
+**Decision:** When a new source upsert targets an existing item and changes its placement or stored Calendar profile and ID, record a clarification and perform no item, operation, task, or Calendar writes. Updates that keep the existing destinations can still change the item's content.
+
+**Why:** Overwriting the relationship before reconciling the old destination can leave an owned Calendar event unmanaged or create a second event in another calendar. The current transport has no migration contract for moving an owned event safely.
+
+**Alternatives considered:** Implementing destination migration, which needs explicit old-destination reconciliation and deletion or archival behavior, and accepting the new relationship, which can orphan the old event. Both were rejected for this repair because clarification preserves ownership without adding an unapproved migration subsystem.
+
+**Owner:** Aea.
+
 ## 2026-09-16 — Keep cohesion receipts and Calendar payloads structurally stable
 
 **Decision:** Return `item_id: null` on conflict and early-pending cohesion receipts, preserve empty operation result objects, and construct timed/all-day Calendar bodies without duplicate fields.
