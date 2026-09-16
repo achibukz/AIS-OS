@@ -346,8 +346,18 @@ def test_source_reuse_with_different_content_is_pending_and_writes_nothing(tmp_p
     receipt = app.submit(changed)
 
     assert receipt["applied"] == []
+    assert receipt["item_id"] is None
     assert "different content" in receipt["pending"][0]["error"]
     assert app.tasks_path.read_text() == before
+
+
+def test_empty_operation_result_is_retained(tmp_path, monkeypatch):
+    app = service(tmp_path)
+    monkeypatch.setattr(app, "_apply_task", lambda operation: ({}, "empty-result"))
+
+    receipt = app.submit(request("empty-result", "quick_task", "No payload", area="personal"))
+
+    assert receipt["applied"][0]["result"] == {}
 
 
 def test_successful_redelivery_returns_the_receipt_without_repeating_writes(tmp_path):

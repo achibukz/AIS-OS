@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-09-16 20:20 [saved]
+
+Goal: refine cohesion payload handling and calendar extended properties, verifying full test suite.
+
+Decisions:
+
+- Retained empty operation result dictionaries (`{}`) when serializing operation updates rather than coercing them to `None`.
+- Ensured calendar event bodies preserve private extended properties uniformly for all-day and timed events.
+- Added test coverage for empty operation results and invalid item ID returns.
+- Verified complete AIS-OS test suite (568 tests passing).
+
+Open:
+
+- Review and merge AIS-OS PR for #13.
+
 ## 2026-09-16 19:44 [saved]
 
 Goal: implement AIS-OS #13 (delegated from Atlas /ToWork), reconciling task and Calendar intents with stable IDs and durable receipts.

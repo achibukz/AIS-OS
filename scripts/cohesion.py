@@ -572,7 +572,13 @@ class CohesionService:
                 """UPDATE operations SET status = ?, attempts = attempts + 1,
                    result_json = ?, destination_version = ?, error = ?
                    WHERE operation_id = ?""",
-                (status, json.dumps(result) if result else None, version, error, operation_id),
+                (
+                    status,
+                    json.dumps(result) if result is not None else None,
+                    version,
+                    error,
+                    operation_id,
+                ),
             )
 
     def _apply_task(self, operation: dict) -> tuple[dict, str]:
@@ -640,17 +646,16 @@ class CohesionService:
             "achios_task_id": operation["task_id"],
             "achios_item_state": operation["state"],
         }
-        body = {
-            "summary": operation["title"],
-            "extendedProperties": {"private": private},
-        }
         if operation["due"]:
             day = dt.date.fromisoformat(operation["due"])
-            body.update(gcal_add.all_day_body(operation["title"], day))
-            body["extendedProperties"] = {"private": private}
+            body = gcal_add.all_day_body(operation["title"], day)
         else:
-            body["start"] = {"dateTime": operation["start_at"], "timeZone": "Asia/Manila"}
-            body["end"] = {"dateTime": operation["end_at"], "timeZone": "Asia/Manila"}
+            body = {
+                "summary": operation["title"],
+                "start": {"dateTime": operation["start_at"], "timeZone": "Asia/Manila"},
+                "end": {"dateTime": operation["end_at"], "timeZone": "Asia/Manila"},
+            }
+        body["extendedProperties"] = {"private": private}
         return body
 
     def _apply_calendar(self, operation: dict) -> tuple[dict, str | None]:
@@ -735,6 +740,7 @@ class CohesionService:
         return {
             "version": CONTRACT_VERSION,
             "source_id": source_id,
+            "item_id": None,
             "placement": None,
             "applied": [],
             "pending": [{"destination": None, "error": error}],
