@@ -1,5 +1,33 @@
 # Session Log
 
+## 2026-09-17 01:30 [saved]
+
+Goal: repair the two blockers, four should-fix items and four nits in Luna's review of AIS-OS PR #59.
+
+Decisions:
+
+- Reopening a completed item now returns a pending clarification instead of rewriting its `- [x]` line in place. The old behaviour left an unchecked line under `## Done`, which `task_engine.parse_tasks` never returns, so the completion history was destroyed and the task became invisible. Blocking the transition matches the placement-change guard already agreed in this PR.
+- A pending tasks operation re-reads and re-reserves the `tasks.md` hash at the start of each retry. The hash stays frozen on the first attempt, so a concurrent human edit still stops the first write.
+- Superseded operations move into their own `superseded` list in the receipt, and every operation entry now carries its `status`. The receipt's `pending` list and `context()["pending_count"]` now agree.
+- A clarification is cleared when a later source for the same external object (`kind` plus `native_id`) or the same `intent.item_id` is accepted, so `pending_count` is no longer monotonic.
+- The Calendar completion note is owned by the service. The previous description is stripped of the note before it is re-appended, so repeated completions cannot stack it.
+- All-day deadline events now set `reminders: {"useDefault": true}` rather than inheriting `gcal_add.all_day_body`'s notifications-off policy. A deadline that reaches Calendar with reminders switched off is not useful, and timed events already inherit calendar defaults.
+- Nits: deleted the dead `task_id = existing_item["task_id"]` branch, merged the two consecutive `if existing_item:` blocks, and made `_connect` a context manager that closes the connection.
+
+Verification:
+
+- All six new regressions plus the two transport tests were written first and failed at head `7740e65`: the upsert on a completed item applied and destroyed the Done line, the redelivery after a concurrent edit never converged, `pending_count` stayed at 1 after the follow-up submit, the second completion produced a doubled note, the all-day body carried `useDefault: false`, and no connection was closed.
+- Guard proof by reverting each condition in turn: always re-reserving the hash breaks `test_concurrent_task_edit_leaves_the_operation_pending`; dropping the `action == "upsert"` check breaks the repeated-completion test; dropping the note strip breaks it too; removing either branch of the clarification-clearing query breaks its own test.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/test_cohesion.py -q` -> 30 passed.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q` -> 580 passed, 1 pre-existing unknown-marker warning. The four `gws` failures reported in earlier runs do not reproduce here.
+- `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` -> all checks passed. `git diff --check` -> passed.
+
+Open:
+
+- The receipt now has a `superseded` key and every entry carries `status`. Any consumer reading `pending` for retries must be updated with it; nothing outside this PR reads the receipt today.
+- Real `gws` Calendar acceptance is still not run. The reviewer's two unverifiable items stay open: whether a real not-found response carries the literal `404`, and whether an insert against an existing deterministic event ID returns 409 rather than a timeout.
+- Keep AIS-OS #13 active until the PR and the live gate are complete.
+
 ## 2026-09-16 21:37 [saved]
 
 Goal: repair the latest Luna blocker on AIS-OS PR #59.

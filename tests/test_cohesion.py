@@ -2,6 +2,7 @@ import json
 import subprocess
 
 import cohesion
+import pytest
 
 SOURCE_TIME = "2026-09-11T15:30:00+08:00"
 
@@ -280,7 +281,9 @@ def test_stale_calendar_redelivery_cannot_overwrite_a_newer_update(tmp_path):
         "calendar",
     }
     assert [operation["destination"] for operation in replay["applied"]] == ["tasks"]
-    assert replay["pending"][0]["error"] == "operation superseded by newer item update"
+    assert replay["pending"] == []
+    assert replay["superseded"][0]["error"] == "operation superseded by newer item update"
+    assert app.context()["pending_count"] == 0
     event_id = next(
         operation for operation in newer["applied"] if operation["destination"] == "calendar"
     )["result"]["event_id"]
@@ -618,3 +621,206 @@ def test_cli_submit_and_context_are_json_and_survive_restart(tmp_path, capsys):
     context = json.loads(capsys.readouterr().out)
     assert context["source_count"] == 1
     assert context["items"][0]["title"] == "CLI task"
+
+
+def test_upsert_on_a_completed_item_is_pending_and_keeps_the_done_line(tmp_path):
+    app = service(tmp_path)
+    first = app.submit(request("milk-1", "quick_task", "Buy milk", area="personal"))
+    item_id = first["item_id"]
+    completion = request("milk-done", "quick_task", "ignored")
+    completion["intent"] = {"action": "complete", "item_id": item_id}
+    app.submit(completion)
+    after_completion = app.tasks_path.read_text()
+
+    receipt = app.submit(
+        request("milk-2", "quick_task", "Buy milk again", area="personal", item_id=item_id)
+    )
+
+    assert receipt["applied"] == []
+    assert "completed item" in receipt["pending"][0]["error"]
+    assert app.tasks_path.read_text() == after_completion
+    assert "- [x] Buy milk " in after_completion
+    assert "Buy milk again" not in after_completion
+    assert app.context()["items"][0]["state"] == "completed"
+
+
+def test_redelivery_after_a_concurrent_task_edit_finally_applies(tmp_path, monkeypatch):
+    app = service(tmp_path)
+    original_runner = app._run_pending
+
+    def edit_then_run(source_id):
+        app.tasks_path.write_text(app.tasks_path.read_text() + "Human note\n", encoding="utf-8")
+        original_runner(source_id)
+
+    monkeypatch.setattr(app, "_run_pending", edit_then_run)
+    payload = request("retry-task", "quick_task", "Survives the edit", area="personal")
+    first = app.submit(payload)
+    monkeypatch.setattr(app, "_run_pending", original_runner)
+
+    redelivery = app.submit(payload)
+
+    assert first["applied"] == []
+    assert "changed after operation reservation" in first["pending"][0]["error"]
+    assert [operation["destination"] for operation in redelivery["applied"]] == ["tasks"]
+    assert redelivery["applied"][0]["attempts"] == 2
+    assert redelivery["pending"] == []
+    content = app.tasks_path.read_text()
+    assert "Survives the edit" in content
+    assert "Human note" in content
+
+
+def test_a_resolved_clarification_stops_counting_as_pending(tmp_path):
+    app = service(tmp_path)
+    incomplete = request("dinner-1", "social_plan", "Dinner")
+    incomplete["source"]["native_id"] = "telegram-4417"
+    corrected = request(
+        "dinner-2",
+        "social_plan",
+        "Dinner",
+        start="2026-09-12T19:00:00",
+        end="2026-09-12T21:00:00",
+        calendar={"profile": "personal", "id": "personal-id"},
+    )
+    corrected["source"]["native_id"] = "telegram-4417"
+
+    rejected = app.submit(incomplete)
+    assert app.context()["pending_count"] == 1
+
+    accepted = app.submit(corrected)
+
+    assert rejected["applied"] == []
+    assert [operation["destination"] for operation in accepted["applied"]] == ["calendar"]
+    assert app.context()["pending_count"] == 0
+
+
+def test_repeated_completion_does_not_duplicate_the_calendar_note(tmp_path):
+    calendar = FakeCalendar()
+    app = service(tmp_path, calendar)
+    first = app.submit(
+        request(
+            "dinner-repeat",
+            "social_plan",
+            "Dinner",
+            start="2026-09-12T19:00:00",
+            end="2026-09-12T21:00:00",
+            calendar={"profile": "personal", "id": "personal-id"},
+        )
+    )
+    item_id = first["item_id"]
+    event_id = first["applied"][0]["result"]["event_id"]
+
+    for source_id in ("dinner-done-1", "dinner-done-2"):
+        completion = request(source_id, "social_plan", "ignored")
+        completion["intent"] = {"action": "complete", "item_id": item_id}
+        assert app.submit(completion)["pending"] == []
+
+    assert calendar.events[event_id]["description"] == "achiOS item state: completed"
+
+
+def test_all_day_deadlines_keep_the_calendar_default_reminders(tmp_path):
+    calendar = FakeCalendar()
+    app = service(tmp_path, calendar)
+
+    receipt = app.submit(
+        request(
+            "reminder-1",
+            "school_deadline",
+            "Final paper",
+            area="school",
+            due="2026-09-15",
+            calendar={"profile": "dlsu", "id": "course"},
+        )
+    )
+
+    event_id = next(
+        operation for operation in receipt["applied"] if operation["destination"] == "calendar"
+    )["result"]["event_id"]
+    assert calendar.events[event_id]["reminders"] == {"useDefault": True}
+
+
+def test_submit_closes_every_database_connection(tmp_path, monkeypatch):
+    opened = []
+    real_connect = cohesion.sqlite3.connect
+
+    def tracking_connect(*args, **kwargs):
+        connection = real_connect(*args, **kwargs)
+        opened.append(connection)
+        return connection
+
+    app = service(tmp_path)
+    monkeypatch.setattr(cohesion.sqlite3, "connect", tracking_connect)
+    app.submit(request("closed-1", "quick_task", "Close me", area="personal"))
+
+    assert opened
+    for connection in opened:
+        with pytest.raises(cohesion.sqlite3.ProgrammingError):
+            connection.execute("SELECT 1")
+
+
+def test_accepting_an_item_clears_its_earlier_clarification(tmp_path):
+    calendar = FakeCalendar()
+    app = service(tmp_path, calendar)
+    first = app.submit(
+        request(
+            "gig-1",
+            "social_plan",
+            "Gig",
+            start="2026-09-12T19:00:00",
+            end="2026-09-12T21:00:00",
+            calendar={"profile": "personal", "id": "personal-id"},
+        )
+    )
+    item_id = first["item_id"]
+    rejected = app.submit(
+        request("gig-2", "social_plan", "Gig", item_id=item_id, placement="tasks", area="personal")
+    )
+    assert "clarification" in rejected["pending"][0]["error"]
+    assert app.context()["pending_count"] == 1
+
+    app.submit(
+        request(
+            "gig-3",
+            "social_plan",
+            "Gig moved later",
+            item_id=item_id,
+            start="2026-09-12T20:00:00",
+            end="2026-09-12T22:00:00",
+            calendar={"profile": "personal", "id": "personal-id"},
+        )
+    )
+
+    assert app.context()["pending_count"] == 0
+
+
+def test_gws_transport_sends_the_event_id_and_reads_a_missing_event(monkeypatch):
+    calls = []
+
+    def fake_gws(profile, *args):
+        calls.append((profile, args))
+        if args[2] == "get":
+            raise cohesion.gcal_add.GwsError("gws dlsu: 404 Not Found")
+        return {"id": "abc", "etag": "v1"}
+
+    monkeypatch.setattr(cohesion.gcal_add, "gws", fake_gws)
+    transport = cohesion.GwsCalendarTransport()
+
+    assert transport.get(profile="dlsu", calendar_id="course", event_id="abc") is None
+    inserted = transport.insert(
+        profile="dlsu", calendar_id="course", event_id="abc", body={"summary": "Paper"}
+    )
+
+    assert inserted["etag"] == "v1"
+    assert json.loads(calls[0][1][4]) == {"calendarId": "course", "eventId": "abc"}
+    assert json.loads(calls[1][1][6]) == {"summary": "Paper", "id": "abc"}
+
+
+def test_gws_transport_reraises_a_non_missing_error(monkeypatch):
+    def fake_gws(profile, *args):
+        raise cohesion.gcal_add.GwsError("gws dlsu: 403 forbidden")
+
+    monkeypatch.setattr(cohesion.gcal_add, "gws", fake_gws)
+
+    with pytest.raises(cohesion.gcal_add.GwsError):
+        cohesion.GwsCalendarTransport().get(
+            profile="dlsu", calendar_id="course", event_id="abc"
+        )

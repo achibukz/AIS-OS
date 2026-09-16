@@ -1454,3 +1454,40 @@ change, makes the recovery auditable, and leaves Git history coherent.
 defers cleanup and can leave meaningful work invisible.
 
 **Owner:** Aki for approval; Aea for implementation; Luna for review.
+
+## 2026-09-16 — Reopening a completed cohesion item requires clarification
+
+**Decision:** An upsert against an item whose stored state is `completed` returns a pending
+clarification and writes nothing. Completion itself stays idempotent, so a redelivered or
+repeated completion still converges.
+
+**Why:** The task writer rewrote the matched line in place, so an upsert on a completed task
+replaced the `- [x] … (done …)` line with an unchecked line that stayed under `## Done`. That
+erased the completion date and hid the task from `/tasks`, because `task_engine.parse_tasks`
+reads only the active, blocked and backlog sections. Preserving history matters more than
+supporting reopen, and this matches the guard already agreed for placement and Calendar
+target changes.
+
+**Alternatives considered:** Moving the line back under `## Active` on reopen. Rejected for
+now because it needs matching decisions about the Calendar completion note, the stored item
+state and what a reopened item's history should look like. A clarification defers that to Aki
+without losing data.
+
+**Owner:** Aki for approval; Aea for implementation; Luna for review.
+
+## 2026-09-16 — All-day cohesion deadlines keep the calendar's default reminders
+
+**Decision:** Calendar events written by `scripts/cohesion.py` for all-day deadlines set
+`reminders: {"useDefault": true}`.
+
+**Why:** `gcal_add.all_day_body` sets `useDefault: false` with empty overrides, because the
+daily brief already surfaces dated tasks that morning. Cohesion writes school deadlines that
+Aki reads on his phone, and a deadline arriving with notifications switched off is a silent
+failure. Timed cohesion events already inherit the calendar defaults, so this makes the two
+paths agree.
+
+**Alternatives considered:** Keeping the inherited notifications-off policy, rejected because
+it was inherited rather than chosen. Setting explicit overrides, rejected because the right
+lead time belongs to the calendar, not to this writer.
+
+**Owner:** Aki for approval; Aea for implementation; Luna for review.

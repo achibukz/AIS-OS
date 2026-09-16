@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime as dt
 import hashlib
 import json
@@ -174,11 +175,16 @@ class CohesionService:
         self._initialize()
         self.db_path.chmod(0o600)
 
-    def _connect(self) -> sqlite3.Connection:
+    @contextlib.contextmanager
+    def _connect(self):
         connection = sqlite3.connect(self.db_path)
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA foreign_keys = ON")
-        return connection
+        try:
+            with connection:
+                yield connection
+        finally:
+            connection.close()
 
     def _initialize(self) -> None:
         with self._connect() as connection:
@@ -334,9 +340,9 @@ class CohesionService:
             ).fetchone()
             transition_error = None
             if existing_item and existing_operations is None:
-                transition_error = self._item_transition_error(existing_item, normalized)
-            if existing_item and existing_source is None:
-                task_id = existing_item["task_id"]
+                transition_error = self._item_transition_error(
+                    existing_item, normalized, intent["action"]
+                )
             if existing_operations is not None and existing_item is not None:
                 placement = existing_item["placement"]
 
@@ -347,7 +353,6 @@ class CohesionService:
                            WHERE item_id = ? AND status = 'pending'""",
                         ("operation superseded by newer item update", item_id),
                     )
-                if existing_item:
                     connection.execute(
                         """UPDATE items SET category = ?, title = ?, area = ?, tags_json = ?,
                            priority = ?, due = ?,
@@ -408,10 +413,27 @@ class CohesionService:
             return self._pending_receipt(source_id, transition_error)
 
         self._run_pending(source_id)
+        self._clear_clarifications(source, item_id)
         return self._receipt(source_id, placement)
 
+    def _clear_clarifications(self, source: dict, item_id: str) -> None:
+        with self._connect() as connection:
+            connection.execute(
+                """DELETE FROM clarifications WHERE source_id IN (
+                       SELECT clarifications.source_id FROM clarifications
+                       JOIN sources USING(source_id)
+                       WHERE (sources.kind = ? AND sources.native_id = ?)
+                          OR json_extract(sources.request_json, '$.intent.item_id') = ?
+                   )""",
+                (source["kind"], source["native_id"], item_id),
+            )
+
     @staticmethod
-    def _item_transition_error(existing_item: sqlite3.Row, normalized: tuple) -> str | None:
+    def _item_transition_error(
+        existing_item: sqlite3.Row, normalized: tuple, action: str
+    ) -> str | None:
+        if action == "upsert" and existing_item["state"] == "completed":
+            return "reopening a completed item requires clarification"
         new_calendar_profile = normalized[8]
         new_calendar_id = normalized[9]
         new_placement = normalized[10]
@@ -574,6 +596,10 @@ class CohesionService:
         for operation in operations:
             operation_data = dict(operation)
             operation_data.update(json.loads(operation["snapshot_json"]))
+            if operation["destination"] == "tasks" and operation["attempts"]:
+                operation_data["expected_hash"] = self._reserve_task_hash(
+                    operation["operation_id"]
+                )
             try:
                 if operation["destination"] == "tasks":
                     result, version = self._apply_task(operation_data)
@@ -583,6 +609,15 @@ class CohesionService:
                 self._finish_operation(operation["operation_id"], "pending", None, None, str(exc))
             else:
                 self._finish_operation(operation["operation_id"], "applied", result, version, None)
+
+    def _reserve_task_hash(self, operation_id: str) -> str:
+        task_hash = self._read_task_hash()
+        with self._connect() as connection:
+            connection.execute(
+                "UPDATE operations SET expected_hash = ? WHERE operation_id = ?",
+                (task_hash, operation_id),
+            )
+        return task_hash
 
     def _finish_operation(
         self,
@@ -674,6 +709,7 @@ class CohesionService:
         if operation["due"]:
             day = dt.date.fromisoformat(operation["due"])
             body = gcal_add.all_day_body(operation["title"], day)
+            body["reminders"] = {"useDefault": True}
         else:
             body = {
                 "summary": operation["title"],
@@ -700,9 +736,11 @@ class CohesionService:
                 and existing.get("etag") != operation["destination_version"]
             ):
                 raise ConcurrentEdit("calendar event changed since the last applied operation")
-            previous_description = existing.get("description", "").strip()
+            completion_note = "achiOS item state: completed"
+            previous_description = (
+                existing.get("description", "").replace(completion_note, "").strip()
+            )
             if operation["action"] == "complete":
-                completion_note = "achiOS item state: completed"
                 body["description"] = (
                     f"{previous_description}\n\n{completion_note}"
                     if previous_description
@@ -745,6 +783,7 @@ class CohesionService:
             {
                 "operation_id": row["operation_id"],
                 "destination": row["destination"],
+                "status": row["status"],
                 "attempts": row["attempts"],
                 "result": json.loads(row["result_json"]) if row["result_json"] else None,
                 "error": row["error"],
@@ -756,8 +795,9 @@ class CohesionService:
             "source_id": source_id,
             "item_id": rows[0]["item_id"] if rows else None,
             "placement": placement,
-            "applied": [op for op, row in zip(operations, rows, strict=True) if row["status"] == "applied"],
-            "pending": [op for op, row in zip(operations, rows, strict=True) if row["status"] != "applied"],
+            "applied": [op for op in operations if op["status"] == "applied"],
+            "pending": [op for op in operations if op["status"] == "pending"],
+            "superseded": [op for op in operations if op["status"] == "superseded"],
         }
 
     @staticmethod
@@ -768,7 +808,8 @@ class CohesionService:
             "item_id": None,
             "placement": None,
             "applied": [],
-            "pending": [{"destination": None, "error": error}],
+            "pending": [{"destination": None, "status": "pending", "error": error}],
+            "superseded": [],
         }
 
 
