@@ -19,7 +19,7 @@ Verification:
 
 Open:
 
-- Commit and push the repair, update PR #59 with the new head and evidence, then request Luna's re-review.
+- Repair commit `a093472024e3ab27b2ea9359bbec5300e6d6aa43` is pushed and PR #59 now names the new head and evidence. The head-specific [live-test checklist](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/live-tests/pr-59.md) is prepared but not run. Request Luna's re-review.
 - Real `gws` Calendar acceptance remains unverified. Keep AIS-OS #13 active until the PR and required live gate are complete.
 
 ## 2026-09-16 20:38 [saved]
