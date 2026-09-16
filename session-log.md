@@ -1,5 +1,32 @@
 # Session Log
 
+## 2026-09-17 03:05 [saved]
+
+Goal: repair the blocker Luna found in the tasks concurrency guard on AIS-OS PR #59.
+
+Decisions:
+
+- The guards were attached to the wrong attempts. The whole-file hash ran only on attempt 0 and the line-version check only on retries, so an ordinary first-attempt update overwrote a task line a human had annotated, while the same edit was refused if an unrelated attempt had failed earlier. Luna reproduced it with no failure injected at all.
+- The line-version comparison now runs on every attempt, exactly as `_apply_calendar` compares its etag on every attempt. For a create the stored version is `None` and the line is absent, so the check passes on its own.
+- Deleted the whole-file hash entirely, with `expected_hash`, `_read_task_hash` and the `retry` flag. Keeping it would mean blocking an unrelated edit on attempt 0 and adopting it on every later attempt, which is the inconsistency the blocker is made of, and blocking it on every attempt brings back the operation that can never converge. One guard, on the object the operation owns.
+- `_apply_task` now reconciles an accepted write it failed to record. If the live line already equals the line it would write, it reports applied without writing. This closes the crash-between-write-and-record case, matching how `_apply_calendar` reads the event back.
+- An applied operation now records exactly the version the destination reported, including none. `COALESCE` still protects a failed attempt's reservation. Keeping a prior version on an applied operation would strand the next update permanently if a provider ever answered without an etag.
+
+Verification:
+
+- All four regressions were written first and failed at `062a4ab`. The first-attempt overwrite matched Luna's reproduction: `applied, attempts 1, pending []` with the annotation gone.
+- Guard proof by reverting each condition: removing the line check breaks the first-attempt and stays-pending tests; removing the already-applied reconcile breaks the crash test; keeping a prior version on an applied operation breaks the strand test; clearing the version on a failed attempt breaks the stays-pending test.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/test_cohesion.py -q` -> 33 passed.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q` -> 583 passed, 1 pre-existing unknown-marker warning.
+- `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` -> all checks passed. `git diff --check` -> passed.
+
+Open:
+
+- Three tests changed shape because the behaviour they pinned is deliberately gone. `test_concurrent_task_edit_leaves_the_operation_pending` became `test_a_first_attempt_refuses_a_concurrent_edit_to_the_task_line`, which is strictly stronger; the two retry-only tests added yesterday folded into `test_a_concurrent_edit_to_the_task_line_stays_pending_until_it_is_resolved` and `test_an_unrelated_edit_is_adopted_on_create_and_on_update`, because the retry branch they exercised no longer exists. Declared on the PR.
+- Two concurrent cohesion writers can still lose each other's write to different lines of `tasks.md`. The whole-file hash never protected a retry against this, so it is not new, but nothing guards it now. It needs a lock or a read-modify-write retry, which is a separate ticket.
+- Luna's two clarification nits stay open by agreement. Both need a contract decision from Aki: a dismissal operation in `capabilities()` or a status column in `clarifications`.
+- Real `gws` Calendar acceptance is still not run, and no GitHub checks are reported.
+
 ## 2026-09-17 02:20 [saved]
 
 Goal: repair the blocker Luna found in the retry fix on AIS-OS PR #59.

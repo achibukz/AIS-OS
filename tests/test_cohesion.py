@@ -42,6 +42,19 @@ class FailOnceCalendar(FakeCalendar):
         return event
 
 
+class VersionlessCalendar(FakeCalendar):
+    """A provider that stops reporting an etag once the event exists."""
+
+    def update(self, *, profile, calendar_id, event_id, body, expected_version):
+        current = self.events[event_id]
+        if current.get("etag") != expected_version:
+            raise cohesion.ConcurrentEdit("calendar event changed")
+        self.update_calls += 1
+        event = {**body, "id": event_id}
+        self.events[event_id] = event
+        return event
+
+
 class AcceptedTimeoutCalendar(FakeCalendar):
     def insert(self, **kwargs):
         super().insert(**kwargs)
@@ -567,7 +580,33 @@ def test_missing_calendar_values_return_pending_after_reserving_the_source(tmp_p
     assert app.context()["pending_count"] == 1
 
 
-def test_concurrent_task_edit_leaves_the_operation_pending(tmp_path, monkeypatch):
+def test_a_first_attempt_refuses_a_concurrent_edit_to_the_task_line(tmp_path):
+    app = service(tmp_path)
+    first = app.submit(request("concurrent-task", "quick_task", "Do not overwrite", area="personal"))
+    lines = app.tasks_path.read_text().splitlines()
+    index = next(number for number, line in enumerate(lines) if "Do not overwrite" in line)
+    lines[index] = lines[index].replace("Do not overwrite", "Do not overwrite (MINE)")
+    app.tasks_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    receipt = app.submit(
+        request(
+            "concurrent-task-2",
+            "quick_task",
+            "Overwritten",
+            area="personal",
+            item_id=first["item_id"],
+        )
+    )
+
+    assert receipt["applied"] == []
+    assert receipt["pending"][0]["attempts"] == 1
+    assert "task line changed" in receipt["pending"][0]["error"]
+    content = app.tasks_path.read_text()
+    assert "Do not overwrite (MINE)" in content
+    assert "Overwritten" not in content
+
+
+def test_an_unrelated_edit_is_adopted_on_create_and_on_update(tmp_path, monkeypatch):
     app = service(tmp_path)
     original_runner = app._run_pending
 
@@ -576,14 +615,83 @@ def test_concurrent_task_edit_leaves_the_operation_pending(tmp_path, monkeypatch
         original_runner(source_id)
 
     monkeypatch.setattr(app, "_run_pending", edit_then_run)
-
-    receipt = app.submit(
-        request("concurrent-task", "quick_task", "Do not overwrite", area="personal")
+    created = app.submit(request("unrelated-edit", "quick_task", "Write it", area="personal"))
+    updated = app.submit(
+        request(
+            "unrelated-edit-2",
+            "quick_task",
+            "Write it better",
+            area="personal",
+            item_id=created["item_id"],
+        )
     )
 
-    assert receipt["applied"] == []
-    assert "changed after operation reservation" in receipt["pending"][0]["error"]
-    assert "Do not overwrite" not in app.tasks_path.read_text()
+    assert [operation["destination"] for operation in created["applied"]] == ["tasks"]
+    assert [operation["destination"] for operation in updated["applied"]] == ["tasks"]
+    content = app.tasks_path.read_text()
+    assert "Write it better" in content
+    assert content.count("Human note") == 2
+    assert "Write it #" not in content
+
+
+def test_an_applied_operation_without_a_version_does_not_strand_the_next_update(tmp_path):
+    calendar = VersionlessCalendar()
+    app = service(tmp_path, calendar)
+    first = app.submit(
+        request(
+            "versionless-1",
+            "social_plan",
+            "Dinner",
+            start="2026-09-12T19:00:00",
+            end="2026-09-12T21:00:00",
+            calendar={"profile": "personal", "id": "personal-id"},
+        )
+    )
+    item_id = first["item_id"]
+
+    def move(source_id, title, hour):
+        return app.submit(
+            request(
+                source_id,
+                "social_plan",
+                title,
+                item_id=item_id,
+                start=f"2026-09-12T{hour}:00:00",
+                end="2026-09-12T23:00:00",
+                calendar={"profile": "personal", "id": "personal-id"},
+            )
+        )
+
+    move("versionless-2", "Dinner moved", "20")
+    third = move("versionless-3", "Dinner moved again", "21")
+
+    assert [operation["destination"] for operation in third["applied"]] == ["calendar"]
+    assert third["pending"] == []
+    assert calendar.events[third["applied"][0]["result"]["event_id"]]["summary"] == (
+        "Dinner moved again"
+    )
+
+
+def test_a_crash_after_the_task_write_reconciles_on_redelivery(tmp_path, monkeypatch):
+    app = service(tmp_path)
+    payload = request("crash-1", "quick_task", "Buy milk", area="personal")
+    original_finish = app._finish_operation
+
+    def lose_the_applied_record(operation_id, status, result, version, error):
+        if status != "applied":
+            original_finish(operation_id, status, result, version, error)
+
+    monkeypatch.setattr(app, "_finish_operation", lose_the_applied_record)
+    crashed = app.submit(payload)
+    monkeypatch.setattr(app, "_finish_operation", original_finish)
+
+    redelivery = app.submit(payload)
+
+    assert crashed["applied"] == []
+    assert "Buy milk" in app.tasks_path.read_text()
+    assert [operation["destination"] for operation in redelivery["applied"]] == ["tasks"]
+    assert redelivery["pending"] == []
+    assert app.tasks_path.read_text().count("Buy milk") == 1
 
 
 def test_completion_without_an_item_identity_is_pending_not_a_title_match(tmp_path):
@@ -644,29 +752,37 @@ def test_upsert_on_a_completed_item_is_pending_and_keeps_the_done_line(tmp_path)
     assert app.context()["items"][0]["state"] == "completed"
 
 
-def test_redelivery_after_a_concurrent_task_edit_finally_applies(tmp_path, monkeypatch):
+def test_a_concurrent_edit_to_the_task_line_stays_pending_until_it_is_resolved(tmp_path):
     app = service(tmp_path)
-    original_runner = app._run_pending
+    first = app.submit(request("retry-task", "quick_task", "Survives the edit", area="personal"))
+    original_line = next(
+        line for line in app.tasks_path.read_text().splitlines() if "Survives the edit" in line
+    )
+    edited = original_line.replace("Survives the edit", "Survives the edit (MINE)")
+    app.tasks_path.write_text(
+        app.tasks_path.read_text().replace(original_line, edited), encoding="utf-8"
+    )
+    update = request(
+        "retry-task-2", "quick_task", "Renamed", area="personal", item_id=first["item_id"]
+    )
 
-    def edit_then_run(source_id):
-        app.tasks_path.write_text(app.tasks_path.read_text() + "Human note\n", encoding="utf-8")
-        original_runner(source_id)
+    attempt = app.submit(update)
+    redelivery = app.submit(update)
+    app.tasks_path.write_text(
+        app.tasks_path.read_text().replace(edited, original_line), encoding="utf-8"
+    )
+    resolved = app.submit(update)
 
-    monkeypatch.setattr(app, "_run_pending", edit_then_run)
-    payload = request("retry-task", "quick_task", "Survives the edit", area="personal")
-    first = app.submit(payload)
-    monkeypatch.setattr(app, "_run_pending", original_runner)
-
-    redelivery = app.submit(payload)
-
-    assert first["applied"] == []
-    assert "changed after operation reservation" in first["pending"][0]["error"]
-    assert [operation["destination"] for operation in redelivery["applied"]] == ["tasks"]
-    assert redelivery["applied"][0]["attempts"] == 2
-    assert redelivery["pending"] == []
+    assert attempt["applied"] == []
+    assert "task line changed" in attempt["pending"][0]["error"]
+    assert redelivery["applied"] == []
+    assert redelivery["pending"][0]["attempts"] == 2
+    assert "task line changed" in redelivery["pending"][0]["error"]
+    assert [operation["destination"] for operation in resolved["applied"]] == ["tasks"]
+    assert resolved["applied"][0]["attempts"] == 3
     content = app.tasks_path.read_text()
-    assert "Survives the edit" in content
-    assert "Human note" in content
+    assert "Renamed" in content
+    assert "Survives the edit" not in content
 
 
 def test_a_resolved_clarification_stops_counting_as_pending(tmp_path):
@@ -824,59 +940,3 @@ def test_gws_transport_reraises_a_non_missing_error(monkeypatch):
         cohesion.GwsCalendarTransport().get(
             profile="dlsu", calendar_id="course", event_id="abc"
         )
-
-
-def test_a_retry_does_not_overwrite_a_human_edit_to_the_task_line(tmp_path, monkeypatch):
-    app = service(tmp_path)
-    first = app.submit(request("proposal-1", "quick_task", "Draft proposal", area="school"))
-    update = request(
-        "proposal-2", "quick_task", "Draft proposal v2", area="school", item_id=first["item_id"]
-    )
-    original_runner = app._run_pending
-
-    def edit_then_run(source_id):
-        app.tasks_path.write_text(app.tasks_path.read_text() + "Human note\n", encoding="utf-8")
-        original_runner(source_id)
-
-    monkeypatch.setattr(app, "_run_pending", edit_then_run)
-    failed = app.submit(update)
-    monkeypatch.setattr(app, "_run_pending", original_runner)
-    lines = app.tasks_path.read_text().splitlines()
-    index = next(number for number, line in enumerate(lines) if "Draft proposal" in line)
-    lines[index] = lines[index].replace("Draft proposal", "Draft proposal (ASK DR CRUZ FIRST)")
-    app.tasks_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-
-    redelivery = app.submit(update)
-
-    assert failed["applied"] == []
-    assert redelivery["applied"] == []
-    assert "task line changed" in redelivery["pending"][0]["error"]
-    content = app.tasks_path.read_text()
-    assert "(ASK DR CRUZ FIRST)" in content
-    assert "Draft proposal v2" not in content
-
-
-def test_a_retry_adopts_an_unrelated_edit_and_still_updates_the_task_line(tmp_path, monkeypatch):
-    app = service(tmp_path)
-    first = app.submit(request("memo-1", "quick_task", "Write memo", area="school"))
-    update = request(
-        "memo-2", "quick_task", "Write memo v2", area="school", item_id=first["item_id"]
-    )
-    original_runner = app._run_pending
-
-    def edit_then_run(source_id):
-        app.tasks_path.write_text(app.tasks_path.read_text() + "Human note\n", encoding="utf-8")
-        original_runner(source_id)
-
-    monkeypatch.setattr(app, "_run_pending", edit_then_run)
-    failed = app.submit(update)
-    monkeypatch.setattr(app, "_run_pending", original_runner)
-
-    redelivery = app.submit(update)
-
-    assert failed["applied"] == []
-    assert [operation["destination"] for operation in redelivery["applied"]] == ["tasks"]
-    content = app.tasks_path.read_text()
-    assert "Write memo v2" in content
-    assert "Human note" in content
-    assert "Write memo #" not in content

@@ -1512,3 +1512,24 @@ defect above. Marking a concurrently edited operation as needing a new source, r
 because pending plus a clear reason already tells the caller that, without inventing a state.
 
 **Owner:** Aki for approval; Aea for implementation; Luna for review.
+
+## 2026-09-17 — The task line version is the only concurrency guard for tasks writes
+
+**Decision:** `_apply_task` compares the live task line against the last applied line version on
+every attempt, first or retried. The whole-file `tasks.md` hash is deleted, along with the
+`expected_hash` column. An edit anywhere else in the file is adopted. If the live line already
+equals the line the operation would write, the operation reports applied without writing.
+
+**Why:** Splitting the two guards across attempts made whether Aki keeps a hand-written note on
+a task depend on whether an unrelated earlier attempt had failed. The Calendar side never had
+this problem because it compares a per-object etag on every attempt. Keeping the whole-file hash
+on every attempt instead would mean any unrelated edit strands the operation forever, which is
+the non-convergence defect from the previous review. Supersedes the entry from earlier today.
+
+**Alternatives considered:** Keeping both guards on every attempt, rejected because it cannot
+converge. Keeping the whole-file hash on attempt 0 only, rejected because that is the defect.
+Locking `tasks.md` for a read-modify-write, rejected as a separate ticket: it is the only thing
+that would protect two concurrent cohesion writers editing different lines, which nothing
+guards today and nothing guarded on a retry before.
+
+**Owner:** Aki for approval; Aea for implementation; Luna for review.

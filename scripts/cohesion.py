@@ -240,7 +240,6 @@ class CohesionService:
                     destination TEXT NOT NULL,
                     status TEXT NOT NULL,
                     attempts INTEGER NOT NULL,
-                    expected_hash TEXT,
                     snapshot_json TEXT NOT NULL,
                     result_json TEXT,
                     error TEXT,
@@ -371,7 +370,6 @@ class CohesionService:
                         (item_id, task_id, *normalized),
                     )
                 destinations = self._destinations(placement)
-                task_hash = self._read_task_hash() if "tasks" in destinations else None
                 for destination in destinations:
                     operation_id = _stable_id(
                         "op", f"{source_id}:{item_id}:{intent['action']}:{destination}"
@@ -399,15 +397,14 @@ class CohesionService:
                     connection.execute(
                         """INSERT INTO operations(
                                operation_id, source_id, item_id, action, destination, status,
-                               attempts, expected_hash, snapshot_json, destination_version
-                           ) VALUES (?, ?, ?, ?, ?, 'pending', 0, ?, ?, ?)""",
+                               attempts, snapshot_json, destination_version
+                           ) VALUES (?, ?, ?, ?, ?, 'pending', 0, ?, ?)""",
                         (
                             operation_id,
                             source_id,
                             item_id,
                             intent["action"],
                             destination,
-                            task_hash if destination == "tasks" else None,
                             json.dumps(snapshot),
                             prior["destination_version"] if prior else None,
                         ),
@@ -583,10 +580,6 @@ class CohesionService:
             return "tasks", "calendar"
         return (placement,)
 
-    def _read_task_hash(self) -> str:
-        content = self.tasks_path.read_text(encoding="utf-8")
-        return _content_hash(content)
-
     def _run_pending(self, source_id: str) -> None:
         with self._connect() as connection:
             operations = connection.execute(
@@ -600,7 +593,6 @@ class CohesionService:
         for operation in operations:
             operation_data = dict(operation)
             operation_data.update(json.loads(operation["snapshot_json"]))
-            operation_data["retry"] = bool(operation["attempts"])
             try:
                 if operation["destination"] == "tasks":
                     result, version = self._apply_task(operation_data)
@@ -623,12 +615,15 @@ class CohesionService:
             connection.execute(
                 """UPDATE operations SET status = ?, attempts = attempts + 1,
                    result_json = ?,
-                   destination_version = COALESCE(?, destination_version),
+                   destination_version = CASE WHEN ? = 'applied' THEN ?
+                                              ELSE COALESCE(?, destination_version) END,
                    error = ?
                    WHERE operation_id = ?""",
                 (
                     status,
                     json.dumps(result) if result is not None else None,
+                    status,
+                    version,
                     version,
                     error,
                     operation_id,
@@ -637,8 +632,6 @@ class CohesionService:
 
     def _apply_task(self, operation: dict) -> tuple[dict, str]:
         content = self.tasks_path.read_text(encoding="utf-8")
-        if not operation["retry"] and _content_hash(content) != operation["expected_hash"]:
-            raise ConcurrentEdit("tasks.md changed after operation reservation")
         task_id = operation["task_id"]
         marker = f"<!-- task-id: {task_id} -->"
         metadata = f"#{operation['area']} !{operation['priority']}"
@@ -646,29 +639,32 @@ class CohesionService:
             metadata += " " + " ".join(f"#{tag}" for tag in operation["tags"])
         if operation["due"]:
             metadata += f" @{operation['due']}"
-        line = f"- [ ] {operation['title']} {metadata} {marker}"
         lines = content.splitlines()
         matches = [index for index, current in enumerate(lines) if marker in current]
         if len(matches) > 1:
             raise CohesionError(f"duplicate task identity {task_id}")
-        if operation["retry"]:
-            current = lines[matches[0]] if matches else None
-            if _line_version(current) != operation["destination_version"]:
-                raise ConcurrentEdit("the task line changed after the last applied operation")
+        current = lines[matches[0]] if matches else None
         if operation["action"] == "complete":
-            if not matches:
+            if current is None:
                 raise CohesionError(f"task identity {task_id} does not exist")
-            lines.pop(matches[0])
-            try:
-                done_index = lines.index("## Done")
-            except ValueError as exc:
-                raise CohesionError("tasks.md has no Done section") from exc
             source_request = json.loads(operation["source_request_json"])
             completed_on = _source_time(source_request["source"]["timestamp"]).astimezone(MANILA).date()
             line = (
                 f"- [x] {operation['title']} {metadata} "
                 f"(done {completed_on.isoformat()}) {marker}"
             )
+        else:
+            line = f"- [ ] {operation['title']} {metadata} {marker}"
+        if current == line:
+            return {"task_id": task_id}, _content_hash(line)
+        if _line_version(current) != operation["destination_version"]:
+            raise ConcurrentEdit("the task line changed after the last applied operation")
+        if operation["action"] == "complete":
+            lines.pop(matches[0])
+            try:
+                done_index = lines.index("## Done")
+            except ValueError as exc:
+                raise CohesionError("tasks.md has no Done section") from exc
             lines.insert(done_index + 1, line)
         elif matches:
             lines[matches[0]] = line
