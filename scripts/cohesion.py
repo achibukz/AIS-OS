@@ -343,6 +343,12 @@ class CohesionService:
             if existing_operations is None and transition_error is None:
                 if existing_item:
                     connection.execute(
+                        """UPDATE operations SET status = 'superseded', error = ?
+                           WHERE item_id = ? AND status = 'pending'""",
+                        ("operation superseded by newer item update", item_id),
+                    )
+                if existing_item:
+                    connection.execute(
                         """UPDATE items SET category = ?, title = ?, area = ?, tags_json = ?,
                            priority = ?, due = ?,
                            start_at = ?, end_at = ?, calendar_profile = ?, calendar_id = ?,
@@ -751,7 +757,7 @@ class CohesionService:
             "item_id": rows[0]["item_id"] if rows else None,
             "placement": placement,
             "applied": [op for op, row in zip(operations, rows, strict=True) if row["status"] == "applied"],
-            "pending": [op for op, row in zip(operations, rows, strict=True) if row["status"] == "pending"],
+            "pending": [op for op, row in zip(operations, rows, strict=True) if row["status"] != "applied"],
         }
 
     @staticmethod

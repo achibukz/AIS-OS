@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-16: Supersede stale cohesion operations before newer item writes
+
+**Decision:** When a new source updates an existing item, mark every older pending destination operation for that item as superseded in the same SQLite transaction before storing the new item state and operations. Receipts keep those terminal, non-applied operations visible in the existing `pending` bucket with the supersession error, while the pending runner only retries rows whose status is still `pending`.
+
+**Why:** A Calendar operation that failed for an older source must not replay its snapshot over a newer accepted update. Superseding the older row before the new source writes preserves the stable Calendar identity and the latest content without adding a migration or a second reconciliation path.
+
+**Alternatives considered:** Adding a new item-generation schema and migration, which would add persistent schema work for this isolated repair, and leaving the old row pending with only a pre-write check, which would retain stale work and retry it indefinitely. Both were rejected for this repair.
+
+**Owner:** Aea.
+
 ## 2026-09-16 — Clarify destination changes for existing cohesion items
 
 **Decision:** When a new source upsert targets an existing item and changes its placement or stored Calendar profile and ID, record a clarification and perform no item, operation, task, or Calendar writes. Updates that keep the existing destinations can still change the item's content.

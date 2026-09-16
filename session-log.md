@@ -1,5 +1,27 @@
 # Session Log
 
+## 2026-09-16 21:37 [saved]
+
+Goal: repair the latest Luna blocker on AIS-OS PR #59.
+
+Decisions:
+
+- Read the current PR thread, issue #13, the closed #6 blocker, repository instructions, decision history, current code and overlap branches. The latest blocker is a stale pending Calendar operation that can overwrite a newer same-item update after redelivery.
+- Added a regression for failed Calendar delivery, a newer same-item update and redelivery of the original source.
+- Supersede all older pending operations for an existing item in the same transaction that accepts a newer source. Keep the existing receipt shape and expose the superseded row as a non-applied pending result with its reason. No schema migration is needed.
+
+Verification:
+
+- The regression failed before the source fix with 20 passed and 1 failed. The stale redelivery applied the old Calendar snapshot.
+- After the fix, `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/test_cohesion.py -q` passed 21 tests.
+- `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` passed. `git diff --check` passed.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q` returned 567 passed, 4 unrelated failures caused by the missing isolated-home `gws` binary, and 1 pre-existing unknown-marker warning.
+
+Open:
+
+- Commit and push the repair, update PR #59 with the new head and evidence, then request Luna's re-review.
+- Real `gws` Calendar acceptance remains unverified. Keep AIS-OS #13 active until the PR and required live gate are complete.
+
 ## 2026-09-16 20:38 [saved]
 
 Goal: repair the latest Luna blocker on AIS-OS PR #59.

@@ -247,6 +247,47 @@ def test_redelivery_after_partial_failure_retries_only_calendar(tmp_path):
     assert calendar.insert_calls == 2
 
 
+def test_stale_calendar_redelivery_cannot_overwrite_a_newer_update(tmp_path):
+    calendar = FailOnceCalendar()
+    app = service(tmp_path, calendar)
+    original = request(
+        "stale-calendar-source",
+        "school_deadline",
+        "Old title",
+        area="school",
+        due="tomorrow",
+        calendar={"profile": "dlsu", "id": "course"},
+    )
+
+    first = app.submit(original)
+    item_id = first["item_id"]
+    newer = app.submit(
+        request(
+            "new-calendar-source",
+            "school_deadline",
+            "New title",
+            item_id=item_id,
+            area="school",
+            due="tomorrow",
+            calendar={"profile": "dlsu", "id": "course"},
+        )
+    )
+    replay = app.submit(original)
+
+    assert [operation["destination"] for operation in first["applied"]] == ["tasks"]
+    assert {operation["destination"] for operation in newer["applied"]} == {
+        "tasks",
+        "calendar",
+    }
+    assert [operation["destination"] for operation in replay["applied"]] == ["tasks"]
+    assert replay["pending"][0]["error"] == "operation superseded by newer item update"
+    event_id = next(
+        operation for operation in newer["applied"] if operation["destination"] == "calendar"
+    )["result"]["event_id"]
+    assert calendar.update_calls == 0
+    assert calendar.events[event_id]["summary"] == "New title"
+
+
 def test_accepted_insert_timeout_is_reconciled_without_a_duplicate(tmp_path):
     calendar = AcceptedTimeoutCalendar()
     app = service(tmp_path, calendar)
