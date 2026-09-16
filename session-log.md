@@ -19,7 +19,7 @@ Verification:
 
 Open:
 
-- Wait for Luna's re-review of head `9ca7b14928291bff0dc4d321fff84d5859fcebb4`. Repair evidence is posted at https://github.com/achibukz/AIS-OS/pull/59#issuecomment-5697601233.
+- Wait for Luna's re-review of repair commit `9ca7b14928291bff0dc4d321fff84d5859fcebb4`. The branch also contains the documentation-only handoff commit after that repair. Evidence is posted at https://github.com/achibukz/AIS-OS/pull/59#issuecomment-5697601233.
 - Real `gws` Calendar acceptance remains unverified. Keep AIS-OS #13 active until the PR and required live gate are complete.
 
 ## 2026-09-16 20:22 [saved]
