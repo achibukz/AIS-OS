@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-16 — Keep cohesion receipts and Calendar payloads structurally stable
+
+**Decision:** Return `item_id: null` on conflict and early-pending cohesion receipts, preserve empty operation result objects, and construct timed/all-day Calendar bodies without duplicate fields.
+
+**Why:** Downstream consumers can parse every receipt through one shape, and an adapter result of `{}` must remain distinguishable from no result. One assignment per Calendar field keeps ownership metadata and event content clear.
+
+**Alternatives considered:** Requiring consumers to special-case conflict receipts, treating only non-empty adapter results as valid, and keeping the redundant Calendar assignments. Rejected because each leaves an avoidable schema or maintenance hazard.
+
+**Owner:** Aea.
+
 ## 2026-09-16 — Re-land AIS-OS #13 onto main by cherry-pick, not fresh implementation
 
 **Decision:** Cherry-picked commit `6bbf462` (the `scripts/cohesion.py` and `tests/test_cohesion.py` addition from the original PR #52) onto a new branch off current `main`, resolving conflicts in the append-only log files, instead of writing the feature again.

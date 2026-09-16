@@ -1,15 +1,15 @@
 # Session Log
 
-## 2026-09-16 20:20 [saved]
+## 2026-09-16 20:22 [saved]
 
-Goal: refine cohesion payload handling and calendar extended properties, verifying full test suite.
+Goal: repair the AIS-OS PR #59 review findings and verify the cohesion changes.
 
 Decisions:
 
 - Retained empty operation result dictionaries (`{}`) when serializing operation updates rather than coercing them to `None`.
 - Ensured calendar event bodies preserve private extended properties uniformly for all-day and timed events.
-- Added test coverage for empty operation results and invalid item ID returns.
-- Verified complete AIS-OS test suite (568 tests passing).
+- Added test coverage for empty operation results and uniform conflict receipt fields.
+- Cohesion tests: 18 passed. Full suite: 564 passed, 4 unrelated `gws`-path failures, and 1 pre-existing unknown-marker warning.
 
 Open:
 
