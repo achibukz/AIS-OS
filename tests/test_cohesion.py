@@ -824,3 +824,59 @@ def test_gws_transport_reraises_a_non_missing_error(monkeypatch):
         cohesion.GwsCalendarTransport().get(
             profile="dlsu", calendar_id="course", event_id="abc"
         )
+
+
+def test_a_retry_does_not_overwrite_a_human_edit_to_the_task_line(tmp_path, monkeypatch):
+    app = service(tmp_path)
+    first = app.submit(request("proposal-1", "quick_task", "Draft proposal", area="school"))
+    update = request(
+        "proposal-2", "quick_task", "Draft proposal v2", area="school", item_id=first["item_id"]
+    )
+    original_runner = app._run_pending
+
+    def edit_then_run(source_id):
+        app.tasks_path.write_text(app.tasks_path.read_text() + "Human note\n", encoding="utf-8")
+        original_runner(source_id)
+
+    monkeypatch.setattr(app, "_run_pending", edit_then_run)
+    failed = app.submit(update)
+    monkeypatch.setattr(app, "_run_pending", original_runner)
+    lines = app.tasks_path.read_text().splitlines()
+    index = next(number for number, line in enumerate(lines) if "Draft proposal" in line)
+    lines[index] = lines[index].replace("Draft proposal", "Draft proposal (ASK DR CRUZ FIRST)")
+    app.tasks_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    redelivery = app.submit(update)
+
+    assert failed["applied"] == []
+    assert redelivery["applied"] == []
+    assert "task line changed" in redelivery["pending"][0]["error"]
+    content = app.tasks_path.read_text()
+    assert "(ASK DR CRUZ FIRST)" in content
+    assert "Draft proposal v2" not in content
+
+
+def test_a_retry_adopts_an_unrelated_edit_and_still_updates_the_task_line(tmp_path, monkeypatch):
+    app = service(tmp_path)
+    first = app.submit(request("memo-1", "quick_task", "Write memo", area="school"))
+    update = request(
+        "memo-2", "quick_task", "Write memo v2", area="school", item_id=first["item_id"]
+    )
+    original_runner = app._run_pending
+
+    def edit_then_run(source_id):
+        app.tasks_path.write_text(app.tasks_path.read_text() + "Human note\n", encoding="utf-8")
+        original_runner(source_id)
+
+    monkeypatch.setattr(app, "_run_pending", edit_then_run)
+    failed = app.submit(update)
+    monkeypatch.setattr(app, "_run_pending", original_runner)
+
+    redelivery = app.submit(update)
+
+    assert failed["applied"] == []
+    assert [operation["destination"] for operation in redelivery["applied"]] == ["tasks"]
+    content = app.tasks_path.read_text()
+    assert "Write memo v2" in content
+    assert "Human note" in content
+    assert "Write memo #" not in content

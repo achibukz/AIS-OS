@@ -1,5 +1,29 @@
 # Session Log
 
+## 2026-09-17 02:20 [saved]
+
+Goal: repair the blocker Luna found in the retry fix on AIS-OS PR #59.
+
+Decisions:
+
+- The previous repair was wrong. Re-reserving the whole-file `tasks.md` hash on every retry adopted whatever the file held, then overwrote the task's own line from the snapshot frozen at reservation. A human edit to that line was lost with no warning and no pending entry.
+- Tasks operations now carry a per-object version like the Calendar side. `_apply_task` returns the hash of the line it wrote, and a retry compares the live line against the version of the last applied operation for that item. Unrelated edits elsewhere in the file are adopted; a changed item line returns pending.
+- The first attempt still compares the whole-file hash reserved with the operation, so a concurrent edit anywhere still stops the racing write.
+- `_finish_operation` no longer clears `destination_version` on a failed attempt. It wrote `NULL` on every failure, which is what left a retried operation with nothing to compare against. `COALESCE` preserves the reserved version. This also restores the etag guard for a retried Calendar operation, which previously depended on the superseding rule alone.
+
+Verification:
+
+- Both regressions were written first. The overwrite case failed at `68b7978` with the retry applying `Draft proposal v2` over the human's `(ASK DR CRUZ FIRST)`.
+- Guard proof by reverting each condition: dropping `COALESCE` breaks the adopt-unrelated-edit test; removing the retry line check breaks the overwrite test; keeping the whole-file check on retry breaks three tests; returning the whole-file hash instead of the line hash breaks the adopt test.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/test_cohesion.py -q` -> 32 passed.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q` -> 582 passed, 1 pre-existing unknown-marker warning.
+- `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` -> all checks passed. `git diff --check` -> passed.
+
+Open:
+
+- Luna's two nits are not fixed. A correction arriving as a new external object with no `item_id` leaves its clarification row, and an unanswered clarification is deleted rather than archived when a later source for the same item is accepted. Both need a contract decision from Aki: a `dismiss` operation would extend the capability list, and archiving needs a status column in `clarifications`. Recorded for a follow-up ticket rather than decided here.
+- Real `gws` Calendar acceptance is still not run, and no GitHub checks are reported.
+
 ## 2026-09-17 01:30 [saved]
 
 Goal: repair the two blockers, four should-fix items and four nits in Luna's review of AIS-OS PR #59.

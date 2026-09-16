@@ -129,6 +129,10 @@ def _stable_id(prefix: str, value: str, length: int = 24) -> str:
     return f"{prefix}_{hashlib.sha256(value.encode()).hexdigest()[:length]}"
 
 
+def _line_version(line: str | None) -> str | None:
+    return _content_hash(line) if line is not None else None
+
+
 def _event_id(item_id: str) -> str:
     return "a" + hashlib.sha256(item_id.encode()).hexdigest()[:31]
 
@@ -596,10 +600,7 @@ class CohesionService:
         for operation in operations:
             operation_data = dict(operation)
             operation_data.update(json.loads(operation["snapshot_json"]))
-            if operation["destination"] == "tasks" and operation["attempts"]:
-                operation_data["expected_hash"] = self._reserve_task_hash(
-                    operation["operation_id"]
-                )
+            operation_data["retry"] = bool(operation["attempts"])
             try:
                 if operation["destination"] == "tasks":
                     result, version = self._apply_task(operation_data)
@@ -609,15 +610,6 @@ class CohesionService:
                 self._finish_operation(operation["operation_id"], "pending", None, None, str(exc))
             else:
                 self._finish_operation(operation["operation_id"], "applied", result, version, None)
-
-    def _reserve_task_hash(self, operation_id: str) -> str:
-        task_hash = self._read_task_hash()
-        with self._connect() as connection:
-            connection.execute(
-                "UPDATE operations SET expected_hash = ? WHERE operation_id = ?",
-                (task_hash, operation_id),
-            )
-        return task_hash
 
     def _finish_operation(
         self,
@@ -630,7 +622,9 @@ class CohesionService:
         with self._connect() as connection:
             connection.execute(
                 """UPDATE operations SET status = ?, attempts = attempts + 1,
-                   result_json = ?, destination_version = ?, error = ?
+                   result_json = ?,
+                   destination_version = COALESCE(?, destination_version),
+                   error = ?
                    WHERE operation_id = ?""",
                 (
                     status,
@@ -643,7 +637,7 @@ class CohesionService:
 
     def _apply_task(self, operation: dict) -> tuple[dict, str]:
         content = self.tasks_path.read_text(encoding="utf-8")
-        if _content_hash(content) != operation["expected_hash"]:
+        if not operation["retry"] and _content_hash(content) != operation["expected_hash"]:
             raise ConcurrentEdit("tasks.md changed after operation reservation")
         task_id = operation["task_id"]
         marker = f"<!-- task-id: {task_id} -->"
@@ -657,6 +651,10 @@ class CohesionService:
         matches = [index for index, current in enumerate(lines) if marker in current]
         if len(matches) > 1:
             raise CohesionError(f"duplicate task identity {task_id}")
+        if operation["retry"]:
+            current = lines[matches[0]] if matches else None
+            if _line_version(current) != operation["destination_version"]:
+                raise ConcurrentEdit("the task line changed after the last applied operation")
         if operation["action"] == "complete":
             if not matches:
                 raise CohesionError(f"task identity {task_id} does not exist")
@@ -682,8 +680,7 @@ class CohesionService:
             lines.insert(active_index + 1, line)
         updated = "\n".join(lines) + ("\n" if content.endswith("\n") else "")
         self._write_tasks(updated)
-        version = _content_hash(updated)
-        return {"task_id": task_id}, version
+        return {"task_id": task_id}, _content_hash(line)
 
     def _write_tasks(self, content: str) -> None:
         descriptor, temporary_name = tempfile.mkstemp(

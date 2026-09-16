@@ -1491,3 +1491,24 @@ it was inherited rather than chosen. Setting explicit overrides, rejected becaus
 lead time belongs to the calendar, not to this writer.
 
 **Owner:** Aki for approval; Aea for implementation; Luna for review.
+
+## 2026-09-17 — Tasks operations carry a per-line version, not a whole-file hash
+
+**Decision:** A tasks operation records the hash of the line it wrote as its
+`destination_version`. A retry compares the live task line against that version and returns
+pending when the line changed, while adopting unrelated edits elsewhere in `tasks.md`. The
+first attempt still compares the whole-file hash reserved with the operation. A failed
+attempt no longer clears the reserved `destination_version`.
+
+**Why:** Re-reserving the whole-file hash on each retry made the concurrent-edit guard exist
+only on attempt 0, so a redelivery silently overwrote a human's edit to the task's own line.
+The Calendar side never had this problem because it compares a per-object etag that survives
+any number of retries. Giving tasks the same shape removes the difference rather than adding
+a second mechanism.
+
+**Alternatives considered:** Keeping the whole-file hash frozen, rejected because a pending
+operation could then never converge. Re-reserving it blind, rejected because that is the
+defect above. Marking a concurrently edited operation as needing a new source, rejected
+because pending plus a clear reason already tells the caller that, without inventing a state.
+
+**Owner:** Aki for approval; Aea for implementation; Luna for review.
