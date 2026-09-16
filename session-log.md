@@ -1,5 +1,27 @@
 # Session Log
 
+## 2026-09-16 19:44 [saved]
+
+Goal: implement AIS-OS #13 (delegated from Atlas /ToWork), reconciling task and Calendar intents with stable IDs and durable receipts.
+
+Decisions:
+
+- Checked the declared blocker, [AIS-OS #6](https://github.com/achibukz/AIS-OS/issues/6). Closed and its content is on `main` via PR #51.
+- Found the work already existed: PR #52 (`Closes #13`) merged on 2026-09-11, but into `ticket/6-lossless-task-renderer`, not `main`. That branch was never itself merged, so `scripts/cohesion.py` never reached `main` and #13 stayed open. A stale worktree at `AIS-OS-ticket-13` still holds that abandoned branch; left untouched.
+- On branch `ticket/13-cohesion-onto-main` off current `main`, cherry-picked commit `6bbf462` (the `cohesion.py` and `test_cohesion.py` addition) and resolved conflicts in `decisions/log.md`, `session-log.md`, and `tasks.md` by keeping `main`'s newer entries and re-inserting the cohesion decision at its original chronological position. `connections.md` merged cleanly.
+- `cohesion.py` only imports `PRIMARY_AREAS` from `task_engine.py`, so it needed no adaptation despite `task_engine.py` diverging significantly on `main` since (PR #56 added `all`/`backlog` filtering).
+
+Rejected:
+
+- Reimplementing the 778-line contract from scratch, which would duplicate already-tested work.
+- Merging the stale feature branch wholesale, which would drag in unrelated content already superseded on `main`.
+
+Open:
+
+- Verification: `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` passed 567 tests (17 from `test_cohesion.py`), one pre-existing unknown-marker warning. `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` passed (the default uv tool cache under `~/.local/share/uv` is outside this session's write boundary).
+- Sabotage check: removed the `status = 'pending'` filter in `_run_pending`, observed `test_redelivery_after_partial_failure_retries_only_calendar` fail, restored the filter, observed it pass.
+- Opening a PR against `main` with `Closes #13` and the required mentions.
+
 ## 2026-09-16 05:22 [saved]
 
 Goal: add orchestration mixin to achimem and sophie personas in achiCore per delegation from #General.

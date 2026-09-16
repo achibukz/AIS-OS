@@ -18,7 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
-<<<<<<< HEAD
+## 2026-09-16 — Re-land AIS-OS #13 onto main by cherry-pick, not fresh implementation
+
+**Decision:** Cherry-picked commit `6bbf462` (the `scripts/cohesion.py` and `tests/test_cohesion.py` addition from the original PR #52) onto a new branch off current `main`, resolving conflicts in the append-only log files, instead of writing the feature again.
+
+**Why:** PR #52 (`Closes #13`) merged on 2026-09-11, but its base was `ticket/6-lossless-task-renderer`, not `main`. That branch was never itself merged to `main` — PR #51 landed issue #6's content into `main` via a squash merge first, so the cohesion commits stacked on top of it afterward were orphaned on a branch `main` never absorbed. Issue #13 stayed open. `scripts/task_engine.py` diverged from that stale branch afterward (PR #56 added `all`/`backlog` filtering), but `cohesion.py` only imports `PRIMARY_AREAS` from it, so the cherry-pick applied cleanly against current `task_engine.py` with no adaptation needed.
+
+**Alternatives considered:** Reimplementing the 778-line contract from the issue spec again, which would duplicate already-reviewed, already-tested work and risk introducing new bugs. Merging the stale `ticket/6-lossless-task-renderer` branch wholesale, which would also drag in unrelated stale content across 30+ files superseded on `main` since (email digest rewrite, viewer trimming, telegram_notify changes).
+
+**Owner:** Aea.
+
 ## 2026-09-14 — Use one watcher for both Memories roots
 
 **Decision:** Watch both `/home/achibukz/Documents/Files/personal/memories` and `/mnt/Achi120/Main Folders/Pictures/Memories 2` in the same systemd path unit and wait for either tree to settle.
