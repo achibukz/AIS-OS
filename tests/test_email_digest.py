@@ -238,63 +238,36 @@ class TestMessageBuilder:
 
 
 class TestEmailSourceLinks:
-    def test_multiple_accounts_web_link_formatting(self):
-        # DLSU account
-        item_dlsu = ed.EmailItem(
+    def test_email_item_has_no_link_fields_or_property(self):
+        item = ed.EmailItem(
             sender="Dr. Briane Samson",
             subject="Recommendation Letter",
             snippet="Submitted.",
-            message_id="191e4f3a",
-            account_email="abram_bukuhan@dlsu.edu.ph",
         )
-        assert item_dlsu.web_link == "https://mail.google.com/mail/u/abram_bukuhan@dlsu.edu.ph/#all/191e4f3a"
-        assert ed.format_source_link(item_dlsu) == '<a href="https://mail.google.com/mail/u/abram_bukuhan@dlsu.edu.ph/#all/191e4f3a">[link]</a>'
+        assert not hasattr(item, "web_link")
+        assert not hasattr(item, "message_id")
+        assert not hasattr(item, "thread_id")
+        assert not hasattr(item, "account_email")
+        assert not hasattr(ed, "format_source_link")
 
-        # Work account with thread_id
-        item_work = ed.EmailItem(
-            sender="Vanscell Nierra",
-            subject="Offer Details",
-            snippet="Offer attached.",
-            thread_id="thread987",
-            account_email="akibukzwork@gmail.com",
-        )
-        assert item_work.web_link == "https://mail.google.com/mail/u/akibukzwork@gmail.com/#all/thread987"
-        assert ed.format_source_link(item_work) == '<a href="https://mail.google.com/mail/u/akibukzwork@gmail.com/#all/thread987">[link]</a>'
-
-        # Personal account
-        item_personal = ed.EmailItem(
-            sender="Tonik Bank",
-            subject="Security Alert",
-            snippet="Login detected.",
-            message_id="sec456",
-            account_email="akibukuhan10@gmail.com",
-        )
-        assert item_personal.web_link == "https://mail.google.com/mail/u/akibukuhan10@gmail.com/#all/sec456"
-        assert ed.format_source_link(item_personal) == '<a href="https://mail.google.com/mail/u/akibukuhan10@gmail.com/#all/sec456">[link]</a>'
-
-    def test_absent_id_reports_missing_identity_without_guessing(self):
+    def test_absent_id_reports_no_links_or_missing_id_tags(self):
         item_no_id = ed.EmailItem(
             sender="Samson",
             subject="Thesis update",
             snippet="Please check draft.",
-            account_email="abram_bukuhan@dlsu.edu.ph",
         )
-        assert item_no_id.web_link is None
-        assert ed.format_source_link(item_no_id) == "[missing ID]"
-
-        # Verify fallback message uses [missing ID] and never guesses a search link
         msg = ed.build_account_message_raw("🎓 DLSU School Email", "school", [item_no_id], 0)
-        assert "[missing ID]" in msg
+        assert "[missing ID]" not in msg
+        assert "[link]" not in msg
         assert "mail.google.com" not in msg
+        assert "<a href=" not in msg
 
-    def test_model_omitted_link_is_attached_by_structured_renderer(self, monkeypatch):
+    def test_model_output_does_not_have_link_attached(self, monkeypatch):
         item = ed.EmailItem(
             sender="Dr. Briane Samson",
             subject="Re: Recommendation Letter Request",
             snippet="Submitted your letter.",
             category="priority",
-            message_id="msg001",
-            account_email="abram_bukuhan@dlsu.edu.ph",
         )
         llm_output = (
             "⚡ HIGH PRIORITY & VIP\n"
@@ -304,17 +277,18 @@ class TestEmailSourceLinks:
         monkeypatch.setattr(ed, "synthesize_account_emails_llm", lambda *args, **kwargs: llm_output)
 
         msg = ed.build_account_message("🎓 DLSU School Email", "school", [item], 0, raw_mode=False)
-        assert '<a href="https://mail.google.com/mail/u/abram_bukuhan@dlsu.edu.ph/#all/msg001">[link]</a>' in msg
+        assert "[link]" not in msg
+        assert "<a href=" not in msg
+        assert "mail.google.com" not in msg
         assert "Dr. Samson confirmed submission" in msg
+        assert "• Dr. Briane Samson — Re: Recommendation Letter Request" in msg
 
-    def test_model_invented_link_is_replaced_by_valid_source_link(self, monkeypatch):
+    def test_model_invented_link_is_scrubbed(self, monkeypatch):
         item = ed.EmailItem(
             sender="Vanscell Nierra",
             subject="Offer access",
             snippet="Review document.",
             category="priority",
-            message_id="valid_msg_id",
-            account_email="akibukzwork@gmail.com",
         )
         llm_output_with_fake_link = (
             "⚡ HIGH PRIORITY & VIP\n"
@@ -325,54 +299,34 @@ class TestEmailSourceLinks:
 
         msg = ed.build_account_message("💼 Work / Career Email", "work", [item], 0, raw_mode=False)
         assert "https://phishing.evil.com/steal" not in msg
-        assert '<a href="https://mail.google.com/mail/u/akibukzwork@gmail.com/#all/valid_msg_id">[link]</a>' in msg
+        assert "[link]" not in msg
+        assert "<a href=" not in msg
+        assert "[missing ID]" not in msg
+        assert "• Vanscell Nierra — Offer access" in msg
 
-    def test_model_invented_link_with_absent_id_reports_missing_identity(self, monkeypatch):
-        item = ed.EmailItem(
-            sender="Vanscell Nierra",
-            subject="Offer access",
-            snippet="Review document.",
-            category="priority",
-            message_id="",
-            thread_id="",
-            account_email="akibukzwork@gmail.com",
-        )
-        llm_output_with_fake_link = (
-            "⚡ HIGH PRIORITY & VIP\n"
-            '• Vanscell Nierra — Offer access <a href="https://mail.google.com/mail/u/fake/#all/fake">[link]</a>\n'
-            "      Review onboarding offer letter."
-        )
-        monkeypatch.setattr(ed, "synthesize_account_emails_llm", lambda *args, **kwargs: llm_output_with_fake_link)
-
-        msg = ed.build_account_message("💼 Work / Career Email", "work", [item], 0, raw_mode=False)
-        assert "https://mail.google.com/mail/u/fake/#all/fake" not in msg
-        assert "[missing ID]" in msg
-
-    def test_raw_fallback_retains_items_and_valid_links(self, monkeypatch):
+    def test_raw_fallback_retains_items_without_links(self, monkeypatch):
         items = [
             ed.EmailItem(
                 sender="Dr. Briane Samson",
                 subject="Thesis Review",
                 snippet="Review comments.",
                 category="priority",
-                message_id="m_thesis",
-                account_email="abram_bukuhan@dlsu.edu.ph",
             ),
             ed.EmailItem(
                 sender="Canvas Notifications",
                 subject="CSOPESY Assignment",
                 snippet="Quiz 1 posted.",
                 category="academic",
-                message_id="m_quiz",
-                account_email="abram_bukuhan@dlsu.edu.ph",
             ),
         ]
-        # Simulate LLM crash/failure returning None
         monkeypatch.setattr(ed, "synthesize_account_emails_llm", lambda *args, **kwargs: None)
 
         msg = ed.build_account_message("🎓 DLSU School Email", "school", items, 2, raw_mode=False)
-        assert '<a href="https://mail.google.com/mail/u/abram_bukuhan@dlsu.edu.ph/#all/m_thesis">[link]</a>' in msg
-        assert '<a href="https://mail.google.com/mail/u/abram_bukuhan@dlsu.edu.ph/#all/m_quiz">[link]</a>' in msg
+        assert "[link]" not in msg
+        assert "<a href=" not in msg
+        assert "mail.google.com" not in msg
+        assert "• Dr. Briane Samson — Thesis Review" in msg
+        assert "• Canvas Notifications — CSOPESY Assignment" in msg
         assert "⚡ HIGH PRIORITY & VIP:" in msg
         assert "📚 COURSES & ACADEMICS:" in msg
 
@@ -382,44 +336,32 @@ class TestEmailSourceLinks:
             subject="Re: <THS-ST1> & Defense Plan",
             snippet="Score > 90 & remarks <approved>",
             category="priority",
-            message_id="safe_id_123",
-            account_email="abram_bukuhan@dlsu.edu.ph",
         )
         msg = ed.build_account_message_raw("🎓 DLSU School Email", "school", [item], 0)
         assert "&lt;THS-ST1&gt; &amp; Defense Plan" in msg
         assert "Score &gt; 90 &amp; remarks &lt;approved&gt;" in msg
-        assert '<a href="https://mail.google.com/mail/u/abram_bukuhan@dlsu.edu.ph/#all/safe_id_123">[link]</a>' in msg
-        # Ensure no unescaped brackets exist other than <a> tags
-        import re
-        cleaned = re.sub(r'<a href="[^"]+">\[link\]</a>', '', msg)
-        assert "<" not in cleaned and ">" not in cleaned
+        assert "[link]" not in msg
+        assert "<a href=" not in msg
+        assert "<" not in msg and ">" not in msg
 
-    def test_long_split_preserves_anchors_across_chunks(self):
+    def test_long_split_splits_message_cleanly(self):
         items = [
             ed.EmailItem(
                 sender=f"Sender {i}",
                 subject=f"Subject {i} with some descriptive information",
                 snippet=f"Snippet content for email number {i} with several details to increase length.",
                 category="priority",
-                message_id=f"msg{i:04d}",
-                account_email="akibukzwork@gmail.com",
             )
             for i in range(25)
         ]
         msg = ed.build_account_message_raw("💼 Work / Career Email", "work", items, 0)
-        # Split with small limit to force multiple chunks
         chunks = ed.split_digest_message(msg, limit=500)
         assert len(chunks) > 1
-        assert sum(chunk.count("<a href=") for chunk in chunks) == 25
         joined_chunks = "".join(chunks)
         for i in range(25):
-            assert f"msg{i:04d}" in joined_chunks
-        for idx, chunk in enumerate(chunks):
+            assert f"Sender {i}" in joined_chunks
+        for chunk in chunks:
             assert len(chunk) <= 500
-            # Every chunk must have matched <a> and </a>
-            open_count = chunk.count("<a href=")
-            close_count = chunk.count("</a>")
-            assert open_count == close_count, f"Chunk {idx} has mismatched anchor tags: {chunk}"
 
     def test_bracketed_number_in_subject_does_not_mismatch_item_index(self):
         items = [
@@ -428,16 +370,12 @@ class TestEmailSourceLinks:
                 subject="Syllabus and Policies",
                 snippet="Check the syllabus.",
                 category="academic",
-                message_id="id_0",
-                account_email="abram_bukuhan@dlsu.edu.ph",
             ),
             ed.EmailItem(
                 sender="Canvas Notifications",
                 subject="[CSOPESY] Project [1] Submission",
                 snippet="Submission deadline is Friday.",
                 category="academic",
-                message_id="id_1",
-                account_email="abram_bukuhan@dlsu.edu.ph",
             ),
         ]
         bullet = "• Canvas Notifications — [CSOPESY] Project [1] Submission"
@@ -451,8 +389,6 @@ class TestEmailSourceLinks:
             subject="[CSOPESY] Midterm Exam Schedule",
             snippet="Midterm exam will be next week.",
             category="priority",
-            message_id="exam123",
-            account_email="abram_bukuhan@dlsu.edu.ph",
         )
         llm_output = (
             "⚡ HIGH PRIORITY & VIP\n"
@@ -462,7 +398,8 @@ class TestEmailSourceLinks:
         monkeypatch.setattr(ed, "synthesize_account_emails_llm", lambda *args, **kwargs: llm_output)
         msg = ed.build_account_message("🎓 DLSU School Email", "school", [item], 0, raw_mode=False)
         assert "[CSOPESY] Midterm Exam Schedule" in msg
-        assert '<a href="https://mail.google.com/mail/u/abram_bukuhan@dlsu.edu.ph/#all/exam123">[link]</a>' in msg
+        assert "[link]" not in msg
+        assert "<a href=" not in msg
 
     def test_separator_lines_and_bullet_starting_with_keyword_do_not_corrupt_sections(self, monkeypatch):
         item_priority = ed.EmailItem(
@@ -470,16 +407,12 @@ class TestEmailSourceLinks:
             subject="Updates & General notes on Roadmap",
             snippet="Please review roadmap updates.",
             category="priority",
-            message_id="msg_priority",
-            account_email="akibukzwork@gmail.com",
         )
         item_general = ed.EmailItem(
             sender="Colleague",
             subject="Lunch tomorrow",
             snippet="Are we getting lunch?",
             category="general",
-            message_id="msg_general",
-            account_email="akibukzwork@gmail.com",
         )
         llm_output = (
             "⚡ HIGH PRIORITY & VIP\n"
@@ -512,8 +445,6 @@ class TestEmailSourceLinks:
                     subject="Onboarding details",
                     snippet="Submit requirements.",
                     category="priority",
-                    message_id="work_msg_1",
-                    account_email="akibukzwork@gmail.com",
                 )
                 return [item], 0, None
             return [], 0, None
@@ -535,28 +466,7 @@ class TestEmailSourceLinks:
 
         assert work_entry[1] is None
         assert len(work_entry[2]) == 1
-        assert work_entry[2][0].message_id == "work_msg_1"
-
-    def test_no_credentials_or_private_auth_parameters_enter_links(self):
-        item_inject = ed.EmailItem(
-            sender="Attacker",
-            subject="Hack",
-            snippet="x",
-            message_id="123?access_token=secret_token&bearer=xyz",
-            account_email="akibukzwork@gmail.com",
-        )
-        assert item_inject.web_link is None
-        assert ed.format_source_link(item_inject) == "[missing ID]"
-
-        item_bad_email = ed.EmailItem(
-            sender="Attacker",
-            subject="Hack",
-            snippet="x",
-            message_id="123",
-            account_email="user@gmail.com?auth=token",
-        )
-        assert item_bad_email.web_link is None
-        assert ed.format_source_link(item_bad_email) == "[missing ID]"
+        assert work_entry[2][0].subject == "Onboarding details"
 
 
 class _Done:

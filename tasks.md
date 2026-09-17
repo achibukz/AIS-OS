@@ -35,7 +35,6 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Deliver the meeting ingest cohesion batch: [schoolMem #2](https://github.com/achibukz/schoolMem/issues/2), [AIS-OS #58](https://github.com/achibukz/AIS-OS/issues/58) and [achiCore #213](https://github.com/achibukz/achiCore/issues/213). [Discussion](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/meeting-ingest-cohesion-discussion-2026-09-15.md) #systems !med
 - [ ] Fix shared Telegram message splitting through [AIS-OS #34](https://github.com/achibukz/AIS-OS/issues/34), preserving long-message tails without duplicate prefixes #systems #bug !med
 - [ ] Fix false-positive delegation failure receipts on trailing agy stream disconnects, filed as [achiCore #167-#168](https://github.com/achibukz/achiCore/issues/167) #achicore #bug !high
-- [ ] Remove broken Gmail links from email digest, filed as [AIS-OS #57](https://github.com/achibukz/AIS-OS/issues/57) #systems #bug !high
 - [ ] Retry transient git fetch failures in standby so a stalled fetch stops stranding a worker pair, filed as [achiCore #171](https://github.com/achibukz/achiCore/issues/171) #achicore #bug !high
 - [ ] Suppress the stream drop truncation warning when the recovered delegation report is complete, filed as [achiCore #172](https://github.com/achibukz/achiCore/issues/172) #achicore #bug !med
 - [ ] Tap Recheck and release on the achiCore #6 status card in #Atlas to free aea1 and luna1 #achicore !high
@@ -95,6 +94,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Discuss how to do smart model routing in daily conversations in Telegram for achiCore #achicore #planning !med
 
 ## Done
+- [x] Remove broken Gmail links from email digest, filed as [AIS-OS #57](https://github.com/achibukz/AIS-OS/issues/57) #systems #bug !high (done 2026-09-17)
 - [x] Complete CCINOV8 Self-Assessment Test #school #CCINOV8 !high @2026-09-15 (done 2026-09-15)
 
 - [x] Submit GELITPH Family Story #school #GELITPH !high @2026-09-14 (done 2026-09-13)

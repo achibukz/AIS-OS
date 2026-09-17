@@ -253,31 +253,6 @@ class EmailItem:
     snippet: str
     category: str = "general"
     date_str: str = ""
-    message_id: str = ""
-    thread_id: str = ""
-    account_email: str = ""
-
-    @property
-    def web_link(self) -> str | None:
-        """Construct account-aware Gmail web URL for this message or thread."""
-        target_id = (self.thread_id or self.message_id or "").strip()
-        account = (self.account_email or "").strip()
-        if not target_id or not account:
-            return None
-        # Strict validation: prevent credentials, injection, or query parameters
-        if not re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", account):
-            return None
-        if not re.match(r"^[a-zA-Z0-9_-]+$", target_id):
-            return None
-        return f"https://mail.google.com/mail/u/{account}/#all/{target_id}"
-
-
-def format_source_link(item: EmailItem) -> str:
-    """Render clickable HTML [link] or report missing identity."""
-    link = item.web_link
-    if link:
-        return f'<a href="{html.escape(link, quote=True)}">[link]</a>'
-    return "[missing ID]"
 
 
 def sanitize_text(text: str) -> str:
@@ -428,8 +403,6 @@ def fetch_account_emails(
     if not gws_profile:
         raise ValueError("gws profile is required")
 
-    email_addr = account_email or DEFAULT_ACCOUNT_EMAILS.get(gws_profile, "")
-
     cfg_dir = Path.home() / ".config" / f"gws-{gws_profile}"
     if not cfg_dir.is_dir():
         return actionable, filtered_noise_count, f"gws profile missing: {cfg_dir}"
@@ -451,7 +424,6 @@ def fetch_account_emails(
             messages = data.get("messages", [])
             for m in messages:
                 mid = m.get("id", "") if isinstance(m, dict) else ""
-                m_thread = m.get("threadId", "") if isinstance(m, dict) else ""
                 if not mid:
                     continue
                 res_m = subprocess.run(
@@ -485,8 +457,6 @@ def fetch_account_emails(
                     category = categorize_email(from_hdr, subject, snippet, account_type=account_type)
                     sender = clean_title(clean_sender(from_hdr))
                     clean_subj = clean_title(subject)
-                    item_id = msg_data.get("id") or mid
-                    item_thread = msg_data.get("threadId") or m_thread
                     actionable.append(
                         EmailItem(
                             sender=sender,
@@ -494,9 +464,6 @@ def fetch_account_emails(
                             snippet=snippet[:250].strip(),
                             category=category,
                             date_str=date_hdr,
-                            message_id=item_id,
-                            thread_id=item_thread,
-                            account_email=email_addr,
                         )
                     )
             return actionable, filtered_noise_count, None
@@ -586,7 +553,6 @@ def match_bullet_to_item(
     # 3. Content matching
     clean = re.sub(r"<[^>]+>", " ", bullet_text)
     clean = re.sub(r"\[[^\]]*\]\([^\)]+\)", " ", clean)
-    clean = re.sub(r"\[(?:link|missing ID)\]", " ", clean, flags=re.IGNORECASE)
     clean = re.sub(r"^\s*(?:[•\*\-]\s*)?\[\d+\]", " ", clean)
     clean_lower = clean.lower()
 
@@ -712,7 +678,6 @@ def validate_and_render_llm_digest(
             clean_b = re.sub(r"<a\b[^>]*>.*?</a>", "", bullet_text, flags=re.IGNORECASE)
             clean_b = re.sub(r"<[^>]+>", "", clean_b)
             clean_b = re.sub(r"\[[^\]]*\]\([^\)]+\)", "", clean_b)
-            clean_b = re.sub(r"\[(?:link|missing ID)\]", "", clean_b, flags=re.IGNORECASE)
             clean_b = re.sub(r"^\s*[•\*\-]\s*", "", clean_b)
             clean_b = re.sub(r"^\s*\[\d+\]\s*", "", clean_b).strip()
 
@@ -728,9 +693,8 @@ def validate_and_render_llm_digest(
 
             disp_sender = s_part.strip() or item.sender
             disp_subj = subj_part.strip() or item.subject
-            link_tag = format_source_link(item)
 
-            out_lines.append(f"• {html.escape(disp_sender)} — {html.escape(disp_subj)} {link_tag}")
+            out_lines.append(f"• {html.escape(disp_sender)} — {html.escape(disp_subj)}")
             if summary_text:
                 out_lines.append(f"      {html.escape(summary_text)}")
             elif item.snippet:
@@ -778,8 +742,7 @@ def build_account_message_raw(
     def render_items(group: list[EmailItem]) -> list[str]:
         out = []
         for it in group:
-            link_tag = format_source_link(it)
-            out.append(f"• {html.escape(it.sender)} — {html.escape(it.subject)} {link_tag}")
+            out.append(f"• {html.escape(it.sender)} — {html.escape(it.subject)}")
             if it.snippet:
                 snippet_preview = it.snippet[:120].replace("\n", " ").strip()
                 out.append(f"      {html.escape(snippet_preview)}")
