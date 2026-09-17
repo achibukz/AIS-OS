@@ -78,6 +78,10 @@ class FakeGws:
                 raise gcal.GwsError("duplicate", profile=profile, status=409)
             events[body["id"]] = body
             return body
+        if kind == ("events", "update"):
+            assert all(value is not None for value in body["start"].values())
+            events[params["eventId"]] = body
+            return body
         if kind == ("events", "patch"):
             events[params["eventId"]].update(body)
             return events[params["eventId"]]
@@ -626,3 +630,102 @@ def test_no_legacy_google_token_files_remain_in_the_achios_config_dir():
     config_dir = gcal.CONFIG_PATH.parent
     leftovers = sorted(path.name for path in config_dir.glob("google_token*.json"))
     assert leftovers == [], f"delete unused OAuth token files from {config_dir}: {leftovers}"
+
+
+# Review fixes
+
+
+def test_gws_omits_the_format_flag_when_asked(monkeypatch):
+    seen = []
+    monkeypatch.setattr(gcal, "GWS_BIN", FakeBin(True))
+
+    def run(argv, **kwargs):
+        seen.append(argv)
+        return subprocess.CompletedProcess(argv, 0, stdout='{"token_valid": true}', stderr="")
+
+    monkeypatch.setattr(gcal.subprocess, "run", run)
+    gcal.gws("main", "auth", "status", json_format=False)
+    gcal.gws("main", "calendar", "calendarList", "list")
+    assert seen[0] == ["/fake/gws", "auth", "status"]
+    assert seen[1][-2:] == ["--format", "json"]
+
+
+def test_an_empty_readable_day_with_one_failed_profile_is_partial(fake):
+    fake.failing["work"] = gcal.GwsError("error[auth]: expired", profile="work", status=401)
+    result = gcal.agenda(schedule_config(), dt.date(2026, 9, 20), dt.date(2026, 9, 20))
+    assert result["events"] == []
+    assert result["status"] == "partial"
+
+
+def test_calendars_list_with_an_empty_readable_profile_is_partial(monkeypatch, tmp_path, fake):
+    monkeypatch.setattr(gcal, "profile_dir", lambda profile: tmp_path)
+    fake.failing["work"] = gcal.GwsError("error[auth]: expired", profile="work", status=401)
+    assert gcal.list_calendars(["personal", "work"])["status"] == "partial"
+
+
+def test_inserting_a_deleted_item_again_restores_its_event(writable):
+    config = write_config()
+    first = gcal.insert(config, calendar="Personal", owner="asa", title="Gym", start="2026-09-18T07:00",
+                        end="2026-09-18T08:00")
+    stored = writable.events[("personal", "personal@group")][first["event"]["event_id"]]
+    stored["status"] = "cancelled"
+
+    again = gcal.insert(config, calendar="Personal", owner="asa", title="Gym", start="2026-09-18T07:00",
+                        end="2026-09-18T08:00")
+
+    assert again["status"] == "ok" and again["restored"] is True
+    assert stored["status"] == "confirmed"
+    assert stored["extendedProperties"]["private"]["achios_owner"] == "asa"
+    assert len([c for c in writable.writes() if c[1:] == ("events", "insert")]) == 1
+
+
+def test_a_deleted_event_of_another_owner_is_not_restored(writable):
+    config = write_config()
+    first = gcal.insert(config, calendar="Personal", owner="cohesion", title="Gym", date="2026-09-18",
+                        item_id="shared")
+    writable.events[("personal", "personal@group")][first["event"]["event_id"]]["status"] = "cancelled"
+    result = gcal.insert(config, calendar="Personal", owner="asa", title="Gym", date="2026-09-18", item_id="shared")
+    assert result["reason"] == "event_owner"
+
+
+def test_moving_an_event_to_all_day_replaces_its_times_and_keeps_the_rest(writable, monkeypatch):
+    writable.add_event("personal", "personal@group", {
+        **timed("mine", "Gym", "2026-09-18T07:00:00+08:00"),
+        "reminders": {"useDefault": True},
+        "extendedProperties": {"private": {"achios_owner": "asa", "achios_item_id": "gym"}},
+    })
+    sent = []
+    real_replace = gcal.replace_event
+    monkeypatch.setattr(gcal, "replace_event", lambda *a: sent.append(a[3]) or real_replace(*a))
+
+    result = gcal.update(write_config(), calendar="Personal", event_id="mine", owner="asa", date="2026-10-01")
+
+    assert result["event"]["all_day"] is True
+    assert sent[0]["start"] == {"date": "2026-10-01"}
+    assert sent[0]["end"] == {"date": "2026-10-02"}
+    assert sent[0]["reminders"] == {"useDefault": True}
+    assert sent[0]["extendedProperties"]["private"]["achios_owner"] == "asa"
+
+
+def test_moving_an_all_day_event_to_a_timed_slot(writable):
+    seed(writable, "mine", owner="asa")
+    result = gcal.update(write_config(), calendar="Personal", event_id="mine", owner="asa",
+                         start="2026-10-01T09:00", end="2026-10-01T10:00")
+    assert result["event"]["start"] == "2026-10-01T09:00:00+08:00"
+    assert writable.events[("personal", "personal@group")]["mine"]["start"] == {
+        "dateTime": "2026-10-01T09:00:00+08:00", "timeZone": "Asia/Manila"}
+
+
+def test_gws_error_keeps_every_detail_line(monkeypatch):
+    monkeypatch.setattr(gcal, "GWS_BIN", FakeBin(True))
+    monkeypatch.setattr(gcal.subprocess, "run", _completed(
+        1, "", "Using keyring backend: file\nerror[validation]: Request body failed schema validation:\n  start.dateTime: null\n"))
+    with pytest.raises(gcal.GwsError) as raised:
+        gcal.gws("personal", "calendar", "events", "patch")
+    assert str(raised.value) == "error[validation]: Request body failed schema validation: start.dateTime: null"
+
+
+def test_user_home_survives_a_scoped_home(monkeypatch, tmp_path):
+    monkeypatch.setattr(gcal, "SCRIPT_DIR", tmp_path / "Code" / "GitHub" / "AIS-OS" / "scripts")
+    monkeypatch.setenv("HOME", str(tmp_path / "codex-home"))
+    assert gcal.user_home() == tmp_path

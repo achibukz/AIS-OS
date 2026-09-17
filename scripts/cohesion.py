@@ -27,7 +27,7 @@ from task_engine import PRIMARY_AREAS
 CONTRACT_VERSION = 1
 SCHEMA_VERSION = 1
 MANILA = ZoneInfo("Asia/Manila")
-DEFAULT_DB = Path.home() / ".local" / "state" / "achios" / "cohesion.sqlite3"
+DEFAULT_DB = gcal.USER_HOME / ".local" / "state" / "achios" / "cohesion.sqlite3"
 DEFAULT_TASKS = SCRIPT_DIR.parent / "tasks.md"
 SEEDED_PREFERENCES = {
     "social_plan": "calendar",

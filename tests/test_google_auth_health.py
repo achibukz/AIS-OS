@@ -194,3 +194,28 @@ def test_drift_check_is_empty_when_calendars_match(monkeypatch):
 def test_drift_check_reports_a_missing_config(monkeypatch, tmp_path):
     monkeypatch.setattr(gcal, "CONFIG_PATH", tmp_path / "calendars.json")
     assert REAL_DRIFT_CHECK() == [f"check failed: calendar config not found at {tmp_path / 'calendars.json'}"]
+
+
+def test_auth_status_is_called_without_the_format_flag(monkeypatch, tmp_path):
+    argvs = []
+    gws = tmp_path / "gws"
+    gws.write_text("")
+    monkeypatch.setattr(gcal, "GWS_BIN", gws)
+    monkeypatch.setattr(gcal, "profile_dir", lambda profile: tmp_path)
+
+    def run(argv, **kwargs):
+        argvs.append(argv)
+        if argv[1:3] == ["auth", "status"]:
+            if "--format" in argv:
+                return gcal.subprocess.CompletedProcess(argv, 3, stdout="", stderr="error[validation]: --format")
+            return gcal.subprocess.CompletedProcess(argv, 0, stdout=json.dumps(_auth()), stderr="")
+        if argv[1:4] == ["calendar", "calendarList", "list"]:
+            return gcal.subprocess.CompletedProcess(argv, 0, stdout='{"items": [{"accessRole": "owner"}]}', stderr="")
+        return gcal.subprocess.CompletedProcess(argv, 0, stdout="{}", stderr="")
+
+    monkeypatch.setattr(gcal.subprocess, "run", run)
+
+    status = health.check_profile("main")
+
+    assert status.healthy, status.failures
+    assert argvs[0] == [str(gws), "auth", "status"]

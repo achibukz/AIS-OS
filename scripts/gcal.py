@@ -31,9 +31,23 @@ from zoneinfo import ZoneInfo
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-GWS_BIN = Path.home() / ".npm-global" / "bin" / "gws"
-CONFIG_PATH = Path.home() / ".config" / "achios" / "calendars.json"
-WIKI_PATH = Path.home() / "Documents" / "Obsidian" / "schoolMem" / "wiki"
+
+def user_home() -> Path:
+    """The operator's home, even when a bound agent turn runs with a scoped HOME.
+
+    Codex turns point HOME at a private state directory. This checkout lives at
+    <home>/Code/GitHub/AIS-OS, so walking out of it recovers the real home.
+    """
+    github = SCRIPT_DIR.parent.parent
+    if github.name == "GitHub" and github.parent.name == "Code":
+        return github.parent.parent
+    return Path.home()
+
+
+USER_HOME = user_home()
+GWS_BIN = USER_HOME / ".npm-global" / "bin" / "gws"
+CONFIG_PATH = USER_HOME / ".config" / "achios" / "calendars.json"
+WIKI_PATH = USER_HOME / "Documents" / "Obsidian" / "schoolMem" / "wiki"
 PROFILES = ("personal", "work", "main", "dlsu")
 OWNER_COHESION = "cohesion"
 OWNERS = ("asta", "asa", OWNER_COHESION)
@@ -65,7 +79,7 @@ class GwsError(GcalError):
 
 
 def profile_dir(profile: str) -> Path:
-    return Path.home() / ".config" / f"gws-{profile}"
+    return USER_HOME / ".config" / f"gws-{profile}"
 
 
 def gws_env(profile: str) -> dict[str, str]:
@@ -87,16 +101,17 @@ def parse_json(stdout: str) -> dict:
     return value
 
 
-def gws(profile: str, *args: str, timeout: int = 30) -> dict:
+def gws(profile: str, *args: str, timeout: int = 30, json_format: bool = True) -> dict:
     """Run one gws subcommand for a profile and return its JSON body.
 
-    A timeout is raised as subprocess.TimeoutExpired, because an insert that timed out may
-    still have been accepted and the caller has to look before retrying.
+    `gws auth status` prints JSON already and rejects `--format`, so its caller passes
+    json_format=False. A timeout is raised as subprocess.TimeoutExpired, because an insert
+    that timed out may still have been accepted and the caller has to look before retrying.
     """
     if not GWS_BIN.is_file():
         raise GcalError("gws_missing", f"gws binary not found at {GWS_BIN}")
     result = subprocess.run(
-        [str(GWS_BIN), *args, "--format", "json"],
+        [str(GWS_BIN), *args, *(("--format", "json") if json_format else ())],
         env=gws_env(profile),
         capture_output=True,
         text=True,
@@ -115,7 +130,7 @@ def gws(profile: str, *args: str, timeout: int = 30) -> dict:
         if not isinstance(error, dict):
             error = {}
         raise GwsError(
-            detail[0] if detail else f"exit {result.returncode}",
+            " ".join(detail) if detail else f"exit {result.returncode}",
             profile=profile,
             status=error.get("code"),
             reason=error.get("reason"),
@@ -302,10 +317,11 @@ def _failure(profile: str, calendar: str | None, exc: Exception) -> dict:
     return {"profile": profile, "calendar": calendar, "error": code, "message": str(exc)}
 
 
-def _status(results: list, errors: list) -> str:
+def _status(read: int, errors: list) -> str:
+    """`error` only when nothing could be read. An empty day on a readable calendar is not a failure."""
     if not errors:
         return "ok"
-    return "partial" if results else "error"
+    return "partial" if read else "error"
 
 
 def read_events(entries: list[dict], start: dt.date, end: dt.date) -> dict:
@@ -316,6 +332,7 @@ def read_events(entries: list[dict], start: dt.date, end: dt.date) -> dict:
     """
     events: list[dict] = []
     errors: list[dict] = []
+    read = 0
     dead_profiles: set[str] = set()
     by_id: dict[str, list[dict]] = {}
     for entry in entries:
@@ -333,10 +350,11 @@ def read_events(entries: list[dict], start: dt.date, end: dt.date) -> dict:
                     dead_profiles.add(entry["profile"])
                 continue
             events.extend(normalize_event(entry, item) for item in raw)
+            read += 1
             break
     events = dedupe_events(events)
     events.sort(key=lambda event: (event["start"], event["all_day"], event["title"]))
-    return {"status": _status(events, errors), "events": events, "errors": errors}
+    return {"status": _status(read, errors), "events": events, "errors": errors}
 
 
 def agenda(config: list[dict], start: dt.date, end: dt.date) -> dict:
@@ -346,6 +364,7 @@ def agenda(config: list[dict], start: dt.date, end: dt.date) -> dict:
 def list_calendars(profiles: tuple[str, ...] | list[str] = PROFILES) -> dict:
     calendars: list[dict] = []
     errors: list[dict] = []
+    read = 0
     for profile in profiles:
         if not profile_dir(profile).is_dir():
             errors.append({"profile": profile, "calendar": None, "error": "profile_missing",
@@ -356,6 +375,7 @@ def list_calendars(profiles: tuple[str, ...] | list[str] = PROFILES) -> dict:
         except (GwsError, subprocess.TimeoutExpired) as exc:
             errors.append(_failure(profile, None, exc))
             continue
+        read += 1
         calendars.extend(
             {
                 "id": item.get("id"),
@@ -365,7 +385,7 @@ def list_calendars(profiles: tuple[str, ...] | list[str] = PROFILES) -> dict:
             }
             for item in items
         )
-    return {"status": _status(calendars, errors), "calendars": calendars, "errors": errors}
+    return {"status": _status(read, errors), "calendars": calendars, "errors": errors}
 
 
 def _course_key(code: str) -> str:
@@ -476,6 +496,14 @@ def patch_event(profile: str, calendar_id: str, event_id: str, body: dict) -> di
     )
 
 
+def replace_event(profile: str, calendar_id: str, event_id: str, event: dict) -> dict:
+    return gws(
+        profile, "calendar", "events", "update",
+        "--params", json.dumps({"calendarId": calendar_id, "eventId": event_id}),
+        "--json", json.dumps(event),
+    )
+
+
 def delete_event(profile: str, calendar_id: str, event_id: str) -> None:
     gws(
         profile, "calendar", "events", "delete",
@@ -542,12 +570,14 @@ def insert(
     existing = get_event(entry["profile"], entry["id"], event_id)
     if existing is not None:
         private = private_properties(existing)
-        if existing.get("status") == "cancelled":
-            return {"status": "error", "error": "event_deleted",
-                    "message": f"item {item_id} was deleted from {calendar}; use a new item ID"}
         if private.get("achios_item_id") != item_id or private.get("achios_owner") != owner:
             return _refused("event_owner", f"event {event_id} belongs to another item")
-        return {"status": "exists", "event": normalize_event(entry, existing)}
+        if existing.get("status") != "cancelled":
+            return {"status": "exists", "event": normalize_event(entry, existing)}
+        # Google keeps a deleted event's ID forever, so asking for the same item again restores it.
+        restore = {key: value for key, value in body.items() if key != "id"}
+        event = patch_event(entry["profile"], entry["id"], event_id, {**restore, "status": "confirmed"})
+        return {"status": "ok", "restored": True, "event": normalize_event(entry, event)}
     try:
         event = insert_event(entry["profile"], entry["id"], body)
     except subprocess.TimeoutExpired:
@@ -576,26 +606,28 @@ def update(
     date: str | None = None,
 ) -> dict:
     entry = find_calendar(config, calendar)
-    refusal = write_guard(entry, owner) or event_guard(get_event(entry["profile"], entry["id"], event_id), owner)
+    if not (title or start or end or date):
+        raise GcalError("invalid_arguments", "nothing to update")
+    if (start or end) and not (start and end):
+        raise GcalError("invalid_arguments", "--start and --end go together")
+    refusal = write_guard(entry, owner)
     if refusal:
         return refusal
-    body: dict = {}
+    event = get_event(entry["profile"], entry["id"], event_id)
+    refusal = event_guard(event, owner)
+    if refusal:
+        return refusal
+    # gws rejects null fields, so a patch cannot switch between timed and all day.
+    # Replacing the whole event can, and it keeps every field this call does not change.
     if date:
-        day = dt.date.fromisoformat(date)
-        body.update(all_day_body("", day))
-        body.pop("summary")
-        body["start"]["dateTime"] = body["end"]["dateTime"] = None
-    elif start or end:
-        if not (start and end):
-            raise GcalError("invalid_arguments", "--start and --end go together")
-        body.update(timed_body("", start, end))
-        body.pop("summary")
-        body["start"]["date"] = body["end"]["date"] = None
+        times = all_day_body("", dt.date.fromisoformat(date))
+        event["start"], event["end"] = times["start"], times["end"]
+    elif start:
+        times = timed_body("", start, end)
+        event["start"], event["end"] = times["start"], times["end"]
     if title:
-        body["summary"] = title
-    if not body:
-        raise GcalError("invalid_arguments", "nothing to update")
-    event = patch_event(entry["profile"], entry["id"], event_id, body)
+        event["summary"] = title
+    event = replace_event(entry["profile"], entry["id"], event_id, event)
     return {"status": "ok", "event": normalize_event(entry, event)}
 
 

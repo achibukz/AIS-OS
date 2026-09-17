@@ -122,3 +122,16 @@ def test_tomorrow_total_failure_returns_only_warnings(monkeypatch):
     titles, errors = debrief.fetch_tomorrow_events(dt.date(2026, 8, 19))
     assert titles == []
     assert len(errors) == 2
+
+
+def test_tomorrow_keeps_one_title_repeated_at_two_times(monkeypatch):
+    import evening_debrief as debrief
+
+    config = [{"name": "cc sched", "id": "cc@group", "profile": "personal", "purpose": "", "write_owner": [], "schedule": True}]
+    events = [
+        {"id": "c1", "summary": "Class", "start": {"dateTime": "2026-08-19T09:00:00+08:00"}, "end": {"dateTime": "2026-08-19T10:30:00+08:00"}},
+        {"id": "c2", "summary": "Class", "start": {"dateTime": "2026-08-19T13:30:00+08:00"}, "end": {"dateTime": "2026-08-19T15:00:00+08:00"}},
+    ]
+    monkeypatch.setattr(gcal, "load_config", lambda path=None: config)
+    monkeypatch.setattr(gcal, "gws", lambda profile, *args, timeout=30: {"items": events})
+    assert debrief.fetch_tomorrow_events(dt.date(2026, 8, 19)) == (["Class", "Class"], [])

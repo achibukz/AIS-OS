@@ -50,7 +50,7 @@ def run_gws(profile: str, *args: str) -> dict:
     config_dir = gcal.profile_dir(profile)
     if not config_dir.is_dir():
         raise RuntimeError(f"gws profile missing: {config_dir}")
-    return gcal.gws(profile, *args, timeout=COMMAND_TIMEOUT_SECONDS)
+    return gcal.gws(profile, *args, timeout=COMMAND_TIMEOUT_SECONDS, json_format=args[:1] != ("auth",))
 
 
 def _record_failure(failures: list[str], check: str, operation) -> dict | None:

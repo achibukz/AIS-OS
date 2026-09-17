@@ -1,5 +1,29 @@
 # Session Log
 
+## 2026-09-17 22:26 PHT [saved]
+
+Goal: repair [PR #78](https://github.com/achibukz/AIS-OS/pull/78) after Luna's SHIP WITH FIXES review (1 blocker, 4 should-fix, 4 nits).
+
+Decisions:
+
+- Blocker: `gws auth status` rejects `--format`. `gcal.gws` takes `json_format`, and `google_auth_health.run_gws` turns it off for `auth` calls. The new argv test fails with the old call and passes with the fix; the live check now reports all four profiles healthy with no drift.
+- `agenda` and `calendars list` report `error` only when no calendar or profile could be read. An empty day on a readable calendar plus one failed profile is `partial`.
+- Inserting an item whose event was deleted restores that event, with its owner check intact, instead of returning `event_deleted`. Verified live on `achiOS cohesion test`.
+- `update` now replaces the whole event. The live test showed gws rejects `"dateTime": null` during schema validation, so the earlier patch body could never switch between timed and all day. The replacement keeps reminders and owner tags; both directions verified live.
+- gws error messages keep every non-banner stderr line, because the first line alone hid the cause of that validation failure.
+- `gcal.py` and `cohesion.py` resolve the operator's home from the checkout path, because Asa's default Codex engine runs turns with a scoped HOME that would hide `calendars.json`, the gws profiles and the cohesion database.
+- The Asta CLI mismatch is recorded on existing achiCore #222 instead of a duplicate ticket.
+- Nits: debrief test pins one title at two times; connections row 3 no longer says Job is writable; `docs/astra-tickets.md` marks the `gcal_add.py` reference historical.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed, 662 tests with 1 existing warning.
+- Live on `achiOS cohesion test` only: insert `ok`, repeat `exists`, update timed to all day and back `ok`, update and delete by `asta` refused, delete by `asa` `ok`, re-insert restored the event, final delete left 0 events.
+
+Open:
+
+- The daily brief and evening debrief units were not triggered, and #59's cohesion checklist was not rerun on the new transport.
+
 ## 2026-09-17 17:56 PHT [saved]
 
 Goal: implement [AIS-OS #60](https://github.com/achibukz/AIS-OS/issues/60), [#61](https://github.com/achibukz/AIS-OS/issues/61) and [#62](https://github.com/achibukz/AIS-OS/issues/62) in one pull request: one Google Calendar client, the briefs and health check on it, cohesion on it, and `gcal_add.py` gone.
