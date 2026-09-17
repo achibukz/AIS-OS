@@ -1,5 +1,31 @@
 # Session Log
 
+## 2026-09-17 13:10 [saved]
+
+Goal: fix the bugs the assisted live test found on AIS-OS PR #59 against real `gws` and a disposable Calendar.
+
+Decisions:
+
+- `gcal_add.gws` now drops the `Using keyring backend` banner from its error text and reads the API status from the error JSON on stdout into `GwsError.status`. `GwsCalendarTransport.get` returns `None` on `status == 404`. It used to search the message for `404`, which was the banner, so no first insert through real `gws` could ever succeed.
+- The Calendar operation version is now a hash of the fields cohesion owns (summary, start, end and the `achios_` private properties) instead of the etag. An edit to anything else, such as a location, is adopted and kept, because updates now use `events patch`. An edit to an owned field stays pending until it is restored, the same way the task line guard converges. The etag cannot be restored, so an etag guard stranded the operation forever.
+- An owned event with `status: cancelled` is reported as `owned calendar event no longer exists` for both upsert and complete, without an update call. Google returns deleted events from `events.get`.
+- A completion that finds the task already in Done keeps its recorded done date. A Calendar update is skipped when the owned fields and description already match, so a repeat completion writes nothing.
+- An unparseable `due` is a `CohesionError`, so it returns a pending clarification instead of exiting 2 after reserving the source. A source that produced no operations can be replaced by a corrected payload with the same ID. A source with operations is still refused.
+- All-day events send `gcal_add`'s explicit no-reminder body again. A live probe showed Google stores `useDefault: false` on all-day events even when `true` is sent and the calendar has default reminders; timed events keep `true`. The previous body promised something Google never stored.
+- A clarification for a known item now names its `item_id`. Calendar-only events no longer carry an `achios_task_id` for a task that does not exist.
+
+Verification:
+
+- Fourteen tests were written first and failed for the reported reasons, including a `gws` error with the exact banner-then-error output captured live.
+- `tests/test_cohesion.py tests/test_gcal_add.py` -> 63 passed. `tests/` -> 592 passed, 1 pre-existing unknown-marker warning.
+- `ruff check` on the four touched files reports only the three findings already present on the base commit in `gcal_add.py` and `test_gcal_add.py`.
+
+Open:
+
+- The live test record lists a nit claiming `main()` calls `capabilities()` twice. That was an overlapping `sed` range in the review, not a code defect.
+- Real `gws` acceptance must be rerun at the new head. Earlier live evidence does not carry over.
+- A deliberate edit to an owned Calendar field still has no dismissal or override path beyond restoring it. That shares the open clarification contract decision.
+
 ## 2026-09-17 06:30 [saved]
 
 Goal: publish the Asta and Google Calendar backlog after grilling and three live Asta passes.
@@ -15,6 +41,166 @@ Open:
 
 - Existing issue statuses in the roadmap come from GitHub state, not a fresh implementation audit.
 - `~/.config/achios/google_token*.json` still exist until AIS-OS #61 lands.
+
+## 2026-09-17 03:05 [saved]
+
+Goal: repair the blocker Luna found in the tasks concurrency guard on AIS-OS PR #59.
+
+Decisions:
+
+- The guards were attached to the wrong attempts. The whole-file hash ran only on attempt 0 and the line-version check only on retries, so an ordinary first-attempt update overwrote a task line a human had annotated, while the same edit was refused if an unrelated attempt had failed earlier. Luna reproduced it with no failure injected at all.
+- The line-version comparison now runs on every attempt, exactly as `_apply_calendar` compares its etag on every attempt. For a create the stored version is `None` and the line is absent, so the check passes on its own.
+- Deleted the whole-file hash entirely, with `expected_hash`, `_read_task_hash` and the `retry` flag. Keeping it would mean blocking an unrelated edit on attempt 0 and adopting it on every later attempt, which is the inconsistency the blocker is made of, and blocking it on every attempt brings back the operation that can never converge. One guard, on the object the operation owns.
+- `_apply_task` now reconciles an accepted write it failed to record. If the live line already equals the line it would write, it reports applied without writing. This closes the crash-between-write-and-record case, matching how `_apply_calendar` reads the event back.
+- An applied operation now records exactly the version the destination reported, including none. `COALESCE` still protects a failed attempt's reservation. Keeping a prior version on an applied operation would strand the next update permanently if a provider ever answered without an etag.
+
+Verification:
+
+- All four regressions were written first and failed at `062a4ab`. The first-attempt overwrite matched Luna's reproduction: `applied, attempts 1, pending []` with the annotation gone.
+- Guard proof by reverting each condition: removing the line check breaks the first-attempt and stays-pending tests; removing the already-applied reconcile breaks the crash test; keeping a prior version on an applied operation breaks the strand test; clearing the version on a failed attempt breaks the stays-pending test.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/test_cohesion.py -q` -> 33 passed.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q` -> 583 passed, 1 pre-existing unknown-marker warning.
+- `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` -> all checks passed. `git diff --check` -> passed.
+
+Open:
+
+- Three tests changed shape because the behaviour they pinned is deliberately gone. `test_concurrent_task_edit_leaves_the_operation_pending` became `test_a_first_attempt_refuses_a_concurrent_edit_to_the_task_line`, which is strictly stronger; the two retry-only tests added yesterday folded into `test_a_concurrent_edit_to_the_task_line_stays_pending_until_it_is_resolved` and `test_an_unrelated_edit_is_adopted_on_create_and_on_update`, because the retry branch they exercised no longer exists. Declared on the PR.
+- Two concurrent cohesion writers can still lose each other's write to different lines of `tasks.md`. The whole-file hash never protected a retry against this, so it is not new, but nothing guards it now. It needs a lock or a read-modify-write retry, which is a separate ticket.
+- Luna's two clarification nits stay open by agreement. Both need a contract decision from Aki: a dismissal operation in `capabilities()` or a status column in `clarifications`.
+- Real `gws` Calendar acceptance is still not run, and no GitHub checks are reported.
+
+## 2026-09-17 02:20 [saved]
+
+Goal: repair the blocker Luna found in the retry fix on AIS-OS PR #59.
+
+Decisions:
+
+- The previous repair was wrong. Re-reserving the whole-file `tasks.md` hash on every retry adopted whatever the file held, then overwrote the task's own line from the snapshot frozen at reservation. A human edit to that line was lost with no warning and no pending entry.
+- Tasks operations now carry a per-object version like the Calendar side. `_apply_task` returns the hash of the line it wrote, and a retry compares the live line against the version of the last applied operation for that item. Unrelated edits elsewhere in the file are adopted; a changed item line returns pending.
+- The first attempt still compares the whole-file hash reserved with the operation, so a concurrent edit anywhere still stops the racing write.
+- `_finish_operation` no longer clears `destination_version` on a failed attempt. It wrote `NULL` on every failure, which is what left a retried operation with nothing to compare against. `COALESCE` preserves the reserved version. This also restores the etag guard for a retried Calendar operation, which previously depended on the superseding rule alone.
+
+Verification:
+
+- Both regressions were written first. The overwrite case failed at `68b7978` with the retry applying `Draft proposal v2` over the human's `(ASK DR CRUZ FIRST)`.
+- Guard proof by reverting each condition: dropping `COALESCE` breaks the adopt-unrelated-edit test; removing the retry line check breaks the overwrite test; keeping the whole-file check on retry breaks three tests; returning the whole-file hash instead of the line hash breaks the adopt test.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/test_cohesion.py -q` -> 32 passed.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q` -> 582 passed, 1 pre-existing unknown-marker warning.
+- `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` -> all checks passed. `git diff --check` -> passed.
+
+Open:
+
+- Luna's two nits are not fixed. A correction arriving as a new external object with no `item_id` leaves its clarification row, and an unanswered clarification is deleted rather than archived when a later source for the same item is accepted. Both need a contract decision from Aki: a `dismiss` operation would extend the capability list, and archiving needs a status column in `clarifications`. Recorded for a follow-up ticket rather than decided here.
+- Real `gws` Calendar acceptance is still not run, and no GitHub checks are reported.
+
+## 2026-09-17 01:30 [saved]
+
+Goal: repair the two blockers, four should-fix items and four nits in Luna's review of AIS-OS PR #59.
+
+Decisions:
+
+- Reopening a completed item now returns a pending clarification instead of rewriting its `- [x]` line in place. The old behaviour left an unchecked line under `## Done`, which `task_engine.parse_tasks` never returns, so the completion history was destroyed and the task became invisible. Blocking the transition matches the placement-change guard already agreed in this PR.
+- A pending tasks operation re-reads and re-reserves the `tasks.md` hash at the start of each retry. The hash stays frozen on the first attempt, so a concurrent human edit still stops the first write.
+- Superseded operations move into their own `superseded` list in the receipt, and every operation entry now carries its `status`. The receipt's `pending` list and `context()["pending_count"]` now agree.
+- A clarification is cleared when a later source for the same external object (`kind` plus `native_id`) or the same `intent.item_id` is accepted, so `pending_count` is no longer monotonic.
+- The Calendar completion note is owned by the service. The previous description is stripped of the note before it is re-appended, so repeated completions cannot stack it.
+- All-day deadline events now set `reminders: {"useDefault": true}` rather than inheriting `gcal_add.all_day_body`'s notifications-off policy. A deadline that reaches Calendar with reminders switched off is not useful, and timed events already inherit calendar defaults.
+- Nits: deleted the dead `task_id = existing_item["task_id"]` branch, merged the two consecutive `if existing_item:` blocks, and made `_connect` a context manager that closes the connection.
+
+Verification:
+
+- All six new regressions plus the two transport tests were written first and failed at head `7740e65`: the upsert on a completed item applied and destroyed the Done line, the redelivery after a concurrent edit never converged, `pending_count` stayed at 1 after the follow-up submit, the second completion produced a doubled note, the all-day body carried `useDefault: false`, and no connection was closed.
+- Guard proof by reverting each condition in turn: always re-reserving the hash breaks `test_concurrent_task_edit_leaves_the_operation_pending`; dropping the `action == "upsert"` check breaks the repeated-completion test; dropping the note strip breaks it too; removing either branch of the clarification-clearing query breaks its own test.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/test_cohesion.py -q` -> 30 passed.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q` -> 580 passed, 1 pre-existing unknown-marker warning. The four `gws` failures reported in earlier runs do not reproduce here.
+- `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` -> all checks passed. `git diff --check` -> passed.
+
+Open:
+
+- The receipt now has a `superseded` key and every entry carries `status`. Any consumer reading `pending` for retries must be updated with it; nothing outside this PR reads the receipt today.
+- Real `gws` Calendar acceptance is still not run. The reviewer's two unverifiable items stay open: whether a real not-found response carries the literal `404`, and whether an insert against an existing deterministic event ID returns 409 rather than a timeout.
+- Keep AIS-OS #13 active until the PR and the live gate are complete.
+
+## 2026-09-16 21:37 [saved]
+
+Goal: repair the latest Luna blocker on AIS-OS PR #59.
+
+Decisions:
+
+- Read the current PR thread, issue #13, the closed #6 blocker, repository instructions, decision history, current code and overlap branches. The latest blocker is a stale pending Calendar operation that can overwrite a newer same-item update after redelivery.
+- Added a regression for failed Calendar delivery, a newer same-item update and redelivery of the original source.
+- Supersede all older pending operations for an existing item in the same transaction that accepts a newer source. Keep the existing receipt shape and expose the superseded row as a non-applied pending result with its reason. No schema migration is needed.
+
+Verification:
+
+- The regression failed before the source fix with 20 passed and 1 failed. The stale redelivery applied the old Calendar snapshot.
+- After the fix, `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/test_cohesion.py -q` passed 21 tests.
+- `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` passed. `git diff --check` passed.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q` returned 567 passed, 4 unrelated failures caused by the missing isolated-home `gws` binary, and 1 pre-existing unknown-marker warning.
+
+Open:
+
+- Repair commit `a093472024e3ab27b2ea9359bbec5300e6d6aa43` is pushed and PR #59 now names the new head and evidence. The head-specific [live-test checklist](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/live-tests/pr-59.md) is prepared but not run. Request Luna's re-review.
+- Real `gws` Calendar acceptance remains unverified. Keep AIS-OS #13 active until the PR and required live gate are complete.
+
+## 2026-09-16 20:38 [saved]
+
+Goal: repair the latest Luna blocker on AIS-OS PR #59.
+
+Decisions:
+
+- Read the complete PR review history, issue #13, the closed #6 blocker, repository instructions, current code, and overlap branches. The latest blocker concerns existing-item placement and Calendar target changes.
+- Chose the review-approved clarification path. A new source cannot change an existing item's placement or stored Calendar profile and ID. The service leaves the item and destinations untouched and records the request as pending.
+- Added regressions for Calendar-to-tasks and Calendar A-to-Calendar B updates.
+
+Verification:
+
+- Added the regressions before the source change. The focused suite failed with 18 passed and 2 failed because both requests were accepted and wrote destinations.
+- After the guard, `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/test_cohesion.py -q` passed 20 tests in 0.27s.
+- `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` passed. `git diff --check` passed.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q` returned 566 passed, 4 unrelated `gws`-path failures, and 1 pre-existing unknown-marker warning.
+
+Open:
+
+- Wait for Luna's re-review of repair commit `9ca7b14928291bff0dc4d321fff84d5859fcebb4`. The branch also contains the documentation-only handoff commit after that repair. Evidence is posted at https://github.com/achibukz/AIS-OS/pull/59#issuecomment-5697601233.
+- Real `gws` Calendar acceptance remains unverified. Keep AIS-OS #13 active until the PR and required live gate are complete.
+
+## 2026-09-16 20:22 [saved]
+
+Goal: repair the AIS-OS PR #59 review findings and verify the cohesion changes.
+
+Decisions:
+
+- Retained empty operation result dictionaries (`{}`) when serializing operation updates rather than coercing them to `None`.
+- Ensured calendar event bodies preserve private extended properties uniformly for all-day and timed events.
+- Added test coverage for empty operation results and uniform conflict receipt fields.
+- Cohesion tests: 18 passed. Full suite: 564 passed, 4 unrelated `gws`-path failures, and 1 pre-existing unknown-marker warning.
+
+Open:
+
+- Review and merge AIS-OS PR for #13.
+
+## 2026-09-16 19:44 [saved]
+
+Goal: implement AIS-OS #13 (delegated from Atlas /ToWork), reconciling task and Calendar intents with stable IDs and durable receipts.
+
+Decisions:
+
+- Checked the declared blocker, [AIS-OS #6](https://github.com/achibukz/AIS-OS/issues/6). Closed and its content is on `main` via PR #51.
+- Found the work already existed: PR #52 (`Closes #13`) merged on 2026-09-11, but into `ticket/6-lossless-task-renderer`, not `main`. That branch was never itself merged, so `scripts/cohesion.py` never reached `main` and #13 stayed open. A stale worktree at `AIS-OS-ticket-13` still holds that abandoned branch; left untouched.
+- On branch `ticket/13-cohesion-onto-main` off current `main`, cherry-picked commit `6bbf462` (the `cohesion.py` and `test_cohesion.py` addition) and resolved conflicts in `decisions/log.md`, `session-log.md`, and `tasks.md` by keeping `main`'s newer entries and re-inserting the cohesion decision at its original chronological position. `connections.md` merged cleanly.
+- `cohesion.py` only imports `PRIMARY_AREAS` from `task_engine.py`, so it needed no adaptation despite `task_engine.py` diverging significantly on `main` since (PR #56 added `all`/`backlog` filtering).
+
+Rejected:
+
+- Reimplementing the 778-line contract from scratch, which would duplicate already-tested work.
+- Merging the stale feature branch wholesale, which would drag in unrelated content already superseded on `main`.
+
+Open:
+
+- Verification: `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` passed 567 tests (17 from `test_cohesion.py`), one pre-existing unknown-marker warning. `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` passed (the default uv tool cache under `~/.local/share/uv` is outside this session's write boundary).
+- Sabotage check: removed the `status = 'pending'` filter in `_run_pending`, observed `test_redelivery_after_partial_failure_retries_only_calendar` fail, restored the filter, observed it pass.
+- Opening a PR against `main` with `Closes #13` and the required mentions.
 
 ## 2026-09-16 05:22 [saved]
 
@@ -572,6 +758,27 @@ Open:
 - Verification: `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` passed 517 tests with one existing unknown-marker warning.
 - Guard verification: sabotaged the duplicate basename guard, observed `test_wikilink_duplicate_basenames` fail, restored the guard, and observed the test pass.
 - Open pull request with `Closes #42` and required mentions.
+
+## 2026-09-11 20:29 [saved]
+
+Goal: implement AIS-OS #13 on top of the isolated #6 task-engine worktree.
+
+Decisions:
+- Added `scripts/cohesion.py` with versioned `submit`, `context`, and `capabilities` commands. A mode-600 SQLite store records source identity, items, preferences, operation snapshots, versions, retries, and pending clarifications before destination writes.
+- Seeded editable placement preferences for social plans, quick tasks, coding tickets, and school deadlines. A request-level placement overrides one item without changing its category preference.
+- Task writes use hidden stable IDs, a fresh content hash, and atomic replacement with preserved file permissions. Calendar writes use deterministic event IDs, private item identity, stored profile and calendar IDs, event versions, and timeout reconciliation.
+- Completion requires an item ID. It moves tasks to Done and updates owned Calendar metadata while preserving the event date or time.
+
+Rejected:
+- Title-based completion and generic file or shell operations.
+- Replaying a successful destination after a partial failure.
+- Testing against Aki's live task register or Calendar. Tests use temporary files, databases, and fixture transports.
+
+Open:
+- Verification: `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` passed 523 tests with one existing unknown-marker warning. `uvx ruff check scripts/cohesion.py tests/test_cohesion.py` passed.
+- The partial-retry sabotage check removed the pending-only operation filter, observed the retry test fail because it replayed the task write, restored the filter, and observed the test pass.
+- Open a stacked pull request against the #6 branch and record GitHub's check state.
+- Aki limited this session to AIS-OS #13. achiCore #148 was not started and still waits for #56 and #197 in addition to this ticket.
 
 ## 2026-09-11 20:12 [saved]
 

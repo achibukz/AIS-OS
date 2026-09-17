@@ -18,6 +18,46 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-16: Supersede stale cohesion operations before newer item writes
+
+**Decision:** When a new source updates an existing item, mark every older pending destination operation for that item as superseded in the same SQLite transaction before storing the new item state and operations. Receipts keep those terminal, non-applied operations visible in the existing `pending` bucket with the supersession error, while the pending runner only retries rows whose status is still `pending`.
+
+**Why:** A Calendar operation that failed for an older source must not replay its snapshot over a newer accepted update. Superseding the older row before the new source writes preserves the stable Calendar identity and the latest content without adding a migration or a second reconciliation path.
+
+**Alternatives considered:** Adding a new item-generation schema and migration, which would add persistent schema work for this isolated repair, and leaving the old row pending with only a pre-write check, which would retain stale work and retry it indefinitely. Both were rejected for this repair.
+
+**Owner:** Aea.
+
+## 2026-09-16 — Clarify destination changes for existing cohesion items
+
+**Decision:** When a new source upsert targets an existing item and changes its placement or stored Calendar profile and ID, record a clarification and perform no item, operation, task, or Calendar writes. Updates that keep the existing destinations can still change the item's content.
+
+**Why:** Overwriting the relationship before reconciling the old destination can leave an owned Calendar event unmanaged or create a second event in another calendar. The current transport has no migration contract for moving an owned event safely.
+
+**Alternatives considered:** Implementing destination migration, which needs explicit old-destination reconciliation and deletion or archival behavior, and accepting the new relationship, which can orphan the old event. Both were rejected for this repair because clarification preserves ownership without adding an unapproved migration subsystem.
+
+**Owner:** Aea.
+
+## 2026-09-16 — Keep cohesion receipts and Calendar payloads structurally stable
+
+**Decision:** Return `item_id: null` on conflict and early-pending cohesion receipts, preserve empty operation result objects, and construct timed/all-day Calendar bodies without duplicate fields.
+
+**Why:** Downstream consumers can parse every receipt through one shape, and an adapter result of `{}` must remain distinguishable from no result. One assignment per Calendar field keeps ownership metadata and event content clear.
+
+**Alternatives considered:** Requiring consumers to special-case conflict receipts, treating only non-empty adapter results as valid, and keeping the redundant Calendar assignments. Rejected because each leaves an avoidable schema or maintenance hazard.
+
+**Owner:** Aea.
+
+## 2026-09-16 — Re-land AIS-OS #13 onto main by cherry-pick, not fresh implementation
+
+**Decision:** Cherry-picked commit `6bbf462` (the `scripts/cohesion.py` and `tests/test_cohesion.py` addition from the original PR #52) onto a new branch off current `main`, resolving conflicts in the append-only log files, instead of writing the feature again.
+
+**Why:** PR #52 (`Closes #13`) merged on 2026-09-11, but its base was `ticket/6-lossless-task-renderer`, not `main`. That branch was never itself merged to `main` — PR #51 landed issue #6's content into `main` via a squash merge first, so the cohesion commits stacked on top of it afterward were orphaned on a branch `main` never absorbed. Issue #13 stayed open. `scripts/task_engine.py` diverged from that stale branch afterward (PR #56 added `all`/`backlog` filtering), but `cohesion.py` only imports `PRIMARY_AREAS` from it, so the cherry-pick applied cleanly against current `task_engine.py` with no adaptation needed.
+
+**Alternatives considered:** Reimplementing the 778-line contract from the issue spec again, which would duplicate already-reviewed, already-tested work and risk introducing new bugs. Merging the stale `ticket/6-lossless-task-renderer` branch wholesale, which would also drag in unrelated stale content across 30+ files superseded on `main` since (email digest rewrite, viewer trimming, telegram_notify changes).
+
+**Owner:** Aea.
+
 ## 2026-09-14 — Use one watcher for both Memories roots
 
 **Decision:** Watch both `/home/achibukz/Documents/Files/personal/memories` and `/mnt/Achi120/Main Folders/Pictures/Memories 2` in the same systemd path unit and wait for either tree to settle.
@@ -107,6 +147,16 @@ Keep it terse. Future-you will thank present-you for capturing the *why*, not ju
 **Alternatives considered:** Client-side resolution in JavaScript (rejected: browser has no filesystem access to verify duplicate basenames or traverse vault boundaries securely). Searching across multiple vaults (rejected: breaks vault isolation and causes cross-vault link pollution).
 
 **Owner:** Aki / Aea.
+
+## 2026-09-11 — Coordinate task and Calendar writes through durable typed operations
+
+**Decision:** `scripts/cohesion.py` accepts only versioned task and Calendar operations. It reserves the source and operation snapshot in SQLite before writes, uses stable task and event identities, retries only pending destinations, and returns applied and pending results separately.
+
+**Why:** Telegram retries, Calendar timeouts, and human edits can otherwise duplicate work or overwrite a newer change. A fixed contract gives achiCore a narrow privileged handoff without exposing shell or arbitrary file access.
+
+**Alternatives considered:** Let the foreground model edit files and invoke Calendar tools directly, match completions by title, or keep retry state in memory. Each option loses provenance or safe recovery after a restart.
+
+**Owner:** Aki.
 
 ## 2026-09-11 — Use one lossless deterministic task engine
 
@@ -1404,6 +1454,106 @@ change, makes the recovery auditable, and leaves Git history coherent.
 defers cleanup and can leave meaningful work invisible.
 
 **Owner:** Aki for approval; Aea for implementation; Luna for review.
+
+## 2026-09-16 — Reopening a completed cohesion item requires clarification
+
+**Decision:** An upsert against an item whose stored state is `completed` returns a pending
+clarification and writes nothing. Completion itself stays idempotent, so a redelivered or
+repeated completion still converges.
+
+**Why:** The task writer rewrote the matched line in place, so an upsert on a completed task
+replaced the `- [x] … (done …)` line with an unchecked line that stayed under `## Done`. That
+erased the completion date and hid the task from `/tasks`, because `task_engine.parse_tasks`
+reads only the active, blocked and backlog sections. Preserving history matters more than
+supporting reopen, and this matches the guard already agreed for placement and Calendar
+target changes.
+
+**Alternatives considered:** Moving the line back under `## Active` on reopen. Rejected for
+now because it needs matching decisions about the Calendar completion note, the stored item
+state and what a reopened item's history should look like. A clarification defers that to Aki
+without losing data.
+
+**Owner:** Aki for approval; Aea for implementation; Luna for review.
+
+## 2026-09-16 — All-day cohesion deadlines keep the calendar's default reminders
+
+**Decision:** Calendar events written by `scripts/cohesion.py` for all-day deadlines set
+`reminders: {"useDefault": true}`.
+
+**Why:** `gcal_add.all_day_body` sets `useDefault: false` with empty overrides, because the
+daily brief already surfaces dated tasks that morning. Cohesion writes school deadlines that
+Aki reads on his phone, and a deadline arriving with notifications switched off is a silent
+failure. Timed cohesion events already inherit the calendar defaults, so this makes the two
+paths agree.
+
+**Alternatives considered:** Keeping the inherited notifications-off policy, rejected because
+it was inherited rather than chosen. Setting explicit overrides, rejected because the right
+lead time belongs to the calendar, not to this writer.
+
+**Owner:** Aki for approval; Aea for implementation; Luna for review.
+
+## 2026-09-17 — Tasks operations carry a per-line version, not a whole-file hash
+
+**Decision:** A tasks operation records the hash of the line it wrote as its
+`destination_version`. A retry compares the live task line against that version and returns
+pending when the line changed, while adopting unrelated edits elsewhere in `tasks.md`. The
+first attempt still compares the whole-file hash reserved with the operation. A failed
+attempt no longer clears the reserved `destination_version`.
+
+**Why:** Re-reserving the whole-file hash on each retry made the concurrent-edit guard exist
+only on attempt 0, so a redelivery silently overwrote a human's edit to the task's own line.
+The Calendar side never had this problem because it compares a per-object etag that survives
+any number of retries. Giving tasks the same shape removes the difference rather than adding
+a second mechanism.
+
+**Alternatives considered:** Keeping the whole-file hash frozen, rejected because a pending
+operation could then never converge. Re-reserving it blind, rejected because that is the
+defect above. Marking a concurrently edited operation as needing a new source, rejected
+because pending plus a clear reason already tells the caller that, without inventing a state.
+
+**Owner:** Aki for approval; Aea for implementation; Luna for review.
+
+## 2026-09-17 — The task line version is the only concurrency guard for tasks writes
+
+**Decision:** `_apply_task` compares the live task line against the last applied line version on
+every attempt, first or retried. The whole-file `tasks.md` hash is deleted, along with the
+`expected_hash` column. An edit anywhere else in the file is adopted. If the live line already
+equals the line the operation would write, the operation reports applied without writing.
+
+**Why:** Splitting the two guards across attempts made whether Aki keeps a hand-written note on
+a task depend on whether an unrelated earlier attempt had failed. The Calendar side never had
+this problem because it compares a per-object etag on every attempt. Keeping the whole-file hash
+on every attempt instead would mean any unrelated edit strands the operation forever, which is
+the non-convergence defect from the previous review. Supersedes the entry from earlier today.
+
+**Alternatives considered:** Keeping both guards on every attempt, rejected because it cannot
+converge. Keeping the whole-file hash on attempt 0 only, rejected because that is the defect.
+Locking `tasks.md` for a read-modify-write, rejected as a separate ticket: it is the only thing
+that would protect two concurrent cohesion writers editing different lines, which nothing
+guards today and nothing guarded on a retry before.
+
+**Owner:** Aki for approval; Aea for implementation; Luna for review.
+
+## 2026-09-17 Calendar operations version the fields cohesion owns, not the etag
+
+**Decision:** A Calendar operation records a hash of the event's summary, start, end and
+`achios_` private properties. Updates use `events patch`. An edit to any other field is
+adopted and preserved; an edit to an owned field keeps the operation pending until it is
+restored. A cancelled owned event is reported missing. All-day events send no reminders,
+matching what Google stores.
+
+**Why:** The live test against real `gws` showed an etag guard can never converge, because any
+human change, even a location, moves the etag and nothing can move it back. Hashing the owned
+fields gives Calendar the same shape as the task line guard. Google also returns deleted events
+from `events.get` and ignores `useDefault: true` on all-day events, which the fixtures could
+not show.
+
+**Alternatives considered:** Keeping the etag and adding an override operation, rejected
+because it needs the clarification contract decision that is still open. Recreating a deleted
+event under the same ID, rejected because Google keeps the ID of a cancelled event. Adding an
+explicit popup override for all-day deadlines, rejected as a product choice Aki has not made.
+
+**Owner:** Aki for approval; Claude for implementation; Luna for review.
 
 ## 2026-09-17 — One Google Calendar client with owner-tagged events
 
