@@ -1533,3 +1533,24 @@ that would protect two concurrent cohesion writers editing different lines, whic
 guards today and nothing guarded on a retry before.
 
 **Owner:** Aki for approval; Aea for implementation; Luna for review.
+
+## 2026-09-17 Calendar operations version the fields cohesion owns, not the etag
+
+**Decision:** A Calendar operation records a hash of the event's summary, start, end and
+`achios_` private properties. Updates use `events patch`. An edit to any other field is
+adopted and preserved; an edit to an owned field keeps the operation pending until it is
+restored. A cancelled owned event is reported missing. All-day events send no reminders,
+matching what Google stores.
+
+**Why:** The live test against real `gws` showed an etag guard can never converge, because any
+human change, even a location, moves the etag and nothing can move it back. Hashing the owned
+fields gives Calendar the same shape as the task line guard. Google also returns deleted events
+from `events.get` and ignores `useDefault: true` on all-day events, which the fixtures could
+not show.
+
+**Alternatives considered:** Keeping the etag and adding an override operation, rejected
+because it needs the clarification contract decision that is still open. Recreating a deleted
+event under the same ID, rejected because Google keeps the ID of a cancelled event. Adding an
+explicit popup override for all-day deadlines, rejected as a product choice Aki has not made.
+
+**Owner:** Aki for approval; Claude for implementation; Luna for review.

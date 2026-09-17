@@ -27,7 +27,7 @@ class FakeCalendar:
         if current["etag"] != expected_version:
             raise cohesion.ConcurrentEdit("calendar event changed")
         self.update_calls += 1
-        event = {**body, "id": event_id, "etag": f"updated-{self.update_calls}"}
+        event = {**current, **body, "id": event_id, "etag": f"updated-{self.update_calls}"}
         self.events[event_id] = event
         return event
 
@@ -50,7 +50,8 @@ class VersionlessCalendar(FakeCalendar):
         if current.get("etag") != expected_version:
             raise cohesion.ConcurrentEdit("calendar event changed")
         self.update_calls += 1
-        event = {**body, "id": event_id}
+        event = {**current, **body, "id": event_id}
+        event.pop("etag", None)
         self.events[event_id] = event
         return event
 
@@ -464,23 +465,98 @@ def test_calendar_update_refuses_a_concurrent_human_edit(tmp_path):
     )
     item_id = first["item_id"]
     event_id = first["applied"][0]["result"]["event_id"]
-    calendar.events[event_id]["etag"] = "human-edit"
+    calendar.events[event_id].update(summary="Dinner with Mia", etag="human-edit")
+    later = request(
+        "event-after-human",
+        "social_plan",
+        "Late dinner",
+        item_id=item_id,
+        start="2026-09-12T20:00:00",
+        end="2026-09-12T21:00:00",
+        calendar={"profile": "personal", "id": "personal"},
+    )
 
-    changed = app.submit(
+    changed = app.submit(later)
+    redelivered = app.submit(later)
+
+    assert changed["applied"] == []
+    assert "changed since the last applied operation" in changed["pending"][0]["error"]
+    assert redelivered["pending"][0]["attempts"] == 2
+    assert calendar.events[event_id]["summary"] == "Dinner with Mia"
+
+    calendar.events[event_id].update(summary="Dinner", etag="human-restore")
+    restored = app.submit(later)
+
+    assert restored["pending"] == []
+    assert calendar.events[event_id]["summary"] == "Late dinner"
+
+
+def test_a_calendar_edit_outside_the_managed_fields_is_adopted_and_kept(tmp_path):
+    calendar = FakeCalendar()
+    app = service(tmp_path, calendar)
+    first = app.submit(
         request(
-            "event-after-human",
+            "room-before",
             "social_plan",
-            "Late dinner",
-            item_id=item_id,
+            "Dinner",
+            start="2026-09-12T19:00:00",
+            end="2026-09-12T20:00:00",
+            calendar={"profile": "personal", "id": "personal"},
+        )
+    )
+    event_id = first["applied"][0]["result"]["event_id"]
+    calendar.events[event_id].update(location="Room 301", etag="human-edit")
+
+    moved = app.submit(
+        request(
+            "room-after",
+            "social_plan",
+            "Dinner",
+            item_id=first["item_id"],
             start="2026-09-12T20:00:00",
             end="2026-09-12T21:00:00",
             calendar={"profile": "personal", "id": "personal"},
         )
     )
 
-    assert changed["applied"] == []
-    assert "changed since the last applied operation" in changed["pending"][0]["error"]
-    assert calendar.events[event_id]["summary"] == "Dinner"
+    assert moved["pending"] == []
+    assert calendar.events[event_id]["location"] == "Room 301"
+    assert calendar.events[event_id]["start"]["dateTime"].startswith("2026-09-12T20:00")
+
+
+@pytest.mark.parametrize("action", ["upsert", "complete"])
+def test_a_cancelled_calendar_event_is_reported_missing(tmp_path, action):
+    calendar = FakeCalendar()
+    app = service(tmp_path, calendar)
+    first = app.submit(
+        request(
+            "deleted-in-calendar",
+            "social_plan",
+            "Dinner",
+            start="2026-09-12T19:00:00",
+            end="2026-09-12T20:00:00",
+            calendar={"profile": "personal", "id": "personal"},
+        )
+    )
+    event_id = first["applied"][0]["result"]["event_id"]
+    calendar.events[event_id].update(status="cancelled", etag="deleted")
+    later = request(
+        "after-delete",
+        "social_plan",
+        "Late dinner",
+        item_id=first["item_id"],
+        start="2026-09-12T20:00:00",
+        end="2026-09-12T21:00:00",
+        calendar={"profile": "personal", "id": "personal"},
+    )
+    if action == "complete":
+        later["intent"] = {"action": "complete", "item_id": first["item_id"]}
+
+    receipt = app.submit(later)
+
+    assert receipt["applied"] == []
+    assert receipt["pending"][0]["error"] == "owned calendar event no longer exists"
+    assert calendar.update_calls == 0
 
 
 def test_source_reuse_with_different_content_is_pending_and_writes_nothing(tmp_path):
@@ -831,9 +907,91 @@ def test_repeated_completion_does_not_duplicate_the_calendar_note(tmp_path):
         assert app.submit(completion)["pending"] == []
 
     assert calendar.events[event_id]["description"] == "achiOS item state: completed"
+    assert calendar.update_calls == 1
 
 
-def test_all_day_deadlines_keep_the_calendar_default_reminders(tmp_path):
+def test_a_later_completion_keeps_the_original_done_date(tmp_path):
+    calendar = FakeCalendar()
+    app = service(tmp_path, calendar)
+    first = app.submit(
+        request(
+            "paper",
+            "school_deadline",
+            "Final paper",
+            area="school",
+            due="2026-09-15",
+            calendar={"profile": "dlsu", "id": "course"},
+        )
+    )
+    item_id = first["item_id"]
+    for source_id, timestamp in (
+        ("paper-done", SOURCE_TIME),
+        ("paper-done-again", "2026-09-20T10:00:00+08:00"),
+    ):
+        completion = request(source_id, "school_deadline", "ignored")
+        completion["intent"] = {"action": "complete", "item_id": item_id}
+        completion["source"]["timestamp"] = timestamp
+        assert app.submit(completion)["pending"] == []
+    after_first = app.tasks_path.read_text()
+
+    assert "(done 2026-09-11)" in after_first
+    assert "(done 2026-09-20)" not in after_first
+    assert calendar.update_calls == 1
+
+
+def test_an_unparseable_date_is_pending_and_its_correction_applies(tmp_path):
+    app = service(tmp_path)
+    bad = request("bad-date", "quick_task", "Pay rent", area="personal", due="next friday")
+
+    refused = app.submit(bad)
+    corrected = request("bad-date", "quick_task", "Pay rent", area="personal", due="2026-09-18")
+    accepted = app.submit(corrected)
+
+    assert refused["applied"] == []
+    assert "due" in refused["pending"][0]["error"]
+    assert accepted["pending"] == []
+    assert "Pay rent #personal !med @2026-09-18" in app.tasks_path.read_text()
+    assert app.context()["pending_count"] == 0
+
+
+def test_a_clarification_for_a_known_item_names_the_item(tmp_path):
+    app = service(tmp_path)
+    first = app.submit(request("known", "quick_task", "Pay rent", area="personal"))
+    completion = request("known-done", "quick_task", "ignored")
+    completion["intent"] = {"action": "complete", "item_id": first["item_id"]}
+    app.submit(completion)
+
+    reopened = app.submit(
+        request("known-reopen", "quick_task", "Pay rent", item_id=first["item_id"], area="personal")
+    )
+
+    assert reopened["item_id"] == first["item_id"]
+    assert "reopening" in reopened["pending"][0]["error"]
+
+
+def test_a_calendar_only_event_carries_no_task_identity(tmp_path):
+    calendar = FakeCalendar()
+    app = service(tmp_path, calendar)
+
+    receipt = app.submit(
+        request(
+            "calendar-only",
+            "social_plan",
+            "Dinner",
+            start="2026-09-12T19:00:00",
+            end="2026-09-12T20:00:00",
+            calendar={"profile": "personal", "id": "personal"},
+        )
+    )
+
+    private = calendar.events[receipt["applied"][0]["result"]["event_id"]]["extendedProperties"][
+        "private"
+    ]
+    assert "achios_task_id" not in private
+    assert private["achios_item_id"] == receipt["item_id"]
+
+
+def test_all_day_deadlines_send_the_reminders_google_stores(tmp_path):
     calendar = FakeCalendar()
     app = service(tmp_path, calendar)
 
@@ -851,7 +1009,7 @@ def test_all_day_deadlines_keep_the_calendar_default_reminders(tmp_path):
     event_id = next(
         operation for operation in receipt["applied"] if operation["destination"] == "calendar"
     )["result"]["event_id"]
-    assert calendar.events[event_id]["reminders"] == {"useDefault": True}
+    assert calendar.events[event_id]["reminders"] == {"useDefault": False, "overrides": []}
 
 
 def test_submit_closes_every_database_connection(tmp_path, monkeypatch):
@@ -914,7 +1072,7 @@ def test_gws_transport_sends_the_event_id_and_reads_a_missing_event(monkeypatch)
     def fake_gws(profile, *args):
         calls.append((profile, args))
         if args[2] == "get":
-            raise cohesion.gcal_add.GwsError("gws dlsu: 404 Not Found")
+            raise cohesion.gcal_add.GwsError("gws dlsu: error[api]: Not Found", status=404)
         return {"id": "abc", "etag": "v1"}
 
     monkeypatch.setattr(cohesion.gcal_add, "gws", fake_gws)
@@ -932,7 +1090,7 @@ def test_gws_transport_sends_the_event_id_and_reads_a_missing_event(monkeypatch)
 
 def test_gws_transport_reraises_a_non_missing_error(monkeypatch):
     def fake_gws(profile, *args):
-        raise cohesion.gcal_add.GwsError("gws dlsu: 403 forbidden")
+        raise cohesion.gcal_add.GwsError("gws dlsu: error[api]: 404 in a message", status=403)
 
     monkeypatch.setattr(cohesion.gcal_add, "gws", fake_gws)
 

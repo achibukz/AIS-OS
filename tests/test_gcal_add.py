@@ -190,3 +190,40 @@ def test_no_google_auth_imports_remain():
     source = (Path(__file__).resolve().parents[1] / "scripts" / "gcal_add.py").read_text()
     for banned in ("google.oauth2", "googleapiclient", "google.auth"):
         assert banned not in source
+
+
+def test_gws_error_skips_the_keyring_banner_and_reports_the_api_status(monkeypatch):
+    monkeypatch.setattr(gcal_add, "GWS_BIN", FakeBin(True))
+
+    def fake_run(*args, **kwargs):
+        return gcal_add.subprocess.CompletedProcess(
+            args,
+            1,
+            stdout='{\n  "error": {\n    "code": 404,\n    "message": "Not Found",\n    "reason": "notFound"\n  }\n}\n',
+            stderr="Using keyring backend: file\nerror[api]: Not Found\n",
+        )
+
+    monkeypatch.setattr(gcal_add.subprocess, "run", fake_run)
+
+    with pytest.raises(gcal_add.GwsError) as raised:
+        gcal_add.gws("personal", "calendar", "events", "get")
+
+    assert raised.value.status == 404
+    assert str(raised.value) == "gws personal: error[api]: Not Found"
+
+
+def test_gws_error_without_a_json_body_has_no_status(monkeypatch):
+    monkeypatch.setattr(gcal_add, "GWS_BIN", FakeBin(True))
+    monkeypatch.setattr(
+        gcal_add.subprocess,
+        "run",
+        lambda *a, **k: gcal_add.subprocess.CompletedProcess(
+            a, 3, stdout="", stderr="Using keyring backend: file\n"
+        ),
+    )
+
+    with pytest.raises(gcal_add.GwsError) as raised:
+        gcal_add.gws("personal", "calendar", "events", "get")
+
+    assert raised.value.status is None
+    assert str(raised.value) == "gws personal: exit 3"

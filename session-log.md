@@ -1,5 +1,31 @@
 # Session Log
 
+## 2026-09-17 13:10 [saved]
+
+Goal: fix the bugs the assisted live test found on AIS-OS PR #59 against real `gws` and a disposable Calendar.
+
+Decisions:
+
+- `gcal_add.gws` now drops the `Using keyring backend` banner from its error text and reads the API status from the error JSON on stdout into `GwsError.status`. `GwsCalendarTransport.get` returns `None` on `status == 404`. It used to search the message for `404`, which was the banner, so no first insert through real `gws` could ever succeed.
+- The Calendar operation version is now a hash of the fields cohesion owns (summary, start, end and the `achios_` private properties) instead of the etag. An edit to anything else, such as a location, is adopted and kept, because updates now use `events patch`. An edit to an owned field stays pending until it is restored, the same way the task line guard converges. The etag cannot be restored, so an etag guard stranded the operation forever.
+- An owned event with `status: cancelled` is reported as `owned calendar event no longer exists` for both upsert and complete, without an update call. Google returns deleted events from `events.get`.
+- A completion that finds the task already in Done keeps its recorded done date. A Calendar update is skipped when the owned fields and description already match, so a repeat completion writes nothing.
+- An unparseable `due` is a `CohesionError`, so it returns a pending clarification instead of exiting 2 after reserving the source. A source that produced no operations can be replaced by a corrected payload with the same ID. A source with operations is still refused.
+- All-day events send `gcal_add`'s explicit no-reminder body again. A live probe showed Google stores `useDefault: false` on all-day events even when `true` is sent and the calendar has default reminders; timed events keep `true`. The previous body promised something Google never stored.
+- A clarification for a known item now names its `item_id`. Calendar-only events no longer carry an `achios_task_id` for a task that does not exist.
+
+Verification:
+
+- Fourteen tests were written first and failed for the reported reasons, including a `gws` error with the exact banner-then-error output captured live.
+- `tests/test_cohesion.py tests/test_gcal_add.py` -> 63 passed. `tests/` -> 592 passed, 1 pre-existing unknown-marker warning.
+- `ruff check` on the four touched files reports only the three findings already present on the base commit in `gcal_add.py` and `test_gcal_add.py`.
+
+Open:
+
+- The live test record lists a nit claiming `main()` calls `capabilities()` twice. That was an overlapping `sed` range in the review, not a code defect.
+- Real `gws` acceptance must be rerun at the new head. Earlier live evidence does not carry over.
+- A deliberate edit to an owned Calendar field still has no dismissal or override path beyond restoring it. That shares the open clarification contract decision.
+
 ## 2026-09-17 03:05 [saved]
 
 Goal: repair the blocker Luna found in the tasks concurrency guard on AIS-OS PR #59.

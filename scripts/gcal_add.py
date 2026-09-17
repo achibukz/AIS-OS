@@ -30,7 +30,9 @@ WRITABLE = {"owner", "writer"}
 
 
 class GwsError(RuntimeError):
-    pass
+    def __init__(self, message: str, status: int | None = None):
+        super().__init__(message)
+        self.status = status
 
 
 def profile_dir(profile: str) -> Path:
@@ -54,8 +56,18 @@ def gws(profile: str, *args: str, timeout: int = 30) -> dict:
         timeout=timeout,
     )
     if res.returncode != 0:
-        detail = (res.stderr or res.stdout).strip().splitlines()
-        raise GwsError(f"gws {profile}: {detail[0] if detail else f'exit {res.returncode}'}")
+        detail = [
+            line
+            for line in res.stderr.strip().splitlines()
+            if line and not line.startswith("Using keyring backend")
+        ]
+        try:
+            status = parse_json(res.stdout).get("error", {}).get("code")
+        except (GwsError, ValueError, AttributeError):
+            status = None
+        raise GwsError(
+            f"gws {profile}: {detail[0] if detail else f'exit {res.returncode}'}", status
+        )
     return parse_json(res.stdout)
 
 

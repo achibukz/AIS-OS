@@ -88,7 +88,7 @@ class GwsCalendarTransport:
                 json.dumps({"calendarId": calendar_id, "eventId": event_id}),
             )
         except gcal_add.GwsError as exc:
-            if "404" in str(exc):
+            if exc.status == 404:
                 return None
             raise
 
@@ -108,7 +108,7 @@ class GwsCalendarTransport:
             profile,
             "calendar",
             "events",
-            "update",
+            "patch",
             "--params",
             json.dumps({"calendarId": calendar_id, "eventId": event_id}),
             "--json",
@@ -133,6 +133,19 @@ def _line_version(line: str | None) -> str | None:
     return _content_hash(line) if line is not None else None
 
 
+def _calendar_version(event: dict) -> str:
+    """Hash only the fields cohesion owns, so edits to anything else are adopted."""
+    private = event.get("extendedProperties", {}).get("private", {})
+    return _canonical_hash(
+        {
+            "summary": event.get("summary"),
+            "start": event.get("start"),
+            "end": event.get("end"),
+            "private": {key: value for key, value in private.items() if key.startswith("achios_")},
+        }
+    )
+
+
 def _event_id(item_id: str) -> str:
     return "a" + hashlib.sha256(item_id.encode()).hexdigest()[:31]
 
@@ -152,7 +165,10 @@ def _resolve_date(value: str | None, source_time: dt.datetime) -> str | None:
         return local_date.isoformat()
     if value == "tomorrow":
         return (local_date + dt.timedelta(days=1)).isoformat()
-    return dt.date.fromisoformat(value).isoformat()
+    try:
+        return dt.date.fromisoformat(value).isoformat()
+    except (TypeError, ValueError) as exc:
+        raise CohesionError("intent.due must be today, tomorrow, or YYYY-MM-DD") from exc
 
 
 def _resolve_datetime(value: str | None) -> str | None:
@@ -310,7 +326,15 @@ class CohesionService:
                 "SELECT payload_hash FROM sources WHERE source_id = ?", (source_id,)
             ).fetchone()
             if existing_source and existing_source["payload_hash"] != payload_hash:
-                return self._conflict_receipt(source_id, "source ID was reused with different content")
+                if connection.execute(
+                    "SELECT 1 FROM operations WHERE source_id = ? LIMIT 1", (source_id,)
+                ).fetchone():
+                    return self._conflict_receipt(
+                        source_id, "source ID was reused with different content"
+                    )
+                connection.execute("DELETE FROM clarifications WHERE source_id = ?", (source_id,))
+                connection.execute("DELETE FROM sources WHERE source_id = ?", (source_id,))
+                existing_source = None
             if existing_source is None:
                 connection.execute(
                     "INSERT INTO sources VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -392,6 +416,7 @@ class CohesionService:
                         "end_at": normalized[7],
                         "calendar_profile": normalized[8],
                         "calendar_id": normalized[9],
+                        "placement": placement,
                         "state": normalized[11],
                     }
                     connection.execute(
@@ -411,7 +436,7 @@ class CohesionService:
                     )
 
         if transition_error is not None:
-            return self._pending_receipt(source_id, transition_error)
+            return self._pending_receipt(source_id, transition_error, item_id)
 
         self._run_pending(source_id)
         self._clear_clarifications(source, item_id)
@@ -446,13 +471,13 @@ class CohesionService:
             return "existing item placement or Calendar target change requires clarification"
         return None
 
-    def _pending_receipt(self, source_id: str, error: str) -> dict:
+    def _pending_receipt(self, source_id: str, error: str, item_id: str | None = None) -> dict:
         with self._connect() as connection:
             connection.execute(
                 "INSERT OR REPLACE INTO clarifications(source_id, error) VALUES (?, ?)",
                 (source_id, error),
             )
-        return self._conflict_receipt(source_id, error)
+        return self._conflict_receipt(source_id, error, item_id)
 
     def _prepare_completion(self, request: dict) -> dict:
         intent = request.get("intent")
@@ -647,12 +672,18 @@ class CohesionService:
         if operation["action"] == "complete":
             if current is None:
                 raise CohesionError(f"task identity {task_id} does not exist")
-            source_request = json.loads(operation["source_request_json"])
-            completed_on = _source_time(source_request["source"]["timestamp"]).astimezone(MANILA).date()
-            line = (
-                f"- [x] {operation['title']} {metadata} "
-                f"(done {completed_on.isoformat()}) {marker}"
-            )
+            recorded = re.search(r"\(done (\d{4}-\d{2}-\d{2})\) <!--", current)
+            if current.startswith("- [x] ") and recorded:
+                completed_on = recorded.group(1)
+            else:
+                source_request = json.loads(operation["source_request_json"])
+                completed_on = (
+                    _source_time(source_request["source"]["timestamp"])
+                    .astimezone(MANILA)
+                    .date()
+                    .isoformat()
+                )
+            line = f"- [x] {operation['title']} {metadata} (done {completed_on}) {marker}"
         else:
             line = f"- [ ] {operation['title']} {metadata} {marker}"
         if current == line:
@@ -694,15 +725,14 @@ class CohesionService:
                 os.unlink(temporary_name)
 
     def _calendar_body(self, operation: dict) -> dict:
-        private = {
-            "achios_item_id": operation["item_id"],
-            "achios_task_id": operation["task_id"],
-            "achios_item_state": operation["state"],
-        }
+        private = {"achios_item_id": operation["item_id"]}
+        if operation.get("placement") != "calendar":
+            private["achios_task_id"] = operation["task_id"]
+        private["achios_item_state"] = operation["state"]
         if operation["due"]:
             day = dt.date.fromisoformat(operation["due"])
+            # Google stores useDefault false on all-day events whatever is sent, checked live.
             body = gcal_add.all_day_body(operation["title"], day)
-            body["reminders"] = {"useDefault": True}
         else:
             body = {
                 "summary": operation["title"],
@@ -720,13 +750,15 @@ class CohesionService:
         existing = self.calendar.get(
             profile=profile, calendar_id=calendar_id, event_id=event_id
         )
+        if existing and existing.get("status") == "cancelled":
+            raise CohesionError("owned calendar event no longer exists")
         if existing:
             owner = existing.get("extendedProperties", {}).get("private", {}).get("achios_item_id")
             if owner != operation["item_id"]:
                 raise CohesionError("calendar event ownership is unknown")
             if (
                 operation["destination_version"] is not None
-                and existing.get("etag") != operation["destination_version"]
+                and _calendar_version(existing) != operation["destination_version"]
             ):
                 raise ConcurrentEdit("calendar event changed since the last applied operation")
             completion_note = "achiOS item state: completed"
@@ -741,13 +773,18 @@ class CohesionService:
                 )
             elif previous_description:
                 body["description"] = previous_description
-            event = self.calendar.update(
-                profile=profile,
-                calendar_id=calendar_id,
-                event_id=event_id,
-                body=body,
-                expected_version=existing.get("etag"),
-            )
+            if _calendar_version(existing) == _calendar_version(body) and existing.get(
+                "description", ""
+            ) == body.get("description", ""):
+                event = existing
+            else:
+                event = self.calendar.update(
+                    profile=profile,
+                    calendar_id=calendar_id,
+                    event_id=event_id,
+                    body=body,
+                    expected_version=existing.get("etag"),
+                )
         else:
             if operation["action"] == "complete":
                 raise CohesionError("owned calendar event no longer exists")
@@ -761,9 +798,11 @@ class CohesionService:
                 )
                 if event is None:
                     raise
-        return {"event_id": event_id, "profile": profile, "calendar_id": calendar_id}, event.get(
-            "etag"
-        )
+        return {
+            "event_id": event_id,
+            "profile": profile,
+            "calendar_id": calendar_id,
+        }, _calendar_version(event)
 
     def _receipt(self, source_id: str, placement: str) -> dict:
         with self._connect() as connection:
@@ -794,11 +833,11 @@ class CohesionService:
         }
 
     @staticmethod
-    def _conflict_receipt(source_id: str, error: str) -> dict:
+    def _conflict_receipt(source_id: str, error: str, item_id: str | None = None) -> dict:
         return {
             "version": CONTRACT_VERSION,
             "source_id": source_id,
-            "item_id": None,
+            "item_id": item_id,
             "placement": None,
             "applied": [],
             "pending": [{"destination": None, "status": "pending", "error": error}],
