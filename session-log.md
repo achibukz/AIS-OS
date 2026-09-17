@@ -1,5 +1,27 @@
 # Session Log
 
+## 2026-09-17 15:50 PHT [saved]
+
+Goal: implement [AIS-OS #57](https://github.com/achibukz/AIS-OS/issues/57) to remove per-message and per-account Gmail links from email digest.
+
+Decisions:
+
+- Deleted `EmailItem.web_link` property and `format_source_link()` function.
+- Removed unused fields `message_id`, `thread_id`, and `account_email` from `EmailItem`, leaving only `sender`, `subject`, `snippet`, `category`, and `date_str`.
+- Cleaned up link formatting from `build_account_message_raw` and `validate_and_render_llm_digest`, removing dead `[(?:link|missing ID)]` scrub regexes.
+- Updated `tests/test_email_digest.py` to assert the absence of link tags, absence of link fields, and absence of `format_source_link()`.
+
+Verification:
+
+- Ran red test suite via `~/.local/share/achios/venv/bin/pytest tests/test_email_digest.py`, observing 3 expected test failures.
+- Implemented changes and ran `~/.local/share/achios/venv/bin/pytest tests/test_email_digest.py` -> 44 passed in 4.68s.
+- Ran full test suite `~/.local/share/achios/venv/bin/pytest tests/` -> 590 passed, 1 pre-existing warning in 31.27s.
+- Tested `scripts/email_digest.py --dry-run` and verified output structure remains intact without broken Gmail links.
+
+Open:
+
+- None. Implementation is complete and covered by automated regression tests.
+
 ## 2026-09-17 14:34 PHT [saved]
 
 Goal: file the reported `/ToWork` recovery and card-control bug.

@@ -1585,3 +1585,13 @@ explicit popup override for all-day deadlines, rejected as a product choice Aki 
 **Alternatives considered:** model calorie fallback, a Landlock exception, daemon-applied write intents, media under `personal/health`.
 
 **Owner:** Aki
+
+## 2026-09-17, delete per-message Gmail links and link fields in email digest
+
+Decision: delete `EmailItem.web_link`, `format_source_link()`, and the unused `message_id`, `thread_id`, and `account_email` fields on `EmailItem` per AIS-OS #57. Remove link rendering from `build_account_message_raw` and `validate_and_render_llm_digest`, and drop the dead `[(?:link|missing ID)]` scrub regexes.
+
+Why: Gmail web links cannot be constructed reliably across multiple Google accounts without a device-specific numeric slot index. Deleting the property and its supporting fields eliminates broken links and dead fields completely.
+
+Alternatives considered: leaving dormant `message_id` and `thread_id` fields on `EmailItem`, rejected because nothing else reads them and keeping them creates misleading dead state.
+
+Owner: Aea for implementation, Luna for review.
