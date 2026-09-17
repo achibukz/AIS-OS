@@ -42,6 +42,42 @@ Open:
 - Existing issue statuses in the roadmap come from GitHub state, not a fresh implementation audit.
 - `~/.config/achios/google_token*.json` still exist until AIS-OS #61 lands.
 
+## 2026-09-17 [saved]
+
+Goal: correct the STSP002 room label for Friday, 18 September PHT.
+
+Decisions:
+
+- Changed the single STSP002 calendar occurrence from Andrew 1102 to A1102 in both its title and location.
+
+Verification:
+
+- Google Calendar returned the event with `summary: A1102 - F2F Session` and `location: A1102`.
+
+## 2026-09-17 [saved]
+
+Goal: update the Friday, 18 September PHT course calendar instances for the STSP002 room change and the STDISCM and CCINOV8 suspensions.
+
+Decisions:
+
+- Updated only the 18 September occurrences. STSP002 now records Andrew 1102 from its Canvas announcement. STDISCM and CCINOV8 remain visible as suspended and are marked transparent, so their former class times are free.
+
+Verification:
+
+- Google Calendar returned the updated STSP002 event with location `Andrew 1102`, plus the two suspended course events with `transparency: transparent`.
+
+## 2026-09-17 [saved]
+
+Goal: move the remaining NAIST application work to next week after the TOR and COE request forms were submitted.
+
+Decisions:
+
+- Kept the existing NAIST application task active and moved its due date to Monday, 2026-09-21. The submitted TOR and COE request forms are recorded in the task detail, while document release and the remaining application materials are still pending.
+
+Open:
+
+- The task register has no NAIST-specific checklist or stated application track. Confirm the official checklist or invitation requirements before treating any other document as required.
+
 ## 2026-09-17 03:05 [saved]
 
 Goal: repair the blocker Luna found in the tasks concurrency guard on AIS-OS PR #59.

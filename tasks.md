@@ -28,7 +28,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Repair Telegram /syncres through [achiCore #215](https://github.com/achibukz/achiCore/issues/215) so it never restarts after a failed sync and can prepare a safe, approval-gated recovery for tracked local changes #achicore #telegram #bug !high
 - [ ] Submit CCINOV8 Team Contract #school #CCINOV8 !high @2026-09-18
 - [ ] Submit STDISCM Practice Test Case Upload Check #school #STDISCM !high @2026-09-18
-- [ ] Work on NAIST application requirements #career !high @2026-09-14
+- [ ] Work on NAIST application requirements (TOR and COE request forms submitted; prepare remaining materials) #career !high @2026-09-21
 - [ ] Forward /tasks arguments in cmd_tasks and render area views turn-free through [achiCore #57](https://github.com/achibukz/achiCore/issues/57) #achicore #systems !high
 - [ ] Deliver the approved Telegram cohesion batch, starting with Asa and Sciel, then semantic learning. [Roadmap](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-roadmap-2026-09-11.md) covers achiCore #194-#200 and AIS-OS #41-#49 plus revised existing tickets. #systems !high
 - [ ] Deliver the meeting ingest cohesion batch: [schoolMem #2](https://github.com/achibukz/schoolMem/issues/2), [AIS-OS #58](https://github.com/achibukz/AIS-OS/issues/58) and [achiCore #213](https://github.com/achibukz/achiCore/issues/213). [Discussion](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/meeting-ingest-cohesion-discussion-2026-09-15.md) #systems !med
