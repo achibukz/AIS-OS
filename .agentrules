@@ -8,9 +8,11 @@ Whenever any configuration, script, scheduled job, integration, or architectural
 - **`connections.md`**: Add any new integrations, tools, or API registries.
 
 ## 2. Calendar Synchronization
-Whenever an active task carries a date or deadline:
-- Add the `@YYYY-MM-DD` tag to `tasks.md`.
-- Create the all-day event using `scripts/gcal_add.py "<Title>" <YYYY-MM-DD> --calendar <CalendarName>`.
+- Placement follows AIS-OS #13: social plans go to Calendar only, quick tasks and coding tickets to `tasks.md` only, school deadlines to both, linked. A date alone never selects both. An explicit instruction for one item overrides the preference for that item only.
+- Linked items go through `scripts/cohesion.py submit`, which names calendars from `~/.config/achios/calendars.json`.
+- `scripts/gcal.py` is the only Google Calendar client. Read with `agenda`, `events list` and `calendars list`. Write with `insert --owner <asa|asta|cohesion>` only to calendars whose `write_owner` names that owner; `update` and `delete` refuse events another owner created.
+- A single explicit event writes without asking. Several events, moves and deletes need one confirmation.
+- Run `scripts/gcal.py calendars check` after a calendar or course change. It never creates calendars.
 
 ## 3. Secret Safety
 - Never print or echo raw bot tokens, API keys, or OAuth secrets into chat or logs.

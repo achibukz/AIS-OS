@@ -4,6 +4,15 @@ import subprocess
 import cohesion
 import pytest
 
+CALENDARS = [
+    ("Course", "course", "dlsu"),
+    ("Thesis", "thesis-id", "dlsu"),
+    ("Calendar A", "calendar-a", "personal"),
+    ("Calendar B", "calendar-b", "personal"),
+    ("Personal", "personal", "personal"),
+    ("Personal ID", "personal-id", "personal"),
+]
+
 SOURCE_TIME = "2026-09-11T15:30:00+08:00"
 
 
@@ -76,13 +85,25 @@ def request(source_id, category, title, **intent):
     }
 
 
+def write_calendars(path, extra=()):
+    calendars = [
+        {"name": name, "id": cid, "profile": profile, "write_owner": ["cohesion"], "schedule": True}
+        for name, cid, profile in CALENDARS
+    ]
+    path.write_text(json.dumps({"calendars": calendars + list(extra)}), encoding="utf-8")
+
+
 def service(tmp_path, calendar=None):
     tasks_path = tmp_path / "tasks.md"
     tasks_path.write_text("# Tasks\n\n## Active\n\n## Blocked\n\n## Done\n", encoding="utf-8")
+    calendars_path = tmp_path / "calendars.json"
+    if not calendars_path.exists():
+        write_calendars(calendars_path)
     return cohesion.CohesionService(
         db_path=tmp_path / "cohesion.sqlite3",
         tasks_path=tasks_path,
         calendar=calendar or FakeCalendar(),
+        calendars_path=calendars_path,
     )
 
 
@@ -112,7 +133,7 @@ def test_seeded_preferences_drive_the_three_placements(tmp_path):
             "Dinner with Yna",
             start="2026-09-12T19:00:00",
             end="2026-09-12T21:00:00",
-            calendar={"profile": "personal", "id": "personal-id"},
+            calendar="Personal ID",
         )
     )
     quick = app.submit(request("quick-1", "quick_task", "Buy toothpaste", area="personal"))
@@ -123,7 +144,7 @@ def test_seeded_preferences_drive_the_three_placements(tmp_path):
             "Submit thesis draft",
             area="school",
             due="tomorrow",
-            calendar={"profile": "dlsu", "id": "thesis-id"},
+            calendar="Thesis",
         )
     )
 
@@ -245,7 +266,7 @@ def test_redelivery_after_partial_failure_retries_only_calendar(tmp_path):
         "Submit paper",
         area="school",
         due="tomorrow",
-        calendar={"profile": "dlsu", "id": "course"},
+        calendar="Course",
     )
 
     first = app.submit(payload)
@@ -271,7 +292,7 @@ def test_stale_calendar_redelivery_cannot_overwrite_a_newer_update(tmp_path):
         "Old title",
         area="school",
         due="tomorrow",
-        calendar={"profile": "dlsu", "id": "course"},
+        calendar="Course",
     )
 
     first = app.submit(original)
@@ -284,7 +305,7 @@ def test_stale_calendar_redelivery_cannot_overwrite_a_newer_update(tmp_path):
             item_id=item_id,
             area="school",
             due="tomorrow",
-            calendar={"profile": "dlsu", "id": "course"},
+            calendar="Course",
         )
     )
     replay = app.submit(original)
@@ -316,7 +337,7 @@ def test_accepted_insert_timeout_is_reconciled_without_a_duplicate(tmp_path):
             "Dinner",
             start="2026-09-12T19:00:00",
             end="2026-09-12T20:00:00",
-            calendar={"profile": "personal", "id": "personal"},
+            calendar="Personal",
         )
     )
 
@@ -336,7 +357,7 @@ def test_same_item_update_preserves_calendar_identity_and_checks_ownership(tmp_p
             "Dinner",
             start="2026-09-12T19:00:00",
             end="2026-09-12T20:00:00",
-            calendar={"profile": "personal", "id": "personal"},
+            calendar="Personal",
         )
     )
     item_id = first["item_id"]
@@ -351,7 +372,7 @@ def test_same_item_update_preserves_calendar_identity_and_checks_ownership(tmp_p
             item_id=item_id,
             start="2026-09-12T20:00:00",
             end="2026-09-12T21:00:00",
-            calendar={"profile": "personal", "id": "personal"},
+            calendar="Personal",
         )
     )
 
@@ -370,7 +391,7 @@ def test_existing_calendar_item_rejects_placement_change_without_writes(tmp_path
             "Dinner",
             start="2026-09-12T19:00:00",
             end="2026-09-12T20:00:00",
-            calendar={"profile": "personal", "id": "calendar-a"},
+            calendar="Calendar A",
         )
     )
     item_id = first["item_id"]
@@ -417,7 +438,7 @@ def test_existing_calendar_item_rejects_calendar_target_change_without_writes(tm
             "Dinner",
             start="2026-09-12T19:00:00",
             end="2026-09-12T20:00:00",
-            calendar={"profile": "personal", "id": "calendar-a"},
+            calendar="Calendar A",
         )
     )
     item_id = first["item_id"]
@@ -432,7 +453,7 @@ def test_existing_calendar_item_rejects_calendar_target_change_without_writes(tm
             placement="calendar",
             start="2026-09-12T20:00:00",
             end="2026-09-12T21:00:00",
-            calendar={"profile": "personal", "id": "calendar-b"},
+            calendar="Calendar B",
         )
     )
 
@@ -460,7 +481,7 @@ def test_calendar_update_refuses_a_concurrent_human_edit(tmp_path):
             "Dinner",
             start="2026-09-12T19:00:00",
             end="2026-09-12T20:00:00",
-            calendar={"profile": "personal", "id": "personal"},
+            calendar="Personal",
         )
     )
     item_id = first["item_id"]
@@ -473,7 +494,7 @@ def test_calendar_update_refuses_a_concurrent_human_edit(tmp_path):
         item_id=item_id,
         start="2026-09-12T20:00:00",
         end="2026-09-12T21:00:00",
-        calendar={"profile": "personal", "id": "personal"},
+        calendar="Personal",
     )
 
     changed = app.submit(later)
@@ -501,7 +522,7 @@ def test_a_calendar_edit_outside_the_managed_fields_is_adopted_and_kept(tmp_path
             "Dinner",
             start="2026-09-12T19:00:00",
             end="2026-09-12T20:00:00",
-            calendar={"profile": "personal", "id": "personal"},
+            calendar="Personal",
         )
     )
     event_id = first["applied"][0]["result"]["event_id"]
@@ -515,7 +536,7 @@ def test_a_calendar_edit_outside_the_managed_fields_is_adopted_and_kept(tmp_path
             item_id=first["item_id"],
             start="2026-09-12T20:00:00",
             end="2026-09-12T21:00:00",
-            calendar={"profile": "personal", "id": "personal"},
+            calendar="Personal",
         )
     )
 
@@ -535,7 +556,7 @@ def test_a_cancelled_calendar_event_is_reported_missing(tmp_path, action):
             "Dinner",
             start="2026-09-12T19:00:00",
             end="2026-09-12T20:00:00",
-            calendar={"profile": "personal", "id": "personal"},
+            calendar="Personal",
         )
     )
     event_id = first["applied"][0]["result"]["event_id"]
@@ -547,7 +568,7 @@ def test_a_cancelled_calendar_event_is_reported_missing(tmp_path, action):
         item_id=first["item_id"],
         start="2026-09-12T20:00:00",
         end="2026-09-12T21:00:00",
-        calendar={"profile": "personal", "id": "personal"},
+        calendar="Personal",
     )
     if action == "complete":
         later["intent"] = {"action": "complete", "item_id": first["item_id"]}
@@ -592,7 +613,7 @@ def test_successful_redelivery_returns_the_receipt_without_repeating_writes(tmp_
         "Submit slides",
         area="school",
         due="2026-09-15",
-        calendar={"profile": "dlsu", "id": "course"},
+        calendar="Course",
     )
 
     first = app.submit(payload)
@@ -613,7 +634,7 @@ def test_calendar_completion_preserves_time_and_records_completed_state(tmp_path
             "Final paper",
             area="school",
             due="2026-09-15",
-            calendar={"profile": "dlsu", "id": "course"},
+            calendar="Course",
         )
     )
     item_id = first["item_id"]
@@ -650,7 +671,7 @@ def test_missing_calendar_values_return_pending_after_reserving_the_source(tmp_p
     receipt = app.submit(request("missing-calendar", "social_plan", "Dinner"))
 
     assert receipt["applied"] == []
-    assert "profile and id are required" in receipt["pending"][0]["error"]
+    assert "must name a configured calendar" in receipt["pending"][0]["error"]
     assert app.tasks_path.read_text() == before
     assert app.context()["source_count"] == 1
     assert app.context()["pending_count"] == 1
@@ -720,7 +741,7 @@ def test_an_applied_operation_without_a_version_does_not_strand_the_next_update(
             "Dinner",
             start="2026-09-12T19:00:00",
             end="2026-09-12T21:00:00",
-            calendar={"profile": "personal", "id": "personal-id"},
+            calendar="Personal ID",
         )
     )
     item_id = first["item_id"]
@@ -734,7 +755,7 @@ def test_an_applied_operation_without_a_version_does_not_strand_the_next_update(
                 item_id=item_id,
                 start=f"2026-09-12T{hour}:00:00",
                 end="2026-09-12T23:00:00",
-                calendar={"profile": "personal", "id": "personal-id"},
+                calendar="Personal ID",
             )
         )
 
@@ -871,7 +892,7 @@ def test_a_resolved_clarification_stops_counting_as_pending(tmp_path):
         "Dinner",
         start="2026-09-12T19:00:00",
         end="2026-09-12T21:00:00",
-        calendar={"profile": "personal", "id": "personal-id"},
+        calendar="Personal ID",
     )
     corrected["source"]["native_id"] = "telegram-4417"
 
@@ -895,7 +916,7 @@ def test_repeated_completion_does_not_duplicate_the_calendar_note(tmp_path):
             "Dinner",
             start="2026-09-12T19:00:00",
             end="2026-09-12T21:00:00",
-            calendar={"profile": "personal", "id": "personal-id"},
+            calendar="Personal ID",
         )
     )
     item_id = first["item_id"]
@@ -920,7 +941,7 @@ def test_a_later_completion_keeps_the_original_done_date(tmp_path):
             "Final paper",
             area="school",
             due="2026-09-15",
-            calendar={"profile": "dlsu", "id": "course"},
+            calendar="Course",
         )
     )
     item_id = first["item_id"]
@@ -980,7 +1001,7 @@ def test_a_calendar_only_event_carries_no_task_identity(tmp_path):
             "Dinner",
             start="2026-09-12T19:00:00",
             end="2026-09-12T20:00:00",
-            calendar={"profile": "personal", "id": "personal"},
+            calendar="Personal",
         )
     )
 
@@ -1002,7 +1023,7 @@ def test_all_day_deadlines_send_the_reminders_google_stores(tmp_path):
             "Final paper",
             area="school",
             due="2026-09-15",
-            calendar={"profile": "dlsu", "id": "course"},
+            calendar="Course",
         )
     )
 
@@ -1041,7 +1062,7 @@ def test_accepting_an_item_clears_its_earlier_clarification(tmp_path):
             "Gig",
             start="2026-09-12T19:00:00",
             end="2026-09-12T21:00:00",
-            calendar={"profile": "personal", "id": "personal-id"},
+            calendar="Personal ID",
         )
     )
     item_id = first["item_id"]
@@ -1059,7 +1080,7 @@ def test_accepting_an_item_clears_its_earlier_clarification(tmp_path):
             item_id=item_id,
             start="2026-09-12T20:00:00",
             end="2026-09-12T22:00:00",
-            calendar={"profile": "personal", "id": "personal-id"},
+            calendar="Personal ID",
         )
     )
 
@@ -1072,10 +1093,10 @@ def test_gws_transport_sends_the_event_id_and_reads_a_missing_event(monkeypatch)
     def fake_gws(profile, *args):
         calls.append((profile, args))
         if args[2] == "get":
-            raise cohesion.gcal_add.GwsError("gws dlsu: error[api]: Not Found", status=404)
+            raise cohesion.gcal.GwsError("error[api]: Not Found", profile=profile, status=404)
         return {"id": "abc", "etag": "v1"}
 
-    monkeypatch.setattr(cohesion.gcal_add, "gws", fake_gws)
+    monkeypatch.setattr(cohesion.gcal, "gws", fake_gws)
     transport = cohesion.GwsCalendarTransport()
 
     assert transport.get(profile="dlsu", calendar_id="course", event_id="abc") is None
@@ -1090,11 +1111,168 @@ def test_gws_transport_sends_the_event_id_and_reads_a_missing_event(monkeypatch)
 
 def test_gws_transport_reraises_a_non_missing_error(monkeypatch):
     def fake_gws(profile, *args):
-        raise cohesion.gcal_add.GwsError("gws dlsu: error[api]: 404 in a message", status=403)
+        raise cohesion.gcal.GwsError("error[api]: 404 in a message", profile=profile, status=403)
 
-    monkeypatch.setattr(cohesion.gcal_add, "gws", fake_gws)
+    monkeypatch.setattr(cohesion.gcal, "gws", fake_gws)
 
-    with pytest.raises(cohesion.gcal_add.GwsError):
+    with pytest.raises(cohesion.gcal.GwsError):
         cohesion.GwsCalendarTransport().get(
             profile="dlsu", calendar_id="course", event_id="abc"
         )
+
+
+def dinner(source_id, calendar="Personal", **intent):
+    return request(
+        source_id,
+        "social_plan",
+        "Dinner",
+        start="2026-09-12T19:00:00",
+        end="2026-09-12T20:00:00",
+        calendar=calendar,
+        **intent,
+    )
+
+
+class RecordingCalendar(FakeCalendar):
+    def __init__(self):
+        super().__init__()
+        self.targets = []
+
+    def insert(self, *, profile, calendar_id, event_id, body):
+        self.targets.append((profile, calendar_id))
+        return super().insert(profile=profile, calendar_id=calendar_id, event_id=event_id, body=body)
+
+
+def test_created_events_carry_the_cohesion_owner_key(tmp_path):
+    calendar = FakeCalendar()
+    receipt = service(tmp_path, calendar).submit(dinner("owner-key"))
+
+    event = calendar.events[receipt["applied"][0]["result"]["event_id"]]
+    assert event["extendedProperties"]["private"]["achios_owner"] == "cohesion"
+
+
+def test_calendar_names_resolve_to_profile_and_id_through_config(tmp_path):
+    calendar = RecordingCalendar()
+    receipt = service(tmp_path, calendar).submit(dinner("resolve", calendar="Course"))
+
+    assert calendar.targets == [("dlsu", "course")]
+    assert receipt["applied"][0]["result"]["calendar_id"] == "course"
+
+
+def test_unknown_calendar_name_stays_pending_without_a_write(tmp_path):
+    calendar = FakeCalendar()
+    receipt = service(tmp_path, calendar).submit(dinner("unknown", calendar="Nope"))
+
+    assert receipt["applied"] == []
+    assert "no configured calendar named 'Nope'" in receipt["pending"][0]["error"]
+    assert calendar.insert_calls == 0
+
+
+def test_raw_calendar_ids_are_no_longer_accepted(tmp_path):
+    calendar = FakeCalendar()
+    receipt = service(tmp_path, calendar).submit(
+        dinner("raw-id", calendar={"profile": "personal", "id": "personal"})
+    )
+
+    assert "must name a configured calendar" in receipt["pending"][0]["error"]
+    assert calendar.insert_calls == 0
+
+
+def test_a_calendar_cohesion_does_not_write_is_refused_without_a_write(tmp_path):
+    write_calendars(
+        tmp_path / "calendars.json",
+        [{"name": "workouts", "id": "workouts", "profile": "personal", "write_owner": ["asta"]}],
+    )
+    calendar = FakeCalendar()
+    receipt = service(tmp_path, calendar).submit(dinner("not-ours", calendar="workouts"))
+
+    assert "is not written by cohesion" in receipt["pending"][0]["error"]
+    assert calendar.insert_calls == 0
+
+
+def test_missing_calendar_config_stays_pending_without_a_write(tmp_path):
+    calendar = FakeCalendar()
+    app = service(tmp_path, calendar)
+    (tmp_path / "calendars.json").unlink()
+
+    receipt = app.submit(dinner("no-config"))
+
+    assert "calendar config not found" in receipt["pending"][0]["error"]
+    assert calendar.insert_calls == 0
+
+
+def test_legacy_event_without_owner_key_is_recognized_and_tagged(tmp_path):
+    calendar = FakeCalendar()
+    app = service(tmp_path, calendar)
+    first = app.submit(dinner("legacy-1"))
+    event_id = first["applied"][0]["result"]["event_id"]
+    del calendar.events[event_id]["extendedProperties"]["private"]["achios_owner"]
+    with app._connect() as connection:
+        connection.execute(
+            "UPDATE operations SET destination_version = ? WHERE item_id = ?",
+            (cohesion._calendar_version(calendar.events[event_id]), first["item_id"]),
+        )
+
+    moved = app.submit(
+        request(
+            "legacy-2",
+            "social_plan",
+            "Dinner moved",
+            item_id=first["item_id"],
+            start="2026-09-12T20:00:00",
+            end="2026-09-12T21:00:00",
+            calendar="Personal",
+        )
+    )
+
+    assert moved["pending"] == []
+    assert calendar.update_calls == 1
+    private = calendar.events[event_id]["extendedProperties"]["private"]
+    assert private["achios_owner"] == "cohesion"
+    assert calendar.events[event_id]["summary"] == "Dinner moved"
+
+
+def test_event_owned_by_another_agent_is_refused(tmp_path):
+    calendar = FakeCalendar()
+    app = service(tmp_path, calendar)
+    first = app.submit(dinner("foreign-1"))
+    event_id = first["applied"][0]["result"]["event_id"]
+    calendar.events[event_id]["extendedProperties"]["private"]["achios_owner"] = "asa"
+
+    moved = app.submit(
+        request(
+            "foreign-2",
+            "social_plan",
+            "Dinner moved",
+            item_id=first["item_id"],
+            start="2026-09-12T20:00:00",
+            end="2026-09-12T21:00:00",
+            calendar="Personal",
+        )
+    )
+
+    assert moved["pending"][0]["error"] == "calendar event ownership is unknown"
+    assert calendar.update_calls == 0
+
+
+def test_completion_resolves_the_stored_calendar_back_through_config(tmp_path):
+    calendar = FakeCalendar()
+    app = service(tmp_path, calendar)
+    first = app.submit(dinner("complete-1"))
+    complete = request("complete-2", "social_plan", "ignored")
+    complete["intent"] = {"action": "complete", "item_id": first["item_id"]}
+
+    receipt = app.submit(complete)
+
+    assert receipt["pending"] == []
+    event = calendar.events[first["applied"][0]["result"]["event_id"]]
+    assert event["extendedProperties"]["private"]["achios_item_state"] == "completed"
+
+
+def test_no_file_imports_gcal_add():
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    for path in [*root.glob("scripts/*.py"), *root.glob("tests/*.py")]:
+        if path.name != "test_cohesion.py":
+            assert "gcal_add" not in path.read_text(encoding="utf-8"), path

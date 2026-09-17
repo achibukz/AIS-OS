@@ -1,3 +1,4 @@
+import json
 import datetime as dt
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -6,11 +7,12 @@ import pytest
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import email_digest as ed
+import gcal
 
 
 def test_missing_gws_binary_exits_nonzero(monkeypatch, tmp_path, capsys):
     missing = tmp_path / "gws"
-    monkeypatch.setattr(ed, "GWS_BIN", missing)
+    monkeypatch.setattr(gcal, "GWS_BIN", missing)
     monkeypatch.setattr("sys.argv", ["email_digest.py", "--dry-run"])
 
     assert ed.main() == 1
@@ -36,6 +38,7 @@ def test_email_fetch_never_accesses_token_files(monkeypatch):
         return real_open(path_obj, *args, **kwargs)
 
     monkeypatch.setattr(Path, "open", tracking_open)
+    monkeypatch.setattr(gcal, "gws", lambda profile, *args, timeout=30: {"messages": []})
     ed.fetch_account_emails(account_type="school", gws_profile="dlsu")
     assert not any("google_token" in f for f in opened_files)
 
@@ -556,7 +559,7 @@ class TestFetchErrorHandling:
     def test_main_retries_a_network_failure_once(self, monkeypatch, tmp_path, capsys):
         gws = tmp_path / "gws"
         gws.write_text("")
-        monkeypatch.setattr(ed, "GWS_BIN", gws)
+        monkeypatch.setattr(gcal, "GWS_BIN", gws)
         monkeypatch.setattr(ed.time, "sleep", lambda s: None)
         results = iter([([], 0, self.NETWORK), ([], 2, None)])
         calls = []
@@ -574,3 +577,64 @@ class TestFetchErrorHandling:
         assert "Inbox clear" in out
         assert "Sync Warning" not in out
 
+
+
+class TestSharedGwsClient:
+    @pytest.fixture(autouse=True)
+    def _present(self, monkeypatch, tmp_path):
+        gws = tmp_path / "gws"
+        gws.write_text("")
+        monkeypatch.setattr(gcal, "GWS_BIN", gws)
+        monkeypatch.setattr(gcal, "profile_dir", lambda profile: tmp_path)
+
+    def test_fetch_keeps_actionable_mail_and_counts_noise(self, monkeypatch):
+        calls = []
+        messages = {
+            "m1": {"From": "Prof Samson <samson@dlsu.edu.ph>", "Subject": "Thesis consultation"},
+            "m2": {"From": "LinkedIn Job Alerts <jobalerts-noreply@linkedin.com>", "Subject": "Internship at Procter & Gamble"},
+        }
+
+        def fake(profile, *args, timeout=30):
+            calls.append((profile, args[3], timeout))
+            params = json.loads(args[args.index("--params") + 1])
+            if args[3] == "list":
+                return {"messages": [{"id": "m1"}, {"id": "m2"}, {}]}
+            headers = [{"name": k, "value": v} for k, v in messages[params["id"]].items()]
+            snippet = "30 new jobs match your preferences." if params["id"] == "m2" else "see you"
+            return {"payload": {"headers": headers}, "snippet": snippet}
+
+        monkeypatch.setattr(gcal, "gws", fake)
+        items, noise, error = ed.fetch_account_emails(account_type="work", gws_profile="work")
+
+        assert error is None
+        assert [item.subject for item in items] == ["Thesis consultation"]
+        assert noise == 1
+        assert calls[0] == ("work", "list", 10)
+
+    def test_one_unreadable_message_is_skipped(self, monkeypatch):
+        def fake(profile, *args, timeout=30):
+            if args[3] == "list":
+                return {"messages": [{"id": "bad"}]}
+            raise gcal.GwsError("error[api]: Not Found", profile=profile, status=404)
+
+        monkeypatch.setattr(gcal, "gws", fake)
+        assert ed.fetch_account_emails(account_type="school", gws_profile="dlsu") == ([], 0, None)
+
+    def test_list_failure_keeps_the_existing_error_format(self, monkeypatch):
+        def fake(profile, *args, timeout=30):
+            raise gcal.GwsError("error[auth]: invalid_grant", profile=profile, status=401)
+
+        monkeypatch.setattr(gcal, "gws", fake)
+        _, _, error = ed.fetch_account_emails(account_type="school", gws_profile="dlsu")
+        assert error == "gws dlsu error: error[auth]: invalid_grant"
+        assert not ed.is_network_error(error)
+
+
+def test_no_script_defines_its_own_gws_wrapper():
+    scripts = Path(__file__).resolve().parents[1] / "scripts"
+    for name in ("daily_brief.py", "evening_debrief.py", "google_auth_health.py", "email_digest.py"):
+        source = (scripts / name).read_text(encoding="utf-8")
+        assert "GWS_BIN =" not in source, name
+        assert "def gws_env" not in source, name
+        assert "def parse_json" not in source, name
+        assert 'find("{")' not in source, name

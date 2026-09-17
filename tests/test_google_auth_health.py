@@ -1,6 +1,16 @@
 import json
 
+import pytest
+
+import gcal
 import google_auth_health as health
+
+REAL_DRIFT_CHECK = health.check_calendar_drift
+
+
+@pytest.fixture(autouse=True)
+def no_drift(monkeypatch):
+    monkeypatch.setattr(health, "check_calendar_drift", lambda: [])
 
 def _auth(scopes=None):
     return {
@@ -18,10 +28,6 @@ def _healthy_gws(_profile, *args):
     if args[:3] == ("calendar", "calendarList", "list"):
         return {"items": [{"accessRole": "owner"}]}
     return {}
-
-
-def test_parse_json_skips_keyring_banner():
-    assert health.parse_json('Using keyring backend: file\n{"token_valid": true}') == {"token_valid": True}
 
 
 def test_healthy_profile_checks_auth_calendar_gmail_and_drive(monkeypatch):
@@ -125,10 +131,66 @@ def test_calendar_probe_filters_for_writable_calendars(monkeypatch):
 
 def test_run_gws_reports_missing_binary(monkeypatch, tmp_path):
     missing = tmp_path / "gws"
-    monkeypatch.setattr(health, "GWS_BIN", missing)
-    try:
+    monkeypatch.setattr(gcal, "GWS_BIN", missing)
+    monkeypatch.setattr(gcal, "profile_dir", lambda profile: tmp_path)
+    with pytest.raises(RuntimeError, match=str(missing)):
         health.run_gws("main", "auth", "status")
-    except RuntimeError as exc:
-        assert str(missing) in str(exc)
-    else:
-        raise AssertionError("missing gws binary was accepted")
+
+
+def test_run_gws_reports_a_missing_profile(monkeypatch, tmp_path):
+    monkeypatch.setattr(gcal, "profile_dir", lambda profile: tmp_path / profile)
+    with pytest.raises(RuntimeError, match="gws profile missing"):
+        health.run_gws("main", "auth", "status")
+
+
+def test_drift_makes_a_default_run_report(monkeypatch, capsys):
+    statuses = [health.ProfileStatus(profile) for profile in health.GWS_PROFILES]
+    sent = []
+    monkeypatch.setattr(health, "check_all_profiles", lambda: statuses)
+    monkeypatch.setattr(health, "check_calendar_drift", lambda: ["current course has no calendar: STDISCM"])
+    monkeypatch.setattr(health, "send", sent.append)
+    monkeypatch.setattr("sys.argv", ["google_auth_health.py"])
+
+    assert health.main() == 0
+    assert sent and "Google OAuth needs attention" in sent[0]
+    assert "calendars: DRIFT\n  - current course has no calendar: STDISCM" in sent[0]
+
+
+def test_weekly_report_includes_drift_and_a_clean_calendar_line():
+    statuses = [health.ProfileStatus("main")]
+    assert "calendars: matches config" in health.build_report(statuses, weekly=True)
+    drifted = health.build_report(statuses, weekly=True, drift=["writable calendar not in config: New (personal)"])
+    assert "Google OAuth weekly heartbeat" in drifted
+    assert "  - writable calendar not in config: New (personal)" in drifted
+
+
+def test_drift_check_uses_the_shared_calendars_check(monkeypatch):
+    config = [{"name": "CSOPESY", "id": "c@group", "profile": "work", "purpose": "course",
+               "write_owner": [], "schedule": False}]
+    monkeypatch.setattr(gcal, "load_config", lambda path=None: config)
+    monkeypatch.setattr(gcal, "read_current_courses", lambda wiki=gcal.WIKI_PATH: ["STDISCM"])
+    monkeypatch.setattr(gcal, "list_calendars", lambda profiles: {
+        "calendars": [{"id": "c@group", "name": "CSOPESY", "access_role": "owner", "profile": "work"}],
+        "errors": [],
+    })
+    assert REAL_DRIFT_CHECK() == [
+        "current course has no calendar: STDISCM",
+        "course calendar is not a current course: CSOPESY",
+    ]
+
+
+def test_drift_check_is_empty_when_calendars_match(monkeypatch):
+    config = [{"name": "STDISCM", "id": "s@group", "profile": "personal", "purpose": "course",
+               "write_owner": [], "schedule": True}]
+    monkeypatch.setattr(gcal, "load_config", lambda path=None: config)
+    monkeypatch.setattr(gcal, "read_current_courses", lambda wiki=gcal.WIKI_PATH: ["STDISCM"])
+    monkeypatch.setattr(gcal, "list_calendars", lambda profiles: {
+        "calendars": [{"id": "s@group", "name": "STDISCM", "access_role": "owner", "profile": "personal"}],
+        "errors": [],
+    })
+    assert REAL_DRIFT_CHECK() == []
+
+
+def test_drift_check_reports_a_missing_config(monkeypatch, tmp_path):
+    monkeypatch.setattr(gcal, "CONFIG_PATH", tmp_path / "calendars.json")
+    assert REAL_DRIFT_CHECK() == [f"check failed: calendar config not found at {tmp_path / 'calendars.json'}"]

@@ -6,8 +6,6 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
-import os
-import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -15,11 +13,10 @@ from zoneinfo import ZoneInfo
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
+import gcal
 from telegram_notify import send
 
 LOCAL_TZ = ZoneInfo("Asia/Manila")
-GWS_BIN = Path.home() / ".npm-global" / "bin" / "gws"
-GWS_CONFIG_ROOT = Path.home() / ".config"
 GWS_PROFILES = ("main", "personal", "work", "dlsu")
 COMMAND_TIMEOUT_SECONDS = 30
 
@@ -49,50 +46,11 @@ class ProfileStatus:
         return not self.failures
 
 
-def profile_config_dir(profile: str) -> Path:
-    return GWS_CONFIG_ROOT / f"gws-{profile}"
-
-
-def gws_env(profile: str) -> dict[str, str]:
-    return {
-        **os.environ,
-        "GOOGLE_WORKSPACE_CLI_CONFIG_DIR": str(profile_config_dir(profile)),
-        "GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND": "file",
-    }
-
-
-def parse_json(output: str) -> dict:
-    start = output.find("{")
-    if start < 0:
-        raise ValueError("gws returned no JSON response")
-    value = json.loads(output[start:])
-    if not isinstance(value, dict):
-        raise ValueError("gws returned an unexpected JSON response")
-    return value
-
-
 def run_gws(profile: str, *args: str) -> dict:
-    if not GWS_BIN.is_file():
-        raise RuntimeError(f"gws binary missing: {GWS_BIN}")
-
-    config_dir = profile_config_dir(profile)
+    config_dir = gcal.profile_dir(profile)
     if not config_dir.is_dir():
         raise RuntimeError(f"gws profile missing: {config_dir}")
-
-    result = subprocess.run(
-        [str(GWS_BIN), *args],
-        env=gws_env(profile),
-        capture_output=True,
-        text=True,
-        timeout=COMMAND_TIMEOUT_SECONDS,
-    )
-    if result.returncode != 0:
-        detail = next(
-            (line.strip() for line in reversed(result.stderr.splitlines()) if line.strip()),
-            f"exit code {result.returncode}",
-        )
-        raise RuntimeError(detail)
-    return parse_json(result.stdout)
+    return gcal.gws(profile, *args, timeout=COMMAND_TIMEOUT_SECONDS)
 
 
 def _record_failure(failures: list[str], check: str, operation) -> dict | None:
@@ -182,8 +140,23 @@ def auth_warning_banner(failed_profiles: list[str]) -> str:
     return f"⚠️ Google auth failed: {', '.join(failed_profiles)}"
 
 
-def build_report(statuses: list[ProfileStatus], weekly: bool = False) -> str:
-    failed = any(not status.healthy for status in statuses)
+def check_calendar_drift() -> list[str]:
+    """Run `gcal.py calendars check` in-process and return one line per drift or failure."""
+    try:
+        config = gcal.load_config()
+    except gcal.GcalError as exc:
+        return [f"check failed: {exc}"]
+    try:
+        courses = gcal.read_current_courses()
+    except (OSError, UnicodeError, ValueError):
+        courses = None
+    live = gcal.list_calendars(sorted({*gcal.PROFILES, *(entry["profile"] for entry in config)}))
+    return gcal.drift_lines(gcal.check_calendars(config, live, courses))
+
+
+def build_report(statuses: list[ProfileStatus], weekly: bool = False, drift: list[str] | None = None) -> str:
+    drift = drift or []
+    failed = any(not status.healthy for status in statuses) or bool(drift)
     if weekly:
         title = "Google OAuth weekly heartbeat"
     elif failed:
@@ -197,6 +170,12 @@ def build_report(statuses: list[ProfileStatus], weekly: bool = False) -> str:
             lines.extend(f"  - {failure}" for failure in status.failures)
         else:
             lines.append(f"{status.profile}: healthy")
+    if drift:
+        lines.append("")
+        lines.append("calendars: DRIFT")
+        lines.extend(f"  - {line}" for line in drift)
+    elif weekly:
+        lines.append("calendars: matches config")
     return "\n".join(lines)
 
 
@@ -218,12 +197,13 @@ def main() -> int:
     now = dt.datetime.now(LOCAL_TZ)
     weekly = args.weekly or (args.scheduled and is_weekly_run(now))
     statuses = check_all_profiles()
-    needs_attention = any(not status.healthy for status in statuses)
+    drift = check_calendar_drift()
+    needs_attention = any(not status.healthy for status in statuses) or bool(drift)
 
     if not weekly and not needs_attention and not args.dry_run:
         return 0
 
-    report = build_report(statuses, weekly=weekly)
+    report = build_report(statuses, weekly=weekly, drift=drift)
     if args.dry_run:
         print(report)
         return 0

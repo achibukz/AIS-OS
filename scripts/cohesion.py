@@ -21,7 +21,7 @@ from zoneinfo import ZoneInfo
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
-import gcal_add
+import gcal
 from task_engine import PRIMARY_AREAS
 
 CONTRACT_VERSION = 1
@@ -66,31 +66,10 @@ class CalendarTransport(Protocol):
 
 class GwsCalendarTransport:
     def insert(self, *, profile: str, calendar_id: str, event_id: str, body: dict) -> dict:
-        return gcal_add.gws(
-            profile,
-            "calendar",
-            "events",
-            "insert",
-            "--params",
-            json.dumps({"calendarId": calendar_id}),
-            "--json",
-            json.dumps({**body, "id": event_id}),
-        )
+        return gcal.insert_event(profile, calendar_id, {**body, "id": event_id})
 
     def get(self, *, profile: str, calendar_id: str, event_id: str) -> dict | None:
-        try:
-            return gcal_add.gws(
-                profile,
-                "calendar",
-                "events",
-                "get",
-                "--params",
-                json.dumps({"calendarId": calendar_id, "eventId": event_id}),
-            )
-        except gcal_add.GwsError as exc:
-            if exc.status == 404:
-                return None
-            raise
+        return gcal.get_event(profile, calendar_id, event_id)
 
     def update(
         self,
@@ -104,16 +83,7 @@ class GwsCalendarTransport:
         current = self.get(profile=profile, calendar_id=calendar_id, event_id=event_id)
         if current is None or current.get("etag") != expected_version:
             raise ConcurrentEdit("calendar event changed")
-        return gcal_add.gws(
-            profile,
-            "calendar",
-            "events",
-            "patch",
-            "--params",
-            json.dumps({"calendarId": calendar_id, "eventId": event_id}),
-            "--json",
-            json.dumps(body),
-        )
+        return gcal.patch_event(profile, calendar_id, event_id, body)
 
 
 def _canonical_hash(value: object) -> str:
@@ -147,7 +117,7 @@ def _calendar_version(event: dict) -> str:
 
 
 def _event_id(item_id: str) -> str:
-    return "a" + hashlib.sha256(item_id.encode()).hexdigest()[:31]
+    return gcal.event_id_for(item_id)
 
 
 def _source_time(value: str) -> dt.datetime:
@@ -187,9 +157,11 @@ class CohesionService:
         db_path: Path = DEFAULT_DB,
         tasks_path: Path = DEFAULT_TASKS,
         calendar: CalendarTransport | None = None,
+        calendars_path: Path | None = None,
     ):
         self.db_path = Path(db_path)
         self.tasks_path = Path(tasks_path)
+        self.calendars_path = calendars_path
         self.calendar = calendar or GwsCalendarTransport()
         self.db_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         self._initialize()
@@ -498,10 +470,11 @@ class CohesionService:
         if item["start_at"]:
             prepared_intent.setdefault("start", item["start_at"])
             prepared_intent.setdefault("end", item["end_at"])
-        if item["calendar_profile"]:
-            prepared_intent.setdefault(
-                "calendar", {"profile": item["calendar_profile"], "id": item["calendar_id"]}
-            )
+        if item["calendar_id"]:
+            entry = gcal.calendar_by_id(self._calendars(), item["calendar_id"])
+            if entry is None:
+                raise CohesionError("the item's calendar is no longer in the calendar config")
+            prepared_intent.setdefault("calendar", entry["name"])
         prepared_intent.setdefault("placement", item["placement"])
         return prepared
 
@@ -547,10 +520,9 @@ class CohesionService:
         end_at = _resolve_datetime(intent.get("end"))
         if due is not None and (start_at is not None or end_at is not None):
             raise CohesionError("choose an all-day due date or a timed start and end")
-        calendar = intent.get("calendar") or {}
+        calendar = {}
         if "calendar" in self._destinations(placement):
-            if not calendar.get("profile") or not calendar.get("id"):
-                raise CohesionError("intent.calendar profile and id are required")
+            calendar = self._resolve_calendar(intent.get("calendar"))
             if due is None and (start_at is None or end_at is None):
                 raise CohesionError("calendar operations need due or start and end")
         if start_at and end_at and end_at <= start_at:
@@ -571,6 +543,24 @@ class CohesionService:
             "completed" if action == "complete" else "active",
         )
         return source, intent, normalized, placement
+
+    def _calendars(self) -> list[dict]:
+        try:
+            return gcal.load_config(self.calendars_path)
+        except gcal.GcalError as exc:
+            raise CohesionError(str(exc)) from exc
+
+    def _resolve_calendar(self, name: object) -> dict:
+        """Callers name a calendar; its profile and ID come only from the calendar config."""
+        if not isinstance(name, str) or not name.strip():
+            raise CohesionError("intent.calendar must name a configured calendar")
+        try:
+            entry = gcal.find_calendar(self._calendars(), name)
+        except gcal.GcalError as exc:
+            raise CohesionError(str(exc)) from exc
+        if "cohesion" not in entry["write_owner"]:
+            raise CohesionError(f"calendar {name!r} is not written by cohesion")
+        return entry
 
     def _preference(self, category: str) -> str:
         with self._connect() as connection:
@@ -623,7 +613,7 @@ class CohesionService:
                     result, version = self._apply_task(operation_data)
                 else:
                     result, version = self._apply_calendar(operation_data)
-            except (CohesionError, gcal_add.GwsError, subprocess.TimeoutExpired) as exc:
+            except (CohesionError, gcal.GcalError, subprocess.TimeoutExpired) as exc:
                 self._finish_operation(operation["operation_id"], "pending", None, None, str(exc))
             else:
                 self._finish_operation(operation["operation_id"], "applied", result, version, None)
@@ -725,14 +715,14 @@ class CohesionService:
                 os.unlink(temporary_name)
 
     def _calendar_body(self, operation: dict) -> dict:
-        private = {"achios_item_id": operation["item_id"]}
+        private = {"achios_owner": gcal.OWNER_COHESION, "achios_item_id": operation["item_id"]}
         if operation.get("placement") != "calendar":
             private["achios_task_id"] = operation["task_id"]
         private["achios_item_state"] = operation["state"]
         if operation["due"]:
             day = dt.date.fromisoformat(operation["due"])
             # Google stores useDefault false on all-day events whatever is sent, checked live.
-            body = gcal_add.all_day_body(operation["title"], day)
+            body = gcal.all_day_body(operation["title"], day)
         else:
             body = {
                 "summary": operation["title"],
@@ -753,8 +743,11 @@ class CohesionService:
         if existing and existing.get("status") == "cancelled":
             raise CohesionError("owned calendar event no longer exists")
         if existing:
-            owner = existing.get("extendedProperties", {}).get("private", {}).get("achios_item_id")
-            if owner != operation["item_id"]:
+            private = gcal.private_properties(existing)
+            # Events created before achios_owner existed carry only the item ID.
+            if private.get("achios_item_id") != operation["item_id"] or private.get(
+                "achios_owner", gcal.OWNER_COHESION
+            ) != gcal.OWNER_COHESION:
                 raise CohesionError("calendar event ownership is unknown")
             if (
                 operation["destination_version"] is not None
@@ -855,6 +848,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--db", type=Path, default=DEFAULT_DB)
     parser.add_argument("--tasks", type=Path, default=DEFAULT_TASKS)
+    parser.add_argument("--calendars", type=Path, default=None, help="calendar config path")
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("capabilities")
     context_parser = subparsers.add_parser("context")
@@ -863,7 +857,7 @@ def main(argv: list[str] | None = None) -> int:
     submit_parser.add_argument("--input", default="-", help="JSON file or - for stdin")
     args = parser.parse_args(argv)
 
-    service = CohesionService(db_path=args.db, tasks_path=args.tasks)
+    service = CohesionService(db_path=args.db, tasks_path=args.tasks, calendars_path=args.calendars)
     try:
         if args.command == "capabilities":
             result = service.capabilities()

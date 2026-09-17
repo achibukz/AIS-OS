@@ -1,5 +1,35 @@
 # Session Log
 
+## 2026-09-17 17:56 PHT [saved]
+
+Goal: implement [AIS-OS #60](https://github.com/achibukz/AIS-OS/issues/60), [#61](https://github.com/achibukz/AIS-OS/issues/61) and [#62](https://github.com/achibukz/AIS-OS/issues/62) in one pull request: one Google Calendar client, the briefs and health check on it, cohesion on it, and `gcal_add.py` gone.
+
+Decisions:
+
+- `scripts/gcal.py` is both the shared module and the CLI. It owns the gws transport, banner parsing, the private `~/.config/achios/calendars.json`, `agenda`, `events list`, `calendars list`, `calendars check`, `insert`, `update` and `delete`.
+- `write_owner` is a list, not a single owner. Aki chose this so Personal can be written by both Asa and cohesion. The event's own `achios_owner` still stops one writer moving another's events.
+- `insert` without `--item-id` derives the item ID from owner, calendar, title and start, so a retried insert stays idempotent like `gcal_add.py` was. An insert that times out is looked up before it is reported as failed.
+- `agenda` reads each calendar ID once, falls back through every profile configured for it, and skips a profile for the rest of the run after an auth failure or timeout. Dedupe is event ID first, then title plus start.
+- Cohesion takes a calendar name, resolves profile and ID through the config, and refuses a calendar whose `write_owner` lacks `cohesion`. Completion maps the stored calendar ID back to its configured name. New events carry `achios_owner=cohesion`; legacy events with only `achios_item_id` are still recognized and get the owner key on their next update.
+- The briefs keep their formats and the `laguna` filter. Their own dedupe was dropped for the shared rule. The health check runs `calendars check` in-process and treats drift like a failed profile.
+- Private config generated from the live calendar lists. Aki added `cc sched`, the DLSU primary calendar, `DLSU ALTDSI` and `Gala` to the schedule set because the briefs showed them before.
+- Deleted `~/.config/achios/google_token.json`, `google_token_dlsu.json` and `google_token_work.json` after confirming nothing on the host reads them.
+
+Rejected:
+
+- A single `write_owner` string, which would have refused cohesion's updates to Personal.
+- Leaving the four unlisted calendars out of the schedule set, which would have dropped nine class events and a thesis session from this week's brief.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed, 651 tests with 1 existing warning.
+- Live and read-only: `gcal.py calendars check` returned `ok` with no drift. `gcal.py agenda --from 2026-09-17 --to 2026-09-19` returned every profile without errors. The daily brief calendar fetch for 2026-09-17 to 2026-09-24, old against new, differs only by two free/busy blocks, one THS-ST1 event and one Bdayy event, all excluded by the approved set, plus two of today's classes the old `+agenda` missed because it started from the current time.
+
+Open:
+
+- Human acceptance for all three issues is not run: live insert, update and delete on the `achiOS cohesion test` calendar; a triggered brief and debrief compared with Google Calendar; #59's create, reschedule and complete checklist on the new transport.
+- Dated historical records (`decisions/log.md`, older docs and the September 17 discussion and roadmap) still name `gcal_add.py`. No code, test or instruction file does.
+
 ## 2026-09-17 15:50 PHT [saved]
 
 Goal: implement [AIS-OS #57](https://github.com/achibukz/AIS-OS/issues/57) to remove per-message and per-account Gmail links from email digest.
