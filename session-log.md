@@ -1,5 +1,22 @@
 # Session Log
 
+## 2026-09-17 14:34 PHT [saved]
+
+Goal: file the reported `/ToWork` recovery and card-control bug.
+
+Decisions:
+
+- Published [achiCore #225](https://github.com/achibukz/achiCore/issues/225), separate from #196. It covers stale parked cards, merged owned PR cleanup, and a distinct Resume action. #196 remains the dirty-work abandonment path.
+- The ticket uses the production record for achiCore #6 and merged PR #166 as its regression fixture. The card currently labels `tw:resume` as `New attempt`, and both recovery callbacks validate the issue before classifying the owned PR. A closed issue therefore blocks cleanup.
+
+Verification:
+
+- Read the live state record, current `src/bot.py` callback and keyboard code, GitHub state for issue #6 and PR #166, then fetched and checked the published #225 body and labels.
+
+Open:
+
+- #225 needs implementation and isolated Telegram live acceptance. The stale production card was not pressed or altered during ticketing.
+
 ## 2026-09-17 13:10 [saved]
 
 Goal: fix the bugs the assisted live test found on AIS-OS PR #59 against real `gws` and a disposable Calendar.

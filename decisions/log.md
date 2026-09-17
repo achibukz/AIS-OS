@@ -18,6 +18,16 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-17 — Classify owned PR state before /ToWork issue validation
+
+**Decision:** Track the stale-card repair as achiCore #225. Its recovery flow must inspect the recorded owned PR before requiring an open issue, and must distinguish Resume from a fresh attempt in the card UI.
+
+**Why:** The observed job for closed issue #6 still owns a merged PR #166. Its card only offers Recheck and `New attempt`, and both callbacks fail at open-issue validation before cleanup can release the workers.
+
+**Alternatives considered:** Extending #196, which concerns preserving dirty work after abandonment, or changing only the button label. Neither repairs the terminal-state ordering or validates safe cleanup.
+
+**Owner:** Aea.
+
 ## 2026-09-16: Supersede stale cohesion operations before newer item writes
 
 **Decision:** When a new source updates an existing item, mark every older pending destination operation for that item as superseded in the same SQLite transaction before storing the new item state and operations. Receipts keep those terminal, non-applied operations visible in the existing `pending` bucket with the supersession error, while the pending runner only retries rows whose status is still `pending`.
@@ -97,6 +107,7 @@ Keep it terse. Future-you will thank present-you for capturing the *why*, not ju
 **Alternatives considered:** Marking each table row with informal checked boxes. Rejected because tables do not reliably render task-list controls and cannot represent blocked versus merely unstarted work.
 
 **Owner:** Aki
+
 
 ## 2026-09-12 — Email digest LLM fallback chain and network-aware sync warnings
 
@@ -1574,4 +1585,3 @@ explicit popup override for all-day deadlines, rejected as a product choice Aki 
 **Alternatives considered:** model calorie fallback, a Landlock exception, daemon-applied write intents, media under `personal/health`.
 
 **Owner:** Aki
-

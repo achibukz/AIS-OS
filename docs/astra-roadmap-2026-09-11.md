@@ -61,6 +61,7 @@ The status column was refreshed from GitHub and observed worktrees on September 
 | Ongoing | [AIS-OS #20](https://github.com/achibukz/AIS-OS/issues/20) | high | Prepare copy-paste live-test checklists with expected results and resumable evidence | None | Automated + stated live acceptance |
 | Queued | [achiCore #195](https://github.com/achibukz/achiCore/issues/195) | med | Change writer and reviewer models on a safely paused /ToWork job | None | Automated + stated live acceptance |
 | Queued | [achiCore #196](https://github.com/achibukz/achiCore/issues/196) | med | Abandon jobs without losing dirty work and resume the same ticket through a new attempt | None | Automated + stated live acceptance |
+| Queued | [achiCore #225](https://github.com/achibukz/achiCore/issues/225) | high | Recover stale /ToWork cards, release workers after a merged owned PR, and restore a distinct Resume action | None | Automated + stated live acceptance |
 | Done | [AIS-OS #41](https://github.com/achibukz/AIS-OS/issues/41) | med | Include source links in concise email digests on every rendering path | None | Automated + stated live acceptance |
 | Done | [AIS-OS #42](https://github.com/achibukz/AIS-OS/issues/42) | med | Resolve Obsidian wikilinks natively in the Tailscale web viewer | None | Automated + stated live acceptance |
 | Done | [AIS-OS #43](https://github.com/achibukz/AIS-OS/issues/43) | high | Update agy-tickets for approved grilling decisions, dependency roadmaps and post-review HITL | None | Automated / author checks |
