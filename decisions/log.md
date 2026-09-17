@@ -1554,3 +1554,24 @@ event under the same ID, rejected because Google keeps the ID of a cancelled eve
 explicit popup override for all-day deadlines, rejected as a product choice Aki has not made.
 
 **Owner:** Aki for approval; Claude for implementation; Luna for review.
+
+## 2026-09-17 — One Google Calendar client with owner-tagged events
+
+**Decision:** `gcal.py` becomes the only code that talks to Google Calendar. Every persona may read the configured schedule calendars; only Asa, Asta and the cohesion writer write, each to calendars it owns, and every created event carries `achios_owner` and `achios_item_id`. Routing moves to a private `calendars.json` with a drift check. `gcal_add.py` is deleted after callers move. PR #59 lands first.
+
+**Why:** five scripts duplicated the gws wrapper, three instruction files disagreed on placement, the routing table was a term stale, and Asta could not read Aki's schedule.
+
+**Alternatives considered:** all writes through the cohesion writer; per-agent event keys; committed routing config in a public repo; rebuilding PR #59 on the new client first.
+
+**Owner:** Aki
+
+## 2026-09-17 — Asta computes nutrition in the CLI, not the model
+
+**Decision:** Asta's model estimates grams and picks food records; `asta.py` computes calories, tiers from config, and stores immutable corrections. The database lives under `~/.local/state/achios/asta`, media and backups under `~/Documents/Files/training/asta`.
+
+**Why:** the calorie research found single model calorie numbers unreliable, Landlock blocks `~/.local/share` from turns, and corrections are the calibration data.
+
+**Alternatives considered:** model calorie fallback, a Landlock exception, daemon-applied write intents, media under `personal/health`.
+
+**Owner:** Aki
+

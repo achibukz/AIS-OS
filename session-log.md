@@ -26,6 +26,22 @@ Open:
 - Real `gws` acceptance must be rerun at the new head. Earlier live evidence does not carry over.
 - A deliberate edit to an owned Calendar field still has no dismissal or override path beyond restoring it. That shares the open clarification contract decision.
 
+## 2026-09-17 06:30 [saved]
+
+Goal: publish the Asta and Google Calendar backlog after grilling and three live Asta passes.
+
+Decisions:
+
+- Saved the [discussion record](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/asta-and-calendar-discussion-2026-09-17.md) and [roadmap](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/asta-calendar-roadmap-2026-09-17.md).
+- Published AIS-OS #60 to #75 and achiCore #221 to #223: four calendar slices, nine Asta slices, five tracking issues and one epic. Verified titles, labels and blockers after publication.
+- Existing issues were not edited. AIS-OS #13 and PR #59 stay first by Aki's decision.
+- The Asta persona prototype merged separately as achiCore PR #220.
+
+Open:
+
+- Existing issue statuses in the roadmap come from GitHub state, not a fresh implementation audit.
+- `~/.config/achios/google_token*.json` still exist until AIS-OS #61 lands.
+
 ## 2026-09-17 03:05 [saved]
 
 Goal: repair the blocker Luna found in the tasks concurrency guard on AIS-OS PR #59.

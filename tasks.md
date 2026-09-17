@@ -24,6 +24,7 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Build Asta and the shared Google Calendar client through the [Asta and calendar roadmap](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/asta-calendar-roadmap-2026-09-17.md), starting with [AIS-OS #63](https://github.com/achibukz/AIS-OS/issues/63) and [AIS-OS #60](https://github.com/achibukz/AIS-OS/issues/60) after PR #59 #systems #asta !high
 - [ ] Repair Telegram /syncres through [achiCore #215](https://github.com/achibukz/achiCore/issues/215) so it never restarts after a failed sync and can prepare a safe, approval-gated recovery for tracked local changes #achicore #telegram #bug !high
 - [ ] Submit CCINOV8 Team Contract #school #CCINOV8 !high @2026-09-18
 - [ ] Submit STDISCM Practice Test Case Upload Check #school #STDISCM !high @2026-09-18
