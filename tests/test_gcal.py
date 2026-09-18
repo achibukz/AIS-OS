@@ -504,6 +504,19 @@ def test_update_with_a_matching_if_match_succeeds(writable):
     assert result["status"] == "ok"
 
 
+def test_normalize_event_carries_the_etag_if_match_expects():
+    entry = write_config()[0]
+    raw = timed("mine", "Gym", "2026-09-18T07:00:00+08:00", etag="etag-xyz")
+    assert gcal.normalize_event(entry, raw)["etag"] == "etag-xyz"
+
+
+def test_update_response_carries_the_etag_for_the_next_if_match(writable):
+    seed(writable, "mine", owner="asa")
+    writable.events[("personal", "personal@group")]["mine"]["etag"] = "etag-1"
+    result = gcal.update(write_config(), calendar="Personal", event_id="mine", owner="asa", date="2026-10-01")
+    assert result["event"]["etag"] == "etag-1"
+
+
 # Drift check
 
 

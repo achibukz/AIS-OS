@@ -107,6 +107,10 @@ scripts/gcal.py insert --calendar Personal --owner asa --title "Pay rent" --date
 scripts/gcal.py insert --calendar workouts --owner asta --title "Upper A" --start 2026-09-18T07:00 --end 2026-09-18T08:00
 ```
 
+Every event `gcal.py` returns, from `agenda`, `events list`, `insert` and `update` alike, carries
+its `etag`. Pass that value to `update --if-match <etag>` to refuse the write instead of silently
+overwriting an edit Aki made on his phone since the event was last read.
+
 A single explicit event writes without asking. Several events, a move or a delete need one
 confirmation first. Re-running an insert with the same item ID, or the same title and time,
 creates no second event. When an insert's response carries `restored: true`, it reinserted an

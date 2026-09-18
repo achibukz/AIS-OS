@@ -264,6 +264,7 @@ def normalize_event(entry: dict, raw: dict) -> dict:
         "recurring_event_id": raw.get("recurringEventId"),
         "owner": private.get("achios_owner"),
         "item_id": private.get("achios_item_id"),
+        "etag": raw.get("etag"),
     }
 
 

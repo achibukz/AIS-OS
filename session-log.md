@@ -3071,3 +3071,30 @@ Open:
 - Not yet pushed to `origin/ticket/60-62-shared-gcal-client`; Aki has not asked for that yet.
 - No new live writes to Google Calendar for this pass; the etag guard and `ACHIOS_HOME` override
   are covered only against the fake transport.
+
+## 2026-09-18 09:34 [saved]
+
+Goal: Fix Luna's re-review of PR #78 at `efc1664` (should-fix 1, nit 1).
+
+Decisions:
+- should-fix: `--if-match` took an etag but no `gcal.py` command ever printed one, so nothing in
+  the repo could reach the guard from the CLI. `normalize_event()` now carries `raw.get("etag")`
+  through to every returned event (`agenda`, `events list`, `insert`, `update`), so a caller can
+  read a value and hand it back to `update --if-match`. Documented in AGENTS.md and CLAUDE.md's
+  Calendar access section, next to the write examples.
+- nit: the "say restored, not added" line landed in AIS-OS's own AGENTS.md/CLAUDE.md, which a
+  coding agent reads in this checkout, not in `achiCore/agents/asa.md`, which is what Asa reads
+  at runtime. Luna marked this out of scope for this PR and suggested fixing it on the achiCore
+  side or recording it on achiCore #222 alongside the `asta.md` item. Left untouched here; Aki
+  has not asked for achiCore edits from this session.
+- Extended `tests/test_gcal.py` with a direct `normalize_event` etag test and an end-to-end
+  `update()` test asserting the response carries the etag a following `--if-match` would need.
+  Both confirmed red before the fix, green after.
+
+Verification: `~/.local/share/achios/venv/bin/python -m pytest tests -q` gave 668 passed, 1
+warning (was 666 at `efc1664`; +2 new regressions).
+
+Open:
+- The achiCore-side `asa.md` restore line is unresolved by design; flagged to Aki rather than
+  crossing into another repo unprompted.
+- Not yet pushed to `origin/ticket/60-62-shared-gcal-client`.
