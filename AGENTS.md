@@ -116,9 +116,14 @@ scripts/gcal.py insert --calendar workouts --owner asta --title "Upper A" --star
 
 A single explicit event writes without asking. Several events, a move or a delete need one
 confirmation first. Re-running an insert with the same item ID, or the same title and time,
-creates no second event. Run `scripts/gcal.py calendars check` when a calendar or course
-changes; it reports config drift against Google and current Canvas courses and never creates
-a calendar.
+creates no second event. When an insert's response carries `restored: true`, it reinserted an
+event Aki deleted himself; say the event was restored, not added. Run `scripts/gcal.py
+calendars check` when a calendar or course changes; it reports config drift against Google and
+current Canvas courses and never creates a calendar.
+
+`gcal.py` finds the operator's home by walking out of a checkout under `~/Code/GitHub`, so a
+Codex turn with a scoped `HOME` still reaches `calendars.json` and the gws profiles. Set
+`ACHIOS_HOME` explicitly for a checkout in a different place, such as a review worktree.
 
 ## Daily brief
 

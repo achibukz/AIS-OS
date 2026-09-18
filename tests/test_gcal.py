@@ -487,6 +487,23 @@ def test_update_of_a_missing_event_is_an_error(writable):
     assert result["error"] == "not_found"
 
 
+def test_update_refuses_when_the_event_changed_since_it_was_read(writable):
+    seed(writable, "mine", owner="asa")
+    writable.events[("personal", "personal@group")]["mine"]["etag"] = "etag-1"
+    result = gcal.update(write_config(), calendar="Personal", event_id="mine", owner="asa",
+                         date="2026-10-01", if_match="etag-0")
+    assert result["error"] == "conflict"
+    assert writable.writes() == []
+
+
+def test_update_with_a_matching_if_match_succeeds(writable):
+    seed(writable, "mine", owner="asa")
+    writable.events[("personal", "personal@group")]["mine"]["etag"] = "etag-1"
+    result = gcal.update(write_config(), calendar="Personal", event_id="mine", owner="asa",
+                         date="2026-10-01", if_match="etag-1")
+    assert result["status"] == "ok"
+
+
 # Drift check
 
 
@@ -570,7 +587,8 @@ def test_cli_reports_a_missing_config_as_json(tmp_path, capsys):
     assert gcal.main(["--config", str(tmp_path / "none.json"), "agenda", "--from", "2026-09-17", "--to", "2026-09-17"]) == 1
     result = json.loads(capsys.readouterr().out)
     assert result == {"status": "error", "error": "config_missing",
-                      "message": f"calendar config not found at {tmp_path / 'none.json'}"}
+                      "message": f"calendar config not found at {tmp_path / 'none.json'} "
+                                 "(set ACHIOS_HOME if this checkout is not under ~/Code/GitHub)"}
 
 
 def test_cli_reports_a_missing_gws_binary_as_json(tmp_path, monkeypatch, capsys):
@@ -726,6 +744,20 @@ def test_gws_error_keeps_every_detail_line(monkeypatch):
 
 
 def test_user_home_survives_a_scoped_home(monkeypatch, tmp_path):
+    monkeypatch.delenv("ACHIOS_HOME", raising=False)
     monkeypatch.setattr(gcal, "SCRIPT_DIR", tmp_path / "Code" / "GitHub" / "AIS-OS" / "scripts")
     monkeypatch.setenv("HOME", str(tmp_path / "codex-home"))
     assert gcal.user_home() == tmp_path
+
+
+def test_user_home_prefers_an_explicit_achios_home(monkeypatch, tmp_path):
+    monkeypatch.setattr(gcal, "SCRIPT_DIR", tmp_path / "Code" / "review" / "AIS-OS" / "scripts")
+    monkeypatch.setenv("ACHIOS_HOME", str(tmp_path / "real-home"))
+    assert gcal.user_home() == tmp_path / "real-home"
+
+
+def test_config_missing_names_achios_home(tmp_path):
+    with pytest.raises(gcal.GcalError) as raised:
+        gcal.load_config(tmp_path / "missing.json")
+    assert raised.value.code == "config_missing"
+    assert "ACHIOS_HOME" in str(raised.value)

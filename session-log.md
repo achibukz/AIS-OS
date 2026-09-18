@@ -3043,3 +3043,31 @@ Filed [AIS-OS #57](https://github.com/achibukz/AIS-OS/issues/57), `ready-for-age
 `[link]` render call site.
 
 Open: #57 not yet picked up by Aea.
+
+## 2026-09-18 09:27 [saved]
+
+Goal: Address the outstanding review comment on PR #78 (`ticket/60-62-shared-gcal-client`,
+`achibukz/AIS-OS`), Luna's should-fix and two nits at `62ab32d`.
+
+Decisions:
+- `gcal.user_home()` now reads `ACHIOS_HOME` before walking the checkout path, so a review
+  worktree that is not directly under `~/Code/GitHub` still resolves, and a deliberately scoped
+  `HOME` under `~/Code/GitHub/AIS-OS` is no longer silently overridden. `config_missing` names
+  the variable in its message. Documented in AGENTS.md and CLAUDE.md's Calendar access section.
+- `gcal.update()` takes an optional `--if-match <etag>`. If the fetched event's `etag` does not
+  match, it returns `{"status": "error", "error": "conflict"}` instead of replacing the event,
+  so a concurrent edit between the get and the write is no longer silently reverted. No etag
+  means no check, matching the pre-existing behaviour.
+- AGENTS.md and CLAUDE.md now tell agents that `restored: true` on an insert means the event was
+  resurrected, not newly created, and to say so.
+- Extended `tests/test_gcal.py` and `tests/test_google_auth_health.py` to cover the `ACHIOS_HOME`
+  override, the `config_missing` message, and the `--if-match` conflict/success paths. All four
+  new tests were confirmed red before the corresponding fix, then green after.
+
+Verification: `~/.local/share/achios/venv/bin/python -m pytest tests -q` gave 666 passed, 1
+warning (was 662 at `62ab32d`; +4 new regressions).
+
+Open:
+- Not yet pushed to `origin/ticket/60-62-shared-gcal-client`; Aki has not asked for that yet.
+- No new live writes to Google Calendar for this pass; the etag guard and `ACHIOS_HOME` override
+  are covered only against the fake transport.

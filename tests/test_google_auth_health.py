@@ -193,7 +193,10 @@ def test_drift_check_is_empty_when_calendars_match(monkeypatch):
 
 def test_drift_check_reports_a_missing_config(monkeypatch, tmp_path):
     monkeypatch.setattr(gcal, "CONFIG_PATH", tmp_path / "calendars.json")
-    assert REAL_DRIFT_CHECK() == [f"check failed: calendar config not found at {tmp_path / 'calendars.json'}"]
+    assert REAL_DRIFT_CHECK() == [
+        f"check failed: calendar config not found at {tmp_path / 'calendars.json'} "
+        "(set ACHIOS_HOME if this checkout is not under ~/Code/GitHub)"
+    ]
 
 
 def test_auth_status_is_called_without_the_format_flag(monkeypatch, tmp_path):

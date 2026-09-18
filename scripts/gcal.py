@@ -35,9 +35,14 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 def user_home() -> Path:
     """The operator's home, even when a bound agent turn runs with a scoped HOME.
 
-    Codex turns point HOME at a private state directory. This checkout lives at
-    <home>/Code/GitHub/AIS-OS, so walking out of it recovers the real home.
+    ACHIOS_HOME names it explicitly, for a checkout that is not directly under
+    ~/Code/GitHub. Failing that, Codex turns point HOME at a private state
+    directory, and this checkout lives at <home>/Code/GitHub/AIS-OS, so walking
+    out of it recovers the real home.
     """
+    override = os.environ.get("ACHIOS_HOME")
+    if override:
+        return Path(override)
     github = SCRIPT_DIR.parent.parent
     if github.name == "GitHub" and github.parent.name == "Code":
         return github.parent.parent
@@ -145,7 +150,11 @@ def load_config(path: Path | None = None) -> list[dict]:
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
-        raise GcalError("config_missing", f"calendar config not found at {path}") from None
+        raise GcalError(
+            "config_missing",
+            f"calendar config not found at {path} "
+            "(set ACHIOS_HOME if this checkout is not under ~/Code/GitHub)",
+        ) from None
     except (OSError, ValueError) as exc:
         raise GcalError("config_invalid", f"calendar config at {path} is unreadable: {exc}") from None
     calendars = raw.get("calendars") if isinstance(raw, dict) else None
@@ -604,6 +613,7 @@ def update(
     start: str | None = None,
     end: str | None = None,
     date: str | None = None,
+    if_match: str | None = None,
 ) -> dict:
     entry = find_calendar(config, calendar)
     if not (title or start or end or date):
@@ -617,6 +627,12 @@ def update(
     refusal = event_guard(event, owner)
     if refusal:
         return refusal
+    if if_match and event.get("etag") != if_match:
+        return {
+            "status": "error",
+            "error": "conflict",
+            "message": "event changed since it was read, refetch and retry",
+        }
     # gws rejects null fields, so a patch cannot switch between timed and all day.
     # Replacing the whole event can, and it keeps every field this call does not change.
     if date:
@@ -687,6 +703,7 @@ def build_parser() -> argparse.ArgumentParser:
             write.add_argument("--start")
             write.add_argument("--end")
             write.add_argument("--date", type=_date)
+            write.add_argument("--if-match", help="etag from a prior read; refuse if the event moved since")
     return parser
 
 
@@ -717,6 +734,7 @@ def run(args: argparse.Namespace) -> dict:
         return update(
             config, calendar=args.calendar, event_id=args.event, owner=args.owner, title=args.title,
             start=args.start, end=args.end, date=args.date.isoformat() if args.date else None,
+            if_match=args.if_match,
         )
     return delete(config, calendar=args.calendar, event_id=args.event, owner=args.owner)
 
