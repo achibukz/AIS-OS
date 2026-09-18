@@ -75,35 +75,59 @@ date — never deleted.
 When something is genuinely an unanswered *question* rather than an action, it belongs in
 achiMem's `wiki/personal/open-questions.md`, not here. Both feed the same brief.
 
-**A dated task also becomes a calendar event.** Whenever a task carries a date — he said it
-outright ("by Friday", "on the 29th") or it is implied by a deadline — write the `@YYYY-MM-DD`
-line in `tasks.md` *and* create the event, in the same turn, without asking. Settled
-2026-08-17: the register alone is not enough, because he reads the calendar on his phone.
+**Placement: tasks, Calendar or both.** Settled by AIS-OS #13. `tasks.md` owns tasks, Calendar
+owns appointments, and a linked school deadline lives in both under one stable ID. The seeded
+preferences are:
 
-```
-scripts/gcal_add.py "Title" 2026-08-29 --calendar ING
-```
-
-All-day, reminders off, because the brief already surfaces it that morning. Re-running with
-the same title and date is a no-op, so retry freely.
-
-**Pick the calendar that fits the subject** — do not default everything to one place:
-
-| Task is about | Calendar |
+| Kind of item | Goes to |
 |---|---|
-| ING internship | `ING` |
-| A specific course | that course's calendar — `CSOPESY`, `THS-ST1`, `STCLOUD`, `PEDFOUR`, `STSP001`, `LSCS` |
-| School generally, no single course | `DLSU` |
-| Job hunting outside ING — applications, recruiters, interviews | `Job` |
-| Birthdays | `Bdayy` |
-| Family | `Family` |
-| Everything else — personal, admin, spending, achiOS and infra work | `Personal` |
+| Social plan | Calendar only |
+| Quick task | `tasks.md` only |
+| Coding ticket | `tasks.md` only |
+| School deadline | both, linked |
 
-`scripts/gcal_add.py --list` prints every writable calendar across both accounts. It searches
-the personal account then the work one, and only matches a calendar Aki owns or can write to,
-so course calendars shared across both resolve either way. If no calendar fits, use `Personal`
-rather than inventing one. Read-only calendars — `ABRAM AKI BUKUHAN Calendar (Canvas)`,
-`Holidays in Philippines`, `abram_bukuhan@dlsu.edu.ph` — can never be written to.
+A date alone never puts an item in both places. An explicit instruction for one item overrides
+the preference for that item and leaves the preference unchanged. Linked items go through the
+cohesion writer, which names its calendar from the calendar config:
+
+```
+scripts/cohesion.py submit --input request.json
+```
+
+**Calendar access.** `scripts/gcal.py` is the only code that talks to Google Calendar, and every
+command prints JSON with a `status` field. Every agent may read every configured calendar:
+
+```
+scripts/gcal.py agenda --from 2026-09-17 --to 2026-09-23
+scripts/gcal.py events list --calendar DLSU --from 2026-09-17 --to 2026-09-17
+scripts/gcal.py calendars list
+```
+
+Only Asa, Asta and the cohesion writer write, each to calendars whose `write_owner` in the
+private `~/.config/achios/calendars.json` names it. Choose the calendar by its configured
+purpose. `config/calendars.example.json` shows the shape; there is no calendar table to keep in
+sync here. Every created event carries `achios_owner` and `achios_item_id`, and `update` and
+`delete` refuse untagged events, another owner's events and read-only calendars:
+
+```
+scripts/gcal.py insert --calendar Personal --owner asa --title "Pay rent" --date 2026-09-30
+scripts/gcal.py insert --calendar workouts --owner asta --title "Upper A" --start 2026-09-18T07:00 --end 2026-09-18T08:00
+```
+
+Every event `gcal.py` returns, from `agenda`, `events list`, `insert` and `update` alike, carries
+its `etag`. Pass that value to `update --if-match <etag>` to refuse the write instead of silently
+overwriting an edit Aki made on his phone since the event was last read.
+
+A single explicit event writes without asking. Several events, a move or a delete need one
+confirmation first. Re-running an insert with the same item ID, or the same title and time,
+creates no second event. When an insert's response carries `restored: true`, it reinserted an
+event Aki deleted himself; say the event was restored, not added. Run `scripts/gcal.py
+calendars check` when a calendar or course changes; it reports config drift against Google and
+current Canvas courses and never creates a calendar.
+
+`gcal.py` finds the operator's home by walking out of a checkout under `~/Code/GitHub`, so a
+Codex turn with a scoped `HOME` still reaches `calendars.json` and the gws profiles. Set
+`ACHIOS_HOME` explicitly for a checkout in a different place, such as a review worktree.
 
 ## Daily brief
 

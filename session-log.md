@@ -1,5 +1,59 @@
 # Session Log
 
+## 2026-09-17 22:26 PHT [saved]
+
+Goal: repair [PR #78](https://github.com/achibukz/AIS-OS/pull/78) after Luna's SHIP WITH FIXES review (1 blocker, 4 should-fix, 4 nits).
+
+Decisions:
+
+- Blocker: `gws auth status` rejects `--format`. `gcal.gws` takes `json_format`, and `google_auth_health.run_gws` turns it off for `auth` calls. The new argv test fails with the old call and passes with the fix; the live check now reports all four profiles healthy with no drift.
+- `agenda` and `calendars list` report `error` only when no calendar or profile could be read. An empty day on a readable calendar plus one failed profile is `partial`.
+- Inserting an item whose event was deleted restores that event, with its owner check intact, instead of returning `event_deleted`. Verified live on `achiOS cohesion test`.
+- `update` now replaces the whole event. The live test showed gws rejects `"dateTime": null` during schema validation, so the earlier patch body could never switch between timed and all day. The replacement keeps reminders and owner tags; both directions verified live.
+- gws error messages keep every non-banner stderr line, because the first line alone hid the cause of that validation failure.
+- `gcal.py` and `cohesion.py` resolve the operator's home from the checkout path, because Asa's default Codex engine runs turns with a scoped HOME that would hide `calendars.json`, the gws profiles and the cohesion database.
+- The Asta CLI mismatch is recorded on existing achiCore #222 instead of a duplicate ticket.
+- Nits: debrief test pins one title at two times; connections row 3 no longer says Job is writable; `docs/astra-tickets.md` marks the `gcal_add.py` reference historical.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed, 662 tests with 1 existing warning.
+- Live on `achiOS cohesion test` only: insert `ok`, repeat `exists`, update timed to all day and back `ok`, update and delete by `asta` refused, delete by `asa` `ok`, re-insert restored the event, final delete left 0 events.
+
+Open:
+
+- The daily brief and evening debrief units were not triggered, and #59's cohesion checklist was not rerun on the new transport.
+
+## 2026-09-17 17:56 PHT [saved]
+
+Goal: implement [AIS-OS #60](https://github.com/achibukz/AIS-OS/issues/60), [#61](https://github.com/achibukz/AIS-OS/issues/61) and [#62](https://github.com/achibukz/AIS-OS/issues/62) in one pull request: one Google Calendar client, the briefs and health check on it, cohesion on it, and `gcal_add.py` gone.
+
+Decisions:
+
+- `scripts/gcal.py` is both the shared module and the CLI. It owns the gws transport, banner parsing, the private `~/.config/achios/calendars.json`, `agenda`, `events list`, `calendars list`, `calendars check`, `insert`, `update` and `delete`.
+- `write_owner` is a list, not a single owner. Aki chose this so Personal can be written by both Asa and cohesion. The event's own `achios_owner` still stops one writer moving another's events.
+- `insert` without `--item-id` derives the item ID from owner, calendar, title and start, so a retried insert stays idempotent like `gcal_add.py` was. An insert that times out is looked up before it is reported as failed.
+- `agenda` reads each calendar ID once, falls back through every profile configured for it, and skips a profile for the rest of the run after an auth failure or timeout. Dedupe is event ID first, then title plus start.
+- Cohesion takes a calendar name, resolves profile and ID through the config, and refuses a calendar whose `write_owner` lacks `cohesion`. Completion maps the stored calendar ID back to its configured name. New events carry `achios_owner=cohesion`; legacy events with only `achios_item_id` are still recognized and get the owner key on their next update.
+- The briefs keep their formats and the `laguna` filter. Their own dedupe was dropped for the shared rule. The health check runs `calendars check` in-process and treats drift like a failed profile.
+- Private config generated from the live calendar lists. Aki added `cc sched`, the DLSU primary calendar, `DLSU ALTDSI` and `Gala` to the schedule set because the briefs showed them before.
+- Deleted `~/.config/achios/google_token.json`, `google_token_dlsu.json` and `google_token_work.json` after confirming nothing on the host reads them.
+
+Rejected:
+
+- A single `write_owner` string, which would have refused cohesion's updates to Personal.
+- Leaving the four unlisted calendars out of the schedule set, which would have dropped nine class events and a thesis session from this week's brief.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed, 651 tests with 1 existing warning.
+- Live and read-only: `gcal.py calendars check` returned `ok` with no drift. `gcal.py agenda --from 2026-09-17 --to 2026-09-19` returned every profile without errors. The daily brief calendar fetch for 2026-09-17 to 2026-09-24, old against new, differs only by two free/busy blocks, one THS-ST1 event and one Bdayy event, all excluded by the approved set, plus two of today's classes the old `+agenda` missed because it started from the current time.
+
+Open:
+
+- Human acceptance for all three issues is not run: live insert, update and delete on the `achiOS cohesion test` calendar; a triggered brief and debrief compared with Google Calendar; #59's create, reschedule and complete checklist on the new transport.
+- Dated historical records (`decisions/log.md`, older docs and the September 17 discussion and roadmap) still name `gcal_add.py`. No code, test or instruction file does.
+
 ## 2026-09-17 15:50 PHT [saved]
 
 Goal: implement [AIS-OS #57](https://github.com/achibukz/AIS-OS/issues/57) to remove per-message and per-account Gmail links from email digest.
@@ -2989,3 +3043,58 @@ Filed [AIS-OS #57](https://github.com/achibukz/AIS-OS/issues/57), `ready-for-age
 `[link]` render call site.
 
 Open: #57 not yet picked up by Aea.
+
+## 2026-09-18 09:27 [saved]
+
+Goal: Address the outstanding review comment on PR #78 (`ticket/60-62-shared-gcal-client`,
+`achibukz/AIS-OS`), Luna's should-fix and two nits at `62ab32d`.
+
+Decisions:
+- `gcal.user_home()` now reads `ACHIOS_HOME` before walking the checkout path, so a review
+  worktree that is not directly under `~/Code/GitHub` still resolves, and a deliberately scoped
+  `HOME` under `~/Code/GitHub/AIS-OS` is no longer silently overridden. `config_missing` names
+  the variable in its message. Documented in AGENTS.md and CLAUDE.md's Calendar access section.
+- `gcal.update()` takes an optional `--if-match <etag>`. If the fetched event's `etag` does not
+  match, it returns `{"status": "error", "error": "conflict"}` instead of replacing the event,
+  so a concurrent edit between the get and the write is no longer silently reverted. No etag
+  means no check, matching the pre-existing behaviour.
+- AGENTS.md and CLAUDE.md now tell agents that `restored: true` on an insert means the event was
+  resurrected, not newly created, and to say so.
+- Extended `tests/test_gcal.py` and `tests/test_google_auth_health.py` to cover the `ACHIOS_HOME`
+  override, the `config_missing` message, and the `--if-match` conflict/success paths. All four
+  new tests were confirmed red before the corresponding fix, then green after.
+
+Verification: `~/.local/share/achios/venv/bin/python -m pytest tests -q` gave 666 passed, 1
+warning (was 662 at `62ab32d`; +4 new regressions).
+
+Open:
+- Not yet pushed to `origin/ticket/60-62-shared-gcal-client`; Aki has not asked for that yet.
+- No new live writes to Google Calendar for this pass; the etag guard and `ACHIOS_HOME` override
+  are covered only against the fake transport.
+
+## 2026-09-18 09:34 [saved]
+
+Goal: Fix Luna's re-review of PR #78 at `efc1664` (should-fix 1, nit 1).
+
+Decisions:
+- should-fix: `--if-match` took an etag but no `gcal.py` command ever printed one, so nothing in
+  the repo could reach the guard from the CLI. `normalize_event()` now carries `raw.get("etag")`
+  through to every returned event (`agenda`, `events list`, `insert`, `update`), so a caller can
+  read a value and hand it back to `update --if-match`. Documented in AGENTS.md and CLAUDE.md's
+  Calendar access section, next to the write examples.
+- nit: the "say restored, not added" line landed in AIS-OS's own AGENTS.md/CLAUDE.md, which a
+  coding agent reads in this checkout, not in `achiCore/agents/asa.md`, which is what Asa reads
+  at runtime. Luna marked this out of scope for this PR and suggested fixing it on the achiCore
+  side or recording it on achiCore #222 alongside the `asta.md` item. Left untouched here; Aki
+  has not asked for achiCore edits from this session.
+- Extended `tests/test_gcal.py` with a direct `normalize_event` etag test and an end-to-end
+  `update()` test asserting the response carries the etag a following `--if-match` would need.
+  Both confirmed red before the fix, green after.
+
+Verification: `~/.local/share/achios/venv/bin/python -m pytest tests -q` gave 668 passed, 1
+warning (was 666 at `efc1664`; +2 new regressions).
+
+Open:
+- The achiCore-side `asa.md` restore line is unresolved by design; flagged to Aki rather than
+  crossing into another repo unprompted.
+- Not yet pushed to `origin/ticket/60-62-shared-gcal-client`.

@@ -75,7 +75,7 @@ A CLI utility that accepts parameters or extracts context from recent session lo
   * `cli-tool`: General-purpose deterministic task.
   * `vault-extractor`: Reads/transforms notes across Obsidian vaults (`achiMem`/`schoolMem`).
   * `telegram-notifier`: Formats state digests and sends via `scripts/telegram_notify.py`.
-  * `google-service`: Authenticates with Google Workspace via existing `~/.config/achios/google_token*.json`.
+  * `google-service`: Reaches Google Workspace through the gws profiles in `~/.config/gws-*`, and Calendar through `scripts/gcal.py`. No token files exist.
 
 ### 4.2. Synthesized Python Script Standard (`scripts/<name>.py`)
 Every synthesized tool must adhere to strict structural constraints:

@@ -16,10 +16,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import html
-import json
-import os
 import re
-import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -28,19 +25,8 @@ from zoneinfo import ZoneInfo
 # Add scripts directory to sys.path to import telegram_notify
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
+import gcal
 from telegram_notify import send
-
-
-def gws_env(profile: str) -> dict[str, str]:
-    return {
-        **os.environ,
-        "GOOGLE_WORKSPACE_CLI_CONFIG_DIR": str(Path.home() / ".config" / f"gws-{profile}"),
-        "GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND": "file",
-    }
-
-
-GWS_BIN = Path.home() / ".npm-global" / "bin" / "gws"
-GWS_PROFILES = ["personal", "dlsu", "main", "work"]
 
 TASKS_FILE = SCRIPT_DIR.parent / "tasks.md"
 LOCAL_TZ = ZoneInfo("Asia/Manila")
@@ -132,68 +118,31 @@ def parse_active_tasks(body: str) -> list[Task]:
 
 
 def fetch_calendar_events(start_dt: dt.datetime, end_dt: dt.datetime) -> tuple[list[CalendarEvent], list[str]]:
-    """Fetch and deduplicate Google Calendar events through the gws CLI."""
+    """Read the configured schedule calendars through the shared client.
+
+    A missing config or gws binary raises; a failing profile only adds a warning.
+    """
+    result = gcal.agenda(gcal.load_config(), start_dt.date(), end_dt.date())
     events: list[CalendarEvent] = []
-    seen_summaries_and_times: set[tuple[str, str]] = set()
-    errors: list[str] = []
-
-    if not GWS_BIN.is_file():
-        raise RuntimeError(f"gws binary missing: {GWS_BIN}")
-
-    days_ahead = max(1, (end_dt.date() - start_dt.date()).days)
-    for prof in GWS_PROFILES:
-        cfg_dir = Path.home() / ".config" / f"gws-{prof}"
-        if not cfg_dir.exists():
+    for item in result["events"]:
+        if not item["title"] or "laguna" in item["title"].lower():
             continue
-        try:
-            res = subprocess.run(
-                [str(GWS_BIN), "calendar", "+agenda", "--days", str(days_ahead), "--format", "json"],
-                env=gws_env(prof),
-                capture_output=True,
-                text=True,
-                timeout=10,
+        if item["all_day"]:
+            start = dt.datetime.combine(dt.date.fromisoformat(item["start"]), dt.time.min, LOCAL_TZ)
+        else:
+            start = dt.datetime.fromisoformat(item["start"]).astimezone(LOCAL_TZ)
+        events.append(
+            CalendarEvent(
+                summary=clean_summary(item["title"]),
+                start_dt=start,
+                is_all_day=item["all_day"],
+                calendar_name=item["calendar"],
             )
-            if res.returncode == 0 and res.stdout.strip():
-                stdout_clean = res.stdout[res.stdout.find("{"):] if "{" in res.stdout else res.stdout
-                data = json.loads(stdout_clean)
-                for item in data.get("events", []):
-                    raw_summary = item.get("summary", "")
-                    if not raw_summary or "laguna" in raw_summary.lower():
-                        continue
-                    summary = clean_summary(raw_summary)
-                    cal_title = item.get("calendar", "")
-                    start_str = item.get("start", "")
-                    if "T" in start_str:
-                        evt_dt = dt.datetime.fromisoformat(start_str).astimezone(LOCAL_TZ)
-                        is_all_day = False
-                        time_key = evt_dt.strftime("%Y-%m-%d %H:%M")
-                    else:
-                        d = dt.date.fromisoformat(start_str)
-                        evt_dt = dt.datetime.combine(d, dt.time.min, LOCAL_TZ)
-                        is_all_day = True
-                        time_key = evt_dt.strftime("%Y-%m-%d all-day")
-
-                    key = (summary.lower(), time_key)
-                    if key in seen_summaries_and_times:
-                        continue
-                    seen_summaries_and_times.add(key)
-
-                    events.append(
-                        CalendarEvent(
-                            summary=summary,
-                            start_dt=evt_dt,
-                            is_all_day=is_all_day,
-                            calendar_name=cal_title,
-                        )
-                    )
-            elif res.returncode != 0:
-                err_msg = res.stderr.strip().split("\n")[0] if res.stderr else f"exit code {res.returncode}"
-                errors.append(f"{prof} ({err_msg})")
-        except Exception as exc:
-            errors.append(f"{prof} ({exc})")
-            print(f"[WARN] gws calendar fetch failed for {prof}: {exc}", file=sys.stderr)
-
+        )
     events.sort(key=lambda e: (e.start_dt, not e.is_all_day, e.summary))
+    errors = gcal.failure_labels(result["errors"])
+    for error in errors:
+        print(f"[WARN] calendar fetch failed for {error}", file=sys.stderr)
     return events, errors
 
 

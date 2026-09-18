@@ -42,7 +42,7 @@ Repository: `achibukz/AIS-OS`. Created issue #13.
 
 ### What to build
 
-AFK implementation. Add `scripts/cohesion.py` with a versioned submit, context and capabilities contract. Start with structured task and Calendar intents. Reuse `scripts/gcal_add.py` and the existing task parser. Add a local SQLite record for each source, item, preference revision and destination operation. A CLI submission must produce the chosen task or event and an inspectable receipt. It must also work with injected fixture transports. This complete command-line path becomes the contract Telegram uses.
+AFK implementation. Add `scripts/cohesion.py` with a versioned submit, context and capabilities contract. Start with structured task and Calendar intents. Reuse the Calendar helpers and the existing task parser. Historical note, 2026-09-17: this originally named `scripts/gcal_add.py`, which AIS-OS #62 deleted; `scripts/gcal.py` replaces it. Add a local SQLite record for each source, item, preference revision and destination operation. A CLI submission must produce the chosen task or event and an inspectable receipt. It must also work with injected fixture transports. This complete command-line path becomes the contract Telegram uses.
 
 Keep tasks.md as the task owner and Google Calendar as the appointment owner. Include docs/tasks-systems-engineering.md and docs/tasks-asa-research.md explicitly. Seed editable preferences from Aki's examples, social plans to Calendar only, quick tasks and coding tickets to tasks only, school deadlines to both. A date alone does not select both.
 

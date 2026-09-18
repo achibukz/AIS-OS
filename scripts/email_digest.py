@@ -21,7 +21,6 @@ import argparse
 import datetime as dt
 import html
 import json
-import os
 import re
 import subprocess
 import sys
@@ -35,6 +34,7 @@ from zoneinfo import ZoneInfo
 # Add scripts directory to sys.path to import telegram_notify
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
+import gcal
 from telegram_notify import send, split_messages, TELEGRAM_LIMIT
 
 
@@ -43,18 +43,9 @@ def split_digest_message(message: str, limit: int = TELEGRAM_LIMIT) -> list[str]
     return split_messages(message, limit=limit)
 
 
-def gws_env(profile: str) -> dict[str, str]:
-    return {
-        **os.environ,
-        "GOOGLE_WORKSPACE_CLI_CONFIG_DIR": str(Path.home() / ".config" / f"gws-{profile}"),
-        "GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND": "file",
-    }
-
-
 CONFIG_DIR = Path.home() / ".config" / "achios"
 LLM_DIR = Path.home() / ".local" / "share" / "achios" / "llm"
 LOCAL_TZ = ZoneInfo("Asia/Manila")
-GWS_BIN = Path.home() / ".npm-global" / "bin" / "gws"
 AGY_BIN = Path.home() / ".local" / "bin" / "agy"
 CLAUDE_BIN = Path.home() / ".npm-global" / "bin" / "claude"
 CODEX_BIN = Path("/usr/bin/codex")
@@ -398,78 +389,61 @@ def fetch_account_emails(
     filtered_noise_count = 0
     fetch_error: str | None = None
 
-    if not GWS_BIN.is_file():
-        raise RuntimeError(f"gws binary missing: {GWS_BIN}")
+    if not gcal.GWS_BIN.is_file():
+        raise RuntimeError(f"gws binary missing: {gcal.GWS_BIN}")
     if not gws_profile:
         raise ValueError("gws profile is required")
 
-    cfg_dir = Path.home() / ".config" / f"gws-{gws_profile}"
+    cfg_dir = gcal.profile_dir(gws_profile)
     if not cfg_dir.is_dir():
         return actionable, filtered_noise_count, f"gws profile missing: {cfg_dir}"
 
     try:
-        res = subprocess.run(
-            [
-                str(GWS_BIN), "gmail", "users", "messages", "list",
-                "--params", json.dumps({"userId": "me", "q": "in:inbox is:unread newer_than:2d", "maxResults": 25})
-            ],
-            env=gws_env(gws_profile),
-            capture_output=True,
-            text=True,
+        data = gcal.gws(
+            gws_profile, "gmail", "users", "messages", "list",
+            "--params", json.dumps({"userId": "me", "q": "in:inbox is:unread newer_than:2d", "maxResults": 25}),
             timeout=10,
         )
-        if res.returncode == 0 and res.stdout.strip():
-            stdout_clean = res.stdout[res.stdout.find("{"):] if "{" in res.stdout else res.stdout
-            data = json.loads(stdout_clean)
-            messages = data.get("messages", [])
-            for m in messages:
-                mid = m.get("id", "") if isinstance(m, dict) else ""
-                if not mid:
-                    continue
-                res_m = subprocess.run(
-                    [
-                        str(GWS_BIN), "gmail", "users", "messages", "get",
-                        "--params", json.dumps({
-                            "userId": "me",
-                            "id": mid,
-                            "format": "metadata",
-                            "metadataHeaders": ["From", "Subject", "Date"]
-                        })
-                    ],
-                    env=gws_env(gws_profile),
-                    capture_output=True,
-                    text=True,
+        for m in data.get("messages", []):
+            mid = m.get("id", "") if isinstance(m, dict) else ""
+            if not mid:
+                continue
+            try:
+                msg_data = gcal.gws(
+                    gws_profile, "gmail", "users", "messages", "get",
+                    "--params", json.dumps({
+                        "userId": "me",
+                        "id": mid,
+                        "format": "metadata",
+                        "metadataHeaders": ["From", "Subject", "Date"]
+                    }),
                     timeout=10,
                 )
-                if res_m.returncode == 0 and res_m.stdout.strip():
-                    m_clean = res_m.stdout[res_m.stdout.find("{"):] if "{" in res_m.stdout else res_m.stdout
-                    msg_data = json.loads(m_clean)
-                    headers = {h["name"]: h["value"] for h in msg_data.get("payload", {}).get("headers", [])}
-                    from_hdr = sanitize_text(headers.get("From", "Unknown"))
-                    subject = sanitize_text(headers.get("Subject", "(No Subject)"))
-                    date_hdr = sanitize_text(headers.get("Date", ""))
-                    snippet = sanitize_text(msg_data.get("snippet", ""))
+            except gcal.GwsError:
+                continue
+            headers = {h["name"]: h["value"] for h in msg_data.get("payload", {}).get("headers", [])}
+            from_hdr = sanitize_text(headers.get("From", "Unknown"))
+            subject = sanitize_text(headers.get("Subject", "(No Subject)"))
+            date_hdr = sanitize_text(headers.get("Date", ""))
+            snippet = sanitize_text(msg_data.get("snippet", ""))
 
-                    if is_noise(from_hdr, subject, snippet, account_type=account_type):
-                        filtered_noise_count += 1
-                        continue
+            if is_noise(from_hdr, subject, snippet, account_type=account_type):
+                filtered_noise_count += 1
+                continue
 
-                    category = categorize_email(from_hdr, subject, snippet, account_type=account_type)
-                    sender = clean_title(clean_sender(from_hdr))
-                    clean_subj = clean_title(subject)
-                    actionable.append(
-                        EmailItem(
-                            sender=sender,
-                            subject=clean_subj,
-                            snippet=snippet[:250].strip(),
-                            category=category,
-                            date_str=date_hdr,
-                        )
-                    )
-            return actionable, filtered_noise_count, None
-        if res.returncode != 0:
-            err_msg = res.stderr.strip().split("\n")[0] if res.stderr else f"exit code {res.returncode}"
-            fetch_error = f"gws {gws_profile} error: {err_msg}"
+            category = categorize_email(from_hdr, subject, snippet, account_type=account_type)
+            sender = clean_title(clean_sender(from_hdr))
+            clean_subj = clean_title(subject)
+            actionable.append(
+                EmailItem(
+                    sender=sender,
+                    subject=clean_subj,
+                    snippet=snippet[:250].strip(),
+                    category=category,
+                    date_str=date_hdr,
+                )
+            )
+        return actionable, filtered_noise_count, None
     except Exception as exc:
         fetch_error = f"gws {gws_profile} error: {exc}"
         print(f"[WARN] gws email fetch failed for {gws_profile}: {exc}", file=sys.stderr)
@@ -867,8 +841,8 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    if not GWS_BIN.is_file():
-        print(f"gws binary missing: {GWS_BIN}", file=sys.stderr)
+    if not gcal.GWS_BIN.is_file():
+        print(f"gws binary missing: {gcal.GWS_BIN}", file=sys.stderr)
         return 1
 
     messages_to_send: list[tuple[str, str, Path | None]] = []

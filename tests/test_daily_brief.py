@@ -1,8 +1,12 @@
 import datetime as dt
+import json
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+import pytest
+
 import daily_brief as brief
+import gcal
 
 TZ = ZoneInfo("Asia/Manila")
 TODAY = dt.date(2026, 8, 16)
@@ -79,10 +83,98 @@ class TestCleaning:
         assert brief.clean_summary("Research &amp;   Writing") == "Research & Writing"
 
 
+def calendar(name, cid, profile):
+    return {"name": name, "id": cid, "profile": profile, "purpose": "", "write_owner": [], "schedule": True}
+
+
+TWO_PROFILE_CONFIG = [
+    calendar("THS-ST2", "course@group", "personal"),
+    calendar("THS-ST2 work", "course@group", "work"),
+    calendar("Personal", "personal@group", "personal"),
+    calendar("ING", "ing@group", "work"),
+]
+
+
+class FakeCalendars:
+    """Serves events per profile and calendar through a stand-in for gcal.gws."""
+
+    def __init__(self, events, failing=()):
+        self.events = events
+        self.failing = set(failing)
+
+    def __call__(self, profile, *args, timeout=30):
+        if profile in self.failing:
+            raise gcal.GwsError("error[auth]: invalid_grant", profile=profile, status=401)
+        params = json.loads(args[args.index("--params") + 1])
+        return {"items": self.events.get((profile, params["calendarId"]), [])}
+
+
+def timed(eid, title, start):
+    return {"id": eid, "summary": title, "start": {"dateTime": start}, "end": {"dateTime": start}}
+
+
+@pytest.fixture
+def two_profiles(monkeypatch):
+    monkeypatch.setattr(gcal, "load_config", lambda path=None: TWO_PROFILE_CONFIG)
+    events = {
+        ("personal", "course@group"): [timed("lec", "Lecture", "2026-08-16T09:00:00+08:00")],
+        ("work", "course@group"): [timed("lec", "Lecture", "2026-08-16T09:00:00+08:00")],
+        ("personal", "personal@group"): [
+            timed("p1", "Dinner", "2026-08-17T19:00:00+08:00"),
+            timed("p2", "DLSU Laguna closure", "2026-08-17T08:00:00+08:00"),
+        ],
+        ("work", "ing@group"): [
+            timed("w1", "Standup", "2026-08-16T10:00:00+08:00"),
+            {"id": "w2", "summary": "Enrollment", "start": {"date": "2026-08-16"}, "end": {"date": "2026-08-17"}},
+        ],
+    }
+
+    def install(failing=()):
+        monkeypatch.setattr(gcal, "gws", FakeCalendars(events, failing))
+
+    install()
+    return install
+
+
+class TestCalendarFetch:
+    START = dt.datetime(2026, 8, 16, tzinfo=TZ)
+
+    def test_duplicated_course_calendar_is_listed_once(self, two_profiles):
+        events, errors = brief.fetch_calendar_events(self.START, self.START + dt.timedelta(days=7))
+        assert [e.summary for e in events] == ["Enrollment", "Lecture", "Standup", "Dinner"]
+        assert errors == []
+        assert events[0].is_all_day and events[1].start_dt == dt.datetime(2026, 8, 16, 9, tzinfo=TZ)
+
+    def test_laguna_filter_still_applies(self, two_profiles):
+        events, _ = brief.fetch_calendar_events(self.START, self.START + dt.timedelta(days=7))
+        assert not any("Laguna" in e.summary for e in events)
+
+    def test_failing_profile_yields_a_partial_agenda_and_the_warning(self, two_profiles):
+        two_profiles(failing={"work"})
+        events, errors = brief.fetch_calendar_events(self.START, self.START + dt.timedelta(days=7))
+        assert [e.summary for e in events] == ["Lecture", "Dinner"]
+        assert errors == ["work (error[auth]: invalid_grant)"]
+        message = brief.build_daily_brief(events, [], TODAY, errors=errors)
+        assert "Partial sync warning: work (error[auth]: invalid_grant)" in message
+
+    def test_total_failure_names_every_profile(self, two_profiles):
+        two_profiles(failing={"work", "personal"})
+        events, errors = brief.fetch_calendar_events(self.START, self.START + dt.timedelta(days=7))
+        assert events == []
+        assert errors == ["personal (error[auth]: invalid_grant)", "work (error[auth]: invalid_grant)"]
+        assert "Calendar sync failed" in brief.build_daily_brief(events, [], TODAY, errors=errors)
+
+    def test_missing_calendar_config_is_a_hard_error(self, monkeypatch, tmp_path):
+        monkeypatch.setattr(gcal, "CONFIG_PATH", tmp_path / "calendars.json")
+        with pytest.raises(gcal.GcalError, match="calendars.json"):
+            brief.fetch_calendar_events(self.START, self.START + dt.timedelta(days=1))
+
+
 class TestGoogleAuthPath:
     def test_missing_gws_binary_is_a_hard_error(self, monkeypatch, tmp_path):
         missing = tmp_path / "gws"
-        monkeypatch.setattr(brief, "GWS_BIN", missing)
+        monkeypatch.setattr(gcal, "GWS_BIN", missing)
+        monkeypatch.setattr(gcal, "load_config", lambda path=None: TWO_PROFILE_CONFIG)
         start = dt.datetime(2026, 8, 16, tzinfo=TZ)
 
         try:
@@ -98,7 +190,7 @@ class TestGoogleAuthPath:
         for banned in ("google.oauth2", "googleapiclient", "google.auth"):
             assert banned not in source
 
-    def test_calendar_fetch_never_accesses_token_files(self, monkeypatch):
+    def test_calendar_fetch_never_accesses_token_files(self, monkeypatch, two_profiles):
         opened_files = []
         real_open = Path.open
 

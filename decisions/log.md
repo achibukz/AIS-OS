@@ -1595,3 +1595,13 @@ Why: Gmail web links cannot be constructed reliably across multiple Google accou
 Alternatives considered: leaving dormant `message_id` and `thread_id` fields on `EmailItem`, rejected because nothing else reads them and keeping them creates misleading dead state.
 
 Owner: Aea for implementation, Luna for review.
+
+## 2026-09-17, one Calendar client with owner lists
+
+**Decision:** `scripts/gcal.py` is the only Google Calendar client. Calendars are named in the private `~/.config/achios/calendars.json`, where `write_owner` is a list of `asa`, `asta` and `cohesion`. Cohesion names calendars instead of passing raw IDs, and `gcal_add.py` is deleted with no wrapper.
+
+**Why:** Personal is written by Asa and by cohesion's social plans. A single owner per calendar would refuse one of them, while the event-level `achios_owner` already keeps each writer to its own events.
+
+**Alternatives considered:** a single owner per calendar; exempting cohesion from the calendar owner check.
+
+**Owner:** Aki
