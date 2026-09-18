@@ -1,5 +1,18 @@
 # Session Log
 
+## 2026-09-18 13:05 PHT [saved]
+
+Goal: record DLSU ESH document release (Ref: RFD-012572) into school tasks and DLSU calendar.
+
+Decisions:
+
+- Submitted linked school deadline via `cohesion.py submit` for 2026-09-29 to both [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) and Google Calendar `DLSU` (`smm4dmf5g0j9lsjuq7pp2fk2ok@group.calendar.google.com`) under `personal` profile.
+- Recorded task line `- [ ] Claim requested documents at DLSU ESH (Ref: RFD-012572) #school !med #ESH @2026-09-29 <!-- task-id: task_4664ef9cc11a1bdbd83e17a4 -->`.
+
+Verification:
+
+- Cohesion returned applied for both `calendar` (`event_id`: `a4664ef9cc11a1bdbd83e17a4c868f82`) and `tasks` (`task_id`: `task_4664ef9cc11a1bdbd83e17a4`).
+
 ## 2026-09-17 22:26 PHT [saved]
 
 Goal: repair [PR #78](https://github.com/achibukz/AIS-OS/pull/78) after Luna's SHIP WITH FIXES review (1 blocker, 4 should-fix, 4 nits).
