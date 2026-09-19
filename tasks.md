@@ -95,6 +95,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Discuss how to do smart model routing in daily conversations in Telegram for achiCore #achicore #planning !med
 
 ## Done
+- [x] Submit STDISCM Too Much Milk homework #school #STDISCM !high @2026-09-19 (done 2026-09-19)
 - [x] Remove broken Gmail links from email digest, filed as [AIS-OS #57](https://github.com/achibukz/AIS-OS/issues/57) #systems #bug !high (done 2026-09-17)
 - [x] Complete CCINOV8 Self-Assessment Test #school #CCINOV8 !high @2026-09-15 (done 2026-09-15)
 
