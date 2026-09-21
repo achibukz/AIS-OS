@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 
 import pytest
 
@@ -53,6 +54,53 @@ def test_send_is_explicit_and_uses_writer_lock(tmp_path, monkeypatch, capsys):
     assert calls == [1]
     assert canvas.main(["sync", "--send"]) == 1
     assert json.loads(capsys.readouterr().err)["error"] == "send_requires_deliver"
+
+
+def test_task_activation_requires_a_bounded_preview_and_explicit_course(tmp_path, capsys):
+    path = tmp_path / "cache.sqlite3"
+    config = tmp_path / "config"
+    now = datetime.now(timezone.utc).isoformat()
+    with open_writer(path) as db:
+        configure_courses(db, MAPPING)
+        save_snapshot(
+            db,
+            42,
+            "assignments",
+            [assignment(submission_status="unsubmitted", submitted_at=None)],
+            now,
+        )
+
+    args = ["--config", str(config), "--db", str(path), "--course", "STDISCM"]
+    assert canvas.main(args + ["tasks-preview"]) == 0
+    preview = json.loads(capsys.readouterr().out)
+    assert preview["active"] is False and preview["eligible_assignments"] == 1
+
+    assert canvas.main(["--config", str(config), "--db", str(path), "tasks-activate"]) == 1
+    assert json.loads(capsys.readouterr().err)["error"] == "tasks_activation_requires_course"
+    assert canvas.main(args + ["tasks-activate"]) == 0
+    activated = json.loads(capsys.readouterr().out)
+    assert activated["activated"] is True and activated["queued"] == 1
+
+
+def test_tasks_reconcile_uses_the_writer_lock_and_reports_destinations(
+    tmp_path, monkeypatch, capsys
+):
+    path = tmp_path / "cache.sqlite3"
+    config = tmp_path / "config"
+    with open_writer(path):
+        pass
+
+    def fake_reconcile(db):
+        with pytest.raises(CanvasError, match="busy"):
+            from canvas_client import writer_lock
+            with writer_lock(config):
+                pytest.fail("task reconciliation is not serialized")
+        return {"task_applied": 1, "calendar_applied": 0, "remaining": 0}
+
+    monkeypatch.setattr(canvas, "reconcile_tasks", fake_reconcile)
+    assert canvas.main(["--config", str(config), "--db", str(path), "tasks-reconcile"]) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result == {"task_applied": 1, "calendar_applied": 0, "remaining": 0}
 
 
 @pytest.fixture

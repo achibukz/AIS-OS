@@ -118,7 +118,9 @@ def test_remind_runs_between_sync_and_delivery_even_after_a_failed_sync(online, 
     Client.error = "authentication_expired"
     code, report = scheduled(args, capsys)
     assert code == 0
-    assert list(report) == ["at", "sync", "remind", "delivery"]
+    assert list(report) == ["at", "sync", "tasks", "remind", "delivery"]
+    assert report["tasks"]["task_applied"] == 0
+    assert report["tasks"]["calendar_applied"] == 0
     assert quiet_reminders == [1]
 
 

@@ -18,6 +18,22 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-22 — Activate Canvas task reconciliation per course
+
+**Decision:** Require a bounded preview and explicit activation for each mapped
+course. Assignments and high-confidence announcement tasks then reconcile through
+stable cohesion item IDs and versioned Canvas operations.
+
+**Why:** A first sync can contain a full term of historical work. Activation
+prevents that baseline from becoming an accidental backlog while preserving later
+title, deadline and completion changes. Announcement extraction requires an action,
+a deadline phrase and an explicit date.
+
+**Alternatives considered:** Enabling every mapped course on deployment, which can
+create historical tasks, and using notification delivery as task success, which
+cannot prove either destination changed.
+
+**Owner:** Aki.
 ## 2026-09-22 — Match Asta summaries and food records to provider contracts
 
 **Decision:** Use normalized Calendar `event_id` values for adherence and limit

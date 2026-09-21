@@ -9,7 +9,7 @@ import pytest
 
 from canvas_client import CanvasError
 from canvas_store import (configure_courses, open_reader, open_writer, project_record, query,
-                          save_auth, save_failure, save_snapshot)
+                          save_auth, save_failure, save_snapshot, SCHEMA, NOTICES)
 from canvas_sync import sync
 
 AT = "2026-09-08T10:00:00+00:00"
@@ -101,6 +101,22 @@ def test_read_only_open_does_not_create_database_or_sidecars(tmp_path):
         with pytest.raises(sqlite3.OperationalError):
             db.execute("DELETE FROM records")
     assert {p.name: p.read_bytes() for p in tmp_path.iterdir()} == before
+
+
+def test_version_two_cache_migrates_task_reconciliation_tables(tmp_path):
+    path = tmp_path / "cache.sqlite3"
+    connection = sqlite3.connect(path)
+    connection.executescript(SCHEMA + NOTICES)
+    connection.close()
+
+    with open_writer(path) as db:
+        assert db.execute("PRAGMA user_version").fetchone()[0] == 3
+        tables = {
+            row[0]
+            for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        }
+
+    assert {"canvas_task_activation", "canvas_task_ops", "canvas_task_links"} <= tables
 
 
 def test_queries_under_actual_achicore_write_boundary(tmp_path):

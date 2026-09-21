@@ -1,5 +1,37 @@
 # Session Log
 
+## 2026-09-22 03:04 PHT [saved]
+
+Goal: implement AIS-OS #47 and the approved extension that extracts explicit
+tasks from Canvas announcements.
+
+Decisions:
+
+- A mapped course requires a read-only bounded preview and an explicit
+  `tasks-activate --course` before existing current-term assignments enter the
+  reconciliation queue. Historical baselines remain silent.
+- Course ID, Canvas item type and Canvas item ID derive the stable cohesion item
+  identity. A separate monotonic source revision records every title, due-date
+  and submission-state change, including A to B to A transitions.
+- Submitted, graded, completed, excused, active and unknown remain distinct in
+  Canvas operation records. Unknown states and missing due dates create no
+  destination write.
+- Announcement extraction requires an action phrase, a deadline phrase and an
+  explicit date. Ambiguous announcement prose remains notification data only.
+- The scheduled run reconciles task operations after sync and before reminders.
+  Task, Calendar and notification delivery counts stay separate. A successful
+  notice never marks task creation successful.
+- Calendar creation checks for a matching imported or unowned event and leaves
+  that destination pending instead of duplicating or mutating it.
+
+Verification:
+
+- Focused Canvas, cohesion, CLI, reminder and scheduler tests passed with 163
+  tests and the existing unregistered-mark warning.
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed with 691
+  tests and the same existing warning.
+- Live isolated acceptance remains pending.
+
 ## 2026-09-22 12:20 PHT [saved]
 
 Goal: repair [PR #79](https://github.com/achibukz/AIS-OS/pull/79) after Luna's

@@ -1,6 +1,6 @@
 # Canvas client, cache and notifications
 
-This implements the source work for [#26](https://github.com/achibukz/AIS-OS/issues/26), [#28](https://github.com/achibukz/AIS-OS/issues/28) and [#29](https://github.com/achibukz/AIS-OS/issues/29). Phone login is [#27](https://github.com/achibukz/AIS-OS/issues/27) and hub integration is [achiCore #173](https://github.com/achibukz/achiCore/issues/173). The 30-minute timer from [#30](https://github.com/achibukz/AIS-OS/issues/30) is described under [Scheduled sync](#scheduled-sync).
+This implements the source work for [#26](https://github.com/achibukz/AIS-OS/issues/26), [#28](https://github.com/achibukz/AIS-OS/issues/28), [#29](https://github.com/achibukz/AIS-OS/issues/29) and linked-task reconciliation from [#47](https://github.com/achibukz/AIS-OS/issues/47). Phone login is [#27](https://github.com/achibukz/AIS-OS/issues/27) and hub integration is [achiCore #173](https://github.com/achibukz/achiCore/issues/173). The 30-minute timer from [#30](https://github.com/achibukz/AIS-OS/issues/30) is described under [Scheduled sync](#scheduled-sync).
 
 Run commands from the AIS-OS checkout with its existing requests dependency, or use `uv run --with requests python scripts/canvas.py ...`.
 
@@ -18,6 +18,9 @@ python scripts/canvas.py assignments --course STDISCM --limit 20 --offset 0
 python scripts/canvas.py detail --course STDISCM --id 123
 python scripts/canvas.py grades --course STDISCM
 python scripts/canvas.py announcements --course STDISCM
+python scripts/canvas.py tasks-preview --course STDISCM
+python scripts/canvas.py tasks-activate --course STDISCM
+python scripts/canvas.py tasks-reconcile
 python scripts/canvas.py deliver
 ```
 
@@ -57,6 +60,47 @@ Each course/category's first successful snapshot is silent. Later new assignment
 
 An SQLite sequence gives each event its own durable ID. Repeated A to B to A to B changes retain both A to B events. Re-fetching the same snapshot does not create another event. Delivery marks an event uncertain before sending and records success only after the shared sender returns success. A crash after sending but before recording success can cause a duplicate on retry. A failed send preserves the event and lets later events in the batch proceed. Batches select the least-attempted events first, then event ID, so repeatedly rejected events cannot keep new alerts beyond the first 50 waiting forever. The result names failed event IDs and stays nonzero while the batch has failures. A positive shared-sender receipt confirms delivery even if the sender split the message into several parts. No model calls occur in these operations.
 
+## Linked tasks and announcement extraction
+
+Canvas task reconciliation starts only after an operator activates one mapped
+current-term course. Preview is read only and shows at most 25 eligible items:
+
+```bash
+python scripts/canvas.py tasks-preview --course STDISCM
+python scripts/canvas.py tasks-activate --course STDISCM
+```
+
+Activation refuses missing, failed or stale assignment coverage. It queues
+active assignments with verified due dates and reports submitted, graded,
+completed, excused, unknown and missing-due assignments separately. The first
+course baseline remains silent until this explicit activation, so deployment
+does not turn historical courses into a task backlog.
+
+Course ID, Canvas item type and Canvas item ID derive one stable cohesion item
+ID. Each observed change gets a monotonic source revision. Replaying a snapshot,
+retrying a notification or changing a title does not create another task.
+Due-date changes and supported completion evidence update the linked item.
+Unknown states, missing dates and manual conflicts remain pending without
+inventing a change.
+
+New announcements can produce linked school tasks when the stored title or body
+contains an action word, a deadline word and an explicit ISO or month-name date.
+An announcement that lacks any of those parts remains an announcement. This
+conservative rule avoids treating every mentioned date as a commitment. The
+activation preview shows extracted announcement tasks before the course is
+enabled.
+
+The scheduled service runs `tasks-reconcile` after sync and before reminders.
+Its JSON names `task_applied`, `calendar_applied`, `pending` and `conflicts`.
+Notification delivery remains a separate `delivery` result. A sent notice does
+not mark a task operation applied. Partial task and Calendar writes retry only
+the pending destination through the cohesion receipt.
+
+Before inserting a new Calendar deadline, cohesion checks the configured
+calendar for a matching title and start. It refuses a matching imported or
+unowned event, and it never mutates that event. Existing cohesion-owned events
+continue through their stable event ID and ownership fields.
+
 Synthetic preview from the regression fixtures, not a live class notification:
 
 ```text
@@ -93,7 +137,13 @@ Email notifications from `email_digest.py` are unchanged until direct sync has s
 
 ### Reminders and digests
 
-Between `sync` and `deliver --send` the service runs `canvas.py remind` ([#37](https://github.com/achibukz/AIS-OS/issues/37)). It takes `writer.lock`, reads the cache and queues notices as ordinary events, so they share delivery, retry and the uncertain state. It runs after a failed sync too, which keeps reminders coming from saved facts during an outage. Unfinished work uses the same rule as `--unfinished`. Times are Asia/Manila.
+Between `sync` and `deliver --send` the service runs `canvas.py tasks-reconcile`
+and then `canvas.py remind` ([#37](https://github.com/achibukz/AIS-OS/issues/37)).
+Each command takes `writer.lock`. Reconciliation consumes durable Canvas
+operations, while reminders queue notices as ordinary events. Both run after a
+failed sync, using the last complete facts without treating the failed fetch as
+a deletion. Unfinished work uses the same rule as `--unfinished`. Times are
+Asia/Manila.
 
 | Notice | When | Messages |
 |---|---|---|
@@ -103,7 +153,14 @@ Between `sync` and `deliver --send` the service runs `canvas.py remind` ([#37](h
 | 3h reminder | Due in at most 3 hours and more than 1 hour | One per assignment and due date |
 | 1h reminder | Due in at most 1 hour | One per assignment and due date |
 
-Empty weeks and days still send "nothing due". The run that sends the catch-up claims that day's digest without sending it. Schema version 2 adds `notices(key, created_at)`; each claimed key commits with its events. Keys are `catchup:v1`, `weekly:<ISO year-week>`, `daily:<date>` and `reminder:<course>:<assignment>:<due_at>:<3h|1h>`. A changed due date is a new key, so its reminders re-arm. Only current windows count, so downtime never replays a missed day or an elapsed reminder. Writers migrate version 1 caches; readers accept both.
+Empty weeks and days still send "nothing due". The run that sends the catch-up
+claims that day's digest without sending it. Schema version 2 added
+`notices(key, created_at)`. Version 3 adds Canvas task activation, operations
+and links. Writers migrate older caches, and readers accept versions 1 through
+3. Reminder keys are `catchup:v1`, `weekly:<ISO year-week>`, `daily:<date>` and
+`reminder:<course>:<assignment>:<due_at>:<3h|1h>`. A changed due date is a new
+key, so its reminders re-arm. Only current windows count, so downtime never
+replays a missed day or an elapsed reminder.
 
 Deadline messages are a countdown, soonest first, rendered when sent rather than when queued. Every Canvas message, change alerts included, uses the cron layout: a 33-dash separator, a bold header, then the body, with no emojis. Delivery sends Telegram HTML through `send(..., html=True)`; other senders stay plain text. Every assignment, announcement, grade or other Canvas item ends with a `[link]` to its stored `source_url`, and all Canvas text is HTML-escaped. Auth notices name no item and carry no link. As rendered in Telegram:
 
@@ -124,7 +181,9 @@ python scripts/canvas.py --config "$tmp/config" --db "$tmp/cache.sqlite3" remind
 python scripts/canvas.py --config "$tmp/config" --db "$tmp/cache.sqlite3" deliver
 ```
 
-Roll back by redeploying the previous `canvas_scheduled.py`. The `notices` table can stay; a version 2 cache still serves reads.
+Older reader code rejects schema version 3. A code rollback must restore the
+database backup taken before activation, then redeploy the previous
+`canvas_scheduled.py`.
 
 ### Preview, deploy and rollback
 
