@@ -1,0 +1,9 @@
+[Unit]
+Description=Nightly Asta database backup
+
+[Timer]
+OnCalendar=*-*-* 02:30:00 Asia/Manila
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1605,3 +1605,17 @@ Owner: Aea for implementation, Luna for review.
 **Alternatives considered:** a single owner per calendar; exempting cohesion from the calendar owner check.
 
 **Owner:** Aki
+
+## 2026-09-21 Asta combined release
+
+Decision: prepare one Asta PR per repository covering the first usable release,
+instead of one PR per ticket. Astra owns Asta implementation. Luna Max workers
+handle capture/reconciliation, Canvas tasks and semantic preferences separately.
+
+Why: keep profile, nutrient arithmetic and correction contracts under one owner
+and review the usable flow together. Cross-repository code requires companion PRs.
+
+Alternatives: individual PRs per Asta ticket, or including Apple Health and later
+provider integrations in this release. Apple Health remains a follow-up.
+
+Owner: Aki approved the combined approach; Astra implements and verifies it.

@@ -112,3 +112,10 @@ Added 2026-08-29 at `/home/achibukz/.codex/hooks.json`. A SessionStart command p
 ## Telegram deployment testing hub
 
 Testing Grounds is a separate private forum and bot used for achiCore PR acceptance. Its config is `/home/achibukz/.local/state/achicore-test/operator/staging-config.json`; secrets stay there. The root is `/home/achibukz/Code/GitHub/achicore-test-153-20260905`, and the console uses tmux socket `achicore-test`, session `bot`. Verify ownership, current candidate and active jobs before reuse. Use [assisted-live-testing](http://100.106.210.38:8999/.config/skillshare/skills/assisted-live-testing/SKILL.md); its Telegram reference owns the full inventory and lifecycle procedure. This entry records an existing integration, not a newly deployed service.
+
+## Asta release under review
+
+The Asta branch adds private SQLite nutrition records, cached USDA food search,
+workout-calendar reads, topic-directed daily summaries and nightly backups.
+USDA credentials, the private staples seed and Telegram delivery configuration
+are operator setup. The new timers are not installed or live-verified.

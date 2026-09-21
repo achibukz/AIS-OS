@@ -1,0 +1,10 @@
+[Unit]
+Description=Asta daily
+OnFailure=achios-failure-alert@%n.service
+
+[Service]
+Type=oneshot
+Environment=PATH=%h/.npm-global/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/.local/share/achios/venv/bin/python @REPO@/scripts/asta_daily.py
+TimeoutStartSec=5min
+UMask=0077
