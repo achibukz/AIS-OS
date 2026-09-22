@@ -1,0 +1,7 @@
+{
+  "needs_answer_identity": 0.6,
+  "needs_answer_kcal": 250,
+  "needs_answer_fraction": 0.4,
+  "flagged_kcal": 120,
+  "flagged_fraction": 0.2
+}

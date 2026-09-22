@@ -18,6 +18,22 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-22 — Match Asta summaries and food records to provider contracts
+
+**Decision:** Use normalized Calendar `event_id` values for adherence and limit
+each summary query to that day's session IDs. For USDA energy, prefer nutrient
+1008 and fall back to 2047, then 2048.
+
+**Why:** The Calendar normalizer never emits `id`, so completed sessions appeared
+unanswered. USDA Foundation records can omit 1008 while reporting energy through
+2047 or 2048, which caused valid food records to be dropped.
+
+**Alternatives considered:** Reading raw Calendar payload fields in the summary,
+which would couple it to the provider response, and accepting foods with missing
+macros, which would turn absent nutrition data into misleading meal totals.
+
+**Owner:** Aea.
+
 ## 2026-09-17 — Classify owned PR state before /ToWork issue validation
 
 **Decision:** Track the stale-card repair as achiCore #225. Its recovery flow must inspect the recorded owned PR before requiring an open issue, and must distinguish Resume from a fresh attempt in the card UI.
@@ -1605,3 +1621,17 @@ Owner: Aea for implementation, Luna for review.
 **Alternatives considered:** a single owner per calendar; exempting cohesion from the calendar owner check.
 
 **Owner:** Aki
+
+## 2026-09-21 Asta combined release
+
+Decision: prepare one Asta PR per repository covering the first usable release,
+instead of one PR per ticket. Astra owns Asta implementation. Luna Max workers
+handle capture/reconciliation, Canvas tasks and semantic preferences separately.
+
+Why: keep profile, nutrient arithmetic and correction contracts under one owner
+and review the usable flow together. Cross-repository code requires companion PRs.
+
+Alternatives: individual PRs per Asta ticket, or including Apple Health and later
+provider integrations in this release. Apple Health remains a follow-up.
+
+Owner: Aki approved the combined approach; Astra implements and verifies it.

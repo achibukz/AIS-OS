@@ -1,5 +1,43 @@
 # Session Log
 
+## 2026-09-22 12:20 PHT [saved]
+
+Goal: repair [PR #79](https://github.com/achibukz/AIS-OS/pull/79) after Luna's
+SHIP WITH FIXES review and keep its contracts matched to companion
+[achiCore PR #231](https://github.com/achibukz/achiCore/pull/231).
+
+Decisions:
+
+- Daily summaries now use `event_id`, the field emitted by `gcal.normalize_event`,
+  and read adherence only for sessions in that day's Calendar result.
+- USDA food results prefer nutrient 1008 for energy and fall back to 2047, then
+  2048. Protein, carbohydrate and fat remain required.
+- The owned backup directory is reset to mode `0700` by design. Tests model a
+  file-creation refusal and assert that existing verified backups survive it.
+- [The Asta live checklist](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/live-tests/asta-release.md)
+  now includes the assisted-testing environment, boundaries, evidence outputs
+  and a copyable invocation for both connected PRs.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests/test_asta.py -q` passed
+  59 tests.
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed 727 tests
+  with one existing unknown-marker warning. Live acceptance remains pending.
+
+## 2026-09-22 02:14 [saved]
+
+Built the Asta CLI, profile and target history, food lookup, meal ranges and
+corrections, photo retention, daily summary and backups in an isolated worktree.
+The companion achiCore branch updates Calendar commands and adds /mealcheck.
+
+Aki approved combining Asta tickets and proceeding with Canvas announcement
+extraction and semantic learning. Existing main-checkout edits are untouched.
+
+Automated verification is recorded in the PR. Live acceptance, deployment,
+onboarding import and timer installation remain pending. No private health
+records were copied into the repository.
+
 ## 2026-09-19 17:56 PHT [saved]
 
 Goal: record completion of STDISCM Too Much Milk homework.

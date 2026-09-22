@@ -102,7 +102,7 @@ def split_messages(message: str, limit: int = TELEGRAM_LIMIT) -> list[str]:
     return chunks
 
 
-def send(*messages: str, env_path: Path | str | None = None, html: bool = False) -> int:
+def send(*messages: str, env_path: Path | str | None = None, html: bool = False, thread_id: int | None = None) -> int:
     """Send each message, splitting any that exceed Telegram's limit.
 
     `html` sends with Telegram's HTML parse mode, so the caller must escape its
@@ -115,11 +115,11 @@ def send(*messages: str, env_path: Path | str | None = None, html: bool = False)
     token, chat_id = load_config(env_path=env_path)
     parts = [part for message in messages for part in split_messages(message)]
     for part in parts:
-        _send_one(requests, token, chat_id, part, html)
+        _send_one(requests, token, chat_id, part, html, thread_id=thread_id)
     return len(parts)
 
 
-def _send_one(requests, token: str, chat_id: str, part: str, html: bool = False) -> None:
+def _send_one(requests, token: str, chat_id: str, part: str, html: bool = False, thread_id: int | None = None) -> None:
     """Post one message, retrying only what a retry can actually fix.
 
     Network errors, 429 and 5xx are transient, so they are retried with a growing
@@ -129,6 +129,10 @@ def _send_one(requests, token: str, chat_id: str, part: str, html: bool = False)
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     last_error = ""
     payload = {"chat_id": chat_id, "text": part, "disable_web_page_preview": True}
+    if thread_id is not None:
+        if type(thread_id) is not int or thread_id <= 0:
+            raise ValueError('Invalid Telegram thread ID')
+        payload['message_thread_id'] = thread_id
     if html:
         payload["parse_mode"] = "HTML"
 
