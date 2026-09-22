@@ -260,6 +260,30 @@ def test_food_search_order_cache_and_local_fallback(db, food, tmp_path):
     assert len(result['foods']) == 2
 
 
+@pytest.mark.parametrize('energy_id', [2047, 2048])
+def test_food_search_accepts_alternate_usda_energy_nutrients(db, food, tmp_path, energy_id):
+    import asta_food
+    key = tmp_path / 'key'
+    key.write_text('fixture-key')
+    class Response:
+        def raise_for_status(self):
+            pass
+        def json(self):
+            nutrients = [
+                {'nutrientId': nutrient_id, 'value': food['per_100g'][name]}
+                for name, nutrient_id in asta_food.NUTRIENTS.items()
+                if name != 'kcal'
+            ]
+            nutrients.append({'nutrientId': energy_id, 'value': food['per_100g']['kcal']})
+            return {'foods': [{'fdcId': energy_id, 'description': 'rice',
+                               'foodNutrients': nutrients}]}
+    result = asta_food.search(
+        db, 'rice', tmp_path / 'absent', key, transport=lambda *args, **kwargs: Response(),
+    )
+    assert result['foods'][0]['per_100g']['kcal'] == food['per_100g']['kcal']
+    assert result['warnings'] == []
+
+
 @pytest.mark.parametrize('error', ['timeout', 'http', 'malformed'])
 def test_food_network_failure_is_visible(db, tmp_path, error):
     import asta_food
@@ -334,12 +358,22 @@ def test_question_leaves_attachment(db, food, tmp_path):
 def test_rollup_and_adherence(db, food):
     import asta_daily
     import asta_meals
+    import gcal
     asta_meals.add(db, meal())
     asta_meals.add(db, meal(139, 200, 260))
     asta_daily.adherence_set(db, 'session1', 'skipped')
     asta_daily.adherence_set(db, 'session1', 'done')
+    asta_daily.adherence_set(db, 'old-session', 'skipped')
+    calendar = {'name': 'workouts', 'id': 'workouts@example.test', 'profile': 'personal'}
+    def event(event_id, title, hour):
+        return gcal.normalize_event(calendar, {
+            'id': event_id,
+            'summary': title,
+            'start': {'dateTime': f'2026-09-21T{hour:02d}:00:00+08:00'},
+            'end': {'dateTime': f'2026-09-21T{hour + 1:02d}:00:00+08:00'},
+        })
     result = asta_daily.today(db, '2026-09-21', lambda _: {'status': 'ok', 'events': [
-        {'id': 'session1', 'title': 'Lifting'}, {'id': 'session2', 'title': 'Climbing'}]})
+        event('session1', 'Lifting', 8), event('session2', 'Climbing', 10)]})
     assert result['totals']['kcal']['estimate'] == 400
     assert result['flagged_count'] == 1
     assert len(result['adherence']) == 1
@@ -407,7 +441,7 @@ def test_backup_during_writes(tmp_path):
         thread.join(5)
 
 
-def test_backup_unwritable_target(tmp_path, monkeypatch):
+def test_backup_create_failure_preserves_existing_copy(tmp_path, monkeypatch):
     import asta_backup
     source = tmp_path / 'db'
     with open_store(source):

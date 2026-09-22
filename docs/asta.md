@@ -103,7 +103,10 @@ that the configured chat and thread currently bind to `asta` in the hub's
 
 The daily timer runs at 21:00 Manila. The backup timer runs at 02:30 Manila and
 keeps the newest 14 verified SQLite backups. A failed backup does not prune old
-copies. Both use the existing service failure alert. Unit files are supplied but
+copies. The backup process owns its target directory and resets its mode to `0700`
+before every run. A mode such as `0500` on that owned directory is repaired, while
+an actual file-creation failure aborts the run and preserves existing backups.
+Both use the existing service failure alert. Unit files are supplied but
 are not enabled by this change. Provision the database and delivery config before
 installing the timers through the existing unit installer. That installer affects
 all repository timers, so inspect the deployment first.

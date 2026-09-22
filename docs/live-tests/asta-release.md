@@ -39,3 +39,28 @@ state and first backup. Apple Health is not part of this release.
 Cleanup removes only recorded staging artifacts. Keep production databases and
 retained photos. Disable staging timers and restore any recorded staging
 configuration. A pass means ready for the user's merge decision, not merged.
+
+## Assisted feature live testing
+
+- Candidate: AIS-OS PR #79 and achiCore PR #231. Fill the two full head SHAs
+  above from GitHub immediately before the run. A changed head needs a new run.
+- Environment: an isolated Asta topic, database, attachment root, bot, chat and
+  `workouts` test calendar owned by the tester.
+- Assistant prepares: verify both heads, run the automated baselines, inspect
+  redacted configuration status, create test fixtures and watch logs and state.
+- Human performs: send the Telegram meal, photo, schedule and Calendar actions
+  in the table and judge whether Asta's replies match the stored results.
+- Cases: every row in this checklist, including summary delivery, backup restore,
+  uncertain meals, declined Calendar writes and the `/mealcheck` correction loop.
+- Test models: record the actual Asta engine, model and effort. Use the staged
+  topic's configured product model without substituting another model silently.
+- Boundaries: writes may touch only the isolated database, retained test photos,
+  staging topic and test Calendar events. Do not change production bindings,
+  credentials or timers. Do not merge either PR. Stop on a destination mismatch,
+  invented success or loss of the original meal estimate.
+- Outputs: save a redacted Markdown interaction and evidence record outside both
+  checkouts, then post a concise result comment on each tested PR.
+
+Invocation after filling the two head fields above:
+
+> Use assisted-live-testing for AIS-OS PR https://github.com/achibukz/AIS-OS/pull/79 at the AIS-OS head recorded in its checklist and achiCore PR https://github.com/achibukz/achiCore/pull/231 at the achiCore head recorded in the same checklist. Verify every case in `docs/live-tests/asta-release.md` in the isolated Asta environment described there. Record the actual Asta engine, model and effort. Prepare all baseline checks, fixtures and observation tools, then guide me one step at a time through the Telegram, phone and Calendar actions. Verify my results against logs, stored state and CLI output. You may write only to the isolated Asta database, retained test photos, staging topic and test Calendar events. Stop before production changes, timer installation, merging or any destination mismatch. Save a redacted Markdown record with receipts and post the result as a comment on both PRs. Keep simulated and live evidence separate, and leave every unverified criterion open.

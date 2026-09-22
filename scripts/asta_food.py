@@ -9,6 +9,7 @@ import requests
 from asta_store import AstaError, encoded, now, safe_path
 
 NUTRIENTS = {'kcal': 1008, 'protein': 1003, 'carbs': 1005, 'fat': 1004}
+ENERGY_NUTRIENTS = (1008, 2047, 2048)
 
 
 def validate_food(food):
@@ -81,12 +82,18 @@ def search(db, query, seed_path, key_path, at=None, transport=None):
                     raise AstaError('usda_response_invalid')
                 nutrients = {n['nutrientId']: n['value'] for n in food.get('foodNutrients', [])
                              if isinstance(n, dict) and 'nutrientId' in n and 'value' in n}
-                if not set(NUTRIENTS.values()) <= nutrients.keys():
+                energy_id = next((value for value in ENERGY_NUTRIENTS if value in nutrients), None)
+                macro_ids = {value for name, value in NUTRIENTS.items() if name != 'kcal'}
+                if energy_id is None or not macro_ids <= nutrients.keys():
                     warnings.append('usda_food_missing_nutrients')
                     continue
                 record = {'id': 'usda:' + str(food['fdcId']), 'source_id': str(food['fdcId']),
                           'label': food['description'], 'source': 'usda',
-                          'per_100g': {k: nutrients[v] for k, v in NUTRIENTS.items()}}
+                          'per_100g': {
+                              **{name: nutrients[value] for name, value in NUTRIENTS.items()
+                                 if name != 'kcal'},
+                              'kcal': nutrients[energy_id],
+                          }}
                 remote.append(validate_food(record))
             with db:
                 db.execute('INSERT OR REPLACE INTO food_cache VALUES(?,?,?)',

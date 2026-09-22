@@ -35,11 +35,21 @@ def today(db, on, calendar_reader=None):
     except (gcal.GcalError, OSError, ValueError, TimeoutError, subprocess.TimeoutExpired):
         calendar = {'events': []}
         warnings.append('calendar_unavailable')
+    calendar_sessions = calendar.get('events', [])
+    event_ids = [event.get('event_id') for event in calendar_sessions
+                 if isinstance(event, dict) and event.get('event_id')]
+    if event_ids:
+        placeholders = ','.join('?' for _ in event_ids)
+        adherence = [dict(row) for row in db.execute(
+            f'SELECT * FROM adherence WHERE event_id IN ({placeholders})', event_ids,
+        )]
+    else:
+        adherence = []
     return {'status': 'ok', 'date': on, 'totals': totals, 'meal_count': len(meals),
             'flagged_count': sum(m['status'] == 'flagged' for m in meals),
             'targets': latest(db, 'targets'), 'weight': weight_trend(db, on),
-            'sessions': calendar.get('events', []), 'warnings': warnings,
-            'adherence': [dict(r) for r in db.execute('SELECT * FROM adherence')],
+            'sessions': calendar_sessions, 'warnings': warnings,
+            'adherence': adherence,
             'latest_meal_at': max((m['occurred_at'] for m in meals), default=None)}
 
 
@@ -73,7 +83,7 @@ def render(data):
     adherence = {r['event_id']: r['state'] for r in data['adherence']}
     for event in data['sessions']:
         title = event.get('summary', event.get('title', 'Scheduled session'))
-        state = adherence.get(event.get('id'))
+        state = adherence.get(event.get('event_id'))
         lines.append(f"{title}: {state or 'done, skipped or moved?'}")
     return '\n'.join(lines)
 
