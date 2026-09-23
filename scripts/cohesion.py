@@ -22,6 +22,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
 import gcal
+from owned_persist import Persister
 from task_engine import PRIMARY_AREAS
 
 CONTRACT_VERSION = 1
@@ -158,11 +159,13 @@ class CohesionService:
         tasks_path: Path = DEFAULT_TASKS,
         calendar: CalendarTransport | None = None,
         calendars_path: Path | None = None,
+        persister: Persister | None = None,
     ):
         self.db_path = Path(db_path)
         self.tasks_path = Path(tasks_path)
         self.calendars_path = calendars_path
         self.calendar = calendar or GwsCalendarTransport()
+        self.persister = persister
         self.db_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         self._initialize()
         self.db_path.chmod(0o600)
@@ -677,7 +680,14 @@ class CohesionService:
         else:
             line = f"- [ ] {operation['title']} {metadata} {marker}"
         if current == line:
-            return {"task_id": task_id}, _content_hash(line)
+            result = {"task_id": task_id}
+            if self.persister is not None:
+                persistence = self.persister.resume(
+                    self.tasks_path, operation_id=operation["operation_id"]
+                )
+                if persistence is not None:
+                    result["persistence"] = persistence
+            return result, _content_hash(line)
         if _line_version(current) != operation["destination_version"]:
             raise ConcurrentEdit("the task line changed after the last applied operation")
         if operation["action"] == "complete":
@@ -697,7 +707,18 @@ class CohesionService:
             lines.insert(active_index + 1, line)
         updated = "\n".join(lines) + ("\n" if content.endswith("\n") else "")
         self._write_tasks(updated)
-        return {"task_id": task_id}, _content_hash(line)
+        result = {"task_id": task_id}
+        if self.persister is not None:
+            persistence = self.persister.persist_file(
+                self.tasks_path,
+                content,
+                updated,
+                operation_id=operation["operation_id"],
+                message=f"tasks: {operation['action']} {operation['title']}\n",
+            )
+            if persistence is not None:
+                result["persistence"] = persistence
+        return result, _content_hash(line)
 
     def _write_tasks(self, content: str) -> None:
         descriptor, temporary_name = tempfile.mkstemp(
@@ -857,7 +878,12 @@ def main(argv: list[str] | None = None) -> int:
     submit_parser.add_argument("--input", default="-", help="JSON file or - for stdin")
     args = parser.parse_args(argv)
 
-    service = CohesionService(db_path=args.db, tasks_path=args.tasks, calendars_path=args.calendars)
+    service = CohesionService(
+        db_path=args.db,
+        tasks_path=args.tasks,
+        calendars_path=args.calendars,
+        persister=Persister(),
+    )
     try:
         if args.command == "capabilities":
             result = service.capabilities()

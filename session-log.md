@@ -1,5 +1,41 @@
 # Session Log
 
+## 2026-09-24 07:52 PHT [saved]
+
+Goal: implement AIS-OS #45 so owned task and log updates commit and push
+without a separate push request.
+
+Decisions:
+
+- `scripts/owned_persist.py` builds the commit in a temporary index seeded from
+  HEAD. Each blob is `git merge-file` of the writer's after text, its before
+  text and HEAD, which yields HEAD plus the writer's hunks. Overlap is a
+  conflict. The real index and working tree are never staged wholesale.
+- The pre-commit hook runs through `git hook run` against that temporary
+  index, so it sees only the owned staging. The commit lands with
+  `commit-tree` and a compare-and-swap `update-ref`, so a commit made
+  mid-operation is never reverted.
+- Push success is read from `ls-remote`, not the push exit status. A commit
+  someone else made locally is never published by this operation.
+- Receipts keep saved, committed and pushed separate and persist by operation
+  ID, so a retry reuses its commit. A later successful push marks the earlier
+  commits it carried as pushed, and an hourly timer retries the rest.
+- Persistence is opt-in through `~/.config/achios/persistence.json`. The
+  test conftest points that path and the receipt store at a temporary
+  directory, so no test can touch a real repository.
+- Cohesion persists `tasks.md` after each write and returns the receipt under
+  the task operation's result.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed with 744
+  tests. The 17 new tests use real temporary repositories and bare remotes.
+
+Open:
+
+- Deployment needs the policy file and the retry timer. Live acceptance
+  against a dedicated test repository is not run.
+
 ## 2026-09-22 12:20 PHT [saved]
 
 Goal: repair [PR #79](https://github.com/achibukz/AIS-OS/pull/79) after Luna's
