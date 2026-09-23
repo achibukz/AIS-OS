@@ -1,5 +1,1341 @@
 # Session Log
 
+## 2026-09-24 08:40 PHT [saved]
+
+Goal: make AIS-OS PR #21 mergeable again.
+
+Decisions:
+
+- The installed `assisted-live-testing` skill is byte-identical to this branch,
+  so the skill is in daily use while the PR has sat unmerged since 2026-09-05.
+- Merged main into the branch instead of rebasing, so the published branch
+  needs no force push. Main already carried newer revisions of
+  `docs/assisted-live-testing.md` and the retrospective, and those win.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed with 727
+  tests on the merge result.
+
+## 2026-09-22 12:20 PHT [saved]
+
+Goal: repair [PR #79](https://github.com/achibukz/AIS-OS/pull/79) after Luna's
+SHIP WITH FIXES review and keep its contracts matched to companion
+[achiCore PR #231](https://github.com/achibukz/achiCore/pull/231).
+
+Decisions:
+
+- Daily summaries now use `event_id`, the field emitted by `gcal.normalize_event`,
+  and read adherence only for sessions in that day's Calendar result.
+- USDA food results prefer nutrient 1008 for energy and fall back to 2047, then
+  2048. Protein, carbohydrate and fat remain required.
+- The owned backup directory is reset to mode `0700` by design. Tests model a
+  file-creation refusal and assert that existing verified backups survive it.
+- [The Asta live checklist](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/live-tests/asta-release.md)
+  now includes the assisted-testing environment, boundaries, evidence outputs
+  and a copyable invocation for both connected PRs.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests/test_asta.py -q` passed
+  59 tests.
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed 727 tests
+  with one existing unknown-marker warning. Live acceptance remains pending.
+
+## 2026-09-22 02:14 [saved]
+
+Built the Asta CLI, profile and target history, food lookup, meal ranges and
+corrections, photo retention, daily summary and backups in an isolated worktree.
+The companion achiCore branch updates Calendar commands and adds /mealcheck.
+
+Aki approved combining Asta tickets and proceeding with Canvas announcement
+extraction and semantic learning. Existing main-checkout edits are untouched.
+
+Automated verification is recorded in the PR. Live acceptance, deployment,
+onboarding import and timer installation remain pending. No private health
+records were copied into the repository.
+
+## 2026-09-19 17:56 PHT [saved]
+
+Goal: record completion of STDISCM Too Much Milk homework.
+
+Decisions:
+
+- Recorded `- [x] Submit STDISCM Too Much Milk homework #school #STDISCM !high @2026-09-19 (done 2026-09-19)` under `## Done` in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+Verification:
+
+- Verified against Canvas course assessment deadline (2026-09-19) and schoolMem output note (`output/2026-09-17-STDISCM-too-much-milk-homework.md`).
+
+## 2026-09-18 13:05 PHT [saved]
+
+Goal: record DLSU ESH document release (Ref: RFD-012572) into school tasks and DLSU calendar.
+
+Decisions:
+
+- Submitted linked school deadline via `cohesion.py submit` for 2026-09-29 to both [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) and Google Calendar `DLSU` (`smm4dmf5g0j9lsjuq7pp2fk2ok@group.calendar.google.com`) under `personal` profile.
+- Recorded task line `- [ ] Claim requested documents at DLSU ESH (Ref: RFD-012572) #school !med #ESH @2026-09-29 <!-- task-id: task_4664ef9cc11a1bdbd83e17a4 -->`.
+
+Verification:
+
+- Cohesion returned applied for both `calendar` (`event_id`: `a4664ef9cc11a1bdbd83e17a4c868f82`) and `tasks` (`task_id`: `task_4664ef9cc11a1bdbd83e17a4`).
+
+## 2026-09-17 22:26 PHT [saved]
+
+Goal: repair [PR #78](https://github.com/achibukz/AIS-OS/pull/78) after Luna's SHIP WITH FIXES review (1 blocker, 4 should-fix, 4 nits).
+
+Decisions:
+
+- Blocker: `gws auth status` rejects `--format`. `gcal.gws` takes `json_format`, and `google_auth_health.run_gws` turns it off for `auth` calls. The new argv test fails with the old call and passes with the fix; the live check now reports all four profiles healthy with no drift.
+- `agenda` and `calendars list` report `error` only when no calendar or profile could be read. An empty day on a readable calendar plus one failed profile is `partial`.
+- Inserting an item whose event was deleted restores that event, with its owner check intact, instead of returning `event_deleted`. Verified live on `achiOS cohesion test`.
+- `update` now replaces the whole event. The live test showed gws rejects `"dateTime": null` during schema validation, so the earlier patch body could never switch between timed and all day. The replacement keeps reminders and owner tags; both directions verified live.
+- gws error messages keep every non-banner stderr line, because the first line alone hid the cause of that validation failure.
+- `gcal.py` and `cohesion.py` resolve the operator's home from the checkout path, because Asa's default Codex engine runs turns with a scoped HOME that would hide `calendars.json`, the gws profiles and the cohesion database.
+- The Asta CLI mismatch is recorded on existing achiCore #222 instead of a duplicate ticket.
+- Nits: debrief test pins one title at two times; connections row 3 no longer says Job is writable; `docs/astra-tickets.md` marks the `gcal_add.py` reference historical.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed, 662 tests with 1 existing warning.
+- Live on `achiOS cohesion test` only: insert `ok`, repeat `exists`, update timed to all day and back `ok`, update and delete by `asta` refused, delete by `asa` `ok`, re-insert restored the event, final delete left 0 events.
+
+Open:
+
+- The daily brief and evening debrief units were not triggered, and #59's cohesion checklist was not rerun on the new transport.
+
+## 2026-09-17 17:56 PHT [saved]
+
+Goal: implement [AIS-OS #60](https://github.com/achibukz/AIS-OS/issues/60), [#61](https://github.com/achibukz/AIS-OS/issues/61) and [#62](https://github.com/achibukz/AIS-OS/issues/62) in one pull request: one Google Calendar client, the briefs and health check on it, cohesion on it, and `gcal_add.py` gone.
+
+Decisions:
+
+- `scripts/gcal.py` is both the shared module and the CLI. It owns the gws transport, banner parsing, the private `~/.config/achios/calendars.json`, `agenda`, `events list`, `calendars list`, `calendars check`, `insert`, `update` and `delete`.
+- `write_owner` is a list, not a single owner. Aki chose this so Personal can be written by both Asa and cohesion. The event's own `achios_owner` still stops one writer moving another's events.
+- `insert` without `--item-id` derives the item ID from owner, calendar, title and start, so a retried insert stays idempotent like `gcal_add.py` was. An insert that times out is looked up before it is reported as failed.
+- `agenda` reads each calendar ID once, falls back through every profile configured for it, and skips a profile for the rest of the run after an auth failure or timeout. Dedupe is event ID first, then title plus start.
+- Cohesion takes a calendar name, resolves profile and ID through the config, and refuses a calendar whose `write_owner` lacks `cohesion`. Completion maps the stored calendar ID back to its configured name. New events carry `achios_owner=cohesion`; legacy events with only `achios_item_id` are still recognized and get the owner key on their next update.
+- The briefs keep their formats and the `laguna` filter. Their own dedupe was dropped for the shared rule. The health check runs `calendars check` in-process and treats drift like a failed profile.
+- Private config generated from the live calendar lists. Aki added `cc sched`, the DLSU primary calendar, `DLSU ALTDSI` and `Gala` to the schedule set because the briefs showed them before.
+- Deleted `~/.config/achios/google_token.json`, `google_token_dlsu.json` and `google_token_work.json` after confirming nothing on the host reads them.
+
+Rejected:
+
+- A single `write_owner` string, which would have refused cohesion's updates to Personal.
+- Leaving the four unlisted calendars out of the schedule set, which would have dropped nine class events and a thesis session from this week's brief.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed, 651 tests with 1 existing warning.
+- Live and read-only: `gcal.py calendars check` returned `ok` with no drift. `gcal.py agenda --from 2026-09-17 --to 2026-09-19` returned every profile without errors. The daily brief calendar fetch for 2026-09-17 to 2026-09-24, old against new, differs only by two free/busy blocks, one THS-ST1 event and one Bdayy event, all excluded by the approved set, plus two of today's classes the old `+agenda` missed because it started from the current time.
+
+Open:
+
+- Human acceptance for all three issues is not run: live insert, update and delete on the `achiOS cohesion test` calendar; a triggered brief and debrief compared with Google Calendar; #59's create, reschedule and complete checklist on the new transport.
+- Dated historical records (`decisions/log.md`, older docs and the September 17 discussion and roadmap) still name `gcal_add.py`. No code, test or instruction file does.
+
+## 2026-09-17 15:50 PHT [saved]
+
+Goal: implement [AIS-OS #57](https://github.com/achibukz/AIS-OS/issues/57) to remove per-message and per-account Gmail links from email digest.
+
+Decisions:
+
+- Deleted `EmailItem.web_link` property and `format_source_link()` function.
+- Removed unused fields `message_id`, `thread_id`, and `account_email` from `EmailItem`, leaving only `sender`, `subject`, `snippet`, `category`, and `date_str`.
+- Cleaned up link formatting from `build_account_message_raw` and `validate_and_render_llm_digest`, removing dead `[(?:link|missing ID)]` scrub regexes.
+- Updated `tests/test_email_digest.py` to assert the absence of link tags, absence of link fields, and absence of `format_source_link()`.
+
+Verification:
+
+- Ran red test suite via `~/.local/share/achios/venv/bin/pytest tests/test_email_digest.py`, observing 3 expected test failures.
+- Implemented changes and ran `~/.local/share/achios/venv/bin/pytest tests/test_email_digest.py` -> 44 passed in 4.68s.
+- Ran full test suite `~/.local/share/achios/venv/bin/pytest tests/` -> 590 passed, 1 pre-existing warning in 31.27s.
+- Tested `scripts/email_digest.py --dry-run` and verified output structure remains intact without broken Gmail links.
+
+Open:
+
+- None. Implementation is complete and covered by automated regression tests.
+
+## 2026-09-17 14:34 PHT [saved]
+
+Goal: file the reported `/ToWork` recovery and card-control bug.
+
+Decisions:
+
+- Published [achiCore #225](https://github.com/achibukz/achiCore/issues/225), separate from #196. It covers stale parked cards, merged owned PR cleanup, and a distinct Resume action. #196 remains the dirty-work abandonment path.
+- The ticket uses the production record for achiCore #6 and merged PR #166 as its regression fixture. The card currently labels `tw:resume` as `New attempt`, and both recovery callbacks validate the issue before classifying the owned PR. A closed issue therefore blocks cleanup.
+
+Verification:
+
+- Read the live state record, current `src/bot.py` callback and keyboard code, GitHub state for issue #6 and PR #166, then fetched and checked the published #225 body and labels.
+
+Open:
+
+- #225 needs implementation and isolated Telegram live acceptance. The stale production card was not pressed or altered during ticketing.
+
+## 2026-09-17 13:10 [saved]
+
+Goal: fix the bugs the assisted live test found on AIS-OS PR #59 against real `gws` and a disposable Calendar.
+
+Decisions:
+
+- `gcal_add.gws` now drops the `Using keyring backend` banner from its error text and reads the API status from the error JSON on stdout into `GwsError.status`. `GwsCalendarTransport.get` returns `None` on `status == 404`. It used to search the message for `404`, which was the banner, so no first insert through real `gws` could ever succeed.
+- The Calendar operation version is now a hash of the fields cohesion owns (summary, start, end and the `achios_` private properties) instead of the etag. An edit to anything else, such as a location, is adopted and kept, because updates now use `events patch`. An edit to an owned field stays pending until it is restored, the same way the task line guard converges. The etag cannot be restored, so an etag guard stranded the operation forever.
+- An owned event with `status: cancelled` is reported as `owned calendar event no longer exists` for both upsert and complete, without an update call. Google returns deleted events from `events.get`.
+- A completion that finds the task already in Done keeps its recorded done date. A Calendar update is skipped when the owned fields and description already match, so a repeat completion writes nothing.
+- An unparseable `due` is a `CohesionError`, so it returns a pending clarification instead of exiting 2 after reserving the source. A source that produced no operations can be replaced by a corrected payload with the same ID. A source with operations is still refused.
+- All-day events send `gcal_add`'s explicit no-reminder body again. A live probe showed Google stores `useDefault: false` on all-day events even when `true` is sent and the calendar has default reminders; timed events keep `true`. The previous body promised something Google never stored.
+- A clarification for a known item now names its `item_id`. Calendar-only events no longer carry an `achios_task_id` for a task that does not exist.
+
+Verification:
+
+- Fourteen tests were written first and failed for the reported reasons, including a `gws` error with the exact banner-then-error output captured live.
+- `tests/test_cohesion.py tests/test_gcal_add.py` -> 63 passed. `tests/` -> 592 passed, 1 pre-existing unknown-marker warning.
+- `ruff check` on the four touched files reports only the three findings already present on the base commit in `gcal_add.py` and `test_gcal_add.py`.
+
+Open:
+
+- The live test record lists a nit claiming `main()` calls `capabilities()` twice. That was an overlapping `sed` range in the review, not a code defect.
+- Real `gws` acceptance must be rerun at the new head. Earlier live evidence does not carry over.
+- A deliberate edit to an owned Calendar field still has no dismissal or override path beyond restoring it. That shares the open clarification contract decision.
+
+## 2026-09-17 06:30 [saved]
+
+Goal: publish the Asta and Google Calendar backlog after grilling and three live Asta passes.
+
+Decisions:
+
+- Saved the [discussion record](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/asta-and-calendar-discussion-2026-09-17.md) and [roadmap](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/asta-calendar-roadmap-2026-09-17.md).
+- Published AIS-OS #60 to #75 and achiCore #221 to #223: four calendar slices, nine Asta slices, five tracking issues and one epic. Verified titles, labels and blockers after publication.
+- Existing issues were not edited. AIS-OS #13 and PR #59 stay first by Aki's decision.
+- The Asta persona prototype merged separately as achiCore PR #220.
+
+Open:
+
+- Existing issue statuses in the roadmap come from GitHub state, not a fresh implementation audit.
+- `~/.config/achios/google_token*.json` still exist until AIS-OS #61 lands.
+
+## 2026-09-17 [saved]
+
+Goal: correct the STSP002 room label for Friday, 18 September PHT.
+
+Decisions:
+
+- Changed the single STSP002 calendar occurrence from Andrew 1102 to A1102 in both its title and location.
+
+Verification:
+
+- Google Calendar returned the event with `summary: A1102 - F2F Session` and `location: A1102`.
+
+## 2026-09-17 [saved]
+
+Goal: update the Friday, 18 September PHT course calendar instances for the STSP002 room change and the STDISCM and CCINOV8 suspensions.
+
+Decisions:
+
+- Updated only the 18 September occurrences. STSP002 now records Andrew 1102 from its Canvas announcement. STDISCM and CCINOV8 remain visible as suspended and are marked transparent, so their former class times are free.
+
+Verification:
+
+- Google Calendar returned the updated STSP002 event with location `Andrew 1102`, plus the two suspended course events with `transparency: transparent`.
+
+## 2026-09-17 [saved]
+
+Goal: move the remaining NAIST application work to next week after the TOR and COE request forms were submitted.
+
+Decisions:
+
+- Kept the existing NAIST application task active and moved its due date to Monday, 2026-09-21. The submitted TOR and COE request forms are recorded in the task detail, while document release and the remaining application materials are still pending.
+
+Open:
+
+- The task register has no NAIST-specific checklist or stated application track. Confirm the official checklist or invitation requirements before treating any other document as required.
+
+## 2026-09-17 03:05 [saved]
+
+Goal: repair the blocker Luna found in the tasks concurrency guard on AIS-OS PR #59.
+
+Decisions:
+
+- The guards were attached to the wrong attempts. The whole-file hash ran only on attempt 0 and the line-version check only on retries, so an ordinary first-attempt update overwrote a task line a human had annotated, while the same edit was refused if an unrelated attempt had failed earlier. Luna reproduced it with no failure injected at all.
+- The line-version comparison now runs on every attempt, exactly as `_apply_calendar` compares its etag on every attempt. For a create the stored version is `None` and the line is absent, so the check passes on its own.
+- Deleted the whole-file hash entirely, with `expected_hash`, `_read_task_hash` and the `retry` flag. Keeping it would mean blocking an unrelated edit on attempt 0 and adopting it on every later attempt, which is the inconsistency the blocker is made of, and blocking it on every attempt brings back the operation that can never converge. One guard, on the object the operation owns.
+- `_apply_task` now reconciles an accepted write it failed to record. If the live line already equals the line it would write, it reports applied without writing. This closes the crash-between-write-and-record case, matching how `_apply_calendar` reads the event back.
+- An applied operation now records exactly the version the destination reported, including none. `COALESCE` still protects a failed attempt's reservation. Keeping a prior version on an applied operation would strand the next update permanently if a provider ever answered without an etag.
+
+Verification:
+
+- All four regressions were written first and failed at `062a4ab`. The first-attempt overwrite matched Luna's reproduction: `applied, attempts 1, pending []` with the annotation gone.
+- Guard proof by reverting each condition: removing the line check breaks the first-attempt and stays-pending tests; removing the already-applied reconcile breaks the crash test; keeping a prior version on an applied operation breaks the strand test; clearing the version on a failed attempt breaks the stays-pending test.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/test_cohesion.py -q` -> 33 passed.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q` -> 583 passed, 1 pre-existing unknown-marker warning.
+- `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` -> all checks passed. `git diff --check` -> passed.
+
+Open:
+
+- Three tests changed shape because the behaviour they pinned is deliberately gone. `test_concurrent_task_edit_leaves_the_operation_pending` became `test_a_first_attempt_refuses_a_concurrent_edit_to_the_task_line`, which is strictly stronger; the two retry-only tests added yesterday folded into `test_a_concurrent_edit_to_the_task_line_stays_pending_until_it_is_resolved` and `test_an_unrelated_edit_is_adopted_on_create_and_on_update`, because the retry branch they exercised no longer exists. Declared on the PR.
+- Two concurrent cohesion writers can still lose each other's write to different lines of `tasks.md`. The whole-file hash never protected a retry against this, so it is not new, but nothing guards it now. It needs a lock or a read-modify-write retry, which is a separate ticket.
+- Luna's two clarification nits stay open by agreement. Both need a contract decision from Aki: a dismissal operation in `capabilities()` or a status column in `clarifications`.
+- Real `gws` Calendar acceptance is still not run, and no GitHub checks are reported.
+
+## 2026-09-17 02:20 [saved]
+
+Goal: repair the blocker Luna found in the retry fix on AIS-OS PR #59.
+
+Decisions:
+
+- The previous repair was wrong. Re-reserving the whole-file `tasks.md` hash on every retry adopted whatever the file held, then overwrote the task's own line from the snapshot frozen at reservation. A human edit to that line was lost with no warning and no pending entry.
+- Tasks operations now carry a per-object version like the Calendar side. `_apply_task` returns the hash of the line it wrote, and a retry compares the live line against the version of the last applied operation for that item. Unrelated edits elsewhere in the file are adopted; a changed item line returns pending.
+- The first attempt still compares the whole-file hash reserved with the operation, so a concurrent edit anywhere still stops the racing write.
+- `_finish_operation` no longer clears `destination_version` on a failed attempt. It wrote `NULL` on every failure, which is what left a retried operation with nothing to compare against. `COALESCE` preserves the reserved version. This also restores the etag guard for a retried Calendar operation, which previously depended on the superseding rule alone.
+
+Verification:
+
+- Both regressions were written first. The overwrite case failed at `68b7978` with the retry applying `Draft proposal v2` over the human's `(ASK DR CRUZ FIRST)`.
+- Guard proof by reverting each condition: dropping `COALESCE` breaks the adopt-unrelated-edit test; removing the retry line check breaks the overwrite test; keeping the whole-file check on retry breaks three tests; returning the whole-file hash instead of the line hash breaks the adopt test.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/test_cohesion.py -q` -> 32 passed.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q` -> 582 passed, 1 pre-existing unknown-marker warning.
+- `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` -> all checks passed. `git diff --check` -> passed.
+
+Open:
+
+- Luna's two nits are not fixed. A correction arriving as a new external object with no `item_id` leaves its clarification row, and an unanswered clarification is deleted rather than archived when a later source for the same item is accepted. Both need a contract decision from Aki: a `dismiss` operation would extend the capability list, and archiving needs a status column in `clarifications`. Recorded for a follow-up ticket rather than decided here.
+- Real `gws` Calendar acceptance is still not run, and no GitHub checks are reported.
+
+## 2026-09-17 01:30 [saved]
+
+Goal: repair the two blockers, four should-fix items and four nits in Luna's review of AIS-OS PR #59.
+
+Decisions:
+
+- Reopening a completed item now returns a pending clarification instead of rewriting its `- [x]` line in place. The old behaviour left an unchecked line under `## Done`, which `task_engine.parse_tasks` never returns, so the completion history was destroyed and the task became invisible. Blocking the transition matches the placement-change guard already agreed in this PR.
+- A pending tasks operation re-reads and re-reserves the `tasks.md` hash at the start of each retry. The hash stays frozen on the first attempt, so a concurrent human edit still stops the first write.
+- Superseded operations move into their own `superseded` list in the receipt, and every operation entry now carries its `status`. The receipt's `pending` list and `context()["pending_count"]` now agree.
+- A clarification is cleared when a later source for the same external object (`kind` plus `native_id`) or the same `intent.item_id` is accepted, so `pending_count` is no longer monotonic.
+- The Calendar completion note is owned by the service. The previous description is stripped of the note before it is re-appended, so repeated completions cannot stack it.
+- All-day deadline events now set `reminders: {"useDefault": true}` rather than inheriting `gcal_add.all_day_body`'s notifications-off policy. A deadline that reaches Calendar with reminders switched off is not useful, and timed events already inherit calendar defaults.
+- Nits: deleted the dead `task_id = existing_item["task_id"]` branch, merged the two consecutive `if existing_item:` blocks, and made `_connect` a context manager that closes the connection.
+
+Verification:
+
+- All six new regressions plus the two transport tests were written first and failed at head `7740e65`: the upsert on a completed item applied and destroyed the Done line, the redelivery after a concurrent edit never converged, `pending_count` stayed at 1 after the follow-up submit, the second completion produced a doubled note, the all-day body carried `useDefault: false`, and no connection was closed.
+- Guard proof by reverting each condition in turn: always re-reserving the hash breaks `test_concurrent_task_edit_leaves_the_operation_pending`; dropping the `action == "upsert"` check breaks the repeated-completion test; dropping the note strip breaks it too; removing either branch of the clarification-clearing query breaks its own test.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/test_cohesion.py -q` -> 30 passed.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q` -> 580 passed, 1 pre-existing unknown-marker warning. The four `gws` failures reported in earlier runs do not reproduce here.
+- `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` -> all checks passed. `git diff --check` -> passed.
+
+Open:
+
+- The receipt now has a `superseded` key and every entry carries `status`. Any consumer reading `pending` for retries must be updated with it; nothing outside this PR reads the receipt today.
+- Real `gws` Calendar acceptance is still not run. The reviewer's two unverifiable items stay open: whether a real not-found response carries the literal `404`, and whether an insert against an existing deterministic event ID returns 409 rather than a timeout.
+- Keep AIS-OS #13 active until the PR and the live gate are complete.
+
+## 2026-09-16 21:37 [saved]
+
+Goal: repair the latest Luna blocker on AIS-OS PR #59.
+
+Decisions:
+
+- Read the current PR thread, issue #13, the closed #6 blocker, repository instructions, decision history, current code and overlap branches. The latest blocker is a stale pending Calendar operation that can overwrite a newer same-item update after redelivery.
+- Added a regression for failed Calendar delivery, a newer same-item update and redelivery of the original source.
+- Supersede all older pending operations for an existing item in the same transaction that accepts a newer source. Keep the existing receipt shape and expose the superseded row as a non-applied pending result with its reason. No schema migration is needed.
+
+Verification:
+
+- The regression failed before the source fix with 20 passed and 1 failed. The stale redelivery applied the old Calendar snapshot.
+- After the fix, `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/test_cohesion.py -q` passed 21 tests.
+- `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` passed. `git diff --check` passed.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q` returned 567 passed, 4 unrelated failures caused by the missing isolated-home `gws` binary, and 1 pre-existing unknown-marker warning.
+
+Open:
+
+- Repair commit `a093472024e3ab27b2ea9359bbec5300e6d6aa43` is pushed and PR #59 now names the new head and evidence. The head-specific [live-test checklist](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/live-tests/pr-59.md) is prepared but not run. Request Luna's re-review.
+- Real `gws` Calendar acceptance remains unverified. Keep AIS-OS #13 active until the PR and required live gate are complete.
+
+## 2026-09-16 20:38 [saved]
+
+Goal: repair the latest Luna blocker on AIS-OS PR #59.
+
+Decisions:
+
+- Read the complete PR review history, issue #13, the closed #6 blocker, repository instructions, current code, and overlap branches. The latest blocker concerns existing-item placement and Calendar target changes.
+- Chose the review-approved clarification path. A new source cannot change an existing item's placement or stored Calendar profile and ID. The service leaves the item and destinations untouched and records the request as pending.
+- Added regressions for Calendar-to-tasks and Calendar A-to-Calendar B updates.
+
+Verification:
+
+- Added the regressions before the source change. The focused suite failed with 18 passed and 2 failed because both requests were accepted and wrote destinations.
+- After the guard, `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/test_cohesion.py -q` passed 20 tests in 0.27s.
+- `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` passed. `git diff --check` passed.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q` returned 566 passed, 4 unrelated `gws`-path failures, and 1 pre-existing unknown-marker warning.
+
+Open:
+
+- Wait for Luna's re-review of repair commit `9ca7b14928291bff0dc4d321fff84d5859fcebb4`. The branch also contains the documentation-only handoff commit after that repair. Evidence is posted at https://github.com/achibukz/AIS-OS/pull/59#issuecomment-5697601233.
+- Real `gws` Calendar acceptance remains unverified. Keep AIS-OS #13 active until the PR and required live gate are complete.
+
+## 2026-09-16 20:22 [saved]
+
+Goal: repair the AIS-OS PR #59 review findings and verify the cohesion changes.
+
+Decisions:
+
+- Retained empty operation result dictionaries (`{}`) when serializing operation updates rather than coercing them to `None`.
+- Ensured calendar event bodies preserve private extended properties uniformly for all-day and timed events.
+- Added test coverage for empty operation results and uniform conflict receipt fields.
+- Cohesion tests: 18 passed. Full suite: 564 passed, 4 unrelated `gws`-path failures, and 1 pre-existing unknown-marker warning.
+
+Open:
+
+- Review and merge AIS-OS PR for #13.
+
+## 2026-09-16 19:44 [saved]
+
+Goal: implement AIS-OS #13 (delegated from Atlas /ToWork), reconciling task and Calendar intents with stable IDs and durable receipts.
+
+Decisions:
+
+- Checked the declared blocker, [AIS-OS #6](https://github.com/achibukz/AIS-OS/issues/6). Closed and its content is on `main` via PR #51.
+- Found the work already existed: PR #52 (`Closes #13`) merged on 2026-09-11, but into `ticket/6-lossless-task-renderer`, not `main`. That branch was never itself merged, so `scripts/cohesion.py` never reached `main` and #13 stayed open. A stale worktree at `AIS-OS-ticket-13` still holds that abandoned branch; left untouched.
+- On branch `ticket/13-cohesion-onto-main` off current `main`, cherry-picked commit `6bbf462` (the `cohesion.py` and `test_cohesion.py` addition) and resolved conflicts in `decisions/log.md`, `session-log.md`, and `tasks.md` by keeping `main`'s newer entries and re-inserting the cohesion decision at its original chronological position. `connections.md` merged cleanly.
+- `cohesion.py` only imports `PRIMARY_AREAS` from `task_engine.py`, so it needed no adaptation despite `task_engine.py` diverging significantly on `main` since (PR #56 added `all`/`backlog` filtering).
+
+Rejected:
+
+- Reimplementing the 778-line contract from scratch, which would duplicate already-tested work.
+- Merging the stale feature branch wholesale, which would drag in unrelated content already superseded on `main`.
+
+Open:
+
+- Verification: `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` passed 567 tests (17 from `test_cohesion.py`), one pre-existing unknown-marker warning. `UV_TOOL_DIR=/tmp/uv-tools-aea4 UV_CACHE_DIR=/tmp/uv-cache-aea4 uvx ruff check scripts/cohesion.py tests/test_cohesion.py` passed (the default uv tool cache under `~/.local/share/uv` is outside this session's write boundary).
+- Sabotage check: removed the `status = 'pending'` filter in `_run_pending`, observed `test_redelivery_after_partial_failure_retries_only_calendar` fail, restored the filter, observed it pass.
+- Opening a PR against `main` with `Closes #13` and the required mentions.
+
+## 2026-09-16 05:22 [saved]
+
+Goal: add orchestration mixin to achimem and sophie personas in achiCore per delegation from #General.
+
+Decisions:
+
+- Executed delegated task in achiCore on branch `ticket/orchestration-achimem-sophie`.
+- Added `orchestration` to `mixins:` in `agents/achimem.md` and `agents/sophie.md`.
+- Updated [AGENTS.md](http://100.106.210.38:8999/Code/GitHub/achiCore/AGENTS.md) and related tests in achiCore.
+- Verified test suite and opened achiCore PR #218.
+
+Open:
+
+- Review and merge achiCore PR #218.
+
+## 2026-09-16 05:05 [saved]
+
+Goal: resolve the uncommitted Immich watch sync files that were keeping the session stop hook firing.
+
+Decisions:
+- Committed scripts/immich_folder_sync.sh, scripts/install_units.sh, scripts/immich_folder_watch_sync.sh, systemd/achios-immich-watch.path, and systemd/achios-immich-watch.service as one feature: multi-root Memories sync plus a path-triggered watcher.
+
+Open:
+- Deploy: run scripts/install_units.sh on achibuntu to install and enable the new path unit, then verify a file drop under either Memories root triggers achios-immich-watch.service after the quiet period.
+
+## 2026-09-16 04:55 [saved]
+
+Goal: diagnose the recurring session stop hook trigger and document its provenance in achiCore.
+
+Decisions:
+- Identified uncommitted files in AIS-OS (scripts/immich_folder_sync.sh, install_units.sh, and untracked watch units) as the continuous trigger for SessionStopHook.
+- Traced the stop hook implementation to achiCore commits c930e25 and de28627 from August 28, 2026.
+
+Rejected Approaches:
+- Guessing the hook source without inspecting git history and daemon execution paths in achiCore.
+
+Open:
+- Resolve uncommitted Immich sync modifications by either stashing, committing, or discarding them.
+
+
+## 2026-09-16 04:54 [saved]
+
+Goal: preserve the session state and record Immich watch sync automation status.
+
+Decisions:
+- Recorded working tree status for Immich multi-root synchronization in session-log.md.
+- Kept modified scripts and untracked systemd units uncommitted until manual verification completes.
+
+Rejected Approaches:
+- Staging unverified path watcher units and sync scripts prematurely.
+
+Open:
+- Run manual test on achios-immich-watch.path and achios-immich-watch.service.
+
+
+## 2026-09-16 04:52 [saved]
+
+Goal: fast-forward achiCore to master after PR #217 and inspect latest commits.
+
+Decisions:
+- Switched achiCore from ticket/216-sophie to master.
+- Fast-forwarded master via git pull to commit 524cc71.
+- Left AIS-OS working tree modifications for Immich watch sync uncommitted.
+
+Rejected Approaches:
+- Discarding local lockfile differences before validating fast-forward status.
+
+Open:
+- Verify and stage the Immich watch sync scripts when ready.
+
+## 2026-09-16 03:20 [saved]
+
+Goal: record the working tree status for Immich multi-root watch sync automation.
+
+Decisions:
+- Preserved working tree modifications for Immich multi-root synchronization and systemd path watcher units without unprompted commits.
+- Kept the session active per explicit user instruction.
+
+Rejected Approaches:
+- Committing functional changes in scripts and systemd units without direct user request or manual test verification.
+- Archiving this session.
+
+Open:
+- Review and verify the multi-root Immich folder watch sync automation before staging it for commit.
+
+## 2026-09-15 15:35 [saved]
+
+Goal: preserve the publication receipt for achiCore #215.
+
+Decisions:
+- Published one high-priority ticket for the complete /syncres recovery flow.
+- Linked the active task to the GitHub ticket.
+
+Rejected Approaches:
+- Splitting the restart defect and the recovery UI into separate tickets. They require one ordered workflow.
+- Editing achiCore directly from the general topic.
+
+Open:
+- achiCore #215 awaits implementation, review, and its phone acceptance test.
+
+## 2026-09-15 15:30 [saved]
+
+Goal: create the tracked implementation ticket for Telegram /syncres recovery.
+
+Decisions:
+- Created achiCore #215 for a commit-first repair card and conditional hub restart.
+- Used authenticated GitHub CLI because agy-tickets is unavailable on PATH.
+
+Rejected Approaches:
+- Creating a duplicate ticket. GitHub returned no matching open issue.
+- Using stash as the standard recovery path.
+
+Open:
+- Implement and test achiCore #215, then complete its Telegram HITL check.
+
+## 2026-09-15 15:25 [saved]
+
+Goal: choose how Telegram /syncres recovers tracked local changes.
+
+Decisions:
+- Use an LLM-proposed commit as the primary recovery action.
+- Keep stashing as a clearly labeled emergency option with a restore action.
+
+Rejected Approaches:
+- Making stash the normal recovery path because it conceals work and defers cleanup.
+- Restarting before the proposed commit and fast-forward complete successfully.
+
+Open:
+- Implement the repair card and its approval flow in achiCore.
+
+## 2026-09-15 15:20 [saved]
+
+Goal: state the safe repair design for Telegram /syncres.
+
+Decisions:
+- Make /syncres restart only after a successful repository sync.
+- Use a Repair sync button that gives an LLM read-only Git evidence, then requires explicit approval before it writes, pulls, and restarts.
+
+Rejected Approaches:
+- Restarting after a failed or held-back sync.
+- Silently discarding or committing tracked local changes.
+
+Open:
+- Aki must choose whether an approved repair may stash tracked changes automatically or may only apply an LLM-proposed patch or commit.
+- Implement the design in achiCore.
+
+## 2026-09-15 15:15 [saved]
+
+Goal: inspect the Telegram /syncres command and record the requested recovery path.
+
+Decisions:
+- Record a high-priority achiCore task for /syncres recovery.
+- Do not let a sync failure restart the hub. The current handler restarts even after sync-repos exits 1.
+
+Rejected Approaches:
+- Treating scheduled vault sync as the source of this report.
+- Auto-discarding or auto-committing tracked local work without Aki's explicit approval.
+
+Open:
+- Choose the approval model for an LLM repair. Recommended: show the diagnosis and proposed patch or commit, then require a tap before it changes files, pulls, and restarts.
+- Implement in achiCore. Its master branch is one commit behind origin and has a tracked uv.lock edit, so this topic did not alter it.
+
+## 2026-09-15 15:00 [saved]
+
+Goal: diagnose vault inbox sync fast-forwarding and missing Telegram logs.
+
+Decisions:
+- Treat the current vault-sync schedule as healthy. Both vaults matched origin/main at inspection.
+- Keep the diagnosis separate from a repair. No service, vault, or notification configuration changed.
+
+Rejected Approaches:
+- Running sync-repos or a manual pull because neither vault was behind and achiMem has tracked local edits.
+- Sending a test Telegram alert while DNS failures remain the verified cause of undelivered alerts.
+
+Open:
+- Vault sync must fetch and fast-forward before its inbox-only change check if it should receive remote commits without a new capture.
+- Decide whether successful vault-sync summaries should reach Telegram. Failure alerts did not arrive because DNS could not resolve api.telegram.org.
+
+## 2026-09-15 13:54 [saved]
+
+Goal: document the status of the Immich watch sync automation in the working tree.
+
+Decisions:
+- Keep the Immich multi-root sync scripts and systemd path units staged separately from documentation logs so Aki can review and commit them intentionally.
+- Stage and commit session-log.md to maintain state without touching working tree scripts unprompted.
+
+Rejected Approaches:
+- Committing the modified Immich scripts and units without explicit verification.
+- Stashing or reverting the working tree files.
+
+Open:
+- AIS-OS has two modified and three untracked files for Immich folder watch sync awaiting review and commit.
+- AIS-OS #13 still needs a pull request.
+
+## 2026-09-15 13:20 [saved]
+
+Goal: decide a start order for the meeting ingest cohesion tickets.
+
+Decisions:
+- Start achiCore #213 and schoolMem #2 in parallel. They share no files and neither has a blocker.
+- Route schoolMem #2 to Sciel in #schoolMem, not Aea. write_boundary.py protects ~/Documents/Obsidian by default and agents/aea.md declares no override, so Landlock denies Aea every vault write.
+- Treat opening the pull request for AIS-OS #13 as the real next step on the #58 lane. Its worktree is clean, the branch is pushed, and tests/test_cohesion.py passed 17 tests in 0.18s.
+
+Rejected:
+- Reading achiCore branch ticket/6-delegate-block-trigger as a conflict with #213. Its issue is closed and the branch is stale against master.
+- Treating 17 passing tests as proof that #13 meets its acceptance criteria. Redelivery, timeout, concurrent edits and unknown ownership stay unverified until Luna reviews.
+
+Open:
+- AIS-OS #13 still has no pull request.
+- The stale gpt-5.6-terra recommendation on the September 11 batch still needs Aki's call.
+
+## 2026-09-15 13:08 [saved]
+
+Goal: scope meeting-ingest cohesion and publish its tickets through agy-tickets.
+
+Decisions:
+- Meetings only for the first release; lecture transcripts excluded because unowned instructions would flood tasks.md.
+- Dated announcements become task plus Calendar event; undated ones become a line in the subject `_overview.md`, which needs no cross-topic handoff.
+- No invented dates, and no auto-apply tier. Every proposed record waits for Aki's approval.
+- Sciel gets the orchestration mixin so it can hand a request to Asa. Aki asked for this after being shown the circularity constraint.
+- Published schoolMem #2, AIS-OS #58 and achiCore #213. Created schoolMem's ready-for-agent and priority labels, which did not exist.
+
+Rejected:
+- A parallel queue-file mechanism, and a second reconciliation path beside AIS-OS #13. The meeting adapter is a sibling source on that writer, like Canvas #47.
+
+Open:
+- The September 11 batch recommends `gpt-5.6-terra`, which is not in achiCore's MODEL_REGISTRY. The registered Codex key is `gpt-6-astra`. Left unedited pending Aki's call.
+- Whether achiMem's Sciel also gets the orchestration mixin. Scoped to schoolMem only.
+
+## 2026-09-15
+
+Goal: record completion of the CCINOV8 Self-Assessment Test.
+
+Decisions:
+- Moved the completed, due-today task from Active to Done after Aki confirmed completion.
+
+Rejected:
+- None.
+
+Open:
+- The CCINOV8 Team Contract remains due 2026-09-18.
+
+## 2026-09-14
+
+Goal: defer public Immich sharing and synchronize AIS-OS and achiCore.
+
+Decisions:
+- Added secure public Immich album sharing through a Cloudflare Tunnel to Backlog. Aki does not want to expose the service yet.
+
+Rejected:
+- Pulling either repository over tracked local changes. Fast-forwarding would be unsafe until those changes are committed, stashed, or otherwise resolved.
+
+Open:
+- Both remotes were fetched and are already up to date. AIS-OS still has five modified and three untracked files from the Immich work; achiCore has one modified `uv.lock`.
+
+## 2026-09-14
+
+Goal: apply the automatic Immich watcher to both Memories roots.
+
+Decisions:
+- Added the primary Memories root to the systemd path watcher and settling check. Any new event folder in either root now starts the same sync.
+
+Rejected:
+- Maintaining separate watchers for the two roots. One path unit prevents concurrent duplicate scans.
+
+Open:
+- None.
+
+## 2026-09-14
+
+Goal: trigger Immich scans and folder-album synchronization after new Memories 2 folders arrive.
+
+Decisions:
+- Added and enabled `achios-immich-watch.path`, which starts a one-shot watcher service when the Memories 2 root changes.
+- The watcher waits for two minutes without filesystem changes before invoking the existing sync. This prevents a scan while a folder transfer is still underway.
+- Extended `scripts/install_units.sh` to install and enable systemd path units alongside services and timers.
+
+Rejected:
+- Scanning immediately on directory creation, which can index a partial copy.
+
+Open:
+- None.
+
+## 2026-09-14
+
+Goal: extend the Immich album sync to the second Memories external-library root.
+
+Decisions:
+- Added `/mnt/Achi120/Main Folders/Pictures/Memories 2` to `scripts/immich_folder_sync.sh`, mapped as `/mnt/media/memories2` to match Immich asset paths.
+- Verified the folder-to-album tool detected `26.09.14- Bukz Bowling w Ninang` and created its album with 57 assets.
+
+Rejected:
+- Treating the third-party tool's `--dry-run` option as non-mutating. It created the album and added assets during validation.
+
+Open:
+- A filesystem watcher could run the scan and album sync after new media arrives, instead of waiting for the nightly timer.
+
+## 2026-09-13
+
+Goal: record completion of the seven-day Google OAuth validity check.
+
+Decisions:
+- Moved the Google OAuth token check to Done after Aki confirmed it was finished.
+
+Rejected:
+- Treating the overdue date as evidence that the check had run.
+
+Open:
+- None.
+
+## 2026-09-12
+
+Goal: repair the Astra roadmap status display and reconcile it with current ticket work.
+
+Decisions:
+- Replaced non-functional bare table checkboxes with explicit delivery states and added real Markdown checklists for Done and Ongoing work.
+- Marked closed GitHub tickets as Done, including achiCore #56, #172, #177 and #185; AIS-OS #6, #41 to #43 and #55; and Canvas #25 to #30 plus #37.
+- Recorded AIS-OS #13, achiCore #57, achiCore #194, AIS-OS #44/#8 and AIS-OS #20 as ongoing. Marked dependency-constrained work as Blocked rather than ready.
+
+Rejected:
+- Treating an open issue or a dirty worktree as proof of completion.
+- Keeping `[ ]` cells in tables, which do not provide reliable Markdown checkboxes.
+
+Open:
+- Finish and review the active #13, #57 and #194 work before beginning their dependent tickets.
+
+## 2026-09-13
+
+Goal: record Aki's GELITPH Index Card submission.
+
+Decisions:
+- Moved the Canvas-tracked GELITPH Index Card (virtual) task to Done after Aki confirmed submission.
+
+Rejected:
+- None.
+
+Open:
+- None.
+
+## 2026-09-13
+
+Goal: correct the weekly Canvas deadline update.
+
+Decisions:
+- Added the omitted GELITPH Index Card (virtual), due September 13 at 11:59 PM PHT, to `tasks.md` and the DLSU calendar.
+
+Rejected:
+- The earlier conclusion that the item should be omitted. Canvas provided a due date and it is unsubmitted.
+
+Open:
+- None.
+
+## 2026-09-13
+
+Goal: add Canvas-confirmed school deadlines for September 14 to 20 to the task register and DLSU calendar.
+
+Decisions:
+- Added four unsubmitted Canvas assignments with dated deadlines: GELITPH Family Story, CCINOV8 Self-Assessment Test, CCINOV8 Team Contract, and STDISCM Practice Test Case Upload Check.
+- Routed all four calendar events to the writable personal-account DLSU calendar, as required for academic items.
+
+Rejected:
+- Assignments without a Canvas due date, including CCINOV8 Self-Introduction and several GELITPH activities, were not added.
+
+Open:
+- None.
+
+## 2026-09-12
+
+Goal: schedule work on the NAIST application requirements for Monday, September 14.
+
+Decisions:
+- Added the NAIST requirements work to `tasks.md` as a high-priority career task due 2026-09-14.
+
+Rejected:
+- None.
+
+Open:
+- Sciel will confirm the specific NAIST requirements so the task can be expanded if needed.
+
+## 2026-09-12 14:30
+
+Goal: find why the 08:36 DLSU email debrief asked for a re-auth, and fix the email digest's LLM pass and error handling.
+
+Decisions:
+- The 08:36 failure was a network outage, not a credential. gws failed with `No route to host (os error 113)` before reaching Google. Telegram, systemd-resolved and tailscaled logged network failures on the box from 00:22 UTC. The dlsu profile worked on a live call afterwards.
+- `achios-email-digest.service` set PATH without `~/.local/bin`, so every scheduled run failed to find `agy` and silently sent the raw layout. `email_digest.log` held 138 of these warnings. Added `~/.local/bin` to the tracked and installed unit.
+- The LLM pass now runs a chain, Gemini 3.8 Flash medium on agy, then Claude Haiku, then Codex `gpt-5.6-luna` medium, with absolute binary paths. Every failed engine logs its reason and the engine that answered is logged.
+- A gws error whose text names a network failure is retried once after 45 seconds. If it still fails, the message says the network was down and the login is fine. Other errors keep the re-auth hint.
+- The other scheduled jobs make no LLM calls, and their logs show clean sends.
+
+Rejected:
+- Importing achiCore `src/failover.py`. It is async, session-bound and lives in another venv.
+
+Open:
+- The Codex leg is covered by a mocked test only. Its account hit the usage limit until 09:44 on 2026-09-12.
+- `achios-google-auth-health.service` and `.timer` are tracked but not installed. Nine other installed units differ from their tracked copies.
+
+Follow-up the same day: a live Telegram run through `systemd-run --pipe` showed agy printing nothing with exit 0. The open stdin pipe caused it; a timer-like run with stdin from `/dev/null` used agy normally. `run_llm` now passes `stdin=DEVNULL` so manual runs from a pipe behave like the timer.
+
+## 2026-09-12 00:21 [saved]
+
+Goal: track achiCore #57 for /tasks parameter forwarding and close AIS-OS #55 in tasks.md per Aki's direction.
+
+Decisions:
+- Marked AIS-OS #55 done in `tasks.md` following merge of PR #56.
+- Added active tracking item in `tasks.md` under `## Active` for [achiCore #57](https://github.com/achibukz/achiCore/issues/57) (`Forward /tasks arguments in cmd_tasks and render area views turn-free`).
+- Retained existing open GitHub issue `achiCore #57` rather than opening a duplicate issue on GitHub.
+
+Rejected:
+- Opening duplicate issue on achibukz/achiCore.
+
+Open:
+- Implementation of achiCore #57 by Aea when ready.
+
+## 2026-09-12 00:17 [saved]
+
+Goal: update persistent declarative memory and AGENTS.md with /tasks default exclusion filtering rules.
+
+Decisions:
+- Replaced task tracking entry in `~/.config/achios/MEMORY.md` via `memory_engine.py replace` to explicitly mandate parsing via `scripts/task_engine.py` and enforcing default exclusions (#systems, repo tickets, non-school research) per PR #56 (AIS-OS #55).
+- Updated `/tasks` skill definition in `AGENTS.md` to document `task_engine.py` default exclusion behavior.
+
+Rejected:
+- None.
+
+Open:
+- None.
+
+## 2026-09-12 00:15 [saved]
+
+Goal: triage 11 general and tooling active tasks to the Backlog section in tasks.md per Aki's instruction.
+
+Decisions:
+- Moved 11 tasks from `## Active` to `## Backlog` in `tasks.md`: reflect skill integration, Tauri desktop GUI, open tickets scanner cron, /new autocomplete order, daily brief test repair, gws port-forward test, model selection reference, trending repos scanner cron, sync include/exclude list ticket, multi-repo sync command, and Telegram smart model routing discussion.
+- Verified parsing and filtering through `task_engine.render_tasks(..., area="backlog")` and confirmed all 26 test suite tests pass.
+
+Rejected:
+- Modifying other active tasks or moving tickets not explicitly requested.
+
+Open:
+- None.
+
+## 2026-09-11 23:50 [saved]
+
+Goal: implement AIS-OS #55 to filter systems, bare tickets, and non-school research from default /tasks, and support all and backlog views.
+
+Decisions:
+- Added `raw_text` field to `Task` dataclass preserving original line content for ticket reference matching.
+- Added `TICKET_RE` and `BARE_TICKET_RE` regexes to detect issue/PR links and bare ticket references across AIS-OS, achiCore, achiAgy, schoolMem, and achiMem.
+- Added `_is_default_excluded(task)` in `scripts/task_engine.py` applying Predicate A (`#systems`), Predicate B (issue/PR links and bare ticket references), and Predicate C (non-school research with `#research` tag).
+- Extended `parse_tasks` in `scripts/task_engine.py` to parse `## Backlog` entries with `state="backlog"`, skipping completed `[x]` items and preserving `[ ]` and `[~]`.
+- Updated `render_tasks` in `scripts/task_engine.py`:
+  - `area is None`: filters tasks matching default exclusion predicates and excludes backlog.
+  - `area="all"`: renders all active and blocked tasks across categories without exclusions (backlog excluded).
+  - `area="backlog"` (and alias `"backlogs"`): renders only backlog tasks under a `BACKLOG` section header.
+  - Specific areas (e.g. `--area systems`): retain existing behavior without default exclusion filtering.
+  - Invalid area raises `ValueError` listing valid choices including `all` and `backlog`.
+- Updated `scripts/tasks_digest.py` `--area` argument choices to include `all` and `backlog`.
+- Added unit tests T1-T8 and T10 in `tests/test_task_engine.py` and T9 in `tests/test_tasks_digest.py`, achieving full test coverage with zero regressions across 530 tests.
+
+Rejected:
+- Separate predicate for engineering tasks (already covered by `#systems` area).
+- Including backlog tasks in `area="all"` (backlog remains strictly isolated to `area="backlog"`).
+
+Open:
+- Open PR for AIS-OS #55 and await review/merge before `achiCore #57` argument forwarding.
+
+## 2026-09-11 23:35 [saved]
+
+Goal: publish AIS-OS implementation ticket for /tasks default exclusion of systems and tickets, all option, and backlog support per Aki's direction.
+
+Decisions:
+- Authored and published [AIS-OS #55](https://github.com/achibukz/AIS-OS/issues/55) ("Filter systems and project research from default /tasks and support all and backlog views") labeled `ready-for-agent` and `priority:high`.
+- Reconciled existing [achiCore #57](https://github.com/achibukz/achiCore/issues/57): posted dependency comment noting `achiCore #57` is blocked by `AIS-OS #55`, and requiring `cmd_tasks` in `src/bot.py` to forward arguments (`all`, `backlog`, and primary areas) without spending model turns.
+- Saved discussion record in [tasks-view-discussion-2026-09-11.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-view-discussion-2026-09-11.md) and updated [astra-roadmap-2026-09-11.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-roadmap-2026-09-11.md).
+- Added tracking item for [AIS-OS #55](https://github.com/achibukz/AIS-OS/issues/55) to [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) under `## Active`.
+
+Rejected:
+- Opening duplicate ticket in achiCore (reused and updated open issue #57 instead).
+- Permitting deferred backlog items in default or scheduled views (strictly gated behind explicit `--area backlog`).
+
+Open:
+- Implementation of AIS-OS #55 and subsequent achiCore #57 integration.
+
+## 2026-09-11 23:25 [saved]
+
+Goal: triage and refine active task register, formalize Backlog section, and update task statuses per Aki's review.
+
+Decisions:
+- Created dedicated `## Backlog` section in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) between `## Blocked` and `## Done`. Bypassed by `scripts/task_engine.py` (which parses active/blocked only), suppressing backlog items from daily briefs, `/tasks`, and announcements until explicitly queried.
+- Moved 8 deferred tasks to `## Backlog` with stale August deadlines stripped: memory & persona budget optimization, Google Sheets schedule planner, Althea fact-checking benchmark, Asa implementation plan, Asa failure modes audit, AI-assisted learning architecture, Matt Pocock skills in Asa, and prior art discovery workflow.
+- Marked 7 tasks complete/closed in `## Done`: system cohesion audit, Hermes research retrospective audit, Matt Pocock research pipeline integration, achiAgy priority tickets (superseded), Claude Code quota & token refresh, AUTO Zoom Leaver Windows port, and Google auth & tasks batch.
+- Updated Canvas first release task in `## Active` to reflect 2 remaining tickets ([#31](https://github.com/achibukz/AIS-OS/issues/31) and [#47](https://github.com/achibukz/AIS-OS/issues/47)), with phone login (PR #35) merged and achiCore #173 / deployment #30 closed.
+
+Rejected:
+- Moving backlogged items to separate docs files (avoids fragmentation).
+- Deleting completed/cancelled tasks instead of appending to `## Done` (preserves audit trail).
+
+Open:
+- Active tasks reduced from 60 to 45.
+
+## 2026-09-11 21:42 [saved]
+
+Goal: repair Luna review findings on PR #54 (ticket #41 email digest source links).
+
+Decisions:
+- Fixed remainder data loss in `scripts/telegram_notify.py` `split_messages`: replaced `rpartition("\n")` slice with `rfind("\n")` against full `block`, preserving all trailing lines and preventing drops when multiline blocks exceed the limit.
+- Anchored index matching in `scripts/email_digest.py` `match_bullet_to_item` to bullet start (`^\s*(?:[•\*\-]\s*)?\[\d+\]`), preventing bracketed numbers in subject text from misidentifying items.
+- Fixed section header routing in `validate_and_render_llm_digest`: prioritized `is_bullet` checks before section headers, skipped markdown horizontal rules, and required non-empty `line_core` to prevent separator lines from matching headers.
+- Restricted bracket stripping in `validate_and_render_llm_digest` and `match_bullet_to_item` to markdown link syntax and link tokens (`[link]`, `[missing ID]`), preserving course code brackets like `[CSOPESY]`.
+- Strengthened unit tests in `tests/test_telegram_notify.py` and `tests/test_email_digest.py` covering multiline block preservation, bracketed subject numbers, course code preservation, and section isolation.
+
+Rejected:
+- Using `rpartition` on substrings without tracking full block tails.
+- Stripping all bracketed text globally from digest bullets.
+
+Open:
+- Push repairs, update PR body with copyable assisted live testing invocation, and comment review resolution on PR #54.
+
+## 2026-09-11 21:20 [saved]
+
+Goal: implement AIS-OS #41 to attach account-aware source links to concise email digests across all rendering paths.
+
+Decisions:
+- Preserved `message_id`, `thread_id`, and `account_email` in `EmailItem` and attached clickable `<a href="...">[link]</a>` to each item via `format_source_link`.
+- Constructed Gmail web links as `https://mail.google.com/mail/u/<account>/#all/<id>` for the exact authenticated Google profile (DLSU, Work, Personal). If message identity is absent, reported `[missing ID]` without guessing search queries.
+- Added structured validation (`validate_and_render_llm_digest`) to re-anchor LLM synthesis output, stripping model-hallucinated links or attaching missing canonical links deterministically.
+- Applied HTML escaping to untrusted email attributes (sender, subject, snippet) and enabled `html=True` for Telegram delivery while guarding against anchor tag slicing during long message splitting in `telegram_notify.py`.
+
+Rejected:
+- Prompting the LLM to invent or format arbitrary URLs directly (rejected: prone to hallucinations, dropped anchors, or token exposure).
+- Guessing Gmail search URLs from email subject when IDs are missing (rejected: acceptance criteria explicitly require reporting missing identity).
+
+Open:
+- Verification: all 35 tests in `tests/test_email_digest.py` and all 504 tests across repository test suite passed.
+- Open pull request with required mentions and prepare assisted live testing checklist.
+
+## 2026-09-11 21:20 [saved]
+
+Goal: implement AIS-OS #42 to resolve Obsidian wikilinks natively in Tailscale web viewer.
+
+Decisions:
+- Replaced styled wikilink spans in `scripts/achi_viewer.py` with vault-relative link resolution for `[[note]]`, `[[note|label]]`, and heading anchors.
+- Added `find_vault` and `VaultIndex` to index notes and assets within the enclosing vault, ensuring links never cross vault boundaries.
+- Traversal attempts (`../`, `%2e%2e%2f`), symlinks pointing outside the vault or to sensitive files (`BLOCKED_PATTERNS`), missing notes, and duplicate basenames remain visibly unresolved styled spans (`<span class="wiki-link unresolved is-unresolved">[[...]]</span>`) rather than pointing at an arbitrary file.
+- Added heading slugification in both Python (`slugify_heading`) and client-side Marked.js renderer (`id="${slug}"`) so anchors match and jump cleanly.
+- Preserved untouched Markdown source in `raw-markdown-content` and `?raw=true` for clipboard copying and direct exports.
+
+Rejected:
+- Client-side resolution: browser has no filesystem access to verify duplicate basenames or traverse vault boundaries securely.
+- Cross-vault fallback searching: breaks vault isolation and causes cross-vault link pollution.
+
+Open:
+- Verification: `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` passed 517 tests with one existing unknown-marker warning.
+- Guard verification: sabotaged the duplicate basename guard, observed `test_wikilink_duplicate_basenames` fail, restored the guard, and observed the test pass.
+- Open pull request with `Closes #42` and required mentions.
+
+## 2026-09-11 20:29 [saved]
+
+Goal: implement AIS-OS #13 on top of the isolated #6 task-engine worktree.
+
+Decisions:
+- Added `scripts/cohesion.py` with versioned `submit`, `context`, and `capabilities` commands. A mode-600 SQLite store records source identity, items, preferences, operation snapshots, versions, retries, and pending clarifications before destination writes.
+- Seeded editable placement preferences for social plans, quick tasks, coding tickets, and school deadlines. A request-level placement overrides one item without changing its category preference.
+- Task writes use hidden stable IDs, a fresh content hash, and atomic replacement with preserved file permissions. Calendar writes use deterministic event IDs, private item identity, stored profile and calendar IDs, event versions, and timeout reconciliation.
+- Completion requires an item ID. It moves tasks to Done and updates owned Calendar metadata while preserving the event date or time.
+
+Rejected:
+- Title-based completion and generic file or shell operations.
+- Replaying a successful destination after a partial failure.
+- Testing against Aki's live task register or Calendar. Tests use temporary files, databases, and fixture transports.
+
+Open:
+- Verification: `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` passed 523 tests with one existing unknown-marker warning. `uvx ruff check scripts/cohesion.py tests/test_cohesion.py` passed.
+- The partial-retry sabotage check removed the pending-only operation filter, observed the retry test fail because it replayed the task write, restored the filter, and observed the test pass.
+- Open a stacked pull request against the #6 branch and record GitHub's check state.
+- Aki limited this session to AIS-OS #13. achiCore #148 was not started and still waits for #56 and #197 in addition to this ticket.
+
+## 2026-09-11 20:12 [saved]
+
+Goal: implement AIS-OS #6 in an isolated worktree before the dependent cohesion tickets.
+
+Decisions:
+- Added `scripts/task_engine.py` as the deterministic parser and full renderer for active and blocked tasks. Five fixed primary areas are separate from repository and subject tags. Missing or conflicting primary areas remain visible under `uncategorized`.
+- Replaced the capped `tasks_digest.py` focus buckets with the shared full renderer. `--area` selects one fixed area, and `--dry-run` performs no Telegram send.
+- Migrated 30 unique active items from the two legacy backlog files into [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md). Two existing duplicate lines were not copied. The legacy files remain as link-safe migration markers.
+
+Rejected:
+- Restoring model-generated task categories. The September 11 issue body supersedes the older Gemini classifier proposal.
+- Guessing primary areas for legacy tasks whose existing tags do not select exactly one of the five fixed areas.
+
+Open:
+- Verification: `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` passed 506 tests with one existing unknown-marker warning. `uvx ruff check scripts/task_engine.py scripts/tasks_digest.py tests/test_task_engine.py tests/test_tasks_digest.py` passed.
+- The losslessness sabotage check restored a one-item deadline cap, observed the far-future fixture fail, restored the implementation, and observed the test pass.
+- Open the pull request and record live CI state.
+- AIS-OS #13 remains blocked until #6 merges. achiCore #148 also waits for achiCore #56 and #197.
+
+## 2026-09-11, approved Telegram cohesion roadmap and ticket workflow
+
+Recorded Aki's decisions in docs/telegram-cohesion-discussion-2026-09-11.md, replaced the active Astra plan with current scope and preserved its earlier version under docs/history. Published 16 new tickets and revised 15 existing ones across AIS-OS and achiCore. The roadmap includes every remaining open ticket. Closed achiCore #10 after source/test verification; kept #62 open for its remaining cross-store rollback defect. Kept #20 and Canvas #24 open where review or live evidence remains incomplete.
+
+Updated tracked agy-tickets instructions for approved publication authority, current model keys, dependency ordering, all-ticket inventory and post-SHIP self-guided HITL. Aki retains merge control. No runtime features or timers were deployed. Existing dirty main-checkout tasks and logs remain outside this change.
+
+Verification: focused achiCore command and 59 passing tests are recorded in the roadmap. Planning/skill validation and AIS-OS suite results are recorded in the PR and skill-check document. Open work remains the published implementation tickets, not a claim that this planning change ships their behavior.
+
+## 2026-09-11 16:20 [saved]
+
+Goal: #37 follow-up. Aki asked to drop the grades message for now after seeing the resent catch-up.
+
+Decisions:
+- Removed the course grades message from the catch-up and the Monday weekly, with its formatter branch and loader. Deadlines and announcements are unchanged.
+- Kept the instant grade change alerts (`assignment_grade_changed`, `course_grade_changed`). They carry new information, unlike a list of five "not posted" rows.
+
+Open:
+- Resent catch-up at 06:35 UTC in the new card format; Aki confirmed the layout and links.
+
+## 2026-09-11 16:00 [saved]
+
+Goal: #37 follow-up. Aki asked for shorter links, the cron separator layout and no emojis in Canvas messages.
+
+Decisions:
+- `telegram_notify.send` gained an opt-in `html=True` that sets Telegram's HTML parse mode. Only Canvas delivery uses it, so the other crons keep sending plain text.
+- Every Canvas message, change alerts and auth notices included, is now a card: the 33-dash separator the crons use, a bold header, then the body. Items end with `<a href>[link]</a>` instead of a raw URL line. All Canvas text passes through `html.escape`, and each anchor stays on one line so the sender's newline splitting cannot cut a tag.
+- Removed the reminder and empty-week emojis.
+
+Open:
+- Live check of the new layout waits for the next real event or digest after deploy.
+
+## 2026-09-11 15:10 [saved]
+
+Goal: #37, deadline reminders, weekly and daily digests and a one-time catch-up in achiSchooNounce.
+
+Decisions:
+- Aki chose the Option D countdown and split messages by type: deadlines, announcements and course grades. Every Canvas item carries its `source_url` on the next line; Aki made that a standing rule.
+- New `canvas.py remind` writer command, run by `canvas_scheduled.py` between `sync` and `deliver --send`. Selection lives in `scripts/canvas_reminders.py`; rendering stays in `canvas_events.format_event`, which now computes countdowns at send time so a retried message never shows a stale "in 16h".
+- Schema version 2 adds `notices(key, created_at)`. A claimed key and its events commit together. Writers migrate version 1; readers accept both.
+- Weekly Monday 08:00 Manila with three messages; daily Tuesday to Sunday with deadlines plus announcements only when posted in the past 24 hours; empty days and weeks still send. 3h and 1h reminders key on `due_at`, so a date change re-arms them.
+- The run that sends the catch-up claims that day's digest silently. A preview on a copy of the live cache showed the catch-up followed by a redundant "Nothing due today" and a repeated announcement.
+- Extracted `unfinished()` from `query_record` so reminders and `--unfinished` share one rule.
+
+Open:
+- Suite: 488 passed with pytest, requests and aiohttp.
+- Live acceptance after deploy: catch-up once, next digest, one 3h or 1h reminder, no duplicates across two runs.
+
+## 2026-09-11 13:45 [saved]
+
+Goal: #30, schedule the 30-minute Canvas sync and prepare the first Telegram release gate.
+
+Decisions:
+- Added `scripts/canvas_scheduled.py` with `systemd/achios-canvas-sync.{service,timer}`. The wrapper runs `sync`, then `deliver --send` even after a failed or partial sync, because `sync` queues the session-expired event before exiting 1. A held writer lock skips delivery.
+- Aki chose local faults only for failure alerts. Remote outcomes (expiry, Canvas errors, partial categories, unconfirmed delivery, busy) exit 0 so an outage does not alert every 30 minutes; mapping, cache, cookie store and notify-config faults exit 1.
+- No `Restart=`; retries are the client's bounded attempts plus the next run. `TimeoutStartSec=10min`, `UMask=0077`, `Persistent=true` for one catch-up run.
+- Documented targeted deploy and rollback commands instead of `install_units.sh`, which would re-enable the deliberately inactive `achios-google-auth-health.timer`.
+- Updated the plan from a two-hour to a 30-minute interval to match the ticket.
+- The same delivery gap existed in achiCore Refresh now; Aki approved fixing it in a paired achiCore PR.
+
+Open:
+- `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q`: 462 passed. The documented command in `docs/canvas-data.md` lacks aiohttp, which `test_canvas_login.py` needs since #27.
+- Live gate not run: timer deployment, 30-minute activation, silent run, Telegram Refresh now, notification retry, sampled facts and phone login with the Mac closed.
+
+## 2026-09-09 20:46 [saved]
+
+Goal: record scheduled email submission of signed ING Internship Agreement form to Vans.
+
+Decisions:
+- Noted scheduled email delivery to Vans for the signed 5-month ING Internship Agreement Form.
+- Moved the submission task in `tasks.md` from Active to Done with scheduled status.
+
+## 2026-09-09 20:33 [saved]
+
+Goal: verify uploaded signed ING Internship Agreement form and review agreement terms.
+
+Decisions:
+- Verified signed document `Abram Aki R. Bukuhan - Internship Agreement.pdf` in `~/Documents/Files/career/ing/` with password `INGHUBSPH2026`. Confirmed both intern (Aki) and parent/guardian (Michael Bukuhan) signatures are present.
+- Deleted the old unsigned agreement copies per Aki's instruction.
+- Reviewed and summarized key legal, operational, and intellectual property terms from all 8 pages of the agreement.
+- Updated `tasks.md` to reflect that signatures are complete and only final email submission to Vans remains.
+
+## 2026-09-09 18:20 [saved]
+
+Goal: inspect work email from Vans (ING Hubs Philippines) and update Internship Agreement task and calendar.
+
+Decisions:
+- Queried work Gmail profile via `gws gmail users messages` and retrieved message `1a085a979d414420` (`Internship Agreement Submission - Abram Aki Bukuhan`).
+- Extracted key details: deadline is September 11, 2026, at 1:00 PM; signatures needed from Aki and Parent/Guardian; PDF password is `INGHUBSPH2026`; notarization guidelines will follow in a separate update.
+- Updated `tasks.md` line to reflect the exact 1:00 PM deadline, password, and signing parties.
+- Updated event on `ING` Google Calendar to a timed deadline event: `Deadline: Submit ING Internship Agreement (1:00 PM)` on 2026-09-11 13:00–13:30 PHT with password, signing requirements, and default reminders.
+- Extracted both the original August 18 ING Internship Offer Letter packet and the September 9 Internship Agreement from work Gmail into `~/Documents/Files/career/ing/`, and generated preview PNGs for quick inspection.
+
+## 2026-09-09 14:11 [saved]
+
+Goal: fix Luna's should-fix and nit findings on Canvas phone reauth PR #35.
+
+Decisions:
+- Narrowed the gateway's Sec-Fetch-Site cross-site block to exempt only GET requests carrying Sec-Fetch-Mode: navigate, since a top-level navigation from a link (the Telegram delivery path in #27) carries no CSRF risk and POST/WebSocket keep the existing Origin check.
+- `replace_session` now raises a typed `CanvasError("account_mapping_unusable")` when `mappings.json` exists but has no usable `user_id`, instead of leaking a bare `KeyError` as an untyped 500.
+- Forwarded the proxy's `Location` header, removed the duplicate deadline computation between `Login.__init__` and `serve` (deadline is now passed in once), looped the CDP export until the `Storage.getCookies` reply (`id == 1`) instead of trusting the first WebSocket frame, and corrected the `connections.md` last-checked date to 2026-09-09.
+- Added regression tests for both should-fix findings; confirmed each fails against the pre-fix code (KeyError on a mapping missing `user_id`; 403 on a cross-site navigation GET) and passes with the fix.
+- Did not touch blocker 1 (missing assisted acceptance evidence for the shipped one-page layout) — that needs a live phone step from Aki, not a code change.
+
+Open:
+- Blocker 1 is unresolved: no redacted evidence record exists for the current one-page layout, and the PR body has no "Assisted feature live testing" section. Needs Aki's phone participation before this can ship.
+
+## 2026-09-09 Canvas phone login implementation
+
+Goal: implement AIS-OS #27 and prepare assisted phone acceptance in the current Codex session.
+
+Decisions: work in AIS-OS-phone on ticket/27-canvas-phone-reauth to preserve unrelated main-checkout edits. Inspected the existing Obsidian/Selkies container and chose a separate temporary Chromium container. Added Tailscale peer identity checks, a bounded login window, independent systemd cleanup, and validated Canvas-only cookie replacement under the existing writer lock. No worker write boundary or vault policy changed.
+
+Verification: initial replacement tests failed because the implementation did not exist, then 21 focused tests passed. `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` returned 447 passed in 39.45s. A live existing-session profile probe at 00:18:21 UTC returned valid authentication. This is a baseline, not proof of phone reauthentication.
+
+Further verification: the updated full suite returned 451 passed in 33.42s. The wrong-account regression failed when its account check was temporarily removed and passed after restoration. Live HTTPS controls and desktop returned 200; loopback-source and foreign-Origin requests returned 403. The remote desktop displayed Google sign-in through a real WebSocket. A 60-second window expired and removed its container. A separate 15-second container expired after its launcher exited. Certificate setup initially failed until Aki enabled HTTPS Certificates in Tailscale and issued the certificate interactively.
+
+Live acceptance: Aki confirmed his Mac was closed and Canvas opened through the phone's remote browser. He could not recover the separate control tab. The server's routes passed an independent check, but the mobile navigation failed. Invoked the authorized Verify endpoint from Ubuntu; it returned valid authentication at 05:45:19 UTC, saved the candidate and removed the temporary browser. A second client probe at 05:46:22 UTC succeeded from the saved jar and matched the mapped account after the browser was gone. Replaced the two-tab layout with persistent controls above an embedded desktop, including controls at the root URL. Added a routing regression and checked the working stream and visible Verify button in a mobile viewport.
+
+Final validation: `uv run --with pytest --with requests --with aiohttp python -m pytest tests/ -q` returned 452 passed in 33.88s. No temporary login containers or gateway listener remain.
+
+Final controls: the server recorded another successful Verify at 05:49:17 UTC before the user reported a closed connection on Cancel. Completed pages now disable both controls so another click cannot replace the success message with a connection error. A live browser cancellation returned Login cancelled and removed the temporary container; a simulated success response verified the completed UI state.
+
+Published [PR #35](https://github.com/achibukz/AIS-OS/pull/35). GitHub reported no check runs; validation is local. No schoolMem deployment, scheduled sync or Telegram message occurred. Session lifetime remains unmeasured. The separate assisted-testing record retains the certificate setup failures, phone navigation problem and evidence distinctions.
+
+## 2026-09-09 07:27 [saved]
+
+Address Luna's review on Canvas PR #33. Course grades now remain outside assignment pagination; delivery continues after failures and rotates retries by attempt count; probe records auth transitions without refreshing facts. Added online CLI, mapping-validation and receipt tests, rejected irrelevant flags, and documented an assisted live-testing handoff.
+
+Live acceptance on the prior head restored Ubuntu authentication, matched all five courses and confirmed CCINOV8 deadlines and no posted grade. Aki clarified that the displayed 0/0 was a What-If score. STDISCM announcements and assignments were accessible even though some grade fields were absent. Corrected the initial overbroad diagnosis: grade unavailability must not hide homework. Added explicit grade availability/timestamps while preserving previously fetched values. Existing rejection coverage now checks a submission missing its required state; new live-shape tests check optional grade omission, preserved scores and no false grade events.
+
+Canvas regression command returned 106 passed. `uv run --with pytest --with requests python -m pytest tests/ -q` returned 422 passed in 32.83s. Final-head live receipts follow in the PR comment. No live Telegram messages or deployment occurred.
+
+## 2026-09-09 02:27 [saved]
+
+Canvas client, cached queries and notifications
+
+Aki approved #26, #28 and #29 in sequence in one PR. Work runs in a separate worktree on ticket/26-canvas-data-notifications because the main checkout has unrelated edits. The client uses origin checks, private cookie persistence and one writer lock. Initial client and manifest checks returned 49 passed with `uv run --with pytest --with requests python -m pytest tests/test_canvas_client.py tests/test_canvas_subjects.py -q`. A live Ubuntu probe at 18:26 UTC returned authentication_expired. Course mapping and factual sampling remain pending; no notifications or services were activated. Storage and read-only queries are implemented. `uv run --with pytest --with requests python -m pytest tests/test_canvas_client.py tests/test_canvas_subjects.py tests/test_canvas_store.py -q` returned 59 passed, including a real Landlock subprocess that denied a write and allowed the cached query. Transactional events, dry-run previews and explicit school-sender delivery are implemented. The initial full suite returned 387 passed in 50.05s. Subsequent review added strict missing-grade handling, bounded query pages, CLI read isolation and cookie/pagination failure tests; the updated Canvas set returned 82 passed. Final full-suite command `uv run --with pytest --with requests python -m pytest tests/ -q` returned 398 passed in 50.10s. A subsequent enrollment-query adjustment uses the verified numeric account ID; `uv run --with pytest --with requests python -m pytest tests/test_canvas_store.py tests/test_canvas_events.py tests/test_canvas_cli.py -q` returned 27 passed in 0.75s. Live sends remain unexercised. An adjacent shared-sender split bug was reproduced with 4,146 unbroken characters: it returned 8,192 characters and lost the tail. That existing function was left unchanged; Canvas messages stay below the split threshold. Opened [draft PR #33](https://github.com/achibukz/AIS-OS/pull/33). GitHub reported no checks on its head, so validation is local. At Aki's request, filed the splitter bug as [#34](https://github.com/achibukz/AIS-OS/issues/34) and deferred live Canvas verification until a later session after PR preparation.
+
+## 2026-09-08 12:31 [saved]
+
+Canvas scope and first implementation increment.
+
+Approved factual Telegram queries first, two-hour sync, manual refresh, four-hour staleness, Asia/Manila calendar weeks and phone reauthentication over Tailscale. Read AY2627-T1 subjects from schoolWiki. Created AIS-OS #25 through #31 and achiCore #173 under epic #24, with explicit dependencies and acceptance checks. Preserved the original research below the revised approved plan.
+
+Started the offline subject manifest on ticket/25-canvas-subject-manifest. Existing unrelated edits in tasks, logs and Astra documents are preserved. Rejected implicit term selection, broad enrolled-course import and weakening the worker write boundary. Live course IDs, phone login, the Canvas client and production deployment remain pending. Automated validation: `uv run --with pytest python -m pytest tests/test_canvas_subjects.py -q` returned `24 passed in 0.10s`. Read-only local acceptance with `python3 scripts/canvas_subjects.py --wiki /home/achibukz/Documents/Obsidian/schoolMem/wiki` returned the five expected subject/section pairs. Canvas access, phone login, notification delivery and the full repository suite were not exercised.
+
+
+## 2026-09-08, added STSP002 schedule and milestone events to Google Calendar
+
+Added six course events to the `STSP002` Google Calendar from the AY2627-T1 syllabus ingest:
+- Diagnostic Exam (Cloud School, ungraded): Friday, September 11, 2026, 09:15–10:45 AM PHT
+- Midterm Exam (LS226, proctored): Friday, October 23, 2026, 09:15–10:45 AM PHT
+- MCO1 monolith project due: Wednesday, October 28, 2026, all-day
+- Independent Learning Period (ILP): Thursday, October 29 to Wednesday, November 4, 2026, all-day
+- MCO2 capstone demo and defense due: Tuesday, December 1, 2026, 09:15–10:45 AM PHT
+- Final Exam (Comprehensive, written): Friday, December 4, 2026, 08:00–11:00 AM PHT
+
+## 2026-09-07, resolved vault sync timeout and updated Term 1 calendar events
+
+Diagnosed transient network timeout failure in `achios-vault-sync.service` (`git pull --rebase` against `github.com:443` timed out after 136s). Re-ran the unit successfully once network connectivity recovered. Delegated removal of untracked `inbox/delegation-test.md` in `achiMem` to `#achiMem`, which committed and pushed `eccc58e` to clean the inbox watch state.
+
+Added STDISCM + GDPARCM Online Master Class orientation event to `STDISCM` Google Calendar on Wednesday, September 9, 2026, 6:30 PM – 8:00 PM PHT (identifying Dr. Del Gallego's "Wednesday, September 3" notice as a recycled 2025 template typo).
+
+Updated GELITPH recurring Tuesday and Friday online sessions (2:30 PM – 4:00 PM PHT) with instructor Ana Margarita Nunez's Zoom credentials and delegated the course overview update to `#schoolMem`. Changed STDISCM calendar color from colliding pale mint (`#cbeec8`) to Pastel Apricot (`#ffcba4`, `colorId=11`) via `gws`.
+
+
+Delegated from #General. Established the root cause of the truncation banner appearing on a complete #achiMem deletion report. `tui.log_error` runs only in the `error` branch (`src/bot.py:5941`) and the achiMem topic log holds no error panel for that turn, which places it in the `result` branch: agy emitted one `result` event carrying the finished receipt in `response` together with `status: ERROR` and `The stream was interrupted`. `is_recoverable_stream_error` matched, so `recovered_stream_drop` was set and `src/bot.py:6019` prepended the banner unconditionally. The report was never truncated.
+
+Found a second entry point the original ticket missed: `src/agy_client.py:508-518` yields a recoverable `error` event when the process exits non-zero after a clean result, setting the same flag with no later event to reset it. Confirmed #167's reset on a clean `SUCCESS` result at `src/bot.py:5926-5929` is intact, so Luna's should-fix from PR #169 was addressed and is not part of this bug.
+
+Rewrote [achiCore #172](https://github.com/achibukz/achiCore/issues/172) in place rather than filing a duplicate, since it was still open, unassigned, and had no worker job. Replaced the vague "clean terminal structure" wording with a specified rule: odd code-fence count as a hard veto, receipt status line searched only in the trailing 15 non-empty lines, terminal punctuation fallback so receipt-free prose reports are not banner-tagged forever.
+
+## 2026-09-07, diagnosed the stranded aea1/luna1 pair and filed the standby retry ticket
+
+Job `364b578fd9d822c7625cfe8d-6` (achiCore #6, PR #166) sat at `release_pending` holding aea1 and luna1. Luna approved at 18:15 PHT, Aki merged PR #166 on github.com at 18:53, then stopped the job from the Atlas status card at 21:23. Merging outside Telegram meant the daemon never ran its merge path, which is the branch that calls `stand_by` and returns both workers automatically, so the stop routed through abandon into `release_pending`. The release attempt then recorded `git fetch origin --prune timed out after 120s`.
+
+Verified the blocker is gone: the same fetch in `achiCore-aea1` now takes 1.6s, both worktrees are clean, luna1 is already detached, and neither slot has a live worker process. The release has to be re-triggered from the Recheck and release button, because `JobStore` loads `_records` once at construction and the running daemon holds them in memory, so editing `to_work_jobs.json` on disk would be overwritten and the slots would still read as occupied by `reserve_pair`.
+
+Filed [achiCore #171](https://github.com/achibukz/achiCore/issues/171) for the underlying fault: `_git` in `src/standby.py` raises on the first timeout with no retry, so one transient stall strands a worker pair until a human intervenes. Logged an active task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+## 2026-09-07, delegated trailing stream error ticket to Atlas
+
+Delegated issue creation to Atlas via agy-tickets for the trailing stream drop bug encountered during #General to #achiMem delegation. The work succeeded in disk artifacts (delegation-test.md created and linted), but an upstream SSE disconnect at stream close caused agy to emit status: ERROR, which run_delegated_turn forwarded as a failure receipt. Logged an active task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+## 2026-09-07, added Canvas implementation plan and logged Astra discussion task
+
+Added comprehensive technical specification and 19-ticket roadmap (Tickets A-S under [Ticket #24](https://github.com/achibukz/AIS-OS/issues/24)) to [canvas-implementation-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/canvas-implementation-plan.md). Documented SQLite+FTS5 architecture, 0-token sync invariant, and hardened HTTP client boundaries. Logged an active task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) to discuss the plan with Astra.
+
+## 2026-09-07, Canvas content and PDF probe
+
+Verified announcements, assignment and enrollment endpoint access from Ubuntu. A discussion returned 44 top-level entries, but Aki made discussions optional. An authenticated PDF download returned 632,460 bytes with a valid header and matching Canvas metadata. Rejected an earlier HTTP 200 login response from a request without cookies. Some Files listings return 403; linked-file discovery remains untested. Updated [the plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/canvas-sync-plan.md). No production code, scheduled job or vault import was created.
+
+## 2026-09-07, Canvas access verified with Mac closed
+
+Ubuntu returned HTTP 200 and valid course JSON using the privately transferred Canvas session, both before and after Aki reported closing Arc and his Mac. The second check ran at 08:51:41 UTC. No browser or personal API token was used. Session lifetime and content downloads remain untested. Recorded evidence in [the Canvas plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/canvas-sync-plan.md).
+
+## 2026-09-07, sent Term 1 EAF to Ethan Burayag
+
+Moved the task to send AY 2026-2027 Term 1 EAF to Ethan Burayag (`ethan_burayag@dlsu.edu.ph`) to done in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+## 2026-09-07, BPI account setup and ING onboarding proof completed
+
+Moved the BPI account creation and funding task to done in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md). Aki opened a traditional BPI savings account (acct `0119145716`, Grace Park 2nd Ave branch) funded with ₱3,000 and dispatched account details/proof to Vans for ING onboarding. Financial setup and maintaining balance rules are recorded in [banking-setup.md](http://100.106.210.38:8999/Documents/Obsidian/achiMem/wiki/personal/money/banking-setup.md).
+
+## 2026-09-07, filed eye grades and optical history
+
+Filed optical exam history (2023-01-13, 2024-05-05, and 2026-09-07) to [2026-09-07-eye-grades-history.md](http://100.106.210.38:8999/Documents/Files/personal/health/2026-09-07-eye-grades-history.md) under `~/Documents/Files/personal/health/` (synced via Syncthing `achi-files`). Noted Landlock write restriction on `~/Documents/Obsidian/` in `#General` preventing direct edits to `achiMem/wiki/personal/health/`.
+
+## 2026-09-07, sent Canvas integration plan to Andrei
+
+Dispatched the DLSU Canvas sync plan ([canvas-sync-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/canvas-sync-plan.md)) via `gws gmail +send` from `aki.bukz12@gmail.com` (`~/.config/gws-main`) to Anthony Andrei Tan (`anthony.andrei.tan@gmail.com`) with the markdown plan file attached. Sent message ID `1a07a8836672a372`. Saved draft record in [2026-09-07-andrei-canvas-sync-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/output/2026-09-07-andrei-canvas-sync-plan.md).
+
+## 2026-09-07, smart model routing discussion task
+
+Logged an active task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) to discuss how to implement smart model routing for daily Telegram conversations in achiCore.
+
+## 2026-09-06, Canvas sync planning checkpoint
+
+Saved [the resume plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/canvas-sync-plan.md) and filed [#24](https://github.com/achibukz/AIS-OS/issues/24). Aki verified a course export and session-authenticated JSON in his browser. Token creation is unavailable; Google login requires MFA. He accepts a private server session file and a possible Telegram-opened authentication flow. Next work is an Ubuntu HTTP-client experiment and session lifetime measurement with the Mac closed. No server session, sync, remote login or deployment was tested. Calendar feeds remain excluded. Updated the existing task; implementation remains pending.
+
+## 2026-09-06, sent test email to personal Gmail via gws
+
+Successfully sent a test email from `aki.bukz12@gmail.com` to personal inbox `akibukuhan10@gmail.com` using `gws gmail +send` with `GOOGLE_WORKSPACE_CLI_CONFIG_DIR=~/.config/gws-main` and `KEYRING_BACKEND=file`. Verified message reception in `akibukuhan10@gmail.com` inbox (Message ID `1a07902bf9a40148`, thread `1a07902bf9a40148`). Confirmed execution succeeds cleanly in this environment without `os error 13` (EACCES) sandbox restrictions.
+
+## 2026-09-06, documented write boundary inventory and feature audit topics
+
+Added a comprehensive inventory and risk analysis section to [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md#write-boundary-inventory-and-downstream-feature-impact) documenting achiCore Landlock write boundaries (`src/write_boundary.py`), ancestor invariance in `$HOME`, and downstream tools at risk of `Permission denied (os error 13)` failures (`gh`, systemd user units, `git` global state, `gcloud`, package manager caches). Added audit tracking item in [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md) and updated Astra discussion scope in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+## 2026-09-06, updated achiCore #131 scope and rejected custom gws fork
+
+Updated task registers in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) and [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md) to reflect the cancellation of the custom `gws` Rust fork (PR #164). Replaced the approach with reverting `~/.npm-global/bin/gws` to stock version 0.22.5 and granting write boundary permissions directly to `~/.config/gws-*` under Landlock per the reset scope on [achiCore #131](https://github.com/achibukz/achiCore/issues/131).
+
+## 2026-09-06, diagnosed gws sandbox write restriction, filed ticket
+
+Attempted to send a test email via `gws gmail users messages send` on the `personal` profile from inside this Claude Code session; it failed with `os error 13` (EACCES) writing the token cache. Ruled out stale file ownership/permissions and a read-only mount; `dangerouslyDisableSandbox` did not change the outcome. Landlock-style restriction inherited by the whole Claude Code process tree is the best-supported hypothesis (`no_new_privs` set, AppArmor `unconfined`, restriction survives the per-call sandbox toggle) but not independently proven. Full transcript and reasoning in [2026-09-06-gws-sandbox-write-restriction.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-09-06-gws-sandbox-write-restriction.md). Logged a ticket task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) to scope a bypass.
+
+## 2026-09-06, closed Google auth timer ticket AIS-OS #5
+
+Closed GitHub issue [AIS-OS #5](https://github.com/achibukz/AIS-OS/issues/5) ("Build the Google auth health check and its timer") per Aki's instruction. Moving `achiclaude` OAuth consent to In Production eliminated the 7-day token expiration ceiling and routine re-auth nudges. Updated [AIS-OS #7](https://github.com/achibukz/AIS-OS/issues/7) to record that all prerequisite blockers (#3, #4, #5) are resolved.
+
+## 2026-09-06, legacy Google token removal ticket tracking
+
+Mapped legacy Google token cleanup to existing GitHub issue [AIS-OS #7](https://github.com/achibukz/AIS-OS/issues/7) ("Delete the legacy Google token path"). Expanded scope to remove stale un-namespaced single-account directory `~/.config/gws/` alongside `~/.config/achios/google_token*.json` and code fallbacks. Logged active task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+## 2026-09-06, EAF tracking and gws token validation
+
+Located AY 2026-2027 Term 1 EAF at `~/Documents/Files/academic/AY2627-T1/Term 10.pdf` and provided email draft for thesis partner Ethan Axl Burayag (`ethan_burayag@dlsu.edu.ph`). Verified Google Workspace CLI (`gws`) OAuth tokens across all four profiles (`main`, `personal`, `work`, `dlsu`) remain fully authenticated and valid in production; confirmed the earlier permission error was isolated to read-only sandbox restrictions on `~/.config` rather than token expiration. Added task to send the EAF in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+## 2026-09-06, published achiCore ticket #162 for /topicmodels Gemini Flash effort submenu
+
+Aki approved unifying Gemini 3.8 Flash and 3.7 Flash into base models in `MODEL_REGISTRY` and `src/topic_models.py` to trigger the reasoning effort submenu in `/topicmodels`. Ensured labels and published [achiCore #162](https://github.com/achibukz/achiCore/issues/162). Added tracking task in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+## 2026-09-06, ING medical certificate completion
+
+Moved the ING physical exam and "Fit to Work" medical certificate task to done in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+## 2026-09-05, sync repo scoping, Astra ticket audit, and vendor lock-in tasks
+
+Logged three active tasks in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md): a ticket for /sync to support a configurable repo include/exclude list so it stops syncing repos that don't need it, having Astra audit whether open AIS-OS and achiCore tickets are still accurate against current code, and auditing slash commands/scripts for vendor lock-in (triggered by /tasks failing outside Claude Code) to design a cross-vendor fallback.
+
+## 2026-09-06, delete legacy Google token path and standardize on gws CLI (AIS-OS #7)
+
+Goal: Remove the legacy Google auth system across achiOS, delete dead tokens and authenticator script, standardize briefing scripts on canonical `gws` CLI profiles, update documentation and add regression tests.
+
+Decisions:
+- Removed `scripts/auth_google_account.py` via git rm.
+- Removed legacy token fallback patterns and defined clean local `gws_env` helpers in `scripts/daily_brief.py`, `scripts/email_digest.py`, and `scripts/evening_debrief.py`, eliminating imports that matched the banned library pattern.
+- Updated [CLAUDE.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/CLAUDE.md), [AGENTS.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/AGENTS.md), and skills documentation to reference `gws` CLI profiles rather than legacy `google_token*.json` files.
+- Added comprehensive unit tests across `tests/test_daily_brief.py`, `tests/test_email_digest.py`, and `tests/test_evening_debrief.py` verifying hard error when `gws` binary is absent and confirming that no code path attempts to read token files or import legacy Google auth libraries.
+- Noted the operator deletion step for Landlock-protected files (`~/.config/achios/google_token*.json` and `~/.config/gws/`).
+
+Verification:
+- `grep -rn "google_token" scripts/ CLAUDE.md`: returned 0 matches (exit 1).
+- `grep -rn "google.oauth2\|googleapiclient\|google.auth" scripts/`: returned 0 matches (exit 1).
+- `scripts/auth_google_account.py`: verified non-existent.
+- `python scripts/daily_brief.py --dry-run` and `python scripts/email_digest.py --dry-run`: both exit 0 and produce valid briefing output.
+- Missing `GWS_BIN` verification: both scripts exit non-zero (exit 1) and name the missing path in stderr.
+- `pytest tests/`: 316 passed in 17.07s.
+
+## 2026-09-05, global instruction sync and Canvas integration tasks
+
+Logged active tasks in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) for automated propagation of global agent instructions across CLI harnesses (~/.claude/CLAUDE.md to Antigravity and Codex) and DLSU Canvas Instructure data/announcements extraction into achiSchooNounce with searchable query capability. Moved the completed one-time instruction alignment copy to done.
+
+## 2026-09-05, reusable assisted testing and next Astra work
+
+Aki asked to reuse the Telegram test hub and generalize the guided testing session beyond interfaces to CLI/backend work. He requested a Markdown interaction record and PR comment as outputs. Created [assisted-live-testing](http://100.106.210.38:8999/.config/skillshare/skills/assisted-live-testing/SKILL.md), the [assisted testing guide](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/assisted-live-testing.md), a ticket-section template and a retrospective. Installed the skill through Skillshare for the configured clients; this does not change production persona allowlists or launch a test. Source changes are isolated under AIS-OS #20 for review.
+
+Updated the task list and Astra plan to start self-learning foundations with AIS-OS #13 and achiCore #56, then #148 and AIS-OS #14. Keep worker follow-ups #155/#156 open. Retained missing live gates and the incomplete independent audit. Chose a reusable skill over a dedicated agent because no separate persistent queue or identity is needed. Local scenario walkthroughs are not model or live acceptance results.
+
+## 2026-09-05 18:45 UTC, worker deployment and follow-ups
+
+Aki requested testing first, then accepted the staging report with remaining work moved to #155 and #156. Merged achiCore PR #154 as `bbb8fb7`, fast-forwarded the existing main checkout, stopped the idle production daemon, backed up state and restarted the main hub. Telegram polling succeeded; bindings and conversations were preserved. The [deployment and test record](http://100.106.210.38:8999/Code/GitHub/achiCore/docs/issue-153-deployment.md) records exact test counts and the backup location.
+
+The staging run completed five jobs; opus-subagents #5 stopped on a Rust CI failure and was abandoned. Six simultaneous jobs, all three engines, fallback and the full fault matrix remain unverified. The independent audit is incomplete and reproduced the cache defect now in #156. No gate was marked passed from simulation. #155 tracks merge-conflict budgets and status updates; #156 tracks probe invalidation. Self-learning and control-board work remain open.
+
+Updated the Astra plan, ticket map, roadmaps, historical-document status notices, acceptance record and task register. Preserved existing local edits. No further implementation or runtime configuration change was part of this documentation update.
+
+
+## 2026-09-05 12:46 UTC [saved]
+
+Goal: Audit the autonomous worker loop, consolidate its reliability tickets, and merge the current CI follow-up before continuing.
+
+Aki approved two independently deliverable efforts, worker reliability and daily self-learning, with parallel implementation possible. Created [achiCore #153](https://github.com/achibukz/achiCore/issues/153) with ten source tickets, internal implementation stages, six-job acceptance and an isolated Telegram staging hub. Updated the [plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md), ticket map, roadmaps and task references. The [audit](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-09-05-autonomous-loop-audit.md) includes current and proposed flow diagrams.
+
+Merged PR #152 at Aki's explicit request after reading its diff and observing all three Python CI jobs succeed. Fast-forwarded achiCore to `a1c5d9e`. The running hub was not restarted. Preserved Claude Code's concurrent AIS-OS local-review configuration changes at `efe250d`.
+
+Verification: the audit command recorded in the audit returned 488 passed in 34.12s against achiCore `4ff50b5`. An earlier command had a wrong test filename and exited 4 without running assertions. Those tests establish existing behavior; six concurrent jobs and the new staging behavior remain unverified.
+
+Open: finish learning-scope and retention decisions, then revise the learning acceptance criteria as needed. Staging credentials and the initial real-phone checks belong to implementation. No learning rules, provider credentials, production state or vault pages were changed.
+
+## 2026-09-06 03:56 [saved]
+Goal: Add `--repo` and `-r` options to `scripts/sync-repos.sh` to target a single repository and verify with unit tests (AIS-OS #12).
+
+Decisions:
+- Implemented argument parsing in `scripts/sync-repos.sh` supporting `--repo <target>`, `-r <target>`, and their equals syntax variants (`--repo=...`, `-r=...`).
+- Added direct repository directory targeting: if the target argument is an existing directory containing `.git`, use that repository directly without scanning roots.
+- Added candidate repository discovery and filtering across roots when the target is a repository folder name or relative path fragment.
+- Added error handling with status code 1 when `--repo` or `-r` is missing an argument, or when no matching repository is found.
+- Isolated test git commits in `tests/test_sync_repos.py` with `-c core.hooksPath=` to prevent the user's global pre-commit hook from triggering on fresh test repositories.
+- Added 11 unit tests in `tests/test_sync_repos.py` covering folder name matching, short flag, equals syntax, direct path targeting, error exits, and baseline multi-repo sync.
+- Recorded architecture decision in [decisions/log.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/decisions/log.md).
+
+Verification:
+- Full repository test suite: 311 passed in 18.78s via `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/`.
+- All 23 unit tests in `tests/test_sync_repos.py` pass cleanly.
+
+Open:
+- achiCore #145 companion ticket for `/sync <repo>` in Telegram bot.
 ## 2026-09-06 03:05 [saved]
 
 Goal: Create the assisted live-testing skill. Entry time is Asia/Manila; the linked evidence uses UTC.
@@ -1693,3 +3029,157 @@ Its argument-path criterion uses `gpt-5.6-sol` instead of Astra.
 Open:
 - Nothing published against `CARD_AGY_MODELS` in `src/topic_models.py`. Astra reaches the
   `/topicmodels` card through the codex branch of `catalog()` with no edit.
+
+## 2026-09-05 [saved]
+Goal: Address Luna's review on PR #22 (AIS-OS #12, `--repo`/`-r` targeting for sync-repos.sh).
+
+Decisions:
+- Should-fix: deleted the dead `for root in "${roots[@]}"` fallback branch in the candidate
+  matching loop (`scripts/sync-repos.sh`). Luna showed every candidate it could match is
+  already caught by the preceding `*"/$clean_target"` wildcard elif, and instrumented the
+  branch with a stderr marker across the full test suite to confirm it never fires.
+- Nit: removed `--repo=`, `-r=`, and the `--` root terminator. Issue #12 only asked for
+  `--repo <target>` and `-r <target>`; the equals syntax and terminator were unrequested
+  parsing surface, and two of the three forms had no test coverage. Removed the
+  `test_targets_specific_repo_with_equals_syntax` test along with the `--repo=` support.
+
+Verification:
+- `pytest tests/test_sync_repos.py -q`: 22 passed in 5.65s (was 23; removed the equals-syntax
+  test along with the feature).
+- `pytest tests/ -q`: 310 passed in 12.95s (was 311, same delta).
+- `.githooks/pre-commit`: markdown links pass.
+
+Open:
+- Nothing outstanding from Luna's review. `--repo`/`-r` now match the ticket exactly.
+
+## 2026-09-08 23:52 [saved]
+Goal: Address luna-achiCore's second-pass review on PR #33 (head `8a62ced`), which found 0
+blockers, 2 should-fix, and 4 nits across `scripts/canvas_store.py`, `scripts/canvas_events.py`
+and `scripts/canvas.py`.
+
+Decisions:
+- Should-fix 1: `query_record` (`canvas_store.py`) indexed `grade_available` and
+  `grade_success_at` with `value[key]`, raising `KeyError` on any record written before this
+  revision. Switched to `value.get(key)`. Regression `test_grades_query_tolerates_pre_migration_records_without_grade_fields`
+  writes an old-shape record straight into the `records` table and confirmed it reproduces the
+  exact `KeyError: 'grade_available'` before the fix.
+- Should-fix 2: `record_changes` (`canvas_events.py`) required `old["grade_success_at"] is not
+  None` before emitting `assignment_grade_changed`, so the first real grade posted after a
+  grade-less baseline stayed silent. Added a `became_available` branch (`grade_available` flips
+  false to true) so that first posting now fires. Had to update
+  `test_hidden_grade_fields_do_not_hide_deadlines_or_erase_saved_grades` in
+  `tests/test_canvas_store.py`, which had asserted `count(*) FROM events == 0` across exactly
+  that transition, locking in the bug luna found.
+- Tried a `has_grade` guard (grade or score must be non-null) to match luna's wording literally,
+  then proved it against a dedicated test and found removing it changed nothing: given
+  `merge_saved_grade`'s invariant that `grade_success_at` is null only when grade and score have
+  always been null, `grade_changed` already excludes the null-to-null case. Deleted the guard as
+  decoration rather than keep unproven complexity.
+- Nit: `query`'s per-category `success_at` required `all(fetched)` across every assignment's
+  `grade_success_at`, so one assignment with a permanently unavailable grade forced the whole
+  category to report `stale_data` forever even seconds after a clean sync. Changed to take the
+  min of whichever fetch times are known, while `assignment_grades_unavailable` still reports the
+  real reason for the gap.
+- Nit: `save_snapshot` and `record_changes` each ran the identical `SELECT id,data FROM records
+  WHERE course_id=? AND category=?` for the assignments category. `record_changes` now accepts
+  an optional `previous` map and `save_snapshot` passes the one it already built.
+- Nit: renamed `assignment_grades` to `merge_saved_grade` in `canvas_store.py`; the old name read
+  like it returned a collection.
+- Nit: in `canvas.py`, if `open_writer` itself raised while recording an `authentication_expired`
+  transition, that new exception replaced the original in the `except CanvasError` block and
+  `receipt.json` was never written, the receipt an operator most needs right after an expiry.
+  Wrapped the auth-state write in its own `try/except` so the original error's receipt still
+  lands. New CLI test monkeypatches `canvas.open_writer` to always raise and confirms the receipt
+  still carries `authentication_expired` rather than the writer's own error.
+
+Verification:
+- `uv run --with pytest --with requests python -m pytest tests/ -q`: 426 passed in 33.73s (was
+  422 at `8a62ced`; +4 new regressions across should-fix 1, should-fix 2, and the has_grade
+  guard check).
+- Confirmed each new/changed test is red without its matching fix by temporarily reverting the
+  relevant file (`git stash push -- <file>`) and rerunning just that test, then restoring.
+
+Open:
+- Nothing outstanding from this review pass. Not yet pushed or commented back on PR #33; Aki
+  has not asked for that yet.
+
+## 2026-09-12, diagnosed and ticketed broken Gmail links in email digest
+
+Goal: Aki reported the "your account is temporarily unavailable" 404 when clicking a
+link from an email digest cron.
+
+Findings: `EmailItem.web_link` (`scripts/email_digest.py`) builds Gmail deep links as
+`/mail/u/{account}/#all/{target_id}` using the account's email address as the `/u/`
+path segment. That segment is a numeric sign-in slot index, not an email address.
+Tested three candidate fixes against a real message (`aki.bukz12@gmail.com`,
+message id `1a09764c387c8095`) and two other accounts:
+- `/mail/u/{email}/#all/{thread_id}` — 404.
+- `/mail/u/{email}/#inbox` — 404.
+- `/mail/?authuser={email}#inbox` — 404.
+None worked. Only a numeric `/mail/u/N/` slot worked in Aki's own manual testing, and
+that index is tied to device sign-in order, not the account, so the script has no
+stable value to build it from.
+
+Decision: remove the link feature rather than keep shipping broken links. Logged in
+`decisions/log.md`.
+
+Filed [AIS-OS #57](https://github.com/achibukz/AIS-OS/issues/57), `ready-for-agent` +
+`priority:high`, to delete `EmailItem.web_link`, `format_source_link`, and every
+`[link]` render call site.
+
+Open: #57 not yet picked up by Aea.
+
+## 2026-09-18 09:27 [saved]
+
+Goal: Address the outstanding review comment on PR #78 (`ticket/60-62-shared-gcal-client`,
+`achibukz/AIS-OS`), Luna's should-fix and two nits at `62ab32d`.
+
+Decisions:
+- `gcal.user_home()` now reads `ACHIOS_HOME` before walking the checkout path, so a review
+  worktree that is not directly under `~/Code/GitHub` still resolves, and a deliberately scoped
+  `HOME` under `~/Code/GitHub/AIS-OS` is no longer silently overridden. `config_missing` names
+  the variable in its message. Documented in AGENTS.md and CLAUDE.md's Calendar access section.
+- `gcal.update()` takes an optional `--if-match <etag>`. If the fetched event's `etag` does not
+  match, it returns `{"status": "error", "error": "conflict"}` instead of replacing the event,
+  so a concurrent edit between the get and the write is no longer silently reverted. No etag
+  means no check, matching the pre-existing behaviour.
+- AGENTS.md and CLAUDE.md now tell agents that `restored: true` on an insert means the event was
+  resurrected, not newly created, and to say so.
+- Extended `tests/test_gcal.py` and `tests/test_google_auth_health.py` to cover the `ACHIOS_HOME`
+  override, the `config_missing` message, and the `--if-match` conflict/success paths. All four
+  new tests were confirmed red before the corresponding fix, then green after.
+
+Verification: `~/.local/share/achios/venv/bin/python -m pytest tests -q` gave 666 passed, 1
+warning (was 662 at `62ab32d`; +4 new regressions).
+
+Open:
+- Not yet pushed to `origin/ticket/60-62-shared-gcal-client`; Aki has not asked for that yet.
+- No new live writes to Google Calendar for this pass; the etag guard and `ACHIOS_HOME` override
+  are covered only against the fake transport.
+
+## 2026-09-18 09:34 [saved]
+
+Goal: Fix Luna's re-review of PR #78 at `efc1664` (should-fix 1, nit 1).
+
+Decisions:
+- should-fix: `--if-match` took an etag but no `gcal.py` command ever printed one, so nothing in
+  the repo could reach the guard from the CLI. `normalize_event()` now carries `raw.get("etag")`
+  through to every returned event (`agenda`, `events list`, `insert`, `update`), so a caller can
+  read a value and hand it back to `update --if-match`. Documented in AGENTS.md and CLAUDE.md's
+  Calendar access section, next to the write examples.
+- nit: the "say restored, not added" line landed in AIS-OS's own AGENTS.md/CLAUDE.md, which a
+  coding agent reads in this checkout, not in `achiCore/agents/asa.md`, which is what Asa reads
+  at runtime. Luna marked this out of scope for this PR and suggested fixing it on the achiCore
+  side or recording it on achiCore #222 alongside the `asta.md` item. Left untouched here; Aki
+  has not asked for achiCore edits from this session.
+- Extended `tests/test_gcal.py` with a direct `normalize_event` etag test and an end-to-end
+  `update()` test asserting the response carries the etag a following `--if-match` would need.
+  Both confirmed red before the fix, green after.
+
+Verification: `~/.local/share/achios/venv/bin/python -m pytest tests -q` gave 668 passed, 1
+warning (was 666 at `efc1664`; +2 new regressions).
+
+Open:
+- The achiCore-side `asa.md` restore line is unresolved by design; flagged to Aki rather than
+  crossing into another repo unprompted.
+- Not yet pushed to `origin/ticket/60-62-shared-gcal-client`.

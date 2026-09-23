@@ -35,6 +35,6 @@ The documentation update also needs precise validation claims: it checked the ne
 
 ## Reusable result and next work
 
-The [assisted-live-testing skill](../skills/assisted-live-testing/SKILL.md) captures the human/assistant procedure without creating a permanent agent. It produces the interaction record and PR comment Aki requested. The Telegram instructions are one environment-specific reference; CLI and backend testing use the same loop.
+The [assisted-live-testing skill](http://100.106.210.38:8999/.config/skillshare/skills/assisted-live-testing/SKILL.md) captures the human/assistant procedure without creating a permanent agent. It produces the interaction record and PR comment Aki requested. The Telegram instructions are one environment-specific reference; CLI and backend testing use the same loop.
 
 The next Astra workstream is the self-learning loop. Start with AIS-OS #13 for stable task/Calendar operations and achiCore #56 for persona/memory precedence, then connect ordinary input through achiCore #148 and correction reuse through AIS-OS #14. Prepare AIS-OS #18's replay fixtures early; its live release gates still depend on the downstream integrations. Keep #155/#156 open alongside this work. This retrospective does not implement learning or automatically publish a learned rule.

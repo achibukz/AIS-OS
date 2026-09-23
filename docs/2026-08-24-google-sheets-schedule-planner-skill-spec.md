@@ -23,6 +23,8 @@ This document serves as the implementation specification for Claude Code to wrap
 ## 2. Authentication & Credential Architecture
 
 ### 2.1 Credential Source & Token Refresh
+
+> Correction, 2026-09-17: achiOS no longer authenticates through token files. Use the gws profiles in `~/.config/gws-*` as described in [gws-api.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/references/gws-api.md). The Hermes token below belongs to Hermes, and the `~/.config/achios/google_token*.json` files were deleted by AIS-OS #61. The code sample records the original design only.
 The skill leverages Google Workspace OAuth2 tokens. The canonical credential file on the development environment is `~/.hermes/google_token.json`.
 
 Required OAuth Scopes:

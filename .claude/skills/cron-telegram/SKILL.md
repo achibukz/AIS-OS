@@ -32,8 +32,8 @@ obvious default — daily at the stated time, one message, no model.
 |---|---|---|
 | Telegram sender | `scripts/telegram_notify.py` | `from telegram_notify import send` — import it |
 | Credentials | `~/.config/achios/telegram.env` | mode 600, outside the repo, never commit |
-| Python | `~/.local/share/achios/venv/bin/python` | uv-managed; has `requests` + the Google libs |
-| Google Calendar auth | `~/.config/achios/google_token*.json` | personal + work tokens, auto-refreshing |
+| Python | `~/.local/share/achios/venv/bin/python` | uv-managed; has `requests` |
+| Google Workspace auth | `~/.config/gws-*` | canonical gws CLI profiles (main, personal, work, dlsu) |
 | Schedules | unit files in `systemd/`, installed by `scripts/install_units.sh` | systemd **user** timers. Not cron — see below |
 | Live units | `~/.config/systemd/user/` | generated copies. Edit `systemd/` and re-run the installer, never these |
 | Log dir | `~/.local/state/achios/` | one `<job>.log` per job |

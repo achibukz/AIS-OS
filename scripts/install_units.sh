@@ -7,7 +7,7 @@ dest="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 
 mkdir -p "$dest" "$HOME/.local/state/achios"
 
-for src in "$repo"/systemd/*.service "$repo"/systemd/*.timer; do
+for src in "$repo"/systemd/*.service "$repo"/systemd/*.timer "$repo"/systemd/*.path; do
     sed "s|@REPO@|$repo|g" "$src" > "$dest/${src##*/}"
     echo "installed ${src##*/}"
 done
@@ -16,6 +16,10 @@ systemctl --user daemon-reload
 
 for timer in "$repo"/systemd/*.timer; do
     systemctl --user enable --now "${timer##*/}"
+done
+
+for path_unit in "$repo"/systemd/*.path; do
+    systemctl --user enable --now "${path_unit##*/}"
 done
 
 # Long-running services carry WantedBy=default.target so they come back after a reboot.

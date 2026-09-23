@@ -18,6 +18,221 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-22 — Match Asta summaries and food records to provider contracts
+
+**Decision:** Use normalized Calendar `event_id` values for adherence and limit
+each summary query to that day's session IDs. For USDA energy, prefer nutrient
+1008 and fall back to 2047, then 2048.
+
+**Why:** The Calendar normalizer never emits `id`, so completed sessions appeared
+unanswered. USDA Foundation records can omit 1008 while reporting energy through
+2047 or 2048, which caused valid food records to be dropped.
+
+**Alternatives considered:** Reading raw Calendar payload fields in the summary,
+which would couple it to the provider response, and accepting foods with missing
+macros, which would turn absent nutrition data into misleading meal totals.
+
+**Owner:** Aea.
+
+## 2026-09-17 — Classify owned PR state before /ToWork issue validation
+
+**Decision:** Track the stale-card repair as achiCore #225. Its recovery flow must inspect the recorded owned PR before requiring an open issue, and must distinguish Resume from a fresh attempt in the card UI.
+
+**Why:** The observed job for closed issue #6 still owns a merged PR #166. Its card only offers Recheck and `New attempt`, and both callbacks fail at open-issue validation before cleanup can release the workers.
+
+**Alternatives considered:** Extending #196, which concerns preserving dirty work after abandonment, or changing only the button label. Neither repairs the terminal-state ordering or validates safe cleanup.
+
+**Owner:** Aea.
+
+## 2026-09-16: Supersede stale cohesion operations before newer item writes
+
+**Decision:** When a new source updates an existing item, mark every older pending destination operation for that item as superseded in the same SQLite transaction before storing the new item state and operations. Receipts keep those terminal, non-applied operations visible in the existing `pending` bucket with the supersession error, while the pending runner only retries rows whose status is still `pending`.
+
+**Why:** A Calendar operation that failed for an older source must not replay its snapshot over a newer accepted update. Superseding the older row before the new source writes preserves the stable Calendar identity and the latest content without adding a migration or a second reconciliation path.
+
+**Alternatives considered:** Adding a new item-generation schema and migration, which would add persistent schema work for this isolated repair, and leaving the old row pending with only a pre-write check, which would retain stale work and retry it indefinitely. Both were rejected for this repair.
+
+**Owner:** Aea.
+
+## 2026-09-16 — Clarify destination changes for existing cohesion items
+
+**Decision:** When a new source upsert targets an existing item and changes its placement or stored Calendar profile and ID, record a clarification and perform no item, operation, task, or Calendar writes. Updates that keep the existing destinations can still change the item's content.
+
+**Why:** Overwriting the relationship before reconciling the old destination can leave an owned Calendar event unmanaged or create a second event in another calendar. The current transport has no migration contract for moving an owned event safely.
+
+**Alternatives considered:** Implementing destination migration, which needs explicit old-destination reconciliation and deletion or archival behavior, and accepting the new relationship, which can orphan the old event. Both were rejected for this repair because clarification preserves ownership without adding an unapproved migration subsystem.
+
+**Owner:** Aea.
+
+## 2026-09-16 — Keep cohesion receipts and Calendar payloads structurally stable
+
+**Decision:** Return `item_id: null` on conflict and early-pending cohesion receipts, preserve empty operation result objects, and construct timed/all-day Calendar bodies without duplicate fields.
+
+**Why:** Downstream consumers can parse every receipt through one shape, and an adapter result of `{}` must remain distinguishable from no result. One assignment per Calendar field keeps ownership metadata and event content clear.
+
+**Alternatives considered:** Requiring consumers to special-case conflict receipts, treating only non-empty adapter results as valid, and keeping the redundant Calendar assignments. Rejected because each leaves an avoidable schema or maintenance hazard.
+
+**Owner:** Aea.
+
+## 2026-09-16 — Re-land AIS-OS #13 onto main by cherry-pick, not fresh implementation
+
+**Decision:** Cherry-picked commit `6bbf462` (the `scripts/cohesion.py` and `tests/test_cohesion.py` addition from the original PR #52) onto a new branch off current `main`, resolving conflicts in the append-only log files, instead of writing the feature again.
+
+**Why:** PR #52 (`Closes #13`) merged on 2026-09-11, but its base was `ticket/6-lossless-task-renderer`, not `main`. That branch was never itself merged to `main` — PR #51 landed issue #6's content into `main` via a squash merge first, so the cohesion commits stacked on top of it afterward were orphaned on a branch `main` never absorbed. Issue #13 stayed open. `scripts/task_engine.py` diverged from that stale branch afterward (PR #56 added `all`/`backlog` filtering), but `cohesion.py` only imports `PRIMARY_AREAS` from it, so the cherry-pick applied cleanly against current `task_engine.py` with no adaptation needed.
+
+**Alternatives considered:** Reimplementing the 778-line contract from the issue spec again, which would duplicate already-reviewed, already-tested work and risk introducing new bugs. Merging the stale `ticket/6-lossless-task-renderer` branch wholesale, which would also drag in unrelated stale content across 30+ files superseded on `main` since (email digest rewrite, viewer trimming, telegram_notify changes).
+
+**Owner:** Aea.
+
+## 2026-09-14 — Use one watcher for both Memories roots
+
+**Decision:** Watch both `/home/achibukz/Documents/Files/personal/memories` and `/mnt/Achi120/Main Folders/Pictures/Memories 2` in the same systemd path unit and wait for either tree to settle.
+
+**Why:** Both paths feed one Immich library and one album-sync job. One watcher avoids overlapping scans when media arrives in both locations.
+
+**Alternatives considered:** Maintaining one service per root, which can start duplicate full-library scans.
+
+**Owner:** Aki.
+
+## 2026-09-14 — Trigger Immich sync after Memories 2 transfers settle
+
+**Decision:** Add `achios-immich-watch.path` and its one-shot service to detect changes at the Memories 2 root, wait two quiet minutes, then call the existing sync.
+
+**Why:** The nightly run delays new albums by up to a day. A settling interval avoids scanning a folder while a transfer is still writing files.
+
+**Alternatives considered:** Immediate scans on every filesystem event, which can import a partial folder, and a recurring short-interval timer, which needlessly rescans unchanged media.
+
+**Owner:** Aki.
+
+## 2026-09-14 — Include both Memories roots in folder album sync
+
+**Decision:** Run `immich-folder-album-creator` once per mapped external-library root: `/mnt/media/memories` and `/mnt/media/memories2`.
+
+**Why:** The single-root configuration could scan new files in Memories 2, but it could not map their Immich paths back to an album source. The separate run found and populated the Bowling event album.
+
+**Alternatives considered:** Mounting both source roots into one container path, which breaks source-to-asset path matching, or relying on Immich to create albums, which it does not do for external-library folders.
+
+**Owner:** Aki.
+
+## 2026-09-12 — Astra roadmap uses explicit delivery states
+
+**Decision:** Replaced bare checkbox-like table cells in the Astra implementation roadmap with explicit Done, Ongoing, Queued and Blocked states. Added real Markdown task lists for completed and active work, refreshed from GitHub issue state and observed worktrees.
+
+**Why:** `[ ]` in Markdown tables renders as ordinary text and the prior document falsely presented closed issues as unfinished. A state column can represent partial lanes without claiming a whole chain is complete.
+
+**Alternatives considered:** Marking each table row with informal checked boxes. Rejected because tables do not reliably render task-list controls and cannot represent blocked versus merely unstarted work.
+
+**Owner:** Aki
+
+
+## 2026-09-12 — Email digest LLM fallback chain and network-aware sync warnings
+
+**Decision:** The email digest synthesizes with Gemini 3.8 Flash medium on agy, then Claude Haiku, then Codex `gpt-5.6-luna` medium, and falls back to the deterministic layout only when all three fail. A gws network error is retried once, and a network failure no longer tells Aki to re-auth.
+
+**Why:** A missing `~/.local/bin` on the unit PATH made every scheduled digest skip its LLM pass without anyone noticing, and a Wi-Fi outage produced a re-auth warning for a healthy credential.
+
+**Alternatives considered:** Reusing achiCore's async failover module, which needs the bot's sessions and venv.
+
+**Owner:** Aki
+
+## 2026-09-11 — Exclude systems and tickets from default /tasks and add all and backlog views
+
+**Decision:** Specified and ticketed AIS-OS #55 to filter `#systems`, ticket/issue links (`#<id>` and issue references), and non-school project research from default `/tasks` invocations (`area=None`). Added `--area all` to render the full register without exclusions, and `--area backlog` (and alias `backlogs`) to parse and display `## Backlog` entries. Updated `achiCore #57` to forward Telegram command arguments and consume these views without model turns.
+
+**Why:** Aki requested removing systems tickets, engineering maintenance chores, and project research from the default `/tasks` output to keep mobile views focused on actionable academic, personal, and career priorities, while retaining full access via `/tasks all` and `/tasks systems`, and backlog access via `/tasks backlog`.
+
+**Alternatives considered:** Keeping full output as default (rejected: bloats mobile views with infrastructure tickets); deleting systems tasks (rejected: loses operational tracking).
+
+**Owner:** Aki.
+
+## 2026-09-11 — Formalize task register Backlog section
+
+**Decision:** Introduced a dedicated `## Backlog` section in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) situated between `## Blocked` and `## Done`. `scripts/task_engine.py` restricts active and blocked task parsing to `{"active", "active tasks", "blocked", "blocked tasks"}`, thereby bypassing `## Backlog`. Backlog items do not appear in `/tasks`, scheduled task digests (`scripts/tasks_digest.py`), daily briefs, or Telegram announcements, and are surfaced only upon explicit query.
+
+**Why:** Aki requested removing deferred tasks (stale deadlines, long-term architecture investigations, unstarted skills) from daily operational digests without losing tracked context or cluttering active registers.
+
+**Alternatives considered:** Moving deferred tasks to external Markdown files (previously done in `docs/tasks-*.md`, but rejected because it fragmented task storage across disparate docs); deleting dropped tasks (rejected: loses context and audit trail).
+
+**Owner:** Aki.
+
+## 2026-09-11 — Preserve account-aware source links in concise email digests
+
+**Decision:** Attached clickable Gmail web permalinks (`https://mail.google.com/mail/u/<account>/#all/<id>`) to all surfaced emails in `scripts/email_digest.py` across LLM synthesis and deterministic fallback rendering paths. If message identity is absent, reported `[missing ID]` rather than constructing a guessed search query. Rebuilt LLM output with structured validation to prevent hallucinated URLs or dropped links, applied HTML escaping to untrusted email fields, and delivered via Telegram HTML mode while safeguarding anchor integrity during message chunking.
+
+**Why:** Issue #41 and Astra plan require one-tap access from phone notifications to the exact source message in the correct Google profile (DLSU, Work, Personal) without private auth leakages or hallucinated URLs.
+
+**Alternatives considered:** Asking LLM to generate raw URLs directly (rejected: prone to hallucinations, dropped anchors, and security leaks) or guessing search links when IDs are absent (rejected: guessing obscures missing data).
+
+**Owner:** Aea / Aki.
+
+## 2026-09-11 — Resolve Obsidian wikilinks natively in Tailscale web viewer
+
+**Decision:** Implemented native server-side Obsidian wikilink resolution in `scripts/achi_viewer.py` for [[note]], [[note|label]], and heading anchors. Links are resolved within their enclosing vault (`find_vault`, `VaultIndex`), verifying vault boundaries, checking blocked patterns, slugifying heading anchors, and safely handling spaces and Unicode. Ambiguous duplicate basenames, missing notes, and path traversal attempts remain visibly unresolved styled spans (`<span class="wiki-link unresolved is-unresolved">[[...]]</span>`). Marked.js client renderer receives the resolved Markdown while copying or raw mode retains untouched original Markdown.
+
+**Why:** Styled spans in the web viewer previously had no navigation capability. Resolving wikilinks within the source vault allows Aki to navigate interconnected notes on mobile/desktop without installing Obsidian, while preventing directory traversal, arbitrary file guessing on ambiguous basenames, or crossing vault boundaries into protected documents.
+
+**Alternatives considered:** Client-side resolution in JavaScript (rejected: browser has no filesystem access to verify duplicate basenames or traverse vault boundaries securely). Searching across multiple vaults (rejected: breaks vault isolation and causes cross-vault link pollution).
+
+**Owner:** Aki / Aea.
+
+## 2026-09-11 — Coordinate task and Calendar writes through durable typed operations
+
+**Decision:** `scripts/cohesion.py` accepts only versioned task and Calendar operations. It reserves the source and operation snapshot in SQLite before writes, uses stable task and event identities, retries only pending destinations, and returns applied and pending results separately.
+
+**Why:** Telegram retries, Calendar timeouts, and human edits can otherwise duplicate work or overwrite a newer change. A fixed contract gives achiCore a narrow privileged handoff without exposing shell or arbitrary file access.
+
+**Alternatives considered:** Let the foreground model edit files and invoke Calendar tools directly, match completions by title, or keep retry state in memory. Each option loses provenance or safe recovery after a restart.
+
+**Owner:** Aki.
+
+## 2026-09-11 — Use one lossless deterministic task engine
+
+**Decision:** `scripts/task_engine.py` owns task parsing and full rendering. Every task may select one of five fixed primary areas while keeping other tags. Tasks with no valid primary area or several primary areas stay in the `uncategorized` migration view. The scheduled digest uses the same full renderer without a model call or item cap.
+
+**Why:** The old focus buckets hid far-future tasks, capped upcoming and high-priority items, and reduced two legacy backlogs to anchor lines. A deterministic full view can prove its item count and gives achiCore one importable contract.
+
+**Alternatives considered:** Keep a short focus card with omitted counts, retain separate backlog files as live task sources, or classify legacy items with Gemini. The full view is simpler and lossless. The issue requires [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md) to remain the sole register, and its September 11 body supersedes model classification.
+
+**Owner:** Aki.
+
+## 2026-09-06 — Delete legacy Google OAuth tokens and standardize scripts on gws CLI
+
+**Decision:** Deleted `scripts/auth_google_account.py`, removed legacy token and direct google-auth fallback patterns, documented operator deletion for legacy `~/.config/achios/google_token*.json` and `~/.config/gws/`, and updated `CLAUDE.md`, `AGENTS.md`, and skills documentation to reflect `gws` CLI multi-profile OAuth (`main`, `personal`, `work`, `dlsu`) in production mode as the sole Google auth path. Added unit tests verifying hard error when `gws` is absent and ensuring no code path attempts to read legacy token files or import legacy Google auth libraries.
+
+**Why:** Google Workspace OAuth in production mode with named `gws` profiles (`~/.config/gws-*`) is now canonical across all services. The legacy `google_token*.json` files were dead, and having two disparate Google auth paths was prone to silent fallback failures and token confusion.
+
+**Alternatives considered:** Keeping `auth_google_account.py` as an emergency fallback (rejected: production OAuth screen eliminates weekly expiration and gws ciphertext credentials cannot be loaded by legacy python scripts anyway).
+
+**Owner:** Aea / Aki.
+
+## 2026-09-05 — Trim sync-repos --repo parsing to the ticket's scope
+
+**Decision:** In response to Luna's PR #22 review, removed the dead fallback loop in the
+candidate-matching branch of `scripts/sync-repos.sh`, and removed `--repo=`, `-r=`, and the
+`--` root terminator, keeping only `--repo <target>` and `-r <target>`.
+
+**Why:** The dead branch could never match, since every candidate it could satisfy is already
+caught by the preceding wildcard elif; Luna confirmed with an instrumented run against the
+full test suite (0 hits). The equals-syntax and terminator forms were never requested by issue
+#12, and `-r=`/`--` had no test coverage at all, so they were unrequested surface area rather
+than a tested convenience.
+
+**Alternatives considered:** Adding test coverage for `-r=` and `--` to keep them (rejected:
+issue #12 never asked for them, and keeping unrequested parsing surface just because it can be
+tested is the wrong direction).
+
+**Owner:** Aea / Luna.
+
+## 2026-09-06 — Single-Repository Flag Support in sync-repos
+
+**Decision:** Implemented `--repo <target>` and `-r <target>` options in `scripts/sync-repos.sh` with direct directory check and candidate discovery filtering across roots, and isolated test git subprocesses from global `core.hooksPath`.
+
+**Why:** Allows single-repo targeting from terminal and Telegram `/sync` without scanning all default roots. Flag arguments can be direct paths or repo names/path fragments. Test repos must isolate hooks to avoid triggering agent branch checks on empty test repositories.
+
+**Alternatives considered:** Using `getopts` (does not handle long `--repo` options cleanly in bash without extra complexity) or scanning roots on every invocation even when passed a direct repo path.
+
+**Owner:** Aea / Aki.
+
 ## 2026-09-05 — Astra Plan Additions for Aea and Luna Optimization across CLI Runners
 
 **Decision:** Expanded `docs/astra-plan.md` with Topic 5 analyzing Aea and Luna optimization, runner prompt injection mechanics, and skill specialization across `agy`, `codex`, and `claude_code`.
@@ -1107,3 +1322,316 @@ Alternatives considered. A required /learn command, fixed Calendar routing rules
 Owner. Aki. The [Astra plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) records the design and evidence; [ticket bodies](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-tickets.md) record the implementation slices. This is a planned change, not a claim that automatic learning or wiki promotion is deployed. Aki approved the breakdown and the implementation issues are published. Issue #83 closes the design discussion; the implementation issues remain open.
 
 Aki also requested a separate follow-up planning session for a control board or Kanban frontend connecting these workflows. The current batch should expose reusable status and action contracts; frontend scope and interaction design remain for that session.
+
+## 2026-09-05 Consolidate autonomous worker reliability
+
+Decision: Aki wants one executable reliability ticket, [achiCore #153](https://github.com/achibukz/achiCore/issues/153), for six concurrent jobs. Learning can ship independently and progress in parallel. The control board comes later. Aki keeps the merge decision, with branch preparation and routine recovery in the background.
+
+Why: Repeated CI waits, quota stops and branch synchronization make several simultaneous jobs require manual intervention. One executor should own the full path and prove it with a six-job staging run.
+
+Alternatives: Retaining many separately dispatched reliability tickets; adding a permanent privileged agent; restricting Luna to changed hunks. Aki instead accepts isolated staging, relevant cross-repository reviewer context and revised unattended workflows. Original criteria remain traceable in the consolidated ticket.
+
+Owner: Aki. Implementation model recommendation is `claude-opus-4-6-thinking`, with `gpt-6-astra` available when selected. The [audit](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-09-05-autonomous-loop-audit.md) corrects earlier claims that every base update conflicts and that first-turn prompt injection proves warm-turn amnesia.
+
+## 2026-09-05, deploy worker reliability and retain open findings
+
+Decision: Aki authorized merging PR #154, restarting the main achiCore hub and closing #153 after the Flash staging run. Move merge-conflict and status concerns to #155 and the reproduced worker-probe cache defect to #156.
+
+Why: Aki reported the workflow was usable and wanted the tested implementation in the main deployment before further fixes.
+
+Alternatives: Keep #153 open until every original release gate passes, or fix the newly reported defects before deployment. Aki chose deployment with follow-up tickets. Incomplete live coverage remains explicit in the [deployment and test record](http://100.106.210.38:8999/Code/GitHub/achiCore/docs/issue-153-deployment.md).
+
+Owner: Aki. This is a repository deployment decision; it does not establish a broader personal workflow policy.
+
+## 2026-09-05, guide human acceptance with a reusable skill
+
+Decision: Use [assisted-live-testing](http://100.106.210.38:8999/.config/skillshare/skills/assisted-live-testing/SKILL.md) for features needing human actions, including CLI/backend, API, device, browser and Telegram work. The outputs are a redacted Markdown interaction record and a comment on the tested PR. Separate unattended implementation from assisted live testing in applicable tickets.
+
+Why: Aki found the step-by-step phone testing useful and wants the same help from Astra, Gemini 3.8 Flash or another selected model. One-action guidance plus observed receipts makes the human effort concrete and the result reviewable.
+
+Alternatives: A dedicated persistent agent, or a bare HITL label with a manual checklist. Start with a skill; revisit an agent only if it needs its own queue, scheduling or identity.
+
+Owner: Aki. Next implementation work is the self-learning loop, with existing worker defects still tracked separately. This procedure applies beyond this repository; any achiMem promotion remains a separate sourced action.
+
+## 2026-09-06, preserve the Canvas sync investigation
+
+Decision: Keep the user-tested browser exporter available and investigate session-authenticated HTTP reads from Ubuntu before building browser automation. This is a conditional experiment, not a final deployment design.
+
+Why: Aki confirmed DLSU returns course JSON under his browser session despite unavailable personal token creation. He needs access while his Mac is closed and accepts private session storage plus manual Google MFA when needed.
+
+Alternatives: Calendar feeds were explicitly rejected. A large extension/backend stack is unnecessary for proving server access. A Telegram link to Canvas alone authenticates the phone, not the server.
+
+Owner: Aki. Evidence and open decisions are in [the plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/canvas-sync-plan.md) and [#24](https://github.com/achibukz/AIS-OS/issues/24).
+
+## 2026-09-07, Canvas discussions are optional
+
+Decision: Treat discussion topics and replies as best effort. Do not delay announcements, assignments, grades or files to add discussion-specific workarounds.
+
+Why: Aki explicitly prioritized the other content types and requested no extra engineering for discussions. Basic discussion access already succeeded in a live sample.
+
+Alternatives: Full reply coverage as a required release gate. Rejected by Aki.
+
+Owner: Aki. See [the Canvas plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/canvas-sync-plan.md).
+
+## 2026-09-08, approve the first Canvas Telegram release
+
+Decision: Build factual Canvas queries and notifications before document ingestion. Select the active schoolWiki term, refresh every two hours with manual refresh, and flag data older than four hours. Use Monday-to-Sunday weeks in Asia/Manila and include submitted assignment status. Require working phone reauthentication through a protected Ubuntu browser reachable over Tailscale. Keep the cache writer outside the bound-agent write boundary. Accept rare notification duplicates when delivery is uncertain.
+
+Why: Aki wants useful Telegram answers with manageable sync frequency and no dependency on opening his Mac to restore access.
+
+Alternatives: Document search before Telegram, 30-minute polling, all enrolled Canvas courses, optional phone login and a strict no-duplicate delivery claim. The approved plan replaces those proposals.
+
+Owner: Aki. [Plan](../docs/canvas-implementation-plan.md), [epic #24](https://github.com/achibukz/AIS-OS/issues/24). This records this integration's design, not a broader personal workflow policy.
+
+## 2026-09-08, Canvas data work in one PR
+
+Decision: implement AIS-OS #26, #28 and #29 sequentially on one branch, with a shared writer lock and read-only SQLite queries.
+
+Why: these tickets share the same client and snapshot lifecycle. Cached reads must work under the achiCore boundary without creating SQLite sidecars.
+
+Alternatives: separate PRs would require repeated handoffs. Phone login, achiCore integration and scheduling remain in their existing tickets.
+
+Owner: Aki approved the scope; Codex implements and records verification.
+
+## 2026-09-09, Canvas review corrections
+
+Decision: keep course grades outside assignment pagination, retry least-attempted deliveries first, and distinguish missing grade fields from missing assignments.
+
+Why: the review reproduced hidden course totals and a blocked delivery queue; live Canvas responses exposed homework without grade fields. Earlier verified grades retain their timestamps when unavailable.
+
+Alternatives: dropping failed notifications would lose alerts. Rejecting the whole assignment category would hide valid deadlines. Unavailable grades remain explicit rather than invented.
+
+Owner: Codex implements the review fixes at Aki's request.
+
+
+## 2026-09-09 Canvas phone login isolation
+
+Decision: use a temporary Chromium/Selkies container behind a Tailscale peer-identity gateway. A transient systemd unit bounds its lifetime independently of the gateway. Keep the browser profile in tmpfs with no host mounts. Import only Canvas cookies after a serialized candidate probe and account check.
+
+Why: the existing Obsidian desktop mounts both vaults and should not become a login service. The existing Canvas writer lock prevents a sync from overwriting a newly imported session. A failed login must leave the usable session intact.
+
+Alternatives: reusing the live Obsidian desktop would expose unrelated data. Mac cookie export does not satisfy phone acceptance. A public or bearer-link desktop would grant access beyond the named operator.
+
+Owner: Aki. Phone Google/MFA acceptance remains open until an observed Ubuntu probe follows the human login.
+
+## 2026-09-11, prioritize Asa and Sciel before semantic learning
+
+Decision: Apply the approved Telegram cohesion plan and ticket roadmap. General becomes Asa, Sciel names both isolated vault topics, semantic preferences use sourced immediate corrections and a daily 3 AM Manila Flash review, and daily/weekly learning reports go to achiNouncements. Keep midnight debriefs. Required HITL follows Luna SHIP through an independent Testing Grounds queue; Aki retains merge control. Preserve abandoned work and offer continue/fresh attempts.
+
+Why: Aki wants ordinary phrasing to imply the correct linked updates without repeating instructions or supervising each testing step. Source identity, deterministic mutations and explicit receipts prevent a smarter model's unsupported claims from becoming completed work.
+
+Alternatives: Rebuilding legacy Markdown TGDB, relying on session logs alone, duplicating existing learning tickets, treating SHIP as task completion, and stopping at a saved-but-unpushed update were rejected. See docs/telegram-cohesion-discussion-2026-09-11.md for the complete decisions and supersessions.
+
+Owner: Aki for product and merge decisions; Aea for implementation; Luna for review.
+
+## 2026-09-12, remove Gmail deep links from email digest instead of fixing them
+
+Decision: file AIS-OS #57 to delete `EmailItem.web_link`, `format_source_link`, and the
+`[link]` tags they render, rather than continue trying to construct a working Gmail URL.
+
+Why: tested three URL shapes against real accounts and a real message id
+(`/mail/u/{email}/#all/{thread_id}`, `/mail/u/{email}/#inbox`, `/mail/?authuser={email}#inbox`)
+and all three served Gmail's "account temporarily unavailable" 404 page. The only shape that
+worked in Aki's own testing uses a numeric `/mail/u/N/` sign-in slot, and that index tracks
+device sign-in order, not the account itself — the script has no stable value to build it
+from, so no portable link exists.
+
+Alternatives: keeping the numeric-index form was rejected, it would point to the wrong
+account on a different device or after re-auth. Keeping the email-based forms was rejected,
+none of them load.
+
+Owner: Aki decided to remove; Aea implements AIS-OS #57.
+
+## 2026-09-15, route meeting ingest through the existing cohesion writer, and let Sciel reach Asa
+
+Decision: an ingested meeting proposes tasks and Calendar deadlines through the AIS-OS #13
+cohesion writer as a sibling source adapter of Canvas #47, never through a new mechanism.
+Scope is meetings, not lectures. Dated announcements become a task plus a linked event;
+undated ones become a line in the subject `_overview.md`. No date is emitted that the source
+did not state, and every record waits for approval. Sciel in #schoolMem gains the
+orchestration mixin so it can hand a request to Asa.
+
+Why: the extraction half already exists as schoolMem's THESIS MEETING INGEST, scoped to
+`raw/<Term>/THSST*/` and three thesis files, and the writing half is #13. Building a queue
+file or a second writer would duplicate identity, dedup and receipt rules that #13 already
+owns. On delegation, reading the code showed Sciel cannot emit a delegate block at all:
+`dispatch_delegate_block` drops it unless the persona declares the orchestration mixin, and
+the drop is silent. Aki was shown that a returning hop is refused as circular anyway and
+asked for the capability regardless, so the two paths are specified separately.
+
+Alternatives: a queue file Asa polls was rejected as a mechanism the daemon does not need.
+Auto-applying high-confidence dated records was rejected because transcripts are noisy and a
+wrong Calendar entry lands on Aki's phone. Extending the trigger to lecture transcripts was
+rejected for this release. Giving achiMem's Sciel and Ara the same mixin was left out of
+scope.
+
+Owner: Aki for product and merge decisions; Aea for implementation; Luna for review. Full
+record in docs/meeting-ingest-cohesion-discussion-2026-09-15.md.
+
+## 2026-09-15 — Commit-first recovery for Telegram /syncres
+
+**Decision:** Use an LLM-proposed commit as the normal recovery path when `/syncres` finds
+tracked local changes. Restart the hub only after the approved commit and a successful
+fast-forward. Keep stash as an explicit emergency option with restoration.
+
+**Why:** A stash hides the work that blocked the pull. An inspected commit preserves the
+change, makes the recovery auditable, and leaves Git history coherent.
+
+**Alternatives considered:** Making stash the default recovery path. Rejected because it
+defers cleanup and can leave meaningful work invisible.
+
+**Owner:** Aki for approval; Aea for implementation; Luna for review.
+
+## 2026-09-16 — Reopening a completed cohesion item requires clarification
+
+**Decision:** An upsert against an item whose stored state is `completed` returns a pending
+clarification and writes nothing. Completion itself stays idempotent, so a redelivered or
+repeated completion still converges.
+
+**Why:** The task writer rewrote the matched line in place, so an upsert on a completed task
+replaced the `- [x] … (done …)` line with an unchecked line that stayed under `## Done`. That
+erased the completion date and hid the task from `/tasks`, because `task_engine.parse_tasks`
+reads only the active, blocked and backlog sections. Preserving history matters more than
+supporting reopen, and this matches the guard already agreed for placement and Calendar
+target changes.
+
+**Alternatives considered:** Moving the line back under `## Active` on reopen. Rejected for
+now because it needs matching decisions about the Calendar completion note, the stored item
+state and what a reopened item's history should look like. A clarification defers that to Aki
+without losing data.
+
+**Owner:** Aki for approval; Aea for implementation; Luna for review.
+
+## 2026-09-16 — All-day cohesion deadlines keep the calendar's default reminders
+
+**Decision:** Calendar events written by `scripts/cohesion.py` for all-day deadlines set
+`reminders: {"useDefault": true}`.
+
+**Why:** `gcal_add.all_day_body` sets `useDefault: false` with empty overrides, because the
+daily brief already surfaces dated tasks that morning. Cohesion writes school deadlines that
+Aki reads on his phone, and a deadline arriving with notifications switched off is a silent
+failure. Timed cohesion events already inherit the calendar defaults, so this makes the two
+paths agree.
+
+**Alternatives considered:** Keeping the inherited notifications-off policy, rejected because
+it was inherited rather than chosen. Setting explicit overrides, rejected because the right
+lead time belongs to the calendar, not to this writer.
+
+**Owner:** Aki for approval; Aea for implementation; Luna for review.
+
+## 2026-09-17 — Tasks operations carry a per-line version, not a whole-file hash
+
+**Decision:** A tasks operation records the hash of the line it wrote as its
+`destination_version`. A retry compares the live task line against that version and returns
+pending when the line changed, while adopting unrelated edits elsewhere in `tasks.md`. The
+first attempt still compares the whole-file hash reserved with the operation. A failed
+attempt no longer clears the reserved `destination_version`.
+
+**Why:** Re-reserving the whole-file hash on each retry made the concurrent-edit guard exist
+only on attempt 0, so a redelivery silently overwrote a human's edit to the task's own line.
+The Calendar side never had this problem because it compares a per-object etag that survives
+any number of retries. Giving tasks the same shape removes the difference rather than adding
+a second mechanism.
+
+**Alternatives considered:** Keeping the whole-file hash frozen, rejected because a pending
+operation could then never converge. Re-reserving it blind, rejected because that is the
+defect above. Marking a concurrently edited operation as needing a new source, rejected
+because pending plus a clear reason already tells the caller that, without inventing a state.
+
+**Owner:** Aki for approval; Aea for implementation; Luna for review.
+
+## 2026-09-17 — The task line version is the only concurrency guard for tasks writes
+
+**Decision:** `_apply_task` compares the live task line against the last applied line version on
+every attempt, first or retried. The whole-file `tasks.md` hash is deleted, along with the
+`expected_hash` column. An edit anywhere else in the file is adopted. If the live line already
+equals the line the operation would write, the operation reports applied without writing.
+
+**Why:** Splitting the two guards across attempts made whether Aki keeps a hand-written note on
+a task depend on whether an unrelated earlier attempt had failed. The Calendar side never had
+this problem because it compares a per-object etag on every attempt. Keeping the whole-file hash
+on every attempt instead would mean any unrelated edit strands the operation forever, which is
+the non-convergence defect from the previous review. Supersedes the entry from earlier today.
+
+**Alternatives considered:** Keeping both guards on every attempt, rejected because it cannot
+converge. Keeping the whole-file hash on attempt 0 only, rejected because that is the defect.
+Locking `tasks.md` for a read-modify-write, rejected as a separate ticket: it is the only thing
+that would protect two concurrent cohesion writers editing different lines, which nothing
+guards today and nothing guarded on a retry before.
+
+**Owner:** Aki for approval; Aea for implementation; Luna for review.
+
+## 2026-09-17 Calendar operations version the fields cohesion owns, not the etag
+
+**Decision:** A Calendar operation records a hash of the event's summary, start, end and
+`achios_` private properties. Updates use `events patch`. An edit to any other field is
+adopted and preserved; an edit to an owned field keeps the operation pending until it is
+restored. A cancelled owned event is reported missing. All-day events send no reminders,
+matching what Google stores.
+
+**Why:** The live test against real `gws` showed an etag guard can never converge, because any
+human change, even a location, moves the etag and nothing can move it back. Hashing the owned
+fields gives Calendar the same shape as the task line guard. Google also returns deleted events
+from `events.get` and ignores `useDefault: true` on all-day events, which the fixtures could
+not show.
+
+**Alternatives considered:** Keeping the etag and adding an override operation, rejected
+because it needs the clarification contract decision that is still open. Recreating a deleted
+event under the same ID, rejected because Google keeps the ID of a cancelled event. Adding an
+explicit popup override for all-day deadlines, rejected as a product choice Aki has not made.
+
+**Owner:** Aki for approval; Claude for implementation; Luna for review.
+
+## 2026-09-17 — One Google Calendar client with owner-tagged events
+
+**Decision:** `gcal.py` becomes the only code that talks to Google Calendar. Every persona may read the configured schedule calendars; only Asa, Asta and the cohesion writer write, each to calendars it owns, and every created event carries `achios_owner` and `achios_item_id`. Routing moves to a private `calendars.json` with a drift check. `gcal_add.py` is deleted after callers move. PR #59 lands first.
+
+**Why:** five scripts duplicated the gws wrapper, three instruction files disagreed on placement, the routing table was a term stale, and Asta could not read Aki's schedule.
+
+**Alternatives considered:** all writes through the cohesion writer; per-agent event keys; committed routing config in a public repo; rebuilding PR #59 on the new client first.
+
+**Owner:** Aki
+
+## 2026-09-17 — Asta computes nutrition in the CLI, not the model
+
+**Decision:** Asta's model estimates grams and picks food records; `asta.py` computes calories, tiers from config, and stores immutable corrections. The database lives under `~/.local/state/achios/asta`, media and backups under `~/Documents/Files/training/asta`.
+
+**Why:** the calorie research found single model calorie numbers unreliable, Landlock blocks `~/.local/share` from turns, and corrections are the calibration data.
+
+**Alternatives considered:** model calorie fallback, a Landlock exception, daemon-applied write intents, media under `personal/health`.
+
+**Owner:** Aki
+
+## 2026-09-17, delete per-message Gmail links and link fields in email digest
+
+Decision: delete `EmailItem.web_link`, `format_source_link()`, and the unused `message_id`, `thread_id`, and `account_email` fields on `EmailItem` per AIS-OS #57. Remove link rendering from `build_account_message_raw` and `validate_and_render_llm_digest`, and drop the dead `[(?:link|missing ID)]` scrub regexes.
+
+Why: Gmail web links cannot be constructed reliably across multiple Google accounts without a device-specific numeric slot index. Deleting the property and its supporting fields eliminates broken links and dead fields completely.
+
+Alternatives considered: leaving dormant `message_id` and `thread_id` fields on `EmailItem`, rejected because nothing else reads them and keeping them creates misleading dead state.
+
+Owner: Aea for implementation, Luna for review.
+
+## 2026-09-17, one Calendar client with owner lists
+
+**Decision:** `scripts/gcal.py` is the only Google Calendar client. Calendars are named in the private `~/.config/achios/calendars.json`, where `write_owner` is a list of `asa`, `asta` and `cohesion`. Cohesion names calendars instead of passing raw IDs, and `gcal_add.py` is deleted with no wrapper.
+
+**Why:** Personal is written by Asa and by cohesion's social plans. A single owner per calendar would refuse one of them, while the event-level `achios_owner` already keeps each writer to its own events.
+
+**Alternatives considered:** a single owner per calendar; exempting cohesion from the calendar owner check.
+
+**Owner:** Aki
+
+## 2026-09-21 Asta combined release
+
+Decision: prepare one Asta PR per repository covering the first usable release,
+instead of one PR per ticket. Astra owns Asta implementation. Luna Max workers
+handle capture/reconciliation, Canvas tasks and semantic preferences separately.
+
+Why: keep profile, nutrient arithmetic and correction contracts under one owner
+and review the usable flow together. Cross-repository code requires companion PRs.
+
+Alternatives: individual PRs per Asta ticket, or including Apple Health and later
+provider integrations in this release. Apple Health remains a follow-up.
+
+Owner: Aki approved the combined approach; Astra implements and verifies it.

@@ -1,0 +1,17 @@
+{
+  "calendars": [
+    {"name": "Personal", "id": "PERSONAL_CALENDAR_ID", "profile": "personal", "purpose": "personal", "write_owner": ["asa", "cohesion"], "schedule": true},
+    {"name": "DLSU", "id": "DLSU_CALENDAR_ID@group.calendar.google.com", "profile": "personal", "purpose": "school", "write_owner": ["cohesion"], "schedule": true},
+    {"name": "THS-ST2", "id": "COURSE_CALENDAR_ID@group.calendar.google.com", "profile": "personal", "purpose": "course", "write_owner": ["cohesion"], "schedule": true},
+    {"name": "CSOPESY", "id": "PAST_COURSE_CALENDAR_ID@group.calendar.google.com", "profile": "work", "purpose": "past course", "write_owner": [], "schedule": false},
+    {"name": "workouts", "id": "WORKOUTS_CALENDAR_ID@group.calendar.google.com", "profile": "personal", "purpose": "training", "write_owner": ["asta"], "schedule": true},
+    {"name": "ING", "id": "ING_CALENDAR_ID@group.calendar.google.com", "profile": "work", "purpose": "internship", "write_owner": ["cohesion"], "schedule": true},
+    {"name": "LSCS", "id": "LSCS_CALENDAR_ID@group.calendar.google.com", "profile": "personal", "purpose": "organization", "write_owner": ["cohesion"], "schedule": true},
+    {"name": "Family", "id": "FAMILY_CALENDAR_ID@group.calendar.google.com", "profile": "work", "purpose": "family", "write_owner": ["asa"], "schedule": true},
+    {"name": "Holidays in Philippines", "id": "en.philippines#holiday@group.v.calendar.google.com", "profile": "work", "purpose": "holidays", "write_owner": [], "schedule": true},
+    {"name": "Canvas", "id": "CANVAS_ICS_CALENDAR_ID@import.calendar.google.com", "profile": "dlsu", "purpose": "canvas import", "write_owner": [], "schedule": true},
+    {"name": "GCash", "id": "GCASH_CALENDAR_ID@group.calendar.google.com", "profile": "work", "purpose": "work", "write_owner": [], "schedule": false},
+    {"name": "Job", "id": "JOB_CALENDAR_ID@group.calendar.google.com", "profile": "work", "purpose": "job search", "write_owner": [], "schedule": false},
+    {"name": "Bdayy", "id": "BIRTHDAYS_CALENDAR_ID@group.calendar.google.com", "profile": "personal", "purpose": "birthdays", "write_owner": ["asa"], "schedule": false}
+  ]
+}

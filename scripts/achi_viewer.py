@@ -6,6 +6,7 @@ mermaid diagrams, directory browsing, and dark mode over Tailscale.
 """
 
 import os
+import re
 import sys
 import html
 import urllib.parse
@@ -30,6 +31,317 @@ BLOCKED_PATTERNS = [
 
 def is_blocked(path) -> bool:
     return any(b in str(path) for b in BLOCKED_PATTERNS)
+
+
+KNOWN_VAULTS = [
+    "Documents/Obsidian/achiMem",
+    "Documents/Obsidian/schoolMem",
+]
+
+
+def slugify_heading(text: str) -> str:
+    """Slugify a markdown heading into a GitHub/Obsidian compatible anchor ID."""
+    t = text.strip().lstrip("#").strip().lower()
+    cleaned = []
+    for ch in t:
+        if ch.isalnum() or ch in ('-', '_'):
+            cleaned.append(ch)
+        elif ch.isspace():
+            cleaned.append('-')
+    slug = "".join(cleaned)
+    while '--' in slug:
+        slug = slug.replace('--', '-')
+    return slug.strip('-')
+
+
+def find_vault(file_path: Path, root_dir: Path = ROOT_DIR, vault_root: Path | None = None) -> Path | None:
+    """
+    Find the enclosing Obsidian vault for a given file.
+    Checks explicit vault_root, known vaults, and directory markers (.obsidian, .git).
+    Returns None if file is outside any vault.
+    """
+    if vault_root is not None:
+        return vault_root.resolve()
+
+    resolved_file = file_path.resolve()
+    resolved_root = root_dir.resolve()
+
+    # Check known vaults first
+    for kv in KNOWN_VAULTS:
+        kv_path = (resolved_root / kv).resolve()
+        try:
+            resolved_file.relative_to(kv_path)
+            return kv_path
+        except ValueError:
+            pass
+
+    # Traverse ancestors from parent upwards
+    cur = resolved_file.parent
+    while True:
+        try:
+            resolved_file.relative_to(resolved_root)
+            cur.relative_to(resolved_root)
+        except ValueError:
+            pass
+
+        # If .obsidian exists and this is not ROOT_DIR itself
+        if (cur / ".obsidian").is_dir() and cur != resolved_root:
+            return cur
+
+        # If .git exists and this is not ROOT_DIR itself
+        if (cur / ".git").is_dir() and cur != resolved_root:
+            return cur
+
+        if cur == cur.parent or cur == resolved_root:
+            break
+        cur = cur.parent
+
+    return None
+
+
+class VaultIndex:
+    """Index of notes and assets within a single vault for fast, safe resolution."""
+
+    def __init__(self, vault_root: Path):
+        self.vault_root = vault_root.resolve()
+        self.by_stem: dict[str, list[Path]] = {}
+        self.by_rel_path: dict[str, Path] = {}
+        self.by_name: dict[str, list[Path]] = {}
+        self._build_index()
+
+    def _build_index(self):
+        for root, dirs, files in os.walk(self.vault_root):
+            # Skip hidden directories like .git, .obsidian, .claude, etc.
+            dirs[:] = [d for d in dirs if not d.startswith(".")]
+            for f in files:
+                if f.startswith("."):
+                    continue
+                file_path = Path(root) / f
+                try:
+                    resolved = file_path.resolve()
+                except (OSError, RuntimeError):
+                    continue
+
+                # Security check: must not escape vault boundary (e.g. symlink to outside)
+                try:
+                    resolved.relative_to(self.vault_root)
+                except ValueError:
+                    continue
+
+                # Security check: must not be a blocked resource
+                if is_blocked(resolved):
+                    continue
+
+                if not resolved.is_file():
+                    continue
+
+                rel = file_path.relative_to(self.vault_root)
+                rel_str = str(rel).replace("\\", "/")
+                rel_lower = rel_str.lower()
+                self.by_rel_path[rel_lower] = resolved
+                if rel_lower.endswith(".md"):
+                    self.by_rel_path[rel_lower[:-3]] = resolved
+                elif rel_lower.endswith(".markdown"):
+                    self.by_rel_path[rel_lower[:-9]] = resolved
+
+                f_lower = file_path.name.lower()
+                if f_lower not in self.by_name:
+                    self.by_name[f_lower] = []
+                if resolved not in self.by_name[f_lower]:
+                    self.by_name[f_lower].append(resolved)
+
+                stem_lower = file_path.stem.lower()
+                if stem_lower not in self.by_stem:
+                    self.by_stem[stem_lower] = []
+                if resolved not in self.by_stem[stem_lower]:
+                    self.by_stem[stem_lower].append(resolved)
+
+
+FENCED_CODE_RE = re.compile(r'(```[\s\S]*?```|~~~[\s\S]*?~~~)')
+INLINE_CODE_RE = re.compile(r'(`[^`\n]+`)')
+WIKILINK_RE = re.compile(r'\[\[([^\]\|]+)(?:\|([^\]]+))?\]\]')
+
+
+def mask_code_blocks(text: str) -> tuple[str, list[str]]:
+    placeholders: list[str] = []
+
+    def replace_code(m: re.Match) -> str:
+        idx = len(placeholders)
+        placeholders.append(m.group(0))
+        return f"\x00CODE_{idx}\x00"
+
+    masked = FENCED_CODE_RE.sub(replace_code, text)
+    masked = INLINE_CODE_RE.sub(replace_code, masked)
+    return masked, placeholders
+
+
+def unmask_code_blocks(text: str, placeholders: list[str]) -> str:
+    for idx, original in enumerate(placeholders):
+        text = text.replace(f"\x00CODE_{idx}\x00", original)
+    return text
+
+
+def resolve_single_wikilink(
+    raw_target: str,
+    raw_alias: str | None,
+    file_path: Path,
+    vault_root: Path | None,
+    root_dir: Path = ROOT_DIR,
+    vault_index: VaultIndex | None = None,
+) -> tuple[bool, str, str]:
+    """
+    Resolve a single wikilink target within the source vault.
+    Returns (is_resolved, href, display_text).
+    """
+    note_part, has_heading, heading_part = raw_target.partition('#')
+    note_part = note_part.strip()
+    heading_part = heading_part.strip() if has_heading else ""
+
+    display_text = raw_alias if raw_alias is not None else raw_target
+
+    # Case 1: Same-file heading link: [[#Heading]] or [[#Heading|Label]]
+    if not note_part and has_heading:
+        anchor_slug = slugify_heading(heading_part)
+        return True, f"#{anchor_slug}", display_text
+
+    # Without vault_root or vault_index, cannot resolve vault links
+    if not vault_root or not vault_index:
+        return False, "", display_text
+
+    decoded_note = urllib.parse.unquote(note_part).strip()
+    if not decoded_note:
+        return False, "", display_text
+
+    target_file: Path | None = None
+
+    # Path-specified note (contains / or \ or starts with .)
+    if "/" in decoded_note or "\\" in decoded_note or decoded_note.startswith("."):
+        norm_target = decoded_note.replace("\\", "/")
+
+        if norm_target.startswith("./") or norm_target.startswith("../"):
+            cand = (file_path.parent / norm_target).resolve()
+            if not cand.is_file():
+                cand_md = (file_path.parent / f"{norm_target}.md").resolve()
+                if cand_md.is_file():
+                    cand = cand_md
+
+            try:
+                cand.relative_to(vault_root.resolve())
+                if not is_blocked(cand) and cand.is_file():
+                    target_file = cand
+            except (ValueError, OSError):
+                return False, "", display_text
+        else:
+            # Vault-relative candidate
+            cand_vault = (vault_root / norm_target).resolve()
+            if not cand_vault.is_file():
+                cand_vault_md = (vault_root / f"{norm_target}.md").resolve()
+                if cand_vault_md.is_file():
+                    cand_vault = cand_vault_md
+
+            # Sibling / relative candidate
+            cand_rel = (file_path.parent / norm_target).resolve()
+            if not cand_rel.is_file():
+                cand_rel_md = (file_path.parent / f"{norm_target}.md").resolve()
+                if cand_rel_md.is_file():
+                    cand_rel = cand_rel_md
+
+            valid_cands = []
+            for c in [cand_vault, cand_rel]:
+                try:
+                    c.relative_to(vault_root.resolve())
+                    if not is_blocked(c) and c.is_file() and c not in valid_cands:
+                        valid_cands.append(c)
+                except (ValueError, OSError):
+                    pass
+
+            if len(valid_cands) == 1:
+                target_file = valid_cands[0]
+            elif len(valid_cands) > 1:
+                return False, "", display_text
+            else:
+                return False, "", display_text
+    else:
+        # Bare basename
+        clean_note = decoded_note
+        if clean_note.lower().endswith(".md"):
+            clean_note = clean_note[:-3]
+        elif clean_note.lower().endswith(".markdown"):
+            clean_note = clean_note[:-9]
+
+        matches = vault_index.by_stem.get(clean_note.lower(), [])
+        if not matches:
+            matches = vault_index.by_name.get(decoded_note.lower(), [])
+        if not matches:
+            direct = vault_index.by_rel_path.get(decoded_note.lower())
+            if direct:
+                matches = [direct]
+
+        if len(matches) == 0:
+            return False, "", display_text
+        elif len(matches) > 1:
+            # Ambiguous: duplicate basenames!
+            return False, "", display_text
+        else:
+            target_file = matches[0]
+
+    if not target_file or not target_file.is_file():
+        return False, "", display_text
+
+    # Target is same file with heading anchor
+    if target_file.resolve() == file_path.resolve() and has_heading:
+        anchor_slug = slugify_heading(heading_part)
+        return True, f"#{anchor_slug}", display_text
+
+    # Compute href path
+    try:
+        rel_from_root = target_file.resolve().relative_to(root_dir.resolve())
+        href_path = "/" + urllib.parse.quote(str(rel_from_root).replace("\\", "/"))
+    except ValueError:
+        try:
+            rel_from_vault = target_file.resolve().relative_to(vault_root.resolve())
+            href_path = "/" + urllib.parse.quote(str(rel_from_vault).replace("\\", "/"))
+        except ValueError:
+            return False, "", display_text
+
+    if has_heading:
+        anchor_slug = slugify_heading(heading_part)
+        href_path = f"{href_path}#{anchor_slug}"
+
+    return True, href_path, display_text
+
+
+def resolve_wikilinks(content: str, file_path: Path, vault_root: Path | None = None, root_dir: Path = ROOT_DIR) -> str:
+    """
+    Parse content, resolve all Obsidian wikilinks against the vault, and replace with
+    clickable <a> tags or unresolved <span> tags.
+    """
+    if vault_root is None:
+        vault_root = find_vault(file_path, root_dir)
+
+    vault_index = VaultIndex(vault_root) if vault_root else None
+    masked_content, placeholders = mask_code_blocks(content)
+
+    def replace_match(match: re.Match) -> str:
+        raw_target = match.group(1).strip()
+        raw_alias = match.group(2).strip() if match.group(2) is not None else None
+
+        resolved, href, display_text = resolve_single_wikilink(
+            raw_target=raw_target,
+            raw_alias=raw_alias,
+            file_path=file_path,
+            vault_root=vault_root,
+            root_dir=root_dir,
+            vault_index=vault_index,
+        )
+
+        if resolved:
+            return f'<a class="wiki-link" href="{html.escape(href, quote=True)}">{html.escape(display_text)}</a>'
+        else:
+            return f'<span class="wiki-link unresolved is-unresolved">[[{html.escape(display_text)}]]</span>'
+
+    result = WIKILINK_RE.sub(replace_match, masked_content)
+    return unmask_code_blocks(result, placeholders)
 
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
@@ -126,6 +438,23 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       background-color: #161b22 !important;
       border: 1px solid var(--border-color);
       border-radius: 8px;
+    }}
+
+    /* Wikilinks */
+    a.wiki-link {{
+      color: var(--link-color);
+      text-decoration: underline;
+      text-decoration-color: rgba(88, 166, 255, 0.4);
+      font-weight: 500;
+    }}
+    a.wiki-link:hover {{
+      text-decoration-color: var(--link-color);
+    }}
+    span.wiki-link.unresolved {{
+      color: #8b949e;
+      opacity: 0.7;
+      border-bottom: 1px dashed #8b949e;
+      cursor: not-allowed;
     }}
     
     /* Mermaid Card & Viewport */
@@ -476,19 +805,29 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       }});
     }}
 
-    // Render client-side Markdown if raw content is present
+    // Render client-side Markdown if content is present
     const rawContentEl = document.getElementById('raw-markdown-content');
-    if (rawContentEl) {{
-      let text = rawContentEl.textContent;
-      
-      // Auto-convert [[wikilinks]] to clickable links
-      text = text.replace(/\\[\\[([a-zA-Z0-9_\\-\\.\\s\\/]+)(?:\\|([^\\]]+))?\\]\\]/g, function(match, target, alias) {{
-        let linkText = alias || target;
-        return `<span class="wiki-link">[[${{linkText}}]]</span>`;
-      }});
+    const resolvedContentEl = document.getElementById('resolved-markdown-content');
+    const sourceEl = resolvedContentEl || rawContentEl;
+    if (sourceEl) {{
+      let text = sourceEl.textContent;
+
+      function slugify(t) {{
+        return t.toLowerCase().trim()
+          .replace(/[^\\p{{L}}\\p{{N}}\\s\\-_]/gu, '')
+          .replace(/\\s+/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-+|-+$/g, '');
+      }}
 
       let diagCount = 0;
       const renderer = {{
+        heading(token) {{
+          const text = typeof token === 'object' ? token.text : token;
+          const depth = typeof token === 'object' ? token.depth : arguments[1];
+          const slug = slugify(text);
+          return `<h${{depth}} id="${{slug}}">${{text}}</h${{depth}}>\n`;
+        }},
         code(token) {{
           const code = typeof token === 'object' ? token.text : token;
           const lang = (typeof token === 'object' ? token.lang : arguments[1]) || '';
@@ -687,8 +1026,12 @@ class AchiViewerHandler(BaseHTTPRequestHandler):
             self.wfile.write(content.encode("utf-8"))
             return
 
+        vault_root = find_vault(file_path, ROOT_DIR)
+        resolved_content = resolve_wikilinks(content, file_path, vault_root=vault_root, root_dir=ROOT_DIR)
+
         body_html = f'''
           <div id="raw-markdown-content" style="display:none;">{html.escape(content)}</div>
+          <div id="resolved-markdown-content" style="display:none;">{html.escape(resolved_content)}</div>
           <div id="rendered-content" class="markdown-body">Loading...</div>
         '''
 

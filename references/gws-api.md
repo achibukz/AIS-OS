@@ -8,19 +8,18 @@ Services in use here: `gmail`, `calendar`.
 ## Linux (Achibuntu) setup
 
 `gws` is installed and verified across all four accounts under `~/.config/gws-*` using `GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file`.
-Hermes Google Workspace OAuth is also wired and live through token files:
-
-- `~/.hermes/google_token.json` — personal token, currently `akibukuhan10@gmail.com`; sees Gala, Personal, Bdayy, DLSU, Job (reader), CSOPESY, PEDFOUR, STCLOUD, STSP001, THS-ST1, Canvas import, LSCS, and DLSU primary as free/busy.
-- `~/.hermes/gws-work/google_token.json` — work token, `akibukzwork@gmail.com`; sees Job as primary/owner plus ING, Family, Holidays PH, and shared school calendars.
-
-Use this script for upcoming events across all visible personal + work calendars:
+achiOS reads no OAuth token files. Every script reaches Google through these gws profiles, and
+Calendar goes through `scripts/gcal.py`, which names calendars from the private
+`~/.config/achios/calendars.json`:
 
 ```bash
-~/.hermes/scripts/gcal_upcoming.py --days 14 --max 50
-~/.hermes/scripts/gcal_upcoming.py --days 14 --max 50 --json
+~/.local/share/achios/venv/bin/python scripts/gcal.py agenda --from 2026-09-17 --to 2026-09-23
+~/.local/share/achios/venv/bin/python scripts/gcal.py calendars check
 ```
 
-Verified 2026-08-16 from Hermes: personal and work Google live checks OK, work Gmail profile returns `akibukzwork@gmail.com`, ING calendar is visible, and upcoming ING events are returned. The default Hermes `google_api.py calendar list` checks only one calendar and can return `[]`; use the script above when Aki asks for incoming events.
+The `~/.config/achios/google_token*.json` files were deleted on 2026-09-17 by AIS-OS #61, and
+`tests/test_gcal.py` fails if one reappears. Hermes keeps its own token files under `~/.hermes/`;
+nothing in this repository reads them.
 
 ## Three accounts, three config dirs
 

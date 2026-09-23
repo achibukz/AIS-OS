@@ -1,0 +1,10 @@
+[Unit]
+Description=Watch Memories roots for new Immich albums
+
+[Path]
+PathChanged=/home/achibukz/Documents/Files/personal/memories
+PathChanged=/mnt/Achi120/Main Folders/Pictures/Memories 2
+Unit=achios-immich-watch.service
+
+[Install]
+WantedBy=default.target

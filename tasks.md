@@ -14,34 +14,114 @@ the parser skips the line.
 ```
 
 - `- [ ]` active, `- [x]` done, `- [~]` blocked
-- `#area` optional, one or more. Free-form: `#thesis`, `#career`, `#achios`, `#school`
+- One primary area is required: `#school`, `#projects`, `#personal`, `#career`, or `#systems`
+- Other subject and repository tags may follow the primary area
 - `!high` `!med` `!low` optional. Missing means `!med`
 - `@YYYY-MM-DD` optional due date. Overdue and due-today are called out in the brief
+- `<!-- task-id: value -->` is optional internal identity and never appears in rendered views
 - Research inquiries must be paired with an entry in [research.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/research.md) detailing lenses and deliverable, linked via anchor.
 
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Claim requested documents at DLSU ESH (Ref: RFD-012572) #school !med #ESH @2026-09-29 <!-- task-id: task_4664ef9cc11a1bdbd83e17a4 -->
+- [ ] Repair stale /ToWork status cards and restore a distinct Resume action through [achiCore #225](https://github.com/achibukz/achiCore/issues/225) #achicore #telegram #bug !high
+- [ ] Review and live-test the combined Asta release for AIS-OS #63 through #68 and achiCore #222, #223, #230; implementation is on ticket/63-asta-release and ticket/222-asta-release #systems #asta !high
+- [ ] Repair Telegram /syncres through [achiCore #215](https://github.com/achibukz/achiCore/issues/215) so it never restarts after a failed sync and can prepare a safe, approval-gated recovery for tracked local changes #achicore #telegram #bug !high
+- [ ] Submit CCINOV8 Team Contract #school #CCINOV8 !high @2026-09-18
+- [ ] Submit STDISCM Practice Test Case Upload Check #school #STDISCM !high @2026-09-18
+- [ ] Work on NAIST application requirements (TOR and COE request forms submitted; prepare remaining materials) #career !high @2026-09-21
+- [ ] Forward /tasks arguments in cmd_tasks and render area views turn-free through [achiCore #57](https://github.com/achibukz/achiCore/issues/57) #achicore #systems !high
+- [ ] Deliver the approved Telegram cohesion batch, starting with Asa and Sciel, then semantic learning. [Roadmap](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-roadmap-2026-09-11.md) covers achiCore #194-#200 and AIS-OS #41-#49 plus revised existing tickets. #systems !high
+- [ ] Deliver the meeting ingest cohesion batch: [schoolMem #2](https://github.com/achibukz/schoolMem/issues/2), [AIS-OS #58](https://github.com/achibukz/AIS-OS/issues/58) and [achiCore #213](https://github.com/achibukz/achiCore/issues/213). [Discussion](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/meeting-ingest-cohesion-discussion-2026-09-15.md) #systems !med
+- [ ] Fix shared Telegram message splitting through [AIS-OS #34](https://github.com/achibukz/AIS-OS/issues/34), preserving long-message tails without duplicate prefixes #systems #bug !med
+- [ ] Fix false-positive delegation failure receipts on trailing agy stream disconnects, filed as [achiCore #167-#168](https://github.com/achibukz/achiCore/issues/167) #achicore #bug !high
+- [ ] Retry transient git fetch failures in standby so a stalled fetch stops stranding a worker pair, filed as [achiCore #171](https://github.com/achibukz/achiCore/issues/171) #achicore #bug !high
+- [ ] Suppress the stream drop truncation warning when the recovered delegation report is complete, filed as [achiCore #172](https://github.com/achibukz/achiCore/issues/172) #achicore #bug !med
+- [ ] Tap Recheck and release on the achiCore #6 status card in #Atlas to free aea1 and luna1 #achicore !high
+- [ ] Review [AIS-OS PR #21](https://github.com/achibukz/AIS-OS/pull/21) and exercise assisted-live-testing on the next eligible PR, checking the Markdown interaction record and posted PR comment #systems #testing !med
 - [ ] Hold a separate planning session for a control board or Kanban frontend connecting the Astra workflow and learning records, per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md#follow-up-planning-session-for-a-control-board) #achios #achicore #planning !med
-- [ ] Discuss privileged testing, conflict handling, /towork workflow audit, TGDB overhaul, and worker engine optimization with Astra per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md#follow-up-discussion-topics-with-astra-privileged-testing-conflict-handling-towork-audit-tgdb-overhaul-and-worker-optimization) #systems #achicore #planning !med
-- [ ] Ship the [Astra learning and worker-reliability plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md), achiCore #146-#149 and AIS-OS #13-#18, with revised achiCore #128/#113 and AIS-OS #11 #systems #achios #achicore !high
-- [ ] Fix Claude Code quota and auto-refresh stale provider tokens in /usage (achiCore #135-#136) #achicore #ux #bug !high
-- [ ] Align and copy global instructions from Claude (CLAUDE.md) to Antigravity and Codex #systems #tooling !med
-- [ ] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-09-07
-- [ ] Complete 5-month ING Internship Agreement Form (signatures: Aki, Parent/Guardian, DLSU coordinator, then notarize) #career #school !high
-- [ ] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med
-- [ ] Complete active Systems & Engineering backlog tasks per [tasks-systems-engineering.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-systems-engineering.md) #systems #engineering #achicore #infra !high
-- [ ] Complete active Asa & Research workflows backlog tasks per [tasks-asa-research.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/tasks-asa-research.md) #asa #research #workflows !high
+- [ ] Discuss privileged testing, conflict handling, /towork workflow audit, TGDB overhaul, worker engine optimization, and write boundary constraints with Astra per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md#follow-up-discussion-topics-with-astra-privileged-testing-conflict-handling-towork-audit-tgdb-overhaul-and-worker-optimization) #systems #achicore #planning !med
+- [ ] Review and merge the AIS-OS #13 pull request (stable task/Calendar operations, re-landed onto main after the original PR #52 merged into the abandoned #6 feature branch instead), then start Astra implementation on [achiCore #56](https://github.com/achibukz/achiCore/issues/56) for memory/persona precedence #systems #achios #achicore !high
+- [ ] After the foundations, connect ordinary requests through achiCore #148 and corrections through AIS-OS #14, then continue the remaining T1-T9 learning slices in dependency order #systems #achios #achicore !high
+- [ ] Prepare AIS-OS #18 replay fixtures during early learning work; run its real Flash acceptance later with assisted-live-testing, a Markdown interaction record and a PR comment #systems #achios #testing !high
+- [ ] Build a sync script so global agent instructions propagate from ~/.claude/CLAUDE.md to Antigravity (~/.gemini/config/GEMINI.md, AGENTS.md) and Codex (~/.codex/AGENTS.md) automatically (needs design discussion: shared-core file vs generated marker blocks vs symlink; current state is one-time manual copy done 2026-09-05) #systems #tooling !med
+- [ ] Implement the approved Canvas first release through [#24](https://github.com/achibukz/AIS-OS/issues/24) (two tickets left: [#31](https://github.com/achibukz/AIS-OS/issues/31) and [#47](https://github.com/achibukz/AIS-OS/issues/47); queries/notifications merged via [PR #33](https://github.com/achibukz/AIS-OS/pull/33), phone login merged via [PR #35](https://github.com/achibukz/AIS-OS/pull/35), achiCore integration closed #173, deployment verified [#30](https://github.com/achibukz/AIS-OS/issues/30)) #school #automation #infra !med
+- [ ] Hold a grill-me session and implement model escalation fallback in achiCore to upgrade to a higher-tier model when a lower model fails #achicore #models #planning !med
+- [ ] Add codebase inspection skill to Aurora in achiCore #achicore #agents !med
+- [ ] Require @achibukz and @luna-achiCore on Aea PRs and @achibukz and @aea-achiCore on Luna reviews (achiCore #77) #achicore #github !med
+- [ ] Test fallback mechanism when Gemini 3.7 Flash and Codex hit quota limits #achicore #testing #models !med
+- [ ] Allow permitted subdirectories beneath protected roots in write boundary (~/.config/gws-*) and restore stock gws 0.22.5 (achiCore #131, rejecting PR #164 custom fork) #achicore #security #bug !high
+- [ ] Automate completed GitHub PR and issue sync into tasks.md and evening debrief (AIS-OS #11) #achios #automation #telegram !high
+- [ ] Add show-me skill to Aea and Luna and mandate visual architecture diagrams in PR descriptions and reviews (achiCore #133-#134) #achicore #agents #ux !med
+- [ ] Audit CLI tools and integrations against Landlock write boundary constraints (gh, git, systemd, gcloud, uv) to prevent silent Permission denied failures per [astra-plan.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md#write-boundary-inventory-and-downstream-feature-impact) #achicore #infra #security !high
+- [ ] Update Asa research workflow to mandate an exhaustive sources and citations appendix at the end of all generated markdown files and deliverables #asa #workflows #research !high
 - [ ] Cancel current Google One subscription ahead of renewal #finances #personal !low @2026-10-13
 - [ ] Subscribe to Google AI Pro Student Discount (₱275/mo for up to 4 years via SheerID verification) #finances #personal !low @2026-10-14
-- [ ] Ship achiCore #142-#143: add /sync repository pull command and /towork conflict resolution flow #achicore #infra #ux !med
+- [ ] Fix conflict-repair budgets and Atlas repair/merge-queue status through [achiCore #155](https://github.com/achibukz/achiCore/issues/155) #achicore #infra #ux !high
+- [ ] Invalidate worker probes after virtualenv deletion or replacement through [achiCore #156](https://github.com/achibukz/achiCore/issues/156) #achicore #infra !high
 - [ ] Ship specific-repo sync across AIS-OS #12 and achiCore #145 (/sync <repo>) #achios #achicore #infra !med
-- [ ] Hold grill-me session to design and build GitHub trending repos scanner cron (star surge tracking, adoption driver analysis, workflow integration) #automation #tooling #infra !med
-- [ ] Check Google OAuth tokens after 7 days to verify permanent production validity without re-auth #infra #security #achicore !med @2026-09-12
+- [ ] Unify Gemini Flash models with reasoning effort submenu in /topicmodels ([achiCore #162](https://github.com/achibukz/achiCore/issues/162)) #achicore #ux !med
+- [ ] Have Astra audit whether open AIS-OS and achiCore tickets are still accurate against current code #systems #achios #achicore #planning !med
+- [ ] Audit slash commands and scripts for vendor lock-in (e.g. /tasks unavailable outside Claude Code), starting with LLM-calling scripts, and design a fallback so they work across AI vendors #systems #achios #arch !med
+- [ ] Write a ticket: when a loop finishes a ticket without success after 3 tries, add a button to switch the model working the ticket #achicore #ux !med
+- [ ] Restore stock gws 0.22.5 and grant write access to ~/.config/gws-* under Landlock write boundary per [achiCore #131](https://github.com/achibukz/achiCore/issues/131) (cancelling PR #164 custom fork) #achicore #infra #security !high
+
+
 
 ## Blocked
 
+## Backlog
+
+- [ ] Set up secure public Immich album sharing with a Cloudflare Tunnel and a public HTTPS URL #systems #immich !med
+- [ ] Audit and refine ~/.config/achios/USER.md and MEMORY.md with Claude Code to optimize structure, conciseness, and 2,500-char budget utilization #achios #memory #audit !high
+- [ ] Build Google Sheets Schedule Planner skill for Claude Code / achiOS based on Hermes OAuth and Sheets v4 API spec in [2026-08-24-google-sheets-schedule-planner-skill-spec.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-24-google-sheets-schedule-planner-skill-spec.md) #skills #automation #achios !high
+- [ ] Benchmark Althea fact-checking on gemini-3.1-pro-high vs gemini-3.7-flash-high across claim granularity, latency, and tool fidelity in asa #asa #eval #benchmark !med
+- [ ] Execute the new implementation plan created with Claude Code #asa #arch !med
+- [ ] Audit Asa research failure modes and author implementation plan with Claude Code per [2026-08-28-asa-research-failure-modes-and-retry-loop-audit.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-28-asa-research-failure-modes-and-retry-loop-audit.md): (1) fix crashing `asa status` caused by unhandled FileNotFoundError on non-run directories in `~/.local/share/asa/runs/`, and (2) add automated Muses re-run loop when Althea unsupported claims exceed threshold (70-80%) #asa #audit #workflows #planning !high
+- [ ] Design and build AI-Assisted Learning Architecture project using achiMem and schoolMem as ground-truth knowledge bases with Claude Code / agy / asa subagents (adapted from amosblomqvist/learn DAG and probing mechanics) #achios #learning #arch #schoolmem #achimem !high
+- [ ] Implement Matt Pocock skills into Asa skills library and apply writing-for-agents standards to improve subagent prompt quality #asa #skills #agents !high
+- [ ] Hold a grill-me session and design an Asa skill/workflow for prior art discovery, competitive market analysis, and idea viability evaluation (check if an idea already exists, analyze competitors, and assess market viability) #asa #skills #research #planning !med
+- [ ] Implement reflect skill and 3-subagent transcript review loop in achiOS (adapted from pstack/reflect) #achios #skills #learning !high
+- [ ] Build Tauri v2 desktop GUI for achiOS, achiCore, and achiMem connecting to Achibuntu over SSH/Tailscale per [2026-08-30-tauri-desktop-gui-architecture-and-blueprint.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-30-tauri-desktop-gui-architecture-and-blueprint.md) #achios #achicore #ui #infra !med
+- [ ] Build cron job that scans all repos for open GitHub tickets and surfaces the single most important one to action — Telegram message must include clickable links to each ticket so Aki can jump directly to it #achios #infra #engineering !med
+- [ ] Change Telegram command /newtopics to make /new the first command in autocomplete #achicore #telegram !med
+- [ ] Repair tests/test_daily_brief.py, all 44 tests fail against the refactored daily_brief module (no attribute parse_tasks, tasks_message, schedule_message, color_dot, polish_with_claude) #infra #testing !med
+- [ ] Test whether `ssh -L` port-forward re-auth works for gws on achibuntu, so the four logins run server-side and no credential copy is needed #achios #infra !med
+- [ ] Write `references/model-selection.md` — research-grounded model tier hierarchy and use-case reference guide (Opus, Sonnet, Flash, Flash-lite, etc. across achiOS, achiAgy, Asa, and daily tasks), then update AGENTS.md model guidance sections to match — current AGENTS.md mentions are undetailed and not grounded in research #achios #reference #arch !med
+- [ ] Hold grill-me session to design and build GitHub trending repos scanner cron (star surge tracking, adoption driver analysis, workflow integration) #automation #tooling #infra !med
+- [ ] Write a ticket for /sync to support a configurable repo include/exclude list, so it stops syncing repos that don't need it #achios #tooling !med
+- [ ] Upgrade sync-repos --repo/-r to accept multiple repo names in one call (e.g. /sync achiCore, AIS-OS) #achios #tooling !med
+- [ ] Discuss how to do smart model routing in daily conversations in Telegram for achiCore #achicore #planning !med
+
 ## Done
+- [x] Submit STDISCM Too Much Milk homework #school #STDISCM !high @2026-09-19 (done 2026-09-19)
+- [x] Remove broken Gmail links from email digest, filed as [AIS-OS #57](https://github.com/achibukz/AIS-OS/issues/57) #systems #bug !high (done 2026-09-17)
+- [x] Complete CCINOV8 Self-Assessment Test #school #CCINOV8 !high @2026-09-15 (done 2026-09-15)
+
+- [x] Submit GELITPH Family Story #school #GELITPH !high @2026-09-14 (done 2026-09-13)
+- [x] Extend automatic Immich watcher to both Memories roots #systems !med (done 2026-09-14)
+- [x] Add a settled-transfer watcher for Memories 2 Immich sync #systems !med (done 2026-09-14)
+- [x] Extend Immich folder-to-album sync to Memories 2 #systems !med (done 2026-09-14)
+- [x] Check Google OAuth tokens after 7 days to verify permanent production validity without re-auth #infra #security #achicore !med @2026-09-12 (done 2026-09-13)
+- [x] Submit GELITPH Index Card (virtual) #school #GELITPH !high @2026-09-13 (done 2026-09-13)
+- [x] Filter systems and project research from default /tasks and support all and backlog views through [AIS-OS #55](https://github.com/achibukz/AIS-OS/issues/55) #systems !high (done 2026-09-11)
+- [x] Audit and design end-to-end cohesion across achiOS daemons, email digest parser, task register, and calendar auto-sync with Claude Code #achios #audit #arch !high @2026-08-27 (done 2026-09-11)
+- [x] Audit Hermes research retrospective and orchestrator findings with Claude Code in asa [2026-08-24-hermes-research-and-orchestrator-audit.md](http://100.106.210.38:8999/Code/GitHub/asa/docs/reports/2026-08-24-hermes-research-and-orchestrator-audit.md) #asa #audit !high @2026-08-27 (done 2026-09-11)
+- [x] Audit and plan integration of Matt Pocock workflows (Wayfinder, Grilling, Codebase Design) with asa SCAN/STORM research pipeline in Claude Code per [2026-08-24-matt-pocock-workflow-integration-and-wayfinder-asa-audit.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-24-matt-pocock-workflow-integration-and-wayfinder-asa-audit.md) #achios #asa #workflows #audit !med @2026-08-27 (closed 2026-09-11)
+- [x] Execute prioritized open tickets in achiAgy per [roadmap.md](http://100.106.210.38:8999/Code/GitHub/achiAgy/docs/roadmap.md) starting with #24 (read-only lock bypass), #1 (atomic persistence), #7 (per-topic defaults), #4 (orchestration mixin), and #9 (Atlas persona) #achiagy #engineering !high @2026-08-28 (superseded by new tickets 2026-09-11)
+- [x] Fix Claude Code quota and auto-refresh stale provider tokens in /usage (achiCore #135-#136) #achicore #ux #bug !high (done 2026-09-11)
+- [x] Implement AUTO Zoom Leaver Windows port tickets #1-#4 #projects #windows #engineering !high (done 2026-09-11)
+- [x] Ship the Google auth lifecycle and /tasks renderer batch, AIS-OS #3 to #8 plus achiCore #57, per [the plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/2026-08-29-google-auth-lifecycle-and-tasks-renderer-plan.md) #achios #infra !high (closed 2026-09-11)
+- [x] Submit signed 5-month ING Internship Agreement Form to Vans by 1:00 PM (scheduled email queued; Aki and parent signatures done; coordinator signature & notarization to follow) #career #school !high @2026-09-11 (done 2026-09-09)
+- [x] Review and approve the Canvas implementation plan with incremental tickets. #school #automation (done 2026-09-08)
+- [x] Send AY 2026-2027 Term 1 EAF to Ethan Burayag (ethan_burayag@dlsu.edu.ph) #school #thesis !high (done 2026-09-07)
+- [x] Create new BPI account and fund for ING onboarding proof #finances #career !high @2026-09-07 (done 2026-09-07)
+- [x] Remove legacy Google tokens (~/.config/achios/google_token*.json and stale ~/.config/gws) through [AIS-OS #7](https://github.com/achibukz/AIS-OS/issues/7) #infra #security !med (done 2026-09-06)
+- [x] Undergo Physical Exam at an outside clinic and obtain "Fit to Work" Medical Certificate for ING (DLSU clinic only issues for school-required practicum) #career !med (done 2026-09-06)
+- [x] Align and copy global instructions from Claude (CLAUDE.md) to Antigravity and Codex #systems #tooling !med (done 2026-09-05)
+- [x] Capture the reusable Telegram testing hub, audit the worker-test lessons and create [assisted-live-testing](http://100.106.210.38:8999/.config/skillshare/skills/assisted-live-testing/SKILL.md) for CLI/backend and other human acceptance, with Markdown records and PR comments; source review in AIS-OS PR #21, issue #20 #systems #testing (done 2026-09-05)
+- [x] Merge achiCore PR #154, deploy `bbb8fb7`, restart the main hub and close #153 at Aki's request; partial acceptance and follow-ups remain in the deployment record #systems #achicore !high (done 2026-09-05)
 - [x] Audit Telegram, achiCore, achiOS, achiMem and worker test environments; replace the [Astra plan](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/astra-plan.md) with implementation slices #systems #achios #achicore !high (done 2026-09-05)
 - [x] Ship achiCore #138-#139: register Astra as a Codex model and add the effort step to /model #achicore #ux !med  (done 2026-09-05)
 - [x] Integrate Claude Code foundation into achiCore as third engine with subscription OAuth (ticket 119, PR 126), scoped config directories, and prompt attachment handling #achicore #claude #arch !high  (done 2026-09-05)
