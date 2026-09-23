@@ -1,5 +1,26 @@
 # Session Log
 
+## 2026-09-24 08:05 PHT [saved]
+
+Goal: audit AIS-OS #47 before its first push.
+
+Decisions:
+
+- An assignment already submitted when a course is activated never becomes a
+  task. Grading it later queued a `complete` operation for a missing item, which
+  cohesion leaves pending forever. `reconcile` reads the 50 oldest pending
+  operations, so enough of these would block every newer Canvas change. A
+  completion now queues only when an upsert for that assignment exists.
+- Left as is: an announcement date earlier than its post date rolls to next
+  year. "Posted by Dr. X on September 3", seen on September 8, becomes a task
+  due a year later. The extractor's action, deadline and date rule makes this
+  rare, and the right rule is a product call.
+
+Verification:
+
+- The new test failed before the fix and passes after. `tests/test_canvas_tasks.py`
+  has 20 passing tests.
+
 ## 2026-09-22 03:04 PHT [saved]
 
 Goal: implement AIS-OS #47 and the approved extension that extracts explicit

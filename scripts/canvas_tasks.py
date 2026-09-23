@@ -82,6 +82,15 @@ def _next_revision(db, course_id: int, source_kind: str, source_id: int) -> int:
     return (row[0] or 0) + 1
 
 
+def _was_created(db, course_id: int, source_kind: str, source_id: int) -> bool:
+    return db.execute(
+        """SELECT 1 FROM canvas_task_ops
+           WHERE course_id=? AND source_kind=? AND source_id=?
+             AND json_extract(intent,'$.action')='upsert' LIMIT 1""",
+        (course_id, source_kind, source_id),
+    ).fetchone() is not None
+
+
 def _insert_op(
     db,
     *,
@@ -225,6 +234,14 @@ def record_changes(db, course_id, category, records, at, previous=None):
         if not changed:
             continue
         intent = _assignment_intent(course, record, state)
+        # An assignment already done before activation never became a task, so a
+        # later grade has nothing to complete and would stay pending forever.
+        if (
+            intent
+            and intent["action"] == "complete"
+            and not _was_created(db, course_id, "assignment", record["id"])
+        ):
+            continue
         _insert_op(
             db,
             course_id=course_id,

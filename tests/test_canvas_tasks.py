@@ -145,6 +145,19 @@ def test_submission_completes_the_existing_link(db, tmp_path):
     ).fetchone()[0] == "submitted"
 
 
+def test_grading_work_done_before_activation_queues_nothing(db, tmp_path):
+    save_snapshot(db, 42, "assignments", [assignment()], AT)
+    activate(db, "STDISCM", at=AT, now=NOW)
+
+    save_snapshot(
+        db, 42, "assignments", [assignment(grade="A", score=95)], "2026-09-08T11:00:00+00:00"
+    )
+    result = reconcile(db, service=service(tmp_path))
+
+    assert db.execute("SELECT count(*) FROM canvas_task_ops").fetchone()[0] == 0
+    assert result["remaining"] == 0
+
+
 def test_unknown_state_and_missing_due_never_invent_changes(db):
     save_snapshot(db, 42, "assignments", [active_assignment()], AT)
     activate(db, "STDISCM", at=AT, now=NOW)
