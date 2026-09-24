@@ -93,6 +93,16 @@ class PreferenceStore:
                     checkpoint INTEGER NOT NULL,
                     updated_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS learning_retrievals (
+                    record_kind TEXT NOT NULL,
+                    record_id TEXT NOT NULL,
+                    revision INTEGER NOT NULL,
+                    source_id TEXT NOT NULL,
+                    selected INTEGER NOT NULL,
+                    retrieved_at TEXT NOT NULL,
+                    corrected_at TEXT,
+                    PRIMARY KEY (record_kind, record_id, revision, source_id)
+                );
                 CREATE TABLE IF NOT EXISTS semantic_preference_uses (
                     preference_id TEXT NOT NULL,
                     revision INTEGER NOT NULL,
@@ -288,6 +298,13 @@ class PreferenceStore:
                     event_id,
                     now,
                 ),
+            )
+            # A new revision corrects every earlier retrieval of this preference.
+            connection.execute(
+                """UPDATE learning_retrievals SET corrected_at=?
+                   WHERE record_kind='preference' AND record_id=? AND revision<?
+                     AND corrected_at IS NULL""",
+                (now, preference_id, revision),
             )
             connection.execute(
                 "UPDATE semantic_preference_events SET status=?,reason=NULL WHERE event_id=?",
