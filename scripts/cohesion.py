@@ -563,7 +563,7 @@ class CohesionService:
         if "\n" in title or "\r" in title or "<!--" in title:
             raise CohesionError("intent.title must be one plain-text line")
         placement = intent.get("placement") or self._preference(
-            category, intent.get("item_id")
+            category, intent.get("item_id"), source["id"]
         )
         if placement not in PLACEMENTS:
             raise CohesionError("intent.placement is unsupported")
@@ -630,11 +630,15 @@ class CohesionService:
             raise CohesionError(f"calendar {name!r} is not written by cohesion")
         return entry
 
-    def _preference(self, category: str, item_id: str | None = None) -> str:
+    def _preference(
+        self, category: str, item_id: str | None = None, source_id: str | None = None
+    ) -> str:
         learned = self.semantic_preferences.effective(
             "placement", category=category, item_id=item_id
         )
         if learned:
+            if source_id:
+                self.semantic_preferences.record_use(learned, source_id)
             return learned["value"]
         with self._connect() as connection:
             row = connection.execute(

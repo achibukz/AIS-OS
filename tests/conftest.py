@@ -37,3 +37,22 @@ def _no_real_vaults(tmp_path_factory, monkeypatch):
     monkeypatch.setattr(vault_notes, "VAULTS", {
         "achimem": scratch / "achiMem", "schoolmem": scratch / "schoolMem",
     })
+
+
+@pytest.fixture(autouse=True)
+def _no_real_notifications(tmp_path_factory, monkeypatch):
+    """No test may send to Telegram or read the operator's learning state."""
+    import learning_reports
+    import notify_outbox
+
+    def refuse(*_args, **_kwargs):
+        raise SystemExit("Missing TELEGRAM credentials in tests")
+
+    scratch = tmp_path_factory.mktemp("learning")
+    monkeypatch.setattr(notify_outbox, "DEFAULT_DB", scratch / "outbox.sqlite3")
+    monkeypatch.setattr(
+        notify_outbox.Outbox, "sender", property(lambda self: self._sender or refuse)
+    )
+    monkeypatch.setattr(learning_reports, "COHESION_DB", scratch / "cohesion.sqlite3")
+    monkeypatch.setattr(learning_reports, "GEMINI_ENV", scratch / "absent-gemini")
+    monkeypatch.setattr(learning_reports, "VAULTS", ())

@@ -93,6 +93,13 @@ class PreferenceStore:
                     checkpoint INTEGER NOT NULL,
                     updated_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS semantic_preference_uses (
+                    preference_id TEXT NOT NULL,
+                    revision INTEGER NOT NULL,
+                    source_id TEXT NOT NULL,
+                    used_at TEXT NOT NULL,
+                    PRIMARY KEY (preference_id, revision, source_id)
+                );
                 CREATE TABLE IF NOT EXISTS semantic_review_calls (
                     call_id TEXT PRIMARY KEY,
                     manila_day TEXT NOT NULL,
@@ -326,6 +333,15 @@ class PreferenceStore:
                     result["exceptions"] = json.loads(result.pop("exceptions_json"))
                     return result
         return None
+
+    def record_use(self, preference: dict[str, Any], source_id: str) -> None:
+        """Note that a learned value decided a real write. A replay counts once."""
+        with self._connect() as connection:
+            connection.execute(
+                "INSERT OR IGNORE INTO semantic_preference_uses VALUES(?,?,?,?)",
+                (preference["preference_id"], preference["revision"], source_id,
+                 dt.datetime.now(dt.UTC).isoformat()),
+            )
 
     def context(self, category: str | None = None) -> dict[str, Any]:
         active = {}

@@ -1,0 +1,10 @@
+[Unit]
+Description=achiOS queued Telegram report retry every 15 minutes
+
+[Timer]
+OnCalendar=*:0/15
+Persistent=true
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target
