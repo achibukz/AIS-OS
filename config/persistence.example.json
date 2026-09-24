@@ -1,0 +1,13 @@
+{
+  "repositories": [
+    {
+      "root": "~/Code/GitHub/AIS-OS",
+      "remote": "origin",
+      "remote_url": "https://github.com/achibukz/AIS-OS.git",
+      "branch": "main",
+      "author_name": "Aki Bukuhan",
+      "author_email": "akibukzwork@gmail.com",
+      "paths": ["tasks.md", "session-log.md"]
+    }
+  ]
+}

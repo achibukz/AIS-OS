@@ -160,6 +160,52 @@ def record_external_write(
     return record_id
 
 
+def record_semantic_event(
+    event_id: str,
+    source: dict[str, Any],
+    evidence: str,
+    preference: dict[str, Any],
+    state: str,
+    reason: str | None,
+    path: Optional[Path] = None,
+) -> str:
+    """Mirror one sourced preference event into the append-only audit ledger."""
+    if event_id in _latest_by_id(path):
+        return event_id
+    _append(
+        {
+            "id": event_id,
+            "ts": datetime.now(LOCAL_TZ).isoformat(),
+            "chat_id": None,
+            "turn_index": None,
+            "raw": evidence,
+            "state": state,
+            "verdict": None,
+            "reason": reason,
+            "rule": None,
+            "action": preference.get("action", "set"),
+            "target": "semantic_preferences",
+            "source": SOURCE_LOOP,
+            "source_envelope": source,
+            "preference": {
+                key: preference.get(key)
+                for key in ("kind", "scope", "scope_value", "value", "exceptions")
+            },
+        },
+        path,
+    )
+    return event_id
+
+
+def mark_semantic_event(
+    event_id: str,
+    state: str,
+    reason: str | None = None,
+    path: Optional[Path] = None,
+) -> None:
+    _transition(event_id, path, state=state, reason=reason)
+
+
 def _transition(record_id: str, path: Optional[Path], **fields: Any) -> None:
     base = _latest_by_id(path).get(record_id)
     if base is None:

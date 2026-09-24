@@ -165,3 +165,41 @@ class TestPromptHygiene:
         prompt = mg.build_prompt([_cand("r1", "alpha"), _cand("r2", "beta", turn=2)])
         assert "0. alpha" in prompt
         assert "1. beta" in prompt
+
+
+def test_default_gate_uses_flash_38_without_declaring_tools(monkeypatch):
+    captured = {}
+    structured = {"rules": []}
+    envelope = {
+        "candidates": [
+            {"content": {"parts": [{"text": json.dumps(structured)}]}}
+        ]
+    }
+
+    class Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self):
+            return json.dumps(envelope).encode()
+
+    def open_request(request, timeout):
+        captured["url"] = request.full_url
+        captured["body"] = json.loads(request.data)
+        captured["timeout"] = timeout
+        return Response()
+
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
+    monkeypatch.setattr(mg.urllib.request, "urlopen", open_request)
+
+    result = json.loads(mg._default_runner("classify"))
+
+    assert result == {"structured_output": structured}
+    assert captured["url"].endswith("/models/gemini-3.8-flash:generateContent")
+    assert captured["body"]["generationConfig"]["thinkingConfig"] == {"thinkingLevel": "high"}
+    assert "tools" not in captured["body"]
+    assert captured["body"]["generationConfig"]["maxOutputTokens"] == 1000
+    assert captured["timeout"] == 90

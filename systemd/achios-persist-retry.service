@@ -1,0 +1,14 @@
+[Unit]
+Description=achiOS push of owned task and log commits that missed their remote
+After=network-online.target
+Wants=network-online.target
+OnFailure=achios-failure-alert@%n.service
+
+[Service]
+Type=oneshot
+UMask=0077
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/.local/share/achios/venv/bin/python @REPO@/scripts/owned_persist.py --retry
+StandardOutput=append:%h/.local/state/achios/persist_retry.log
+StandardError=append:%h/.local/state/achios/persist_retry.log
+TimeoutStartSec=5min
