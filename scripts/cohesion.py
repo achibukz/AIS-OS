@@ -22,6 +22,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
 import gcal
+from semantic_preferences import PreferenceError, PreferenceStore
 from task_engine import PRIMARY_AREAS
 
 CONTRACT_VERSION = 1
@@ -165,6 +166,7 @@ class CohesionService:
         self.calendar = calendar or GwsCalendarTransport()
         self.db_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         self._initialize()
+        self.semantic_preferences = PreferenceStore(self.db_path)
         self.db_path.chmod(0o600)
 
     @contextlib.contextmanager
@@ -252,6 +254,7 @@ class CohesionService:
             "operations": ["upsert", "complete"],
             "destinations": ["tasks", "calendar"],
             "placements": list(PLACEMENTS),
+            "preference_kinds": ["viewer_delivery", "placement", "linked_completion"],
         }
 
     def context(self, category: str | None = None) -> dict:
@@ -285,7 +288,18 @@ class CohesionService:
             "source_count": source_count,
             "pending_count": pending_count,
             "items": [dict(row) for row in item_rows],
+            "semantic_preferences": self.semantic_preferences.context(category),
         }
+
+    def record_preference(self, request: dict) -> dict:
+        if request.get("version") != CONTRACT_VERSION:
+            raise CohesionError(f"version must be {CONTRACT_VERSION}")
+        try:
+            return self.semantic_preferences.record(
+                request.get("source"), request.get("preference")
+            )
+        except PreferenceError as exc:
+            raise CohesionError(str(exc)) from exc
 
     def submit(self, request: dict) -> dict:
         original_request = request
@@ -496,7 +510,9 @@ class CohesionService:
             raise CohesionError("intent.title is required")
         if "\n" in title or "\r" in title or "<!--" in title:
             raise CohesionError("intent.title must be one plain-text line")
-        placement = intent.get("placement") or self._preference(category)
+        placement = intent.get("placement") or self._preference(
+            category, intent.get("item_id")
+        )
         if placement not in PLACEMENTS:
             raise CohesionError("intent.placement is unsupported")
 
@@ -562,7 +578,12 @@ class CohesionService:
             raise CohesionError(f"calendar {name!r} is not written by cohesion")
         return entry
 
-    def _preference(self, category: str) -> str:
+    def _preference(self, category: str, item_id: str | None = None) -> str:
+        learned = self.semantic_preferences.effective(
+            "placement", category=category, item_id=item_id
+        )
+        if learned:
+            return learned["value"]
         with self._connect() as connection:
             row = connection.execute(
                 "SELECT placement FROM preferences WHERE category = ?", (category,)
@@ -855,6 +876,8 @@ def main(argv: list[str] | None = None) -> int:
     context_parser.add_argument("--category")
     submit_parser = subparsers.add_parser("submit")
     submit_parser.add_argument("--input", default="-", help="JSON file or - for stdin")
+    preference_parser = subparsers.add_parser("preference")
+    preference_parser.add_argument("--input", default="-", help="JSON file or - for stdin")
     args = parser.parse_args(argv)
 
     service = CohesionService(db_path=args.db, tasks_path=args.tasks, calendars_path=args.calendars)
@@ -863,8 +886,10 @@ def main(argv: list[str] | None = None) -> int:
             result = service.capabilities()
         elif args.command == "context":
             result = service.context(args.category)
-        else:
+        elif args.command == "submit":
             result = service.submit(_read_request(args.input))
+        else:
+            result = service.record_preference(_read_request(args.input))
     except (CohesionError, ValueError, json.JSONDecodeError) as exc:
         print(json.dumps({"version": CONTRACT_VERSION, "error": str(exc)}))
         return 2
