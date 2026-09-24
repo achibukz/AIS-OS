@@ -253,7 +253,7 @@ contain earlier model output. They are never fresh user evidence.
 |---|---|---|
 | Store | `scripts/semantic_preferences.py` | Validates source, quote, scope, exceptions, revisions, revocation and precedence. |
 | Ledger | `scripts/learning_ledger.py` | Mirrors each semantic event and transition in append-only JSONL. |
-| Gate | `scripts/memory_gate.py` | Calls Gemini 3.8 Flash through direct inference with no tools declaration. |
+| Gate | `scripts/memory_gate.py` | Classifies through `scripts/agy_classify.py`, the native agy CLI. |
 | Review | `scripts/semantic_review.py` | Processes pending evidence with a durable checkpoint and call budget. |
 | Schedule | `systemd/achios-semantic-review.timer` | Runs daily at 03:00 Asia/Manila with catch-up after downtime. |
 
@@ -265,13 +265,15 @@ applying.
 
 The daily reviewer handles new and pending evidence. It makes no call when idle.
 Every attempt counts toward 24 calls per Manila day, including its one retry. One
-reviewer runs at a time. Input is capped at 6000 estimated tokens, output at 1000
-tokens and each call at 90 seconds. Missing credentials, quota exhaustion or invalid
-output leaves the records pending. There is no premium fallback.
+reviewer runs at a time. Our prompt is capped at 6000 bytes, the answer at 1000
+tokens excluding thinking, and each call at 300 seconds. A missing agy, quota
+exhaustion or invalid output leaves the records pending. There is no premium fallback.
 
-`~/.config/achios/gemini.env` supplies `GEMINI_API_KEY`. The request names no tools,
-so the classifier cannot execute commands, write files or approve its own proposal.
-Only the deterministic preference store can activate a validated source event.
+Classification uses the native agy CLI (`gemini-3.8-flash`, high effort), never an API
+key. It runs headless in an empty directory with stdin closed, where agy auto-denies
+every tool that needs permission. Any denial listed in the result voids the answer, so
+the classifier cannot execute commands, write files or approve its own proposal. Only
+the deterministic preference store can activate a validated source event.
 
 
 

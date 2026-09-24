@@ -27,13 +27,13 @@ from zoneinfo import ZoneInfo
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
+import agy_classify
 import notify_outbox
 import owned_persist
 import sync_completed_tickets
 
 MANILA = ZoneInfo("Asia/Manila")
 COHESION_DB = Path.home() / ".local" / "state" / "achios" / "cohesion.sqlite3"
-GEMINI_ENV = Path.home() / ".config" / "achios" / "gemini.env"
 VAULTS = (
     Path.home() / "Documents" / "Obsidian" / "achiMem",
     Path.home() / "Documents" / "Obsidian" / "schoolMem",
@@ -244,7 +244,7 @@ def health(now: dt.datetime | None = None, *, db: Path | None = None, outbox=Non
             "failed": sum(row["n"] for row in calls if row["status"] == "failed"),
             "limit": MAX_CALLS_PER_DAY,
         },
-        "auth": {"gemini_key_configured": bool(os.environ.get("GEMINI_API_KEY")) or GEMINI_ENV.is_file()},
+        "classifier": {"engine": "agy", "installed": agy_classify.AGY_BIN.is_file()},
         "persistence": {row["state"]: row["n"] for row in persistence},
         "delivery": (outbox or notify_outbox.Outbox()).health(now),
         "vaults": [_vault_state(Path(path)) for path in vaults],

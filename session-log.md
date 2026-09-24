@@ -1,5 +1,32 @@
 # Session Log
 
+## 2026-09-24 10:48 PHT [saved]
+
+Goal: take the Gemini API key out of the semantic review and the memory gate.
+
+Decisions:
+
+- `scripts/agy_classify.py` runs one structured call through `~/.local/bin/agy`
+  with `gemini-3.8-flash`, high effort, `--sandbox`, `--disable-slash-commands`,
+  JSON output and the schema, in an empty directory with stdin closed. It has no
+  `--dangerously-skip-permissions`.
+- A probe showed headless agy auto-denies a permissioned tool and lists it under
+  `denied_actions`. Any denial voids the answer. The structured answer arrives
+  through agy's own `finish` step, which is not a denial.
+- agy has no output-token flag, so the answer's tokens (output minus thinking)
+  are checked after the call against the 1000 budget. The 6000 cap applies to
+  our prompt; agy adds about 42,000 tokens of its own context.
+- High effort took 92 seconds for one event and 132 for two, so the call limit
+  is 300 seconds and the unit allows 15 minutes for one retry.
+- Health reports whether agy is installed instead of a key. The conftest points
+  agy at a missing path so no test can spend a real call.
+
+Verification:
+
+- The full AIS-OS suite passed with 888 tests.
+- One live review call through agy classified a standing instruction as
+  activate and a one-off as reject, in 132 seconds.
+
 ## 2026-09-24 09:46 PHT [saved]
 
 Goal: give achiCore #149 a scoped, bounded recall of learned preferences and

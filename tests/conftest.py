@@ -54,5 +54,12 @@ def _no_real_notifications(tmp_path_factory, monkeypatch):
         notify_outbox.Outbox, "sender", property(lambda self: self._sender or refuse)
     )
     monkeypatch.setattr(learning_reports, "COHESION_DB", scratch / "cohesion.sqlite3")
-    monkeypatch.setattr(learning_reports, "GEMINI_ENV", scratch / "absent-gemini")
     monkeypatch.setattr(learning_reports, "VAULTS", ())
+
+
+@pytest.fixture(autouse=True)
+def _no_real_agy(tmp_path_factory, monkeypatch):
+    """No test may spend a real agy call."""
+    import agy_classify
+
+    monkeypatch.setattr(agy_classify, "AGY_BIN", tmp_path_factory.mktemp("agy") / "absent-agy")

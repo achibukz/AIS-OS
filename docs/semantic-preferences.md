@@ -27,16 +27,18 @@ inspectable pending or rejected events. Retrieval and application remain separat
 after downtime. `scripts/semantic_review.py` reads pending rows, including rows
 behind its durable checkpoint. An idle run makes no model call.
 
-The reviewer calls `gemini-3.8-flash` at high thinking level through the Gemini `generateContent`
-endpoint. The request declares no tools. It applies a conservative 6,000-byte
-input ceiling, output at 1,000 tokens and timeout at 90 seconds. One retry is allowed. Every
+The reviewer calls `gemini-3.8-flash` at high effort through the native agy CLI, with no
+API key. It runs headless in an empty directory, where agy auto-denies any tool that needs
+permission, and an answer that lists a denied action is discarded. Our prompt is capped at
+6,000 bytes, the answer at 1,000 tokens excluding thinking, and the call at 300 seconds.
+One retry is allowed. Every
 attempt reserves one of 24 calls for the current Manila day inside an immediate
-SQLite transaction. A file lock permits one classifier at a time. Missing
-credentials, provider failure, invalid output or an exhausted budget leaves the
-evidence pending. No fallback model runs.
+SQLite transaction. A file lock permits one classifier at a time. A missing
+agy, provider failure, invalid output or an exhausted budget leaves the evidence
+pending. No fallback model runs.
 
-The service reads `GEMINI_API_KEY` from `~/.config/achios/gemini.env`. Install the
-checked-in unit and timer through `scripts/install_units.sh` after adding that key.
+Install the checked-in unit and timer through `scripts/install_units.sh`. It needs no
+key, only a signed-in `~/.local/bin/agy`.
 The script prints one structured summary suitable for achiNouncements delivery.
 
 ## Rollback

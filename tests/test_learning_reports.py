@@ -267,7 +267,7 @@ def test_health_reports_queue_budget_auth_persistence_delivery_and_dirty_vault(s
 
     assert result["review_queue"]["pending"] == 1
     assert result["budget"] == {"manila_day": "2026-09-24", "used": 0, "failed": 0, "limit": 24}
-    assert result["auth"] == {"gemini_key_configured": False}
+    assert result["classifier"] == {"engine": "agy", "installed": False}
     assert result["delivery"]["oldest_pending_seconds"] == 600
     assert result["vaults"][0]["dirty_files"] == 1
     assert result["vaults"][0]["ahead"] == 0

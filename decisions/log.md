@@ -5,6 +5,21 @@ Append-only record of meaningful decisions and why they were made. `/level-up` P
 **Format per entry:**
 
 ```
+## 2026-09-24 — Classify learning through native agy, never an API key
+
+**Decision:** The semantic review and the memory gate call `gemini-3.8-flash` at high
+effort through the agy CLI. Headless agy auto-denies permissioned tools, and any denied
+action voids the answer.
+
+**Why:** Aki does not use API keys here. Every other cron already calls agy, Claude
+Code or Codex natively. The denial report makes tool use observable, which a schema
+flag alone did not.
+
+**Alternatives considered:** The Gemini `generateContent` API with a key, which was
+the first #14 build. Medium effort, which is faster but departs from the approved model.
+
+**Owner:** Aki.
+
 ## YYYY-MM-DD — Short title
 
 **Decision:** what was decided.
