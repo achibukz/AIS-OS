@@ -24,3 +24,16 @@ def _no_real_persistence(tmp_path_factory, monkeypatch):
     scratch = tmp_path_factory.mktemp("persistence")
     monkeypatch.setattr(owned_persist, "CONFIG_PATH", scratch / "absent.json")
     monkeypatch.setattr(owned_persist, "DEFAULT_DB", scratch / "persistence.sqlite3")
+
+
+@pytest.fixture(autouse=True)
+def _no_real_vaults(tmp_path_factory, monkeypatch):
+    """No test may write the operator's vaults or read their write switches."""
+    import vault_notes
+
+    scratch = tmp_path_factory.mktemp("vaults")
+    monkeypatch.setattr(vault_notes, "DEFAULT_DB", scratch / "vault_notes.sqlite3")
+    monkeypatch.setattr(vault_notes, "CONFIG_PATH", scratch / "absent.json")
+    monkeypatch.setattr(vault_notes, "VAULTS", {
+        "achimem": scratch / "achiMem", "schoolmem": scratch / "schoolMem",
+    })

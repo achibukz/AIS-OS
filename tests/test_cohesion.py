@@ -122,6 +122,7 @@ def test_capabilities_are_versioned_and_do_not_offer_shell_or_file_access(tmp_pa
         "destinations": ["tasks", "calendar"],
         "placements": ["tasks", "calendar", "both"],
         "preference_kinds": ["viewer_delivery", "placement", "linked_completion"],
+        "note_destinations": ["achimem", "schoolmem"],
     }
     assert "shell" not in str(capabilities).lower()
     assert "file" not in str(capabilities).lower()
