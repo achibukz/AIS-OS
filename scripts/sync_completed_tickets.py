@@ -38,7 +38,8 @@ sys.path.insert(0, str(SCRIPT_DIR))
 MANILA = ZoneInfo("Asia/Manila")
 DEFAULT_REPOSITORIES = ("achibukz/achiCore", "achibukz/AIS-OS", "achibukz/career-ops")
 DEFAULT_DB = Path.home() / ".local" / "state" / "achios" / "completions.sqlite3"
-TOWORK_JOBS = Path.home() / ".local" / "state" / "achi-core" / "to_work_jobs.json"
+# achiCore keeps its state under the instance name, achicore-hub for the hub.
+TOWORK_JOBS = Path.home() / ".local" / "state" / "achicore-hub" / "to_work_jobs.json"
 TASKS_FILE = SCRIPT_DIR.parent / "tasks.md"
 OVERLAP = dt.timedelta(hours=6)
 GH_TIMEOUT_SECONDS = 60

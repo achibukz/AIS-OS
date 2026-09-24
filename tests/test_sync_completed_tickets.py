@@ -378,3 +378,13 @@ def test_direct_completion_is_handed_to_owned_persistence(tmp_path, tasks):
     assert file == path and "- [ ] Fix the parser" in before and "- [x] Fix the parser" in after
     assert message.startswith("tasks: complete for achibukz/achicore#issue/5")
     assert report["persistence"][0]["state"] == "pushed"
+
+
+def test_default_jobs_file_is_the_hub_state_directory():
+    import importlib
+
+    fresh = importlib.reload(sync)
+    try:
+        assert fresh.TOWORK_JOBS.parts[-2:] == ("achicore-hub", "to_work_jobs.json")
+    finally:
+        importlib.reload(sync)

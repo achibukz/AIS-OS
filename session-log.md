@@ -1,5 +1,31 @@
 # Session Log
 
+## 2026-09-24 09:12 PHT [saved]
+
+Goal: deploy the 2026-09-24 merges to production and fix a path found while
+checking the running hub.
+
+Decisions:
+
+- `sync_completed_tickets.py` looked for /ToWork jobs under
+  `~/.local/state/achi-core/`. The hub keeps them under its instance name,
+  `~/.local/state/achicore-hub/`. The old path made the sync ignore every
+  /ToWork PR-to-issue link. The fixed path reads 41 links from the live file.
+- Production: fast-forwarded AIS-OS and achiCore, restarted `achi-core.service`
+  with one job parked and no window active in 12 hours, and installed only the
+  five timers from #14, #45, #11 and #16. `install_units.sh` would also have
+  enabled the Asta timers, which are not running today.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed with 872
+  tests.
+
+Open:
+
+- `learning_reports.py health` reports no Gemini key, so the 03:00 review will
+  fail until `~/.config/achios/gemini.env` holds `GEMINI_API_KEY`.
+
 ## 2026-09-24 08:52 PHT [saved]
 
 Goal: implement AIS-OS #15, sourced note and linked-completion writes into the
