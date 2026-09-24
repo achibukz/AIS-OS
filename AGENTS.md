@@ -245,47 +245,33 @@ It is meant to read loose on a phone, not dense.
 
 ### Self-learning loop
 
-The bot learns Aki's standing preferences from ordinary conversation. Rebuilt 2026-08-20
-after v1 was found to be feeding on its own output; the design doc is
-`docs/superpowers/specs/2026-08-20-self-learning-loop-design.md`.
-
-**Why v1 died, because the same mistake is easy to repeat.** v1 harvested rules out of the
-`achiMem/tgdb/` transcript notes. Those notes are built from agy's brain log, which stores
-the prompt *with* `MEMORY.md` already prepended — so every pass re-ingested the rules it had
-written last pass and prefixed them again. `MEMORY.md` filled with
-`Voice register adjustment: Voice register adjustment: …`. Tightening the regexes could not
-fix it and did not; the fault was where the text came from, not how it was matched.
-
-**How v2 avoids it.** Candidates come from the raw `prompt` variable inside
-`execute_agent_pipeline`, never `full_prompt`. Only `full_prompt` carries the frozen memory,
-so injected text cannot reach the loop. `achiAgy/tests/test_background_review.py` fails if
-that ever changes — do not "simplify" the two variables into one.
+The bot learns scoped preferences from the sourced Telegram evidence captured by
+achiCore. Legacy TGDB notes and assistant responses are excluded because either can
+contain earlier model output. They are never fresh user evidence.
 
 | Piece | Path | Job |
 |---|---|---|
-| Ledger | `scripts/learning_ledger.py` | Append-only JSONL audit trail. Never mutates; a state change appends a new record with the same id and readers take the latest. |
-| Gate | `scripts/memory_gate.py` | Prefilter, provenance guard, and classification via `agy` with `--json-schema`. Decides only; writes nothing. |
-| Schema | `config/memory_gate_schema.json` | Enforced response shape. |
-| Review | `achiAgy/src/background_review.py` | Orchestrates ledger → gate → memory engine. Capability-constrained by importing nothing else that writes. |
+| Store | `scripts/semantic_preferences.py` | Validates source, quote, scope, exceptions, revisions, revocation and precedence. |
+| Ledger | `scripts/learning_ledger.py` | Mirrors each semantic event and transition in append-only JSONL. |
+| Gate | `scripts/memory_gate.py` | Calls Gemini 3.8 Flash through direct inference with no tools declaration. |
+| Review | `scripts/semantic_review.py` | Processes pending evidence with a durable checkpoint and call budget. |
+| Schedule | `systemd/achios-semantic-review.timer` | Runs daily at 03:00 Asia/Manila with catch-up after downtime. |
 
-- **Turn-triggered, never scheduled.** Fires every `REVIEW_INTERVAL` turns (10) from inside a
-  live turn. No systemd timer may ever reach it — a cron path is what made v1 self-amplifying.
-- Kill switch with no redeploy: `ACHIOS_REVIEW_INTERVAL=0`, then restart `achi-agy.service`.
-- Caps: 3 writes per review, 10 per day, 25 candidates per gate call. One gate call costs
-  roughly 20k input tokens and ~7s, and that cost is per *call*, not per candidate — which is
-  why the prefilter can afford to be generous.
-- Model is `gemini-3.7-flash-high`. Never raise it; this runs all day.
-- Ledger lives at `~/.local/state/achios/learning_ledger.jsonl`, outside any repo or vault. It
-  stores raw text with no redaction, which is only acceptable while it stays there.
-- **Two writers reach memory.** The loop is one. The agy model is the other — it calls
-  `manage_memory` from the frozen system prompt whenever it likes. Those writes are recorded
-  as `source: cli` and deliberately excluded from the loop's daily budget, or the model could
-  starve it. They are visible but not gated; see `docs/ROADMAP.md` item 1.
-- **Known limitation.** Capture fires only on trigger phrases, so a durable *fact* with no
-  trigger word is never captured at all. This is the recall question for the trial audit.
-- Testing procedure and how to read the output: `docs/2026-08-21-self-learning-loop-test-guide.md`
-- Tests: `tests/test_learning_ledger.py`, `tests/test_memory_gate.py`,
-  `achiAgy/tests/test_background_review.py`.
+An explicit correction can repair the current item and activate an item or named
+category preference immediately. Ambiguous scope stays pending and returns one
+question. Current instructions outrank learned values. Item scope outranks category,
+which outranks global scope. Revoked values remain in the evidence history and stop
+applying.
+
+The daily reviewer handles new and pending evidence. It makes no call when idle.
+Every attempt counts toward 24 calls per Manila day, including its one retry. One
+reviewer runs at a time. Input is capped at 6000 estimated tokens, output at 1000
+tokens and each call at 90 seconds. Missing credentials, quota exhaustion or invalid
+output leaves the records pending. There is no premium fallback.
+
+`~/.config/achios/gemini.env` supplies `GEMINI_API_KEY`. The request names no tools,
+so the classifier cannot execute commands, write files or approve its own proposal.
+Only the deterministic preference store can activate a validated source event.
 
 
 

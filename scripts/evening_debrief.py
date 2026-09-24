@@ -29,6 +29,8 @@ from zoneinfo import ZoneInfo
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 import gcal
+import sync_completed_tickets
+from sync_completed_tickets import completion_lines
 from telegram_notify import send
 
 
@@ -188,6 +190,9 @@ def build_evening_debrief(concluding_date: dt.date) -> tuple[str, str | None]:
     tomorrow_label = tomorrow.strftime("%A, %b %d")
 
     done_today, due_tomorrow, high_active = get_tasks_data(concluding_date)
+    # Linked completions already appear through tasks.md, so this adds only
+    # finished work that no task tracks.
+    other_work = completion_lines(concluding_date)
     tomorrow_events, cal_errors = fetch_tomorrow_events(tomorrow)
     failures = check_failures_today()
     if cal_errors:
@@ -203,10 +208,14 @@ def build_evening_debrief(concluding_date: dt.date) -> tuple[str, str | None]:
     ]
 
     # Accomplishments / What happened
-    if done_today:
+    if done_today or other_work:
         lines.append("✅ COMPLETED TODAY:")
         for item in done_today[:5]:
             lines.append(f"• {item}")
+        if other_work:
+            lines.append("Other finished work:")
+            for item in other_work[:5]:
+                lines.append(f"• {item}")
         lines.append("")
     else:
         lines.append("🍃 Quiet day. No major status changes recorded today.")
@@ -218,7 +227,7 @@ def build_evening_debrief(concluding_date: dt.date) -> tuple[str, str | None]:
         for f in failures:
             lines.append(f"• {f}")
         lines.append("")
-    elif done_today:
+    elif done_today or other_work:
         lines.append("🟢 Systems: All services and background timers operational.")
         lines.append("")
 
@@ -274,6 +283,13 @@ def main() -> int:
     now = dt.datetime.now(LOCAL_TZ)
     # If running around midnight (e.g. 00:00 to 02:00), the concluding day is yesterday
     concluding_date = (now - dt.timedelta(hours=2)).date() if now.hour < 3 else now.date()
+
+    if not args.dry_run:
+        # Sync first so work finished in the last hour before midnight counts.
+        try:
+            sync_completed_tickets.main(["--date", concluding_date.isoformat()])
+        except Exception as exc:  # the debrief must still send
+            print(f"Completion sync failed: {exc}", file=sys.stderr)
 
     main_msg, rules_msg = build_evening_debrief(concluding_date)
 

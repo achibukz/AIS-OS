@@ -179,12 +179,18 @@ def test_version_one_cache_migrates_and_readers_accept_both(tmp_path):
     with open_writer(path) as db:
         configure_courses(db, MAPPING)
         save_snapshot(db, 42, "assignments", [todo()], AT)
-        db.executescript("DROP TABLE notices; PRAGMA user_version=1;")
+        db.executescript(
+            """DROP TABLE notices;
+               DROP TABLE canvas_task_links;
+               DROP TABLE canvas_task_ops;
+               DROP TABLE canvas_task_activation;
+               PRAGMA user_version=1;"""
+        )
     with open_reader(path) as db:
         assert db.execute("SELECT count(*) FROM records").fetchone()[0] == 1
         assert db.execute("SELECT count(*) FROM sqlite_master WHERE name='notices'").fetchone()[0] == 0
     with open_writer(path) as db:
-        assert db.execute("PRAGMA user_version").fetchone()[0] == 2
+        assert db.execute("PRAGMA user_version").fetchone()[0] == 3
         assert db.execute("SELECT count(*) FROM records").fetchone()[0] == 1
     with open_reader(path) as db:
         assert db.execute("SELECT count(*) FROM notices").fetchone()[0] == 0

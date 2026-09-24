@@ -14,6 +14,7 @@ from canvas_store import DATABASE, open_reader, open_writer, query, save_auth
 from canvas_sync import load_mapping, sync
 from canvas_events import deliver, preview
 from canvas_reminders import remind
+from canvas_tasks import activation_preview, activate, reconcile as reconcile_tasks
 
 WIKI = Path.home() / "Documents/Obsidian/schoolMem/wiki"
 
@@ -46,7 +47,8 @@ def main(argv=None):
     parser.add_argument("--send", action="store_true", help="Send pending events through achiSchooNounce")
     parser.add_argument("command", choices=["probe", "map", "sync", "status", "courses", "due",
                                             "assignments", "detail", "grades", "announcements", "deliver",
-                                            "remind"])
+                                            "remind", "tasks-preview", "tasks-activate",
+                                            "tasks-reconcile"])
     args = parser.parse_args(argv)
     try:
         if args.send and args.command != "deliver":
@@ -55,7 +57,8 @@ def main(argv=None):
             "limit": {"courses", "assignments", "grades", "announcements", "due"},
             "offset": {"courses", "assignments", "grades", "announcements", "due"},
             "period": {"due"}, "unfinished": {"due", "assignments"},
-            "course": {"status", "courses", "assignments", "detail", "grades", "announcements", "due"},
+            "course": {"status", "courses", "assignments", "detail", "grades", "announcements", "due",
+                       "tasks-preview", "tasks-activate"},
             "id": {"detail", "announcements"},
         }
         for flag, commands in allowed.items():
@@ -78,6 +81,26 @@ def main(argv=None):
                 raise CanvasError("database_unavailable")
             with writer_lock(args.config), open_writer(args.db) as db:
                 result = remind(db)
+            print(json.dumps(result, ensure_ascii=False))
+            return 0
+        if args.command == "tasks-preview":
+            if args.course is None:
+                raise CanvasError("tasks_preview_requires_course")
+            with open_reader(args.db) as db:
+                result = activation_preview(db, args.course)
+            print(json.dumps(result, ensure_ascii=False))
+            return 0
+        if args.command in {"tasks-activate", "tasks-reconcile"}:
+            if not args.db.is_file():
+                raise CanvasError("database_unavailable")
+            if args.command == "tasks-activate" and args.course is None:
+                raise CanvasError("tasks_activation_requires_course")
+            with writer_lock(args.config), open_writer(args.db) as db:
+                result = (
+                    activate(db, args.course, at=timestamp())
+                    if args.command == "tasks-activate"
+                    else reconcile_tasks(db)
+                )
             print(json.dumps(result, ensure_ascii=False))
             return 0
         if args.command not in ("probe", "map", "sync"):

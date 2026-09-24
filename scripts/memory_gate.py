@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """LLM gate for the self-learning loop.
 
-Classifies candidate lines as durable preferences or one-off remarks using
-`agy` running gemini-3.7-flash-high with an enforced JSON schema. This module
-performs NO writes — it only decides. background_review.py owns the writing.
+Classifies candidate lines as durable preferences or one-off remarks through
+Gemini's inference API with an enforced JSON schema and no declared tools. This
+module performs no writes. The caller owns any state change.
 
 v1's mistake was shipping regexes as the decision-maker while the docstring
 claimed an LLM gate that was never built. Here the regexes are only a cheap,
@@ -14,9 +14,10 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
-import shutil
-import subprocess
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Optional, Sequence
@@ -82,8 +83,11 @@ logger = logging.getLogger("memory_gate")
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_PATH = REPO_ROOT / "config" / "memory_gate_schema.json"
-GATE_MODEL = "gemini-3.7-flash-high"
-GATE_TIMEOUT_S = 200
+GATE_MODEL = "gemini-3.8-flash"
+GATE_THINKING_LEVEL = "high"
+GATE_TIMEOUT_S = 90
+MAX_INPUT_BYTES = 6_000
+MAX_OUTPUT_TOKENS = 1_000
 
 # Hermes' _SOURCE_HYGIENE rule, the guard v1 lacked. Hermes embeds this in every
 # /learn prompt precisely because extracted text that looks like an instruction
@@ -125,22 +129,35 @@ def build_prompt(candidates: Sequence) -> str:
 
 
 def _default_runner(prompt: str) -> str:
-    agy_bin = shutil.which("agy") or str(Path.home() / ".local" / "bin" / "agy")
-    result = subprocess.run(
-        [
-            agy_bin,
-            "-p", prompt,
-            "--output-format", "json",
-            "--json-schema", str(SCHEMA_PATH),
-            "--disable-slash-commands",
-            "--model", GATE_MODEL,
-        ],
-        capture_output=True,
-        text=True,
-        timeout=GATE_TIMEOUT_S,
-        cwd=str(REPO_ROOT),
+    if len(prompt.encode("utf-8")) > MAX_INPUT_BYTES:
+        raise RuntimeError("gate input exceeds the 6000-token budget")
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY is unavailable")
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    body = {
+        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "responseMimeType": "application/json",
+            "responseSchema": schema,
+            "maxOutputTokens": MAX_OUTPUT_TOKENS,
+            "temperature": 0,
+            "thinkingConfig": {"thinkingLevel": GATE_THINKING_LEVEL},
+        },
+    }
+    request = urllib.request.Request(
+        f"https://generativelanguage.googleapis.com/v1beta/models/{GATE_MODEL}:generateContent",
+        data=json.dumps(body).encode("utf-8"),
+        headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
+        method="POST",
     )
-    return result.stdout
+    try:
+        with urllib.request.urlopen(request, timeout=GATE_TIMEOUT_S) as response:
+            envelope = json.loads(response.read())
+        structured = json.loads(envelope["candidates"][0]["content"]["parts"][0]["text"])
+    except (OSError, urllib.error.URLError, json.JSONDecodeError, KeyError, IndexError) as exc:
+        raise RuntimeError("Gemini gate returned no valid structured output") from exc
+    return json.dumps({"structured_output": structured})
 
 
 def classify(
