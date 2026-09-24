@@ -1,5 +1,22 @@
 # Session Log
 
+## 2026-09-24 08:40 PHT [saved]
+
+Goal: make AIS-OS PR #21 mergeable again.
+
+Decisions:
+
+- The installed `assisted-live-testing` skill is byte-identical to this branch,
+  so the skill is in daily use while the PR has sat unmerged since 2026-09-05.
+- Merged main into the branch instead of rebasing, so the published branch
+  needs no force push. Main already carried newer revisions of
+  `docs/assisted-live-testing.md` and the retrospective, and those win.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed with 727
+  tests on the merge result.
+
 ## 2026-09-24 08:05 PHT [saved]
 
 Goal: audit AIS-OS #47 before its first push.
@@ -1501,6 +1518,11 @@ Verification:
 
 Open:
 - achiCore #145 companion ticket for `/sync <repo>` in Telegram bot.
+## 2026-09-06 03:05 [saved]
+
+Goal: Create the assisted live-testing skill. Entry time is Asia/Manila; the linked evidence uses UTC.
+
+Created the model-independent assisted-live-testing skill from Aki's PR #154 testing experience. It covers CLI/backend, API, browser, device and Telegram steps, with one human action at a time, observable receipts and resume checkpoints. Outputs are a redacted Markdown interaction record and a PR comment. Added a reusable Testing Grounds reference, ticket section and retrospective. Local walkthroughs do not establish a live model benchmark. Main planning and task documents receive the self-learning next-work pointers separately, preserving their existing uncommitted edits.
 
 ## 2026-09-05 20:25 [saved]
 Goal: Declare AIS-OS reviewed locally so an achiCore `/ToWork` run reaches Luna instead of polling GitHub for checks this repository never produces.

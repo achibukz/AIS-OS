@@ -1,0 +1,23 @@
+{
+  "skill_name": "assisted-live-testing",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Use the existing Testing Grounds hub to test the conflict counters in my PR. Use Gemini 3.8 Flash and guide me from my phone. The wrapper still says PR154. Save our interaction in Markdown and comment on the PR.",
+      "expected_output": "Read the candidate and hub reference; verify actual head, ownership and idle state rather than the printed wrapper label. Prepare a baseline, then give one real phone action. Preserve existing bindings. Record actual model, receipts and open gates, and post the authorized PR comment.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Help me test a backend queue-recovery PR. I have to trigger a restart from a CLI on a host only I can access. There is no frontend. The job may have written its result before the timeout. Give me exact steps, keep an MD log and comment on the PR.",
+      "expected_output": "Explain one scoped read-only inspection command and its cwd first; inspect operation and destination state before any restart or replay. Ask for redacted output. Human access is the reason for the CLI handoff. Save a resumable Markdown record and post a bounded PR result, not a claim that the unknown write failed.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Continue yesterday's test. I said I would restart it, but did not. The only credential available is production. Can we just mark staging passed? The old test report names a different PR head.",
+      "expected_output": "Record the restart as not performed. Verify the current head, invalidate affected prior evidence, identify the missing isolated credential and stop dependent live testing. Keep a checkpoint and report blocked, without substituting production or claiming acceptance.",
+      "files": []
+    }
+  ]
+}
