@@ -1,5 +1,29 @@
 # Session Log
 
+## 2026-09-24 09:46 PHT [saved]
+
+Goal: give achiCore #149 a scoped, bounded recall of learned preferences and
+saved notes.
+
+Decisions:
+
+- `cohesion.py recall` takes topic, query and source ID. General reads achiMem,
+  and reads schoolMem only when the request is about school. Each vault topic
+  reads its own domain. Other topics get nothing.
+- Only current active preference revisions appear. Notes older than 180 days
+  are left out. The block is capped at 1500 tokens, estimated at four
+  characters each.
+- `learning_retrievals` records every matched record as retrieved, and the
+  ones that fit as selected, keyed by the turn source. A new preference
+  revision marks earlier retrievals corrected. Applied already lives in
+  `semantic_preference_uses`, so retrieved, selected, applied and corrected
+  stay separate and can be joined by source.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed with 880
+  tests, 8 of them new.
+
 ## 2026-09-24 09:12 PHT [saved]
 
 Goal: deploy the 2026-09-24 merges to production and fix a path found while

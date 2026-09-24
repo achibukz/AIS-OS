@@ -22,6 +22,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
 import gcal
+import learning_recall
 from owned_persist import Persister
 from semantic_preferences import PreferenceError, PreferenceStore
 from task_engine import PRIMARY_AREAS
@@ -331,6 +332,15 @@ class CohesionService:
                 "SELECT item_id FROM items WHERE task_id = ?", (task_id,)
             ).fetchone()
         return row["item_id"] if row else None
+
+    def recall(self, request: dict) -> dict:
+        query = request.get("query")
+        source_id = request.get("source_id")
+        if not isinstance(query, str) or not isinstance(source_id, str) or not source_id.strip():
+            raise CohesionError("recall needs a query and a source_id")
+        return learning_recall.recall(
+            self.db_path, self.notes, topic=request.get("topic"), query=query, source_id=source_id
+        )
 
     def record_preference(self, request: dict) -> dict:
         if request.get("version") != CONTRACT_VERSION:
@@ -960,6 +970,8 @@ def main(argv: list[str] | None = None) -> int:
     submit_parser.add_argument("--input", default="-", help="JSON file or - for stdin")
     preference_parser = subparsers.add_parser("preference")
     preference_parser.add_argument("--input", default="-", help="JSON file or - for stdin")
+    recall_parser = subparsers.add_parser("recall")
+    recall_parser.add_argument("--input", default="-", help="JSON file or - for stdin")
     args = parser.parse_args(argv)
 
     service = CohesionService(
@@ -976,6 +988,8 @@ def main(argv: list[str] | None = None) -> int:
             result = service.context(args.category)
         elif args.command == "submit":
             result = service.submit(_read_request(args.input))
+        elif args.command == "recall":
+            result = service.recall(_read_request(args.input))
         else:
             result = service.record_preference(_read_request(args.input))
     except (CohesionError, ValueError, json.JSONDecodeError) as exc:
