@@ -121,10 +121,98 @@ def test_capabilities_are_versioned_and_do_not_offer_shell_or_file_access(tmp_pa
         "operations": ["upsert", "complete"],
         "destinations": ["tasks", "calendar"],
         "placements": ["tasks", "calendar", "both"],
+        "preference_kinds": ["viewer_delivery", "placement", "linked_completion"],
     }
     assert "shell" not in str(capabilities).lower()
     assert "file" not in str(capabilities).lower()
     assert app.db_path.stat().st_mode & 0o777 == 0o600
+
+
+def test_learned_category_placement_applies_but_current_instruction_wins(tmp_path):
+    app = service(tmp_path)
+    preference_request = {
+        "version": 1,
+        "source": {
+            **request("preference-1", "quick_task", "unused")["source"],
+            "kind": "fixture_user",
+        },
+        "preference": {
+            "kind": "placement",
+            "scope": "category",
+            "scope_value": "quick_task",
+            "value": "calendar",
+            "evidence": "Put quick tasks on my Personal calendar",
+            "evidence_validated": True,
+            "explicit": True,
+            "exceptions": [],
+        },
+    }
+    assert app.record_preference(preference_request)["activated"] is True
+
+    learned = app.submit(
+        request(
+            "quick-calendar",
+            "quick_task",
+            "Buy toothpaste",
+            start="2026-09-12T19:00:00",
+            end="2026-09-12T19:15:00",
+            calendar="Personal",
+        )
+    )
+    explicit = app.submit(
+        request(
+            "quick-explicit",
+            "quick_task",
+            "Buy floss",
+            area="personal",
+            placement="tasks",
+        )
+    )
+
+    assert learned["placement"] == "calendar"
+    assert explicit["placement"] == "tasks"
+    assert app.context("quick_task")["semantic_preferences"]["active"]["placement"][
+        "value"
+    ] == "calendar"
+
+
+def test_item_placement_suppression_prevents_calendar_recreation(tmp_path):
+    app = service(tmp_path)
+    item_id = "school-one"
+    app.record_preference(
+        {
+            "version": 1,
+            "source": {
+                **request("correction-1", "quick_task", "unused")["source"],
+                "kind": "fixture_user",
+            },
+            "preference": {
+                "kind": "placement",
+                "scope": "item",
+                "scope_value": item_id,
+                "value": "tasks",
+                "evidence": "Keep this one out of Calendar",
+                "evidence_validated": True,
+                "explicit": True,
+                "exceptions": [],
+            },
+        }
+    )
+
+    receipt = app.submit(
+        request(
+            "school-suppressed",
+            "school_deadline",
+            "Submit paper",
+            item_id=item_id,
+            area="school",
+            due="tomorrow",
+            calendar="Course",
+        )
+    )
+
+    assert receipt["placement"] == "tasks"
+    assert [item["destination"] for item in receipt["applied"]] == ["tasks"]
 
 
 def test_seeded_preferences_drive_the_three_placements(tmp_path):

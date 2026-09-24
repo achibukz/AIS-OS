@@ -53,6 +53,133 @@ Verification:
   tests and the same existing warning.
 - Live isolated acceptance remains pending.
 
+## 2026-09-24 08:00 PHT [saved]
+
+Goal: implement AIS-OS #11 so verified GitHub completions move linked tasks to
+Done and reach the evening debrief once.
+
+Decisions:
+
+- A completion is a closed-as-completed issue or a merged PR. Not planned,
+  duplicate, closed unmerged and open items are not. /ToWork jobs never complete
+  anything. They only link a PR to its issue so the pair counts once.
+- Work items are keyed by repository, kind and number, so issue #5 and PR #5
+  stay distinct. A merged PR folds into the issues it closes.
+- A task completes when every GitHub item it links is complete. Links outside
+  the poll window are verified with one API call. An item linked from two open
+  tasks is a conflict, and neither task changes.
+- Cohesion-tracked tasks complete through the cohesion writer, so linked
+  Calendar events follow. Other lines move by exact-line compare and swap.
+- A reopened issue moves its task back only when the Done line is still what
+  the sync wrote. Otherwise it records a conflict.
+- Polling starts from a persisted cursor minus six hours. Dry-run reads a
+  memory copy of the store and writes nothing.
+- The evening debrief lists unlinked finished work beside tasks done that day
+  and runs the sync first. An hourly timer keeps tasks current in between.
+
+- After #45 merged, direct task moves also go through `owned_persist`, so a
+  sync-made `tasks.md` change is committed and pushed like a cohesion one.
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed with 749
+  tests, 22 of them new.
+- A live `--dry-run --date 2026-09-16 --repo achibukz/achiCore` read 22 items
+  and planned to complete the tasks for achiCore #225 and #215. Both closed on
+  2026-09-17 and are still Active. It wrote nothing.
+
+Open:
+
+- Deployment needs `scripts/install_units.sh` for the new timer.
+
+## 2026-09-24 07:52 PHT [saved]
+
+Goal: implement AIS-OS #45 so owned task and log updates commit and push
+without a separate push request.
+
+Decisions:
+
+- `scripts/owned_persist.py` builds the commit in a temporary index seeded from
+  HEAD. Each blob is `git merge-file` of the writer's after text, its before
+  text and HEAD, which yields HEAD plus the writer's hunks. Overlap is a
+  conflict. The real index and working tree are never staged wholesale.
+- The pre-commit hook runs through `git hook run` against that temporary
+  index, so it sees only the owned staging. The commit lands with
+  `commit-tree` and a compare-and-swap `update-ref`, so a commit made
+  mid-operation is never reverted.
+- Push success is read from `ls-remote`, not the push exit status. A commit
+  someone else made locally is never published by this operation.
+- Receipts keep saved, committed and pushed separate and persist by operation
+  ID, so a retry reuses its commit. A later successful push marks the earlier
+  commits it carried as pushed, and an hourly timer retries the rest.
+- Persistence is opt-in through `~/.config/achios/persistence.json`. The
+  test conftest points that path and the receipt store at a temporary
+  directory, so no test can touch a real repository.
+- Cohesion persists `tasks.md` after each write and returns the receipt under
+  the task operation's result.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed with 744
+  tests. The 17 new tests use real temporary repositories and bare remotes.
+
+Open:
+
+- Deployment needs the policy file and the retry timer. Live acceptance
+  against a dedicated test repository is not run.
+
+## 2026-09-24 07:45 PHT [saved]
+
+Goal: audit the uncommitted AIS-OS #14 work before its first commit and repair
+what would break in production.
+
+Decisions:
+
+- The Gemini API has no `gemini-3.8-flash-high` model. achiCore's registry maps
+  that name to `gemini-3.8-flash` at high effort, so the reviewer and gate now
+  call `gemini-3.8-flash` with `thinkingConfig.thinkingLevel` set to high.
+- Replaying a source event no longer activates it again. The old path bumped the
+  preference revision on every replay and could restore a revoked value.
+- The daily reviewer sends only events a classifier can activate. Unvalidated
+  quotes and ambiguous scope stay pending for Aki, so they no longer force a
+  model call on an otherwise idle day.
+- The review unit fails only on an error. It exited 1 whenever anything stayed
+  pending, which fired `OnFailure` alerts, and `Restart=on-failure` retried
+  beyond the one retry the issue allows. The restart lines are gone.
+
+Verification:
+
+- The new tests failed against the pre-fix scripts: 6 failures.
+- Focused semantic, review, cohesion, gate and ledger tests: 117 passed.
+
+Open:
+
+- The thinking-level request shape and whether thinking tokens count against
+  the 1,000 output-token cap are unverified against the live API.
+
+## 2026-09-22 05:10 PHT [saved]
+
+Goal: implement AIS-OS #14 with immediate sourced corrections and a durable daily
+semantic preference review.
+
+Decisions:
+
+- Cohesion stores viewer delivery, placement and linked completion preferences with
+  exact source evidence, scope, exceptions, revisions and revocation history.
+- Current explicit instructions outrank learned values. Item scope outranks category,
+  which outranks global scope. Ambiguous future reach stays pending and returns one
+  question after any current item repair.
+- The append-only learning ledger mirrors semantic events. Assistant claims and
+  unvalidated quotes cannot activate a preference.
+- Daily review runs at 03:00 Asia/Manila with a persistent timer. It uses direct
+  `gemini-3.8-flash-high` inference with no tools, 24 attempts per Manila day, one
+  retry, a conservative 6,000-byte input cap, 1,000 output tokens and a
+  90-second timeout.
+
+Verification:
+
+- Focused semantic preference, review, learning ledger, memory gate and cohesion
+  tests are in progress.
+- Full repository verification and isolated live acceptance remain pending.
 ## 2026-09-22 12:20 PHT [saved]
 
 Goal: repair [PR #79](https://github.com/achibukz/AIS-OS/pull/79) after Luna's

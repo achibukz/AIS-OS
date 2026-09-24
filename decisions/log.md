@@ -32,6 +32,21 @@ a deadline phrase and an explicit date.
 **Alternatives considered:** Enabling every mapped course on deployment, which can
 create historical tasks, and using notification delivery as task success, which
 cannot prove either destination changed.
+## 2026-09-22 — Keep semantic activation deterministic and sourced
+
+**Decision:** Store semantic preferences in the cohesion database with exact user
+evidence, scope, exceptions, revision and revocation state. Apply item scope before
+category and category before global. Use direct Gemini 3.8 Flash inference without
+tools for daily classification, while deterministic code retains activation authority.
+
+**Why:** Legacy TGDB and assistant output can repeat model-written rules. Handler-side
+quote validation and source roles prevent that loop. A direct inference request proves
+tool denial because it declares no tools, while the SQLite store enforces precedence,
+daily call limits and replay after restart.
+
+**Alternatives considered:** Restoring transcript harvesting, letting the classifier
+write preferences, and using the agent CLI with a schema. Each would allow model output
+to become evidence or leave tool access available during classification.
 
 **Owner:** Aki.
 ## 2026-09-22 — Match Asta summaries and food records to provider contracts
