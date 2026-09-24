@@ -1,0 +1,14 @@
+[Unit]
+Description=achiOS reconcile verified GitHub completions into tasks.md
+After=network-online.target
+Wants=network-online.target
+OnFailure=achios-failure-alert@%n.service
+
+[Service]
+Type=oneshot
+UMask=0077
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/.local/share/achios/venv/bin/python @REPO@/scripts/sync_completed_tickets.py
+StandardOutput=append:%h/.local/state/achios/completion_sync.log
+StandardError=append:%h/.local/state/achios/completion_sync.log
+TimeoutStartSec=5min

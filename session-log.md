@@ -1,5 +1,41 @@
 # Session Log
 
+## 2026-09-24 08:00 PHT [saved]
+
+Goal: implement AIS-OS #11 so verified GitHub completions move linked tasks to
+Done and reach the evening debrief once.
+
+Decisions:
+
+- A completion is a closed-as-completed issue or a merged PR. Not planned,
+  duplicate, closed unmerged and open items are not. /ToWork jobs never complete
+  anything. They only link a PR to its issue so the pair counts once.
+- Work items are keyed by repository, kind and number, so issue #5 and PR #5
+  stay distinct. A merged PR folds into the issues it closes.
+- A task completes when every GitHub item it links is complete. Links outside
+  the poll window are verified with one API call. An item linked from two open
+  tasks is a conflict, and neither task changes.
+- Cohesion-tracked tasks complete through the cohesion writer, so linked
+  Calendar events follow. Other lines move by exact-line compare and swap.
+- A reopened issue moves its task back only when the Done line is still what
+  the sync wrote. Otherwise it records a conflict.
+- Polling starts from a persisted cursor minus six hours. Dry-run reads a
+  memory copy of the store and writes nothing.
+- The evening debrief lists unlinked finished work beside tasks done that day
+  and runs the sync first. An hourly timer keeps tasks current in between.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed with 749
+  tests, 22 of them new.
+- A live `--dry-run --date 2026-09-16 --repo achibukz/achiCore` read 22 items
+  and planned to complete the tasks for achiCore #225 and #215. Both closed on
+  2026-09-17 and are still Active. It wrote nothing.
+
+Open:
+
+- Deployment needs `scripts/install_units.sh` for the new timer.
+
 ## 2026-09-22 12:20 PHT [saved]
 
 Goal: repair [PR #79](https://github.com/achibukz/AIS-OS/pull/79) after Luna's

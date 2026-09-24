@@ -287,6 +287,13 @@ class CohesionService:
             "items": [dict(row) for row in item_rows],
         }
 
+    def item_for_task(self, task_id: str) -> str | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT item_id FROM items WHERE task_id = ?", (task_id,)
+            ).fetchone()
+        return row["item_id"] if row else None
+
     def submit(self, request: dict) -> dict:
         original_request = request
         source = self._validate_source(request)
