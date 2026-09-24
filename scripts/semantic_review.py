@@ -7,25 +7,19 @@ import argparse
 import datetime as dt
 import fcntl
 import json
-import os
 import sqlite3
-import urllib.error
-import urllib.request
 import uuid
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Callable
 from zoneinfo import ZoneInfo
 
+import agy_classify
 from semantic_preferences import PreferenceError, PreferenceStore
 
 MANILA = ZoneInfo("Asia/Manila")
-MODEL = "gemini-3.8-flash"
-THINKING_LEVEL = "high"
+MODEL = f"{agy_classify.MODEL} via agy, {agy_classify.EFFORT} effort"
 MAX_CALLS_PER_DAY = 24
-MAX_INPUT_BYTES = 6_000
-MAX_OUTPUT_TOKENS = 1_000
-TIMEOUT_SECONDS = 90
 MAX_ATTEMPTS = 2
 DEFAULT_DB = Path.home() / ".local/state/achios/cohesion.sqlite3"
 SCHEMA = {
@@ -55,46 +49,19 @@ class ReviewUnavailable(RuntimeError):
     pass
 
 
-class GeminiInference:
-    """Call Gemini's generateContent endpoint without declaring any tools."""
+class AgyInference:
+    """Classify through the native agy CLI. No API key, no tools."""
 
-    def __init__(self, api_key: str | None = None, opener=urllib.request.urlopen):
-        self.api_key = api_key or os.environ.get("GEMINI_API_KEY")
-        self.opener = opener
+    def __init__(self, runner=None):
+        self.runner = runner
 
     def __call__(self, prompt: str) -> dict:
-        if not self.api_key:
-            raise ReviewUnavailable("GEMINI_API_KEY is unavailable")
-        endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
-        body = {
-            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-            "generationConfig": {
-                "responseMimeType": "application/json",
-                "responseSchema": SCHEMA,
-                "maxOutputTokens": MAX_OUTPUT_TOKENS,
-                "temperature": 0,
-                "thinkingConfig": {"thinkingLevel": THINKING_LEVEL},
-            },
-        }
-        request = urllib.request.Request(
-            endpoint,
-            data=json.dumps(body).encode("utf-8"),
-            headers={"Content-Type": "application/json", "x-goog-api-key": self.api_key},
-            method="POST",
-        )
         try:
-            with self.opener(request, timeout=TIMEOUT_SECONDS) as response:
-                envelope = json.loads(response.read())
-        except (OSError, urllib.error.URLError, json.JSONDecodeError) as exc:
+            if self.runner is None:
+                return agy_classify.classify(prompt, SCHEMA)
+            return agy_classify.classify(prompt, SCHEMA, runner=self.runner)
+        except agy_classify.ClassifierUnavailable as exc:
             raise ReviewUnavailable(str(exc)) from exc
-        try:
-            text = envelope["candidates"][0]["content"]["parts"][0]["text"]
-            result = json.loads(text)
-        except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
-            raise ReviewUnavailable("Gemini returned malformed structured output") from exc
-        if not isinstance(result, dict):
-            raise ReviewUnavailable("Gemini returned a non-object result")
-        return result
 
 
 def build_prompt(events: list[dict]) -> str:
@@ -120,7 +87,7 @@ def build_prompt(events: list[dict]) -> str:
         "classify. You cannot write, execute, approve, or widen permissions.\n\n"
         + json.dumps(evidence, ensure_ascii=False, sort_keys=True)
     )
-    if len(prompt.encode("utf-8")) > MAX_INPUT_BYTES:
+    if len(prompt.encode("utf-8")) > agy_classify.MAX_PROMPT_BYTES:
         raise ReviewUnavailable("review batch exceeds the 6000-token input budget")
     return prompt
 
@@ -196,7 +163,7 @@ def run_review(
                 "status": "idle",
             }
         prompt = build_prompt(events)
-        classify = runner or GeminiInference()
+        classify = runner or AgyInference()
         result = None
         calls = 0
         error = None

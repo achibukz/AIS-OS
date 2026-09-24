@@ -112,7 +112,7 @@ def test_events_the_classifier_cannot_activate_are_never_sent(store, changes):
     "report, status",
     [
         ({"status": "pending", "pending": 1}, 0),
-        ({"status": "pending", "error": "GEMINI_API_KEY is unavailable"}, 1),
+        ({"status": "pending", "error": "agy is not installed"}, 1),
     ],
 )
 def test_only_an_error_fails_the_unit(monkeypatch, tmp_path, report, status):
@@ -158,43 +158,25 @@ def test_manila_midnight_starts_a_new_atomic_call_budget(store):
     assert allowed["calls"] == 1
 
 
-def test_direct_gemini_transport_declares_no_tools_and_bounds_output():
-    captured = {}
+def test_review_classifier_runs_through_agy_and_maps_failures(monkeypatch):
+    import agy_classify
 
-    class Response:
-        def __enter__(self):
-            return self
+    monkeypatch.setattr(agy_classify, "classify", lambda prompt, schema, **_: {"decisions": []})
+    assert review.AgyInference()("classify") == {"decisions": []}
 
-        def __exit__(self, *_args):
-            return False
+    def denied(prompt, schema, **_):
+        raise agy_classify.ClassifierUnavailable("classifier attempted a tool; its answer was discarded")
 
-        def read(self):
-            result = json.dumps({"decisions": []})
-            return json.dumps(
-                {"candidates": [{"content": {"parts": [{"text": result}]}}]}
-            ).encode()
-
-    def opener(request, timeout):
-        captured["url"] = request.full_url
-        captured["body"] = json.loads(request.data)
-        captured["timeout"] = timeout
-        return Response()
-
-    result = review.GeminiInference(api_key="test-key", opener=opener)("classify")
-
-    assert result == {"decisions": []}
-    assert captured["url"].endswith("/models/gemini-3.8-flash:generateContent")
-    assert captured["body"]["generationConfig"]["thinkingConfig"] == {"thinkingLevel": "high"}
-    assert "tools" not in captured["body"]
-    assert captured["body"]["generationConfig"]["maxOutputTokens"] == 1000
-    assert captured["timeout"] == 90
+    monkeypatch.setattr(agy_classify, "classify", denied)
+    with pytest.raises(review.ReviewUnavailable, match="attempted a tool"):
+        review.AgyInference()("classify")
 
 
 def test_prompt_refuses_more_than_the_input_budget(store):
     event = {
         "event_id": "one",
         "source_kind": "telegram_user",
-        "evidence": "x" * review.MAX_INPUT_BYTES,
+        "evidence": "x" * review.agy_classify.MAX_PROMPT_BYTES,
         "kind": "viewer_delivery",
         "scope_type": "global",
         "scope_value": "",

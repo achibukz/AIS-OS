@@ -21,9 +21,9 @@ task file and Calendar before enabling the production timer.
 7. Run `semantic_review.py` with no pending rows. Confirm `calls` is 0. Add one
    pending fixture, restart between attempts and confirm it replays from durable
    state.
-8. Inspect the provider request in isolated tracing. Confirm model
-   `gemini-3.8-flash` with `thinkingLevel` high, no `tools` field, 1,000 output tokens and a 90-second
-   timeout. Exhaust the synthetic Manila-day budget and confirm records stay pending.
+8. Inspect the agy invocation. Confirm `gemini-3.8-flash`, `--effort high`, no
+   `--dangerously-skip-permissions`, an empty working directory, and that a result
+   with `denied_actions` is discarded. Exhaust the synthetic Manila-day budget and confirm records stay pending.
 
 ## Actual results
 

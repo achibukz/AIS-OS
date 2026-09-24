@@ -7,8 +7,7 @@ OnFailure=achios-failure-alert@%n.service
 [Service]
 Type=oneshot
 WorkingDirectory=@REPO@
-EnvironmentFile=-%h/.config/achios/gemini.env
 ExecStart=%h/.local/share/achios/venv/bin/python @REPO@/scripts/semantic_review.py
 StandardOutput=append:%h/.local/state/achios/semantic_review.log
 StandardError=append:%h/.local/state/achios/semantic_review.log
-TimeoutStartSec=4min
+TimeoutStartSec=15min

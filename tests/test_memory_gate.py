@@ -167,39 +167,17 @@ class TestPromptHygiene:
         assert "1. beta" in prompt
 
 
-def test_default_gate_uses_flash_38_without_declaring_tools(monkeypatch):
+def test_default_gate_classifies_through_agy(monkeypatch):
     captured = {}
-    structured = {"rules": []}
-    envelope = {
-        "candidates": [
-            {"content": {"parts": [{"text": json.dumps(structured)}]}}
-        ]
-    }
 
-    class Response:
-        def __enter__(self):
-            return self
+    def classify(prompt, schema):
+        captured["prompt"], captured["schema"] = prompt, schema
+        return {"rules": []}
 
-        def __exit__(self, *_args):
-            return False
-
-        def read(self):
-            return json.dumps(envelope).encode()
-
-    def open_request(request, timeout):
-        captured["url"] = request.full_url
-        captured["body"] = json.loads(request.data)
-        captured["timeout"] = timeout
-        return Response()
-
-    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
-    monkeypatch.setattr(mg.urllib.request, "urlopen", open_request)
+    monkeypatch.setattr(mg.agy_classify, "classify", classify)
 
     result = json.loads(mg._default_runner("classify"))
 
-    assert result == {"structured_output": structured}
-    assert captured["url"].endswith("/models/gemini-3.8-flash:generateContent")
-    assert captured["body"]["generationConfig"]["thinkingConfig"] == {"thinkingLevel": "high"}
-    assert "tools" not in captured["body"]
-    assert captured["body"]["generationConfig"]["maxOutputTokens"] == 1000
-    assert captured["timeout"] == 90
+    assert result == {"structured_output": {"rules": []}}
+    assert captured["prompt"] == "classify"
+    assert captured["schema"] == json.loads(mg.SCHEMA_PATH.read_text(encoding="utf-8"))
