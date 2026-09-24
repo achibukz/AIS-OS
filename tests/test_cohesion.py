@@ -71,6 +71,11 @@ class AcceptedTimeoutCalendar(FakeCalendar):
         raise subprocess.TimeoutExpired("calendar insert", 30)
 
 
+class ImportedCalendar(FakeCalendar):
+    def find_conflict(self, **kwargs):
+        return {"id": "imported", "summary": kwargs["body"]["summary"]}
+
+
 def request(source_id, category, title, **intent):
     return {
         "version": 1,
@@ -433,6 +438,27 @@ def test_accepted_insert_timeout_is_reconciled_without_a_duplicate(tmp_path):
     assert receipt["pending"] == []
     assert calendar.insert_calls == 1
     assert len(calendar.events) == 1
+
+
+def test_matching_imported_calendar_event_is_not_duplicated_or_mutated(tmp_path):
+    calendar = ImportedCalendar()
+    app = service(tmp_path, calendar)
+
+    receipt = app.submit(
+        request(
+            "imported-deadline",
+            "school_deadline",
+            "Submit paper",
+            area="school",
+            due="tomorrow",
+            calendar="Course",
+        )
+    )
+
+    assert [item["destination"] for item in receipt["applied"]] == ["tasks"]
+    assert receipt["pending"][0]["destination"] == "calendar"
+    assert receipt["pending"][0]["error"] == "matching calendar event is imported or unowned"
+    assert calendar.insert_calls == 0 and calendar.update_calls == 0
 
 
 def test_same_item_update_preserves_calendar_identity_and_checks_ownership(tmp_path):

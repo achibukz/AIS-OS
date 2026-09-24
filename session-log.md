@@ -1,5 +1,60 @@
 # Session Log
 
+## 2026-09-24 08:05 PHT [saved]
+
+Goal: audit AIS-OS #47 before its first push.
+
+Decisions:
+
+- An assignment already submitted when a course is activated never becomes a
+  task. Grading it later queued a `complete` operation for a missing item, which
+  cohesion leaves pending forever. `reconcile` reads the 50 oldest pending
+  operations, so enough of these would block every newer Canvas change. A
+  completion now queues only when an upsert for that assignment exists.
+- Left as is: an announcement date earlier than its post date rolls to next
+  year. "Posted by Dr. X on September 3", seen on September 8, becomes a task
+  due a year later. The extractor's action, deadline and date rule makes this
+  rare, and the right rule is a product call.
+
+- After #45 merged, the default reconcile service carries a `Persister`, so
+  Canvas-created tasks are committed and pushed like any other cohesion write.
+Verification:
+
+- The new test failed before the fix and passes after. `tests/test_canvas_tasks.py`
+  has 20 passing tests.
+
+## 2026-09-22 03:04 PHT [saved]
+
+Goal: implement AIS-OS #47 and the approved extension that extracts explicit
+tasks from Canvas announcements.
+
+Decisions:
+
+- A mapped course requires a read-only bounded preview and an explicit
+  `tasks-activate --course` before existing current-term assignments enter the
+  reconciliation queue. Historical baselines remain silent.
+- Course ID, Canvas item type and Canvas item ID derive the stable cohesion item
+  identity. A separate monotonic source revision records every title, due-date
+  and submission-state change, including A to B to A transitions.
+- Submitted, graded, completed, excused, active and unknown remain distinct in
+  Canvas operation records. Unknown states and missing due dates create no
+  destination write.
+- Announcement extraction requires an action phrase, a deadline phrase and an
+  explicit date. Ambiguous announcement prose remains notification data only.
+- The scheduled run reconciles task operations after sync and before reminders.
+  Task, Calendar and notification delivery counts stay separate. A successful
+  notice never marks task creation successful.
+- Calendar creation checks for a matching imported or unowned event and leaves
+  that destination pending instead of duplicating or mutating it.
+
+Verification:
+
+- Focused Canvas, cohesion, CLI, reminder and scheduler tests passed with 163
+  tests and the existing unregistered-mark warning.
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed with 691
+  tests and the same existing warning.
+- Live isolated acceptance remains pending.
+
 ## 2026-09-24 08:00 PHT [saved]
 
 Goal: implement AIS-OS #11 so verified GitHub completions move linked tasks to

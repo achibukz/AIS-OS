@@ -48,6 +48,39 @@ NOTICES = """
 CREATE TABLE notices (key TEXT PRIMARY KEY, created_at TEXT NOT NULL);
 PRAGMA user_version=2;
 """
+TASK_RECONCILIATION = """
+CREATE TABLE canvas_task_activation (
+    course_id INTEGER PRIMARY KEY REFERENCES courses(id), activated_at TEXT NOT NULL
+);
+CREATE TABLE canvas_task_ops (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    course_id INTEGER NOT NULL REFERENCES courses(id),
+    source_kind TEXT NOT NULL CHECK(source_kind IN ('assignment','announcement')),
+    source_id INTEGER NOT NULL,
+    source_revision INTEGER NOT NULL,
+    change_kind TEXT NOT NULL,
+    source_state TEXT NOT NULL,
+    snapshot TEXT NOT NULL,
+    intent TEXT,
+    observed_at TEXT NOT NULL,
+    state TEXT NOT NULL DEFAULT 'pending'
+        CHECK(state IN ('pending','applied','conflict','ignored')),
+    receipt TEXT,
+    error TEXT,
+    UNIQUE(course_id,source_kind,source_id,source_revision)
+);
+CREATE INDEX canvas_task_ops_pending ON canvas_task_ops(state,id);
+CREATE TABLE canvas_task_links (
+    course_id INTEGER NOT NULL REFERENCES courses(id),
+    source_kind TEXT NOT NULL,
+    source_id INTEGER NOT NULL,
+    item_id TEXT NOT NULL,
+    last_revision INTEGER NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY(course_id,source_kind,source_id)
+);
+PRAGMA user_version=3;
+"""
 
 
 @contextmanager
@@ -64,10 +97,16 @@ def open_writer(path: Path):
         db.execute("PRAGMA foreign_keys=ON")
         version = db.execute("PRAGMA user_version").fetchone()[0]
         if version == 0:
-            db.executescript("BEGIN IMMEDIATE;\n" + SCHEMA + NOTICES + "COMMIT;")
+            db.executescript(
+                "BEGIN IMMEDIATE;\n" + SCHEMA + NOTICES + TASK_RECONCILIATION + "COMMIT;"
+            )
         elif version == 1:
-            db.executescript("BEGIN IMMEDIATE;\n" + NOTICES + "COMMIT;")
-        elif version != 2:
+            db.executescript(
+                "BEGIN IMMEDIATE;\n" + NOTICES + TASK_RECONCILIATION + "COMMIT;"
+            )
+        elif version == 2:
+            db.executescript("BEGIN IMMEDIATE;\n" + TASK_RECONCILIATION + "COMMIT;")
+        elif version != 3:
             raise CanvasError("unsupported_schema")
         if db.execute("PRAGMA journal_mode").fetchone()[0] != "delete":
             raise CanvasError("unsupported_journal")
@@ -82,7 +121,7 @@ def open_reader(path: Path):
     db.row_factory = sqlite3.Row
     try:
         db.execute("PRAGMA query_only=ON")
-        if db.execute("PRAGMA user_version").fetchone()[0] not in (1, 2):
+        if db.execute("PRAGMA user_version").fetchone()[0] not in (1, 2, 3):
             raise CanvasError("unsupported_schema")
         if db.execute("PRAGMA journal_mode").fetchone()[0] != "delete":
             raise CanvasError("unsupported_journal")
@@ -137,11 +176,15 @@ def save_snapshot(db, course_id, category, records, at):
         raise CanvasError("malformed_response")
     with db:
         previous = None
-        if category == "assignments":
+        if category in ("assignments", "announcements"):
             previous = {row["id"]: json.loads(row["data"]) for row in db.execute(
                 "SELECT id,data FROM records WHERE course_id=? AND category=?", (course_id, category))}
+        if category == "assignments":
             records = [merge_saved_grade(row, previous.get(row["id"], {}), at) for row in records]
         record_changes(db, course_id, category, records, at, previous)
+        if category in ("assignments", "announcements"):
+            from canvas_tasks import record_changes as record_task_changes
+            record_task_changes(db, course_id, category, records, at, previous)
         db.execute("UPDATE records SET active=0 WHERE course_id=? AND category=?", (course_id, category))
         for row in records:
             db.execute("""INSERT INTO records VALUES(?,?,?,?,1)

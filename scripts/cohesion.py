@@ -73,6 +73,33 @@ class GwsCalendarTransport:
     def get(self, *, profile: str, calendar_id: str, event_id: str) -> dict | None:
         return gcal.get_event(profile, calendar_id, event_id)
 
+    def find_conflict(
+        self, *, profile: str, calendar_id: str, body: dict, item_id: str
+    ) -> dict | None:
+        start = body.get("start") or {}
+        value = start.get("date") or start.get("dateTime")
+        if not value:
+            return None
+        day = dt.datetime.fromisoformat(value).astimezone(MANILA).date() if "T" in value else dt.date.fromisoformat(value)
+        expected_start = start.get("date") or _resolve_datetime(start.get("dateTime"))
+        for event in gcal.fetch_events(profile, calendar_id, day, day):
+            event_start = event.get("start") or {}
+            actual_start = event_start.get("date") or (
+                _resolve_datetime(event_start.get("dateTime")) if event_start.get("dateTime") else None
+            )
+            if event.get("summary", "").strip().casefold() != body.get("summary", "").strip().casefold():
+                continue
+            if actual_start != expected_start:
+                continue
+            private = gcal.private_properties(event)
+            if (
+                private.get("achios_owner") == gcal.OWNER_COHESION
+                and private.get("achios_item_id") == item_id
+            ):
+                continue
+            return event
+        return None
+
     def update(
         self,
         *,
@@ -830,6 +857,14 @@ class CohesionService:
         else:
             if operation["action"] == "complete":
                 raise CohesionError("owned calendar event no longer exists")
+            finder = getattr(self.calendar, "find_conflict", None)
+            if finder and finder(
+                profile=profile,
+                calendar_id=calendar_id,
+                body=body,
+                item_id=operation["item_id"],
+            ):
+                raise CohesionError("matching calendar event is imported or unowned")
             try:
                 event = self.calendar.insert(
                     profile=profile, calendar_id=calendar_id, event_id=event_id, body=body
