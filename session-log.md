@@ -1,5 +1,48 @@
 # Session Log
 
+## 2026-09-24 08:52 PHT [saved]
+
+Goal: implement AIS-OS #15, sourced note and linked-completion writes into the
+achiMem and schoolMem vaults.
+
+Decisions:
+
+- `scripts/vault_notes.py` takes a destination type, never a path. Notes go to
+  achiMem `raw/sessions` with a `log.md` entry, or schoolMem `inbox`, the two
+  places the vault contracts allow an unattended writer to use.
+- The caller passes the destinations its topic may use, so Sciel in schoolMem
+  cannot write achiMem through a shared persona name.
+- Paths refuse traversal and any symlinked component before a write.
+- A `[stated]` fact needs a user source and a quote found in the handler's
+  evidence. Anything else is labelled `[inferred]`.
+- One source ID is one note. A Claude session source reuses the SessionEnd
+  capture only on an exact `session_id` match.
+- The five wiki targets are fixed in code, off by default, and need exact
+  markers on each page. The plan requires a reviewed change before those writes
+  are enabled, so no markers were added to the vault.
+- A stale page read becomes a conflict with the proposal kept in
+  `raw/conflicts/`. New lint errors stop persistence.
+- `log.md` often has uncommitted lines at its tail, so the owned change is the
+  appended entry applied to the committed log. Otherwise every capture would
+  conflict.
+- Cohesion adds one completion note beside a linked record when its item
+  completes, and lists note destinations in its capabilities.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed with 855
+  tests, 37 of them new.
+- While surveying, `achiMem/scripts/build_index.py --help` rewrote the real
+  vault's `wiki/index.md`, because the script ignores flags. The index was
+  clean and stale before the run, so it was restored from HEAD. Lint shows the
+  same single pre-existing error as before.
+
+Open:
+
+- Aki reviews the wiki markers in `docs/vault-notes.md` before enabling any
+  wiki target.
+- achiCore still needs to submit notes from topic turns with the right
+  `--allow` scope.
 ## 2026-09-24 08:41 PHT [saved]
 
 Goal: implement AIS-OS #16, the daily learning receipt, the weekly learning

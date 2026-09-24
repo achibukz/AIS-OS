@@ -25,6 +25,7 @@ import gcal
 from owned_persist import Persister
 from semantic_preferences import PreferenceError, PreferenceStore
 from task_engine import PRIMARY_AREAS
+from vault_notes import NOTE_DIRS, VaultNotes
 
 CONTRACT_VERSION = 1
 SCHEMA_VERSION = 1
@@ -188,12 +189,14 @@ class CohesionService:
         calendar: CalendarTransport | None = None,
         calendars_path: Path | None = None,
         persister: Persister | None = None,
+        notes: VaultNotes | None = None,
     ):
         self.db_path = Path(db_path)
         self.tasks_path = Path(tasks_path)
         self.calendars_path = calendars_path
         self.calendar = calendar or GwsCalendarTransport()
         self.persister = persister
+        self.notes = notes
         self.db_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         self._initialize()
         self.semantic_preferences = PreferenceStore(self.db_path)
@@ -285,6 +288,7 @@ class CohesionService:
             "destinations": ["tasks", "calendar"],
             "placements": list(PLACEMENTS),
             "preference_kinds": ["viewer_delivery", "placement", "linked_completion"],
+            "note_destinations": sorted(NOTE_DIRS),
         }
 
     def context(self, category: str | None = None) -> dict:
@@ -463,7 +467,18 @@ class CohesionService:
 
         self._run_pending(source_id)
         self._clear_clarifications(source, item_id)
-        return self._receipt(source_id, placement)
+        receipt = self._receipt(source_id, placement)
+        if (
+            self.notes is not None
+            and intent["action"] == "complete"
+            and receipt["applied"]
+            and not receipt["pending"]
+        ):
+            # A linked school record gets one completion note, never a second task.
+            note = self.notes.record_completion(item_id, title=normalized[1], source=source)
+            if note is not None:
+                receipt["note"] = note
+        return receipt
 
     def _clear_clarifications(self, source: dict, item_id: str) -> None:
         with self._connect() as connection:
@@ -952,6 +967,7 @@ def main(argv: list[str] | None = None) -> int:
         tasks_path=args.tasks,
         calendars_path=args.calendars,
         persister=Persister(),
+        notes=VaultNotes(persister=Persister()),
     )
     try:
         if args.command == "capabilities":

@@ -27,6 +27,19 @@ def _no_real_persistence(tmp_path_factory, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _no_real_vaults(tmp_path_factory, monkeypatch):
+    """No test may write the operator's vaults or read their write switches."""
+    import vault_notes
+
+    scratch = tmp_path_factory.mktemp("vaults")
+    monkeypatch.setattr(vault_notes, "DEFAULT_DB", scratch / "vault_notes.sqlite3")
+    monkeypatch.setattr(vault_notes, "CONFIG_PATH", scratch / "absent.json")
+    monkeypatch.setattr(vault_notes, "VAULTS", {
+        "achimem": scratch / "achiMem", "schoolmem": scratch / "schoolMem",
+    })
+
+
+@pytest.fixture(autouse=True)
 def _no_real_notifications(tmp_path_factory, monkeypatch):
     """No test may send to Telegram or read the operator's learning state."""
     import learning_reports
