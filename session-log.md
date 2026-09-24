@@ -16,6 +16,8 @@ Decisions:
   due a year later. The extractor's action, deadline and date rule makes this
   rare, and the right rule is a product call.
 
+- After #45 merged, the default reconcile service carries a `Persister`, so
+  Canvas-created tasks are committed and pushed like any other cohesion write.
 Verification:
 
 - The new test failed before the fix and passes after. `tests/test_canvas_tasks.py`

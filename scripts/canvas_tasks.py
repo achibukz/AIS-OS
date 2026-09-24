@@ -11,6 +11,7 @@ from zoneinfo import ZoneInfo
 from canvas_client import CanvasError
 from canvas_store import MANILA, parse_time
 from cohesion import CohesionService
+from owned_persist import Persister
 
 MAX_PREVIEW = 25
 MAX_RECONCILE = 50
@@ -367,7 +368,7 @@ def reconcile(db, *, service: CohesionService | None = None, limit=MAX_RECONCILE
         (limit,),
     ).fetchall()
     if rows and service is None:
-        service = CohesionService()
+        service = CohesionService(persister=Persister())
     applied = pending = 0
     destination_applied = {"tasks": 0, "calendar": 0}
     receipts = []

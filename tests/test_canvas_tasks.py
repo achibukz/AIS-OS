@@ -7,6 +7,7 @@ import cohesion
 from canvas_client import CanvasError
 from canvas_store import configure_courses, open_writer, save_failure, save_snapshot
 from canvas_events import deliver
+import canvas_tasks
 from canvas_tasks import (
     activate,
     activation_preview,
@@ -301,3 +302,22 @@ def test_announcement_edit_updates_the_same_task_and_ambiguous_edit_conflicts(db
     report = reconcile(db, service=app)
     assert report["conflicts"] == 1
     assert "@2026-09-16" in app.tasks_path.read_text(encoding="utf-8")
+
+
+def test_default_reconcile_service_persists_owned_task_changes(db, monkeypatch):
+    save_snapshot(db, 42, "assignments", [active_assignment()], AT)
+    activate(db, "STDISCM", at=AT, now=NOW)
+    built = []
+
+    class Service:
+        def __init__(self, **kwargs):
+            built.append(kwargs)
+
+        def submit(self, request):
+            return {"applied": [], "pending": [], "item_id": None}
+
+    monkeypatch.setattr(canvas_tasks, "CohesionService", Service)
+
+    reconcile(db)
+
+    assert isinstance(built[0]["persister"], canvas_tasks.Persister)
