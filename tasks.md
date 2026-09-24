@@ -24,6 +24,7 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Work the 2026-09-24 hub audit batch: [AIS-OS #89](https://github.com/achibukz/AIS-OS/issues/89) (viewer exposure) first, then achiCore #235 to #244 per the [roadmap](http://100.106.210.38:8999/Code/GitHub/achiCore/docs/roadmap-2026-09-24.md) #achicore #systems !high
 - [ ] Claim requested documents at DLSU ESH (Ref: RFD-012572) #school !med #ESH @2026-09-29 <!-- task-id: task_4664ef9cc11a1bdbd83e17a4 -->
 - [ ] Repair stale /ToWork status cards and restore a distinct Resume action through [achiCore #225](https://github.com/achibukz/achiCore/issues/225) #achicore #telegram #bug !high
 - [ ] Review and live-test the combined Asta release for AIS-OS #63 through #68 and achiCore #222, #223, #230; implementation is on ticket/63-asta-release and ticket/222-asta-release #systems #asta !high
