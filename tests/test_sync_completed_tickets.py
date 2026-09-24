@@ -360,3 +360,21 @@ def test_evening_debrief_lists_unlinked_work_beside_done_tasks(tmp_path, tasks, 
     assert "Other finished work:" in message
     assert "• Shipped without a task (achiCore #9)" in message
     assert "Quiet day" not in message
+
+
+def test_direct_completion_is_handed_to_owned_persistence(tmp_path, tasks):
+    path = tasks(f"- [ ] Fix the parser {link('issue', 5)}")
+    calls = []
+
+    class Recorder:
+        def persist_file(self, file, before, after, *, operation_id, message):
+            calls.append((file, before, after, message))
+            return {"state": "pushed", "operation_id": operation_id}
+
+    report = sync_run(tmp_path, FakeGitHub([issue(5)]), path, persister=Recorder())
+
+    assert len(calls) == 1
+    file, before, after, message = calls[0]
+    assert file == path and "- [ ] Fix the parser" in before and "- [x] Fix the parser" in after
+    assert message.startswith("tasks: complete for achibukz/achicore#issue/5")
+    assert report["persistence"][0]["state"] == "pushed"

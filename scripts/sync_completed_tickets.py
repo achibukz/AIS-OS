@@ -287,7 +287,13 @@ def _write_atomic(path: Path, content: str) -> None:
             os.unlink(temporary)
 
 
-def move_line(path: Path, expected: str, replacement: str, section: str) -> bool:
+def move_line(
+    path: Path,
+    expected: str,
+    replacement: str,
+    section: str,
+    on_write: Callable[[str, str], None] | None = None,
+) -> bool:
     """Move one exact line under a section. False when the line changed or repeats."""
     content = path.read_text(encoding="utf-8")
     lines = content.splitlines()
@@ -296,7 +302,10 @@ def move_line(path: Path, expected: str, replacement: str, section: str) -> bool
         return False
     lines.pop(matches[0])
     lines.insert(lines.index(section) + 1, replacement)
-    _write_atomic(path, "\n".join(lines) + ("\n" if content.endswith("\n") else ""))
+    updated = "\n".join(lines) + ("\n" if content.endswith("\n") else "")
+    _write_atomic(path, updated)
+    if on_write is not None:
+        on_write(content, updated)
     return True
 
 
@@ -314,6 +323,7 @@ def run(
     tasks_path: Path | None = None,
     towork_path: Path | None = None,
     cohesion_service: Any = None,
+    persister: Any = None,
     now: dt.datetime | None = None,
 ) -> dict:
     github = github or GitHub()
@@ -322,8 +332,23 @@ def run(
     store = Store(Path(store_path) if store_path else DEFAULT_DB, read_only=dry_run)
     report: dict[str, Any] = {
         "date": date.isoformat(), "dry_run": dry_run, "polled": [], "completed_tasks": [],
-        "reopened_tasks": [], "waiting": [], "conflicts": [], "errors": [],
+        "reopened_tasks": [], "waiting": [], "conflicts": [], "errors": [], "persistence": [],
     }
+
+    def persist(message: str) -> Callable[[str, str], None] | None:
+        if persister is None:
+            return None
+
+        def on_write(before: str, after: str) -> None:
+            receipt = persister.persist_file(
+                tasks_path, before, after,
+                operation_id=f"completion-sync:{now.isoformat()}:{message}", message=f"{message}\n",
+            )
+            if receipt is not None:
+                report["persistence"].append(receipt)
+
+        return on_write
+
     day_start = dt.datetime.combine(date, dt.time(), MANILA)
     pr_links = towork_links(towork_path)
     seen: list[WorkItem] = []
@@ -353,15 +378,15 @@ def run(
         if item.outcome in DONE_OUTCOMES or previous in DONE_OUTCOMES:
             store.record(item, now)
         if previous in DONE_OUTCOMES and item.outcome == "open":
-            _reopen(store, item, tasks_path, dry_run, report, now)
+            _reopen(store, item, tasks_path, dry_run, report, now, persist)
 
-    _complete_tasks(store, github, tasks_path, dry_run, cohesion_service, report, now)
+    _complete_tasks(store, github, tasks_path, dry_run, cohesion_service, report, now, persist)
     if not dry_run:
         store.close()
     return report
 
 
-def _reopen(store, item, tasks_path, dry_run, report, now) -> None:
+def _reopen(store, item, tasks_path, dry_run, report, now, persist) -> None:
     record = store.active_completion(item.key)
     if record is None:
         return
@@ -372,7 +397,8 @@ def _reopen(store, item, tasks_path, dry_run, report, now) -> None:
     if dry_run:
         report["reopened_tasks"].append({"key": item.key, "task": record["task_line"]})
         return
-    if move_line(tasks_path, record["done_line"], record["task_line"], "## Active"):
+    if move_line(tasks_path, record["done_line"], record["task_line"], "## Active",
+                 persist(f"tasks: reopen for {item.key}")):
         store.connection.execute(
             "UPDATE task_completions SET reopened_at=? WHERE rowid=?", (now.isoformat(), record["rowid"])
         )
@@ -399,7 +425,7 @@ def _link_done(store, github, key, report, now) -> bool:
     return False
 
 
-def _complete_tasks(store, github, tasks_path, dry_run, cohesion_service, report, now) -> None:
+def _complete_tasks(store, github, tasks_path, dry_run, cohesion_service, report, now, persist) -> None:
     if not tasks_path.is_file():
         return
     tasks = parse_task_lines(tasks_path.read_text(encoding="utf-8"))
@@ -427,12 +453,16 @@ def _complete_tasks(store, github, tasks_path, dry_run, cohesion_service, report
         if dry_run:
             report["completed_tasks"].append(entry)
             continue
-        applied = _apply_completion(store, task, finished, date, tasks_path, cohesion_service, report, now)
+        applied = _apply_completion(
+            store, task, finished, date, tasks_path, cohesion_service, report, now, persist
+        )
         if applied:
             report["completed_tasks"].append({**entry, "method": applied})
 
 
-def _apply_completion(store, task, finished, date, tasks_path, cohesion_service, report, now) -> str | None:
+def _apply_completion(
+    store, task, finished, date, tasks_path, cohesion_service, report, now, persist
+) -> str | None:
     key = sorted(task.links)[0]
     if task.task_id and cohesion_service is not None:
         item_id = cohesion_service.item_for_task(task.task_id)
@@ -459,7 +489,8 @@ def _apply_completion(store, task, finished, date, tasks_path, cohesion_service,
             )
             return "cohesion"
     replacement = done_line(task.line, date)
-    if not move_line(tasks_path, task.line, replacement, "## Done"):
+    if not move_line(tasks_path, task.line, replacement, "## Done",
+                     persist(f"tasks: complete for {key}")):
         store.conflict(key, "task_line_changed", task.line, now)
         report["conflicts"].append({"key": key, "reason": "task_line_changed"})
         return None
@@ -506,12 +537,15 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     date = args.date or dt.datetime.now(MANILA).date()
     import cohesion
+    from owned_persist import Persister
 
+    persister = Persister()
     report = run(
         date=date,
         dry_run=args.dry_run,
         repositories=args.repos or DEFAULT_REPOSITORIES,
-        cohesion_service=None if args.dry_run else cohesion.CohesionService(),
+        cohesion_service=None if args.dry_run else cohesion.CohesionService(persister=persister),
+        persister=None if args.dry_run else persister,
     )
     print(json.dumps(report, ensure_ascii=False, sort_keys=True))
     return 1 if report["errors"] else 0

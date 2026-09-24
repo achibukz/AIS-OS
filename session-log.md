@@ -24,6 +24,8 @@ Decisions:
 - The evening debrief lists unlinked finished work beside tasks done that day
   and runs the sync first. An hourly timer keeps tasks current in between.
 
+- After #45 merged, direct task moves also go through `owned_persist`, so a
+  sync-made `tasks.md` change is committed and pushed like a cohesion one.
 Verification:
 
 - `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed with 749
