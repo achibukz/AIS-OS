@@ -36,6 +36,59 @@ Open:
 - Deployment needs the policy file and the retry timer. Live acceptance
   against a dedicated test repository is not run.
 
+## 2026-09-24 07:45 PHT [saved]
+
+Goal: audit the uncommitted AIS-OS #14 work before its first commit and repair
+what would break in production.
+
+Decisions:
+
+- The Gemini API has no `gemini-3.8-flash-high` model. achiCore's registry maps
+  that name to `gemini-3.8-flash` at high effort, so the reviewer and gate now
+  call `gemini-3.8-flash` with `thinkingConfig.thinkingLevel` set to high.
+- Replaying a source event no longer activates it again. The old path bumped the
+  preference revision on every replay and could restore a revoked value.
+- The daily reviewer sends only events a classifier can activate. Unvalidated
+  quotes and ambiguous scope stay pending for Aki, so they no longer force a
+  model call on an otherwise idle day.
+- The review unit fails only on an error. It exited 1 whenever anything stayed
+  pending, which fired `OnFailure` alerts, and `Restart=on-failure` retried
+  beyond the one retry the issue allows. The restart lines are gone.
+
+Verification:
+
+- The new tests failed against the pre-fix scripts: 6 failures.
+- Focused semantic, review, cohesion, gate and ledger tests: 117 passed.
+
+Open:
+
+- The thinking-level request shape and whether thinking tokens count against
+  the 1,000 output-token cap are unverified against the live API.
+
+## 2026-09-22 05:10 PHT [saved]
+
+Goal: implement AIS-OS #14 with immediate sourced corrections and a durable daily
+semantic preference review.
+
+Decisions:
+
+- Cohesion stores viewer delivery, placement and linked completion preferences with
+  exact source evidence, scope, exceptions, revisions and revocation history.
+- Current explicit instructions outrank learned values. Item scope outranks category,
+  which outranks global scope. Ambiguous future reach stays pending and returns one
+  question after any current item repair.
+- The append-only learning ledger mirrors semantic events. Assistant claims and
+  unvalidated quotes cannot activate a preference.
+- Daily review runs at 03:00 Asia/Manila with a persistent timer. It uses direct
+  `gemini-3.8-flash-high` inference with no tools, 24 attempts per Manila day, one
+  retry, a conservative 6,000-byte input cap, 1,000 output tokens and a
+  90-second timeout.
+
+Verification:
+
+- Focused semantic preference, review, learning ledger, memory gate and cohesion
+  tests are in progress.
+- Full repository verification and isolated live acceptance remain pending.
 ## 2026-09-22 12:20 PHT [saved]
 
 Goal: repair [PR #79](https://github.com/achibukz/AIS-OS/pull/79) after Luna's
