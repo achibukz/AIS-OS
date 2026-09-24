@@ -1,5 +1,44 @@
 # Session Log
 
+## 2026-09-24 08:41 PHT [saved]
+
+Goal: implement AIS-OS #16, the daily learning receipt, the weekly learning
+debrief and a read-only learning health view.
+
+Decisions:
+
+- No notification outbox existed, so `scripts/notify_outbox.py` adds one. A
+  stable message ID is enqueued once. Transient failures back off from five
+  minutes up to six hours, for at most eight attempts. A 4xx rejection or
+  missing credentials fail permanently. A row left mid-send is retried, and
+  its footer ID makes any duplicate recognizable.
+- The daily receipt follows each 03:00 review and uses ID
+  `learning-daily:<Manila date>`. An idle day says "No new learning. No model
+  call."
+- The weekly debrief covers the Manila week ending Sunday 20:00, configurable
+  through `ACHIOS_WEEKLY_DAY` and `ACHIOS_WEEKLY_TIME`. A late catch-up reports
+  the finished week under `learning-weekly:<end date>`.
+- Nothing recorded when a learned preference decided a write, so cohesion now
+  logs a use per preference revision and source. The weekly "applied" count is
+  real reuse, not activation.
+- Captured, awaiting review, needs Aki, accepted, rejected, applied, committed
+  and pushed are separate counts. Closed issues and merged PRs are listed
+  apart, and deployed and live-verified say "not tracked" because nothing
+  records them.
+- Aki picked the compact counts layout from three options.
+- Health reads the review queue age, the day's call budget, key presence,
+  persistence receipt states, outbox delivery and each vault's dirty count and
+  ahead/behind from its last fetch, without a network call.
+
+Verification:
+
+- `~/.local/share/achios/venv/bin/python -m pytest tests -q` passed with 834
+  tests, 16 of them new.
+
+Open:
+
+- Deployment needs `scripts/install_units.sh` for the weekly and outbox timers.
+
 ## 2026-09-24 08:40 PHT [saved]
 
 Goal: make AIS-OS PR #21 mergeable again.

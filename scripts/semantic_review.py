@@ -273,6 +273,12 @@ def main(argv: list[str] | None = None) -> int:
         report = run_review(store)
     except ReviewUnavailable as exc:
         report = {"model": MODEL, "status": "pending", "error": str(exc)}
+    try:
+        import learning_reports
+
+        report["receipt"] = learning_reports.send_daily(report, db=args.db)
+    except Exception as exc:  # the review result stands even when its receipt cannot queue
+        report["receipt_error"] = str(exc)
     print(json.dumps(report, ensure_ascii=False, sort_keys=True))
     return 1 if "error" in report else 0
 
