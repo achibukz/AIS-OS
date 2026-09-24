@@ -1,0 +1,14 @@
+[Unit]
+Description=achiOS weekly learning debrief -> achiNouncements
+After=network-online.target
+Wants=network-online.target
+OnFailure=achios-failure-alert@%n.service
+
+[Service]
+Type=oneshot
+UMask=0077
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/.local/share/achios/venv/bin/python @REPO@/scripts/learning_reports.py weekly
+StandardOutput=append:%h/.local/state/achios/learning_reports.log
+StandardError=append:%h/.local/state/achios/learning_reports.log
+TimeoutStartSec=5min
