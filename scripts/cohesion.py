@@ -294,6 +294,13 @@ class CohesionService:
             "semantic_preferences": self.semantic_preferences.context(category),
         }
 
+    def item_for_task(self, task_id: str) -> str | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT item_id FROM items WHERE task_id = ?", (task_id,)
+            ).fetchone()
+        return row["item_id"] if row else None
+
     def record_preference(self, request: dict) -> dict:
         if request.get("version") != CONTRACT_VERSION:
             raise CohesionError(f"version must be {CONTRACT_VERSION}")
