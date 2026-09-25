@@ -33,6 +33,16 @@ the first #14 build. Medium effort, which is faster but departs from the approve
 
 Keep it terse. Future-you will thank present-you for capturing the *why*, not just the *what*.
 
+## 2026-09-25 — Relocate Canvas SQLite database to local state for agent activation
+
+**Decision:** Canvas SQLite database defaults to `~/.local/state/achios/canvas/canvas.sqlite3` rather than `~/.local/share/achios/canvas/canvas.sqlite3`. `open_writer` automatically migrates any existing legacy database on first access, while `open_reader` falls back to the legacy database if the new path has not yet been populated.
+
+**Why:** Landlock sandbox rules block interactive agent turns from writing to `~/.local/share/`, causing `tasks-activate` to fail with `PermissionError: [Errno 13] Permission denied` (masked as `invalid_or_unavailable_local_data`). `~/.local/state/achios/` is the established standard for agent-writable application state databases (Asta, Cohesion) and permits turns to activate courses and manage tasks.
+
+**Alternatives considered:** Requiring Aki to run `tasks-activate` manually in an unrestricted host shell outside agent turns (rejected: breaks agentic task management and automated workflows); requesting a Landlock exception for `~/.local/share/` (rejected: sandbox boundaries are intentionally strict).
+
+**Owner:** Aea for implementation, Luna for review.
+
 ## 2026-09-22 — Activate Canvas task reconciliation per course
 
 **Decision:** Require a bounded preview and explicit activation for each mapped

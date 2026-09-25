@@ -4,7 +4,9 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import sqlite3
+import tempfile
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from html import unescape
@@ -14,7 +16,8 @@ from zoneinfo import ZoneInfo
 from canvas_client import CanvasError, ORIGIN, private_directory
 from canvas_events import enqueue, record_changes
 
-DATABASE = Path.home() / ".local/share/achios/canvas/canvas.sqlite3"
+DATABASE = Path.home() / ".local/state/achios/canvas/canvas.sqlite3"
+LEGACY_DATABASE = Path.home() / ".local/share/achios/canvas/canvas.sqlite3"
 CATEGORIES = ("courses", "assignments", "grades", "announcements")
 MANILA = ZoneInfo("Asia/Manila")
 SCHEMA = """
@@ -83,11 +86,33 @@ PRAGMA user_version=3;
 """
 
 
+def _migrate_legacy_database(source: Path, target: Path) -> None:
+    if not source.is_file():
+        return
+    tmp_fd, tmp_path_str = tempfile.mkstemp(dir=target.parent, prefix="canvas_migrate_", suffix=".tmp")
+    tmp_path = Path(tmp_path_str)
+    try:
+        with open(tmp_fd, "wb") as dst, open(source, "rb") as src:
+            shutil.copyfileobj(src, dst)
+        os.chmod(tmp_path, 0o600)
+        try:
+            os.link(tmp_path, target)
+        except FileExistsError:
+            pass
+    finally:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+
+
 @contextmanager
 def open_writer(path: Path):
     private_directory(path.parent)
     if path.is_symlink():
         raise CanvasError("unsafe_database")
+    if path == DATABASE and not path.exists() and LEGACY_DATABASE.is_file():
+        _migrate_legacy_database(LEGACY_DATABASE, path)
     fd = os.open(path, os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
     os.close(fd)
     path.chmod(0o600)
@@ -117,6 +142,8 @@ def open_writer(path: Path):
 
 @contextmanager
 def open_reader(path: Path):
+    if path == DATABASE and not path.exists() and LEGACY_DATABASE.is_file():
+        path = LEGACY_DATABASE
     db = sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True, timeout=5)
     db.row_factory = sqlite3.Row
     try:

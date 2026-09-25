@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from canvas_client import CanvasError
-from canvas_store import (configure_courses, open_reader, open_writer, project_record, query,
+from canvas_store import (DATABASE, LEGACY_DATABASE, configure_courses, open_reader, open_writer, project_record, query,
                           save_auth, save_failure, save_snapshot, SCHEMA, NOTICES)
 from canvas_sync import sync
 
@@ -261,3 +261,82 @@ def test_hidden_grade_fields_do_not_hide_deadlines_or_erase_saved_grades(db):
     assert result["data"][0]["grade_success_at"] == AT
     assert "stale_data" in result["warnings"]
     assert db.execute("SELECT count(*) FROM events").fetchone()[0] == 1
+
+
+def test_database_path_under_local_state():
+    assert DATABASE == Path.home() / ".local/state/achios/canvas/canvas.sqlite3"
+    assert LEGACY_DATABASE == Path.home() / ".local/share/achios/canvas/canvas.sqlite3"
+
+
+def test_open_writer_migrates_legacy_database_if_new_path_absent(tmp_path, monkeypatch):
+    legacy_path = tmp_path / "legacy/canvas.sqlite3"
+    new_path = tmp_path / "new/canvas.sqlite3"
+    with open_writer(legacy_path) as connection:
+        configure_courses(connection, MAPPING)
+        save_snapshot(connection, 42, "assignments", [assignment()], AT)
+
+    monkeypatch.setattr("canvas_store.DATABASE", new_path)
+    monkeypatch.setattr("canvas_store.LEGACY_DATABASE", legacy_path)
+
+    assert not new_path.exists()
+    with open_writer(new_path) as connection:
+        records = query(connection, "assignments", now=NOW)["data"]
+        assert len(records) == 1
+        assert records[0]["id"] == 1
+
+    assert new_path.is_file()
+    assert (new_path.stat().st_mode & 0o777) == 0o600
+
+
+def test_open_reader_falls_back_to_legacy_database_if_new_path_absent(tmp_path, monkeypatch):
+    legacy_path = tmp_path / "legacy/canvas.sqlite3"
+    new_path = tmp_path / "new/canvas.sqlite3"
+    with open_writer(legacy_path) as connection:
+        configure_courses(connection, MAPPING)
+        save_snapshot(connection, 42, "assignments", [assignment()], AT)
+
+    monkeypatch.setattr("canvas_store.DATABASE", new_path)
+    monkeypatch.setattr("canvas_store.LEGACY_DATABASE", legacy_path)
+
+    assert not new_path.exists()
+    with open_reader(new_path) as connection:
+        records = query(connection, "assignments", now=NOW)["data"]
+        assert len(records) == 1
+        assert records[0]["id"] == 1
+
+
+def test_open_writer_migration_avoids_overwriting_concurrent_target(tmp_path, monkeypatch):
+    legacy_path = tmp_path / "legacy/canvas.sqlite3"
+    new_path = tmp_path / "new/canvas.sqlite3"
+    with open_writer(legacy_path) as connection:
+        configure_courses(connection, MAPPING)
+        save_snapshot(connection, 42, "assignments", [assignment(1, name="Legacy")], AT)
+
+    monkeypatch.setattr("canvas_store.DATABASE", new_path)
+    monkeypatch.setattr("canvas_store.LEGACY_DATABASE", legacy_path)
+
+    with open_writer(new_path) as connection:
+        configure_courses(connection, MAPPING)
+        save_snapshot(connection, 42, "assignments", [assignment(2, name="Concurrent")], AT)
+
+    with open_writer(new_path) as connection:
+        records = query(connection, "assignments", now=NOW)["data"]
+        assert len(records) == 1
+        assert records[0]["id"] == 2
+        assert records[0]["name"] == "Concurrent"
+
+
+def test_migrate_legacy_database_handles_file_exists_error(tmp_path):
+    from canvas_store import _migrate_legacy_database
+
+    legacy_path = tmp_path / "legacy/canvas.sqlite3"
+    target_path = tmp_path / "target/canvas.sqlite3"
+    legacy_path.parent.mkdir(parents=True, exist_ok=True)
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    legacy_path.write_text("legacy content", encoding="utf-8")
+    target_path.write_text("concurrent content", encoding="utf-8")
+
+    _migrate_legacy_database(legacy_path, target_path)
+    assert target_path.read_text(encoding="utf-8") == "concurrent content"
+
+
