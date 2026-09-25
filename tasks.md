@@ -24,6 +24,11 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] STDISCM Distributed Food Delivery Platform #school !med #STDISCM @2026-09-26 <!-- task-id: task_8bf73b1065178056c39f0ebd -->
+- [ ] STDISCM PRACTICE - Test Case Upload Check #school !med #STDISCM @2026-09-18 <!-- task-id: task_baafb1c46bf47acc4f05af6f -->
+- [ ] STDISCM P4 - Distributed Fault Tolerance #school !med #STDISCM @2026-11-21 <!-- task-id: task_3bc5591795bff1478e165373 -->
+- [ ] STDISCM P2 - Looking for Group Synchronization #school !med #STDISCM @2026-10-24 <!-- task-id: task_cd16264d1b6b90b6702857e6 -->
+- [ ] STDISCM P1 - Threaded Prime Number Search #school !med #STDISCM @2026-10-10 <!-- task-id: task_0c3694282744a0da7b5b772a -->
 - [ ] Build the TokDrop video downloader through [sfv-thesis #20](https://github.com/achibukz/sfv-thesis/issues/20): yt-dlp, pseudonymous output, withdrawal pruning. [Roadmap](https://github.com/achibukz/sfv-thesis/issues/7#issuecomment-5825533781) #school #thesis !med
 - [ ] Work the 2026-09-24 hub audit batch: [AIS-OS #89](https://github.com/achibukz/AIS-OS/issues/89) (viewer exposure) first, then achiCore #235 to #244 per the [roadmap](http://100.106.210.38:8999/Code/GitHub/achiCore/docs/roadmap-2026-09-24.md) #achicore #systems !high
 - [ ] Claim requested documents at DLSU ESH (Ref: RFD-012572) #school !med #ESH @2026-09-29 <!-- task-id: task_4664ef9cc11a1bdbd83e17a4 -->
@@ -97,6 +102,7 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Discuss how to do smart model routing in daily conversations in Telegram for achiCore #achicore #planning !med
 
 ## Done
+- [x] Manually activate Canvas task reconciliation for STDISCM to observe the pipeline ([AIS-OS #90](https://github.com/achibukz/AIS-OS/issues/90)) #school #systems !low (done 2026-09-25)
 - [x] Submit STDISCM Too Much Milk homework #school #STDISCM !high @2026-09-19 (done 2026-09-19)
 - [x] Remove broken Gmail links from email digest, filed as [AIS-OS #57](https://github.com/achibukz/AIS-OS/issues/57) #systems #bug !high (done 2026-09-17)
 - [x] Complete CCINOV8 Self-Assessment Test #school #CCINOV8 !high @2026-09-15 (done 2026-09-15)

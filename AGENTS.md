@@ -243,6 +243,15 @@ It is meant to read loose on a phone, not dense.
 - Preview: `scripts/immich_folder_sync.sh --dry-run`
 - Run now: `systemctl --user start achios-immich-sync.service`
 
+### Canvas sync & task reconciliation
+
+`scripts/canvas_scheduled.py` runs scheduled Canvas synchronization and task reconciliation:
+- Content: Syncs enrolled courses, assignments, announcements, grades, sends deadline reminders and notices to `achiSchooNounce`, and reconciles active course assignments into `tasks.md` and Google Calendar (under the secondary DLSU calendar).
+- Database: `~/.local/state/achios/canvas/canvas.sqlite3` (migrated from `~/.local/share/` so interactive agent turns can execute course activations and queries without Landlock permission errors).
+- Schedule: `systemd/achios-canvas-sync.timer` (runs every 30 minutes with `Persistent=true`)
+- Log: `~/.local/state/achios/canvas_sync.log`
+- Commands: `python scripts/canvas.py tasks-preview --course <CODE>`, `python scripts/canvas.py tasks-activate --course <CODE>`, `python scripts/canvas.py tasks-reconcile`
+
 ### Self-learning loop
 
 The bot learns scoped preferences from the sourced Telegram evidence captured by

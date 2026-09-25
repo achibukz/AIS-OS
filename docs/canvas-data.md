@@ -42,7 +42,7 @@ Credentials and control files live under `~/.config/achios/canvas/` with directo
 
 `mappings.json` holds verified subject/course mappings. `course-candidates.json` holds private metadata for operator inspection. `receipt.json` holds the last completed online command result, including failures reached after the client opens. `probe` and successful `map` also record authentication in the selected database. An observed expiry updates cached warnings immediately, and recovery does not change category fetch timestamps. These are writer commands. Session-cookie expiry metadata is not evidence of server-session lifetime.
 
-The database defaults to `~/.local/share/achios/canvas/canvas.sqlite3`. Its initial version is 1, with foreign keys and DELETE journaling. DELETE journaling lets readers use a protected directory without WAL shared-memory files. Reads hold a SQLite read transaction for consistent records and coverage. A reader that encounters a hot journal requiring recovery fails without writing; the coordinator must open the database to recover it.
+The database defaults to `~/.local/state/achios/canvas/canvas.sqlite3` (migrated from `~/.local/share/achios/canvas/canvas.sqlite3` so agent turns can execute task activations and coordinator operations without Landlock permission errors). Its initial version is 1, with foreign keys and DELETE journaling. DELETE journaling lets readers use a protected directory without WAL shared-memory files. Reads hold a SQLite read transaction for consistent records and coverage. A reader that encounters a hot journal requiring recovery fails without writing; the coordinator must open the database to recover it.
 
 One nonblocking `writer.lock` covers the client, mapping, sync and live delivery. Competing writers return `busy`. Future phone reauthentication must take the same lock before replacing the cookie jar. Use one canonical config directory for all writers. `--config`, `--db` and `--wiki` support isolated tests and operator paths; a future coordinator must validate its own arguments and must not forward arbitrary worker paths.
 
@@ -176,7 +176,7 @@ Data as of Mon 14 Sep, 07:30 AM
 Preview what the next run would queue against a copy of the cache, never the live file:
 
 ```bash
-tmp=$(mktemp -d); cp ~/.local/share/achios/canvas/canvas.sqlite3 "$tmp/cache.sqlite3"
+tmp=$(mktemp -d); cp ~/.local/state/achios/canvas/canvas.sqlite3 "$tmp/cache.sqlite3"
 python scripts/canvas.py --config "$tmp/config" --db "$tmp/cache.sqlite3" remind
 python scripts/canvas.py --config "$tmp/config" --db "$tmp/cache.sqlite3" deliver
 ```
