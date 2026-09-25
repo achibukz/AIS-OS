@@ -189,7 +189,7 @@ SQLite FTS5 is built into SQLite installations that include the extension and su
 ├── cookies.txt
 └── config.json
 
-~/.local/share/achios/canvas/
+~/.local/state/achios/canvas/
 ├── canvas.db
 ├── cache/
 │   ├── 438921/
@@ -2058,7 +2058,7 @@ Create the canonical local structured knowledge store.
 
 ### Location
 
-`~/.local/share/achios/canvas/canvas.db`
+`~/.local/state/achios/canvas/canvas.db`
 
 ### Tables
 
@@ -2499,7 +2499,7 @@ Reliably download Canvas-protected files without leaking cookies or accepting lo
 
 ### Cache location
 
-`~/.local/share/achios/canvas/cache/<course-id>/<file-id>/`
+`~/.local/state/achios/canvas/cache/<course-id>/<file-id>/`
 
 ### Download algorithm
 

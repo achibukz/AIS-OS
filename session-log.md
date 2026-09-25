@@ -7,14 +7,15 @@ Goal: Manually activate Canvas task reconciliation for a course to observe the p
 Decisions:
 
 - Relocated Canvas SQLite database default path from `~/.local/share/achios/canvas/canvas.sqlite3` to `~/.local/state/achios/canvas/canvas.sqlite3`.
-- Updated `open_writer` in `scripts/canvas_store.py` to automatically migrate an existing legacy database on first access, and updated `open_reader` to fall back to the legacy path if the state path does not exist.
+- Updated `open_writer` in `scripts/canvas_store.py` to atomically migrate (`_migrate_legacy_database` using tempfile and `os.link`) an existing legacy database on first access without TOCTOU overwrite hazard, and updated `open_reader` to fall back to the legacy path if the state path does not exist.
+- Updated stale cache and db references in `docs/canvas-implementation-plan.md`.
 - Resolved the Landlock `PermissionError: [Errno 13] Permission denied` (masked as `invalid_or_unavailable_local_data`) that blocked interactive turns from executing `canvas.py tasks-activate`.
 - Executed `canvas.py tasks-activate --course STDISCM`, successfully recording the course activation in `canvas_task_activation` and queuing 5 assignment operations into `canvas_task_ops`.
 - Executed `canvas.py tasks-reconcile`, successfully applying all 5 operations to `tasks.md` and Google Calendar under the secondary DLSU calendar (`smm4dmf5g0j9lsjuq7pp2fk2ok@group.calendar.google.com`) per the `school_deadline: both` placement preference.
 
 Verification:
 
-- Unit tests: 200 passed in `tests/test_canvas_*.py`, including new coverage for state database path and legacy migration/fallback in `tests/test_canvas_store.py`.
+- Unit tests: 202 passed in `tests/test_canvas_*.py`, including new coverage for state database path, atomic legacy migration, and concurrent target collision handling in `tests/test_canvas_store.py`.
 - Live pipeline verification: `canvas_task_activation` has `course_id=263940` (STDISCM); `canvas_task_ops` has 5 rows with `state='applied'`; `tasks.md` contains 5 active task entries; Google Calendar contains 5 corresponding calendar events with matching `item_id` and `owner="cohesion"`.
 
 ## 2026-09-24 10:48 PHT [saved]
