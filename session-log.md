@@ -358,6 +358,37 @@ Verification:
 - Focused semantic preference, review, learning ledger, memory gate and cohesion
   tests are in progress.
 - Full repository verification and isolated live acceptance remain pending.
+## 2026-09-22 PHT [saved]
+
+Goal: correct the NAIST deadline to the NAPI 2027 internship application
+deadline and place it on Calendar.
+
+Decisions:
+
+- Renamed the active task to NAPI 2027 and moved its due date to 2026-10-16
+  after verifying the NAPI application page.
+- Added an all-day `NAPI 2027 application deadline` event to the Personal
+  calendar, owned by Asa (`event_id`: `a3052a221736727b47bd2bb1ebe9f83b`).
+
+Verification:
+
+- `gcal.py insert` returned `status: ok`; the event runs 2026-10-16 through
+  2026-10-17 in the all-day Calendar representation.
+
+## 2026-09-22 PHT [saved]
+
+Goal: align the NAIST application-preparation task with the DLSU ESH release
+date for the requested TOR and certificate of enrollment.
+
+Decisions:
+
+- Moved the active NAIST application-preparation task from 2026-09-21 to
+  2026-09-29 in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+Verification:
+
+- Confirmed the existing DLSU ESH task for RFD-012572 is also due 2026-09-29.
+
 ## 2026-09-22 12:20 PHT [saved]
 
 Goal: repair [PR #79](https://github.com/achibukz/AIS-OS/pull/79) after Luna's
@@ -395,6 +426,30 @@ extraction and semantic learning. Existing main-checkout edits are untouched.
 Automated verification is recorded in the PR. Live acceptance, deployment,
 onboarding import and timer installation remain pending. No private health
 records were copied into the repository.
+
+## 2026-09-21 20:12 PHT [saved]
+
+Goal: record completed GELITPH quiz and readings in tasks.md.
+
+Decisions:
+
+- Recorded `- [x] Complete GELITPH Tradition and Subversion Quiz 1 and readings #school #GELITPH @2026-09-21 (done 2026-09-21)` under `## Done` in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+Verification:
+
+- Verified `tasks.md` via `scripts/task_engine.py`.
+
+## 2026-09-20 17:34 PHT [saved]
+
+Goal: record completion of overdue school tasks (CCINOV8 Team Contract and STDISCM Practice Test Case Upload Check).
+
+Decisions:
+
+- Moved `- [x] Submit CCINOV8 Team Contract #school #CCINOV8 !high @2026-09-18 (done 2026-09-20)` and `- [x] Submit STDISCM Practice Test Case Upload Check #school #STDISCM !high @2026-09-18 (done 2026-09-20)` to `## Done` in [tasks.md](http://100.106.210.38:8999/Code/GitHub/AIS-OS/tasks.md).
+
+Verification:
+
+- Verified `tasks.md` via `scripts/task_engine.py`; overdue section is clear.
 
 ## 2026-09-19 17:56 PHT [saved]
 
@@ -3524,3 +3579,29 @@ Open:
 - The achiCore-side `asa.md` restore line is unresolved by design; flagged to Aki rather than
   crossing into another repo unprompted.
 - Not yet pushed to `origin/ticket/60-62-shared-gcal-client`.
+
+## 2026-09-25 [saved]
+
+Goal: rename the room on STSP002's recurring F2F series from G404B to A1102.
+
+Decisions:
+- `scripts/gcal.py`'s `event_guard` no longer refuses `update`/`delete` on an untagged event
+  (no `achios_owner`). It still refuses when the event is tagged to a different owner. Aki
+  confirmed this tradeoff explicitly after being shown the alternative (manual edit in Google
+  Calendar) and the blast radius (any owner can now edit pre-existing untagged events on a
+  calendar it already writes). Logged in `decisions/log.md`.
+- Updated `tests/test_gcal.py`: replaced `test_writes_refuse_an_untagged_event` with
+  `test_update_allows_an_untagged_event` and `test_delete_allows_an_untagged_event`.
+- Renamed STSP002's master recurring event (`12b155apnhi6lov1cfkn1ohetk`) from
+  "G404B - F2F Session" to "A1102 - F2F Session" via `gcal.py update --owner cohesion`
+  (STSP002's configured `write_owner`, not `asa`, which was refused with `calendar_owner`).
+  This retitles every occurrence in the series, past and future.
+
+Verification:
+- `python3 -m pytest tests/test_gcal.py -q` gave 72 passed.
+- `gcal.py events list --calendar STSP002 --from 2026-09-25 --to 2026-11-10` confirmed every
+  F2F occurrence now reads "A1102 - F2F Session"; ONLINE sessions untouched.
+
+Open:
+- Past occurrences were retitled too (not split into "this and following"). Aki was told and
+  did not ask for a split.

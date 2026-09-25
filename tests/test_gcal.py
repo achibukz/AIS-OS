@@ -430,12 +430,17 @@ def seed(fake, event_id, owner=None, calendar="personal@group"):
     fake.add_event("personal", calendar, event)
 
 
-@pytest.mark.parametrize("action", ["update", "delete"])
-def test_writes_refuse_an_untagged_event(writable, action):
+def test_update_allows_an_untagged_event(writable):
     seed(writable, "human")
-    result = _write(action, calendar="Personal", event_id="human", owner="asa")
-    assert result["reason"] == "untagged"
-    assert writable.writes() == []
+    result = gcal.update(write_config(), calendar="Personal", event_id="human", owner="asa", title="Changed")
+    assert result["status"] == "ok"
+    assert result["event"]["title"] == "Changed"
+
+
+def test_delete_allows_an_untagged_event(writable):
+    seed(writable, "human")
+    assert gcal.delete(write_config(), calendar="Personal", event_id="human", owner="asa")["status"] == "ok"
+    assert "human" not in writable.events[("personal", "personal@group")]
 
 
 @pytest.mark.parametrize("action", ["update", "delete"])

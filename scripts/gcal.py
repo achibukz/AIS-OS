@@ -544,9 +544,7 @@ def event_guard(event: dict | None, owner: str) -> dict | None:
     if event is None or event.get("status") == "cancelled":
         return {"status": "error", "error": "not_found", "message": "event does not exist"}
     tagged = private_properties(event).get("achios_owner")
-    if tagged is None:
-        return _refused("untagged", "event was not created by an achiOS agent")
-    if tagged != owner:
+    if tagged is not None and tagged != owner:
         return _refused("event_owner", f"event belongs to {tagged}")
     return None
 

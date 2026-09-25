@@ -1681,3 +1681,15 @@ Alternatives: individual PRs per Asta ticket, or including Apple Health and late
 provider integrations in this release. Apple Health remains a follow-up.
 
 Owner: Aki approved the combined approach; Astra implements and verifies it.
+
+## 2026-09-25 — event_guard allows writes to untagged Calendar events
+
+**Decision:** `scripts/gcal.py`'s `event_guard` no longer refuses `update`/`delete` on an event with no `achios_owner` tag. It still refuses when the event is tagged to a *different* owner than the one calling. The calendar-level `write_owner` check in `write_guard` is unchanged.
+
+**Why:** Aki asked to rename the room on STSP002's recurring F2F series ("G404B" → "A1102"). That series predates `gcal.py` (introduced 2026-09-19 in #60/61/62/78) and was never tagged, so the untagged refusal blocked a legitimate edit Aki explicitly asked for and confirmed after I flagged the tradeoff.
+
+**Alternatives considered:** editing the event by hand in Google Calendar (Aki explicitly asked for the code path instead, citing prior edits made before the guard existed); a scoped exception for STSP002 only, rejected as more state to track for a guard that should just match its stated intent (stop cross-owner overwrites, not untagged ones).
+
+**Consequence:** any owner with `write_owner` on a calendar can now edit or delete pre-existing, non-achiOS-created events on it, not only future ones. Applied to STSP002's master recurring event only so far (`owner=cohesion`, the calendar's actual `write_owner`); no other calendar touched.
+
+**Owner:** Aki
