@@ -24,6 +24,7 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+- [ ] Build the TokDrop video downloader through [sfv-thesis #20](https://github.com/achibukz/sfv-thesis/issues/20): yt-dlp, pseudonymous output, withdrawal pruning. [Roadmap](https://github.com/achibukz/sfv-thesis/issues/7#issuecomment-5825533781) #school #thesis !med
 - [ ] Work the 2026-09-24 hub audit batch: [AIS-OS #89](https://github.com/achibukz/AIS-OS/issues/89) (viewer exposure) first, then achiCore #235 to #244 per the [roadmap](http://100.106.210.38:8999/Code/GitHub/achiCore/docs/roadmap-2026-09-24.md) #achicore #systems !high
 - [ ] Claim requested documents at DLSU ESH (Ref: RFD-012572) #school !med #ESH @2026-09-29 <!-- task-id: task_4664ef9cc11a1bdbd83e17a4 -->
 - [ ] Repair stale /ToWork status cards and restore a distinct Resume action through [achiCore #225](https://github.com/achibukz/achiCore/issues/225) #achicore #telegram #bug !high
