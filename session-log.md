@@ -3660,3 +3660,45 @@ Open:
   day.
 - No PR opened yet from `feature/gcal-recurring-events`; will follow with one after this commit
   per the standing ticket workflow.
+
+## 2026-09-27 18:59 [saved]
+
+Goal: fix Luna's review on PR #92 at `7f84267` (should-fix 4, nit 2, both criteria "not met").
+
+Decisions:
+- F1 (should-fix): the PR body's test plan overstated the diff, "4 new tests" and "an update to
+  `test_gcal.py`'s helper wiring" against an actual +28/-0 with 3 new functions and no helper
+  touched. Will correct the PR body text directly rather than in code.
+- F2 (should-fix): `recurrence` on `normalize_event()` reads `None` from `agenda` and
+  `events list` for a genuinely repeating event, because both pass `singleEvents: true` and get
+  instances back, which carry `recurringEventId` instead of `recurrence`. Chose Luna's first
+  option, document the limitation, over fetching the master on every list read: the fetch would
+  add a network round trip per recurring event in every agenda/list call to serve a field only
+  `insert`/`update` responses need, for a feature whose scope is creating one event, not editing
+  a list. Documented in AGENTS.md/CLAUDE.md next to the `--recur` example.
+- F3 (should-fix): the restore path built its patch body from `body`, which only carries
+  `recurrence` when `--recur` was given, so restoring a deleted CODEX-PAYMENT-shaped item with
+  no `--recur` kept the old RRULE (`patch` leaves omitted fields alone). `restore["recurrence"]`
+  is now always set explicitly, to the new rule or to `[]` to clear the old one.
+- F4 (should-fix): `update --date`/`--start` replaced a recurring master's `start`/`end` while
+  its `recurrence` rode along unchanged in the same replace body, so the response claimed a date
+  the series rule still overrides elsewhere. `update` now refuses a date/time move when the
+  fetched event already carries `recurrence`, with a new `recurring_event` error. Title-only
+  updates on a recurring event still work unchanged; that path is real (STSP002's rename, logged
+  above) and was not the bug. Left F6 (no CLI path to change an existing series' rule) open, as
+  Luna's review permitted.
+- F5 (nit): moved the RRULE prefix check to the top of `insert()`, above `write_guard`'s
+  `calendarList` round trip, so a typo'd flag fails before any network call.
+
+Verification: `~/.local/share/achios/venv/bin/python -m pytest tests -q --ignore=tests/test_learning_reports.py`
+gave 884 passed (was 877 before this pass, +7 new regressions, all confirmed red before their
+fix and green after: `test_restoring_a_deleted_item_without_recur_clears_its_old_recurrence`,
+`test_update_refuses_to_move_a_recurring_events_date`, `test_update_still_retitles_a_recurring_event`
+(passed unmodified, pinning the title-only path stays open), `test_insert_rejects_a_bad_rrule_before_any_gws_call`).
+The excluded file's one failure is the same pre-existing `git commit --allow-empty` environment
+issue confirmed unrelated last pass.
+
+Open:
+- F6 stands: no CLI path changes an existing series' rule once created. Not asked for; noted.
+- Still no live write to Aki's Personal calendar. Day of month (28th vs the real 29th CLAUDE
+  PAYMENT uses) is still his call.

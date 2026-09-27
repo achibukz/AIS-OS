@@ -126,6 +126,12 @@ scripts/gcal.py insert --calendar Personal --owner asa --title "CODEX PAYMENT" -
     --recur "RRULE:FREQ=MONTHLY;BYMONTHDAY=28"
 ```
 
+The response's `recurrence` field confirms what was written on `insert` and `update`, which fetch
+the master event by its own ID. `agenda` and `events list` expand a series into one instance per
+occurrence instead, so those carry `recurring_event_id`, not `recurrence`. Moving `--date`,
+`--start` or `--end` on an event that already has a `recurrence` is refused; edit the series in
+Google Calendar.
+
 A single explicit event writes without asking. Several events, a move or a delete need one
 confirmation first. Re-running an insert with the same item ID, or the same title and time,
 creates no second event. When an insert's response carries `restored: true`, it reinserted an

@@ -564,12 +564,12 @@ def insert(
     item_id: str | None = None,
     recurrence: str | None = None,
 ) -> dict:
+    if recurrence and not recurrence.startswith("RRULE:"):
+        raise GcalError("invalid_arguments", "--recur needs an RRULE, e.g. RRULE:FREQ=MONTHLY;BYMONTHDAY=28")
     entry = find_calendar(config, calendar)
     refusal = write_guard(entry, owner)
     if refusal:
         return refusal
-    if recurrence and not recurrence.startswith("RRULE:"):
-        raise GcalError("invalid_arguments", "--recur needs an RRULE, e.g. RRULE:FREQ=MONTHLY;BYMONTHDAY=28")
     if date:
         body = all_day_body(title, dt.date.fromisoformat(date))
         when = date
@@ -591,7 +591,10 @@ def insert(
         if existing.get("status") != "cancelled":
             return {"status": "exists", "event": normalize_event(entry, existing)}
         # Google keeps a deleted event's ID forever, so asking for the same item again restores it.
+        # patch leaves fields it isn't sent untouched, so recurrence needs an explicit value or a
+        # restore with no --recur would keep whatever RRULE the deleted event had.
         restore = {key: value for key, value in body.items() if key != "id"}
+        restore["recurrence"] = body.get("recurrence", [])
         event = patch_event(entry["profile"], entry["id"], event_id, {**restore, "status": "confirmed"})
         return {"status": "ok", "restored": True, "event": normalize_event(entry, event)}
     try:
@@ -639,6 +642,12 @@ def update(
             "status": "error",
             "error": "conflict",
             "message": "event changed since it was read, refetch and retry",
+        }
+    if (date or start) and event.get("recurrence"):
+        return {
+            "status": "error",
+            "error": "recurring_event",
+            "message": "date/time moves are not supported on a recurring event; edit the series in Google Calendar",
         }
     # gws rejects null fields, so a patch cannot switch between timed and all day.
     # Replacing the whole event can, and it keeps every field this call does not change.
