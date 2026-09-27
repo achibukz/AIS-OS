@@ -111,6 +111,14 @@ Every event `gcal.py` returns, from `agenda`, `events list`, `insert` and `updat
 its `etag`. Pass that value to `update --if-match <etag>` to refuse the write instead of silently
 overwriting an edit Aki made on his phone since the event was last read.
 
+`insert --recur "RRULE:..."` creates a repeating event, one raw RRULE string, e.g.
+`--recur "RRULE:FREQ=MONTHLY;BYMONTHDAY=28"` for a monthly all-day event on the 28th:
+
+```
+scripts/gcal.py insert --calendar Personal --owner asa --title "CODEX PAYMENT" --date 2026-09-28 \
+    --recur "RRULE:FREQ=MONTHLY;BYMONTHDAY=28"
+```
+
 A single explicit event writes without asking. Several events, a move or a delete need one
 confirmation first. Re-running an insert with the same item ID, or the same title and time,
 creates no second event. When an insert's response carries `restored: true`, it reinserted an

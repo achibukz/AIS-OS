@@ -376,6 +376,34 @@ def test_insert_tags_owner_and_item_id(writable):
     assert stored["start"]["dateTime"] == "2026-09-18T07:00:00+08:00"
 
 
+def test_insert_creates_a_monthly_recurring_all_day_event(writable):
+    result = gcal.insert(write_config(), calendar="Personal", owner="asa", title="CODEX PAYMENT",
+                         date="2026-09-28", recurrence="RRULE:FREQ=MONTHLY;BYMONTHDAY=28")
+    assert result["status"] == "ok"
+    assert result["event"]["recurrence"] == ["RRULE:FREQ=MONTHLY;BYMONTHDAY=28"]
+    stored = writable.events[("personal", "personal@group")][result["event"]["event_id"]]
+    assert stored["recurrence"] == ["RRULE:FREQ=MONTHLY;BYMONTHDAY=28"]
+
+
+def test_insert_recurrence_requires_the_rrule_prefix(writable):
+    with pytest.raises(gcal.GcalError) as raised:
+        gcal.insert(write_config(), calendar="Personal", owner="asa", title="CODEX PAYMENT",
+                    date="2026-09-28", recurrence="FREQ=MONTHLY;BYMONTHDAY=28")
+    assert raised.value.code == "invalid_arguments"
+    assert writable.writes() == []
+
+
+def test_cli_insert_wires_the_recur_flag(tmp_path, fake, capsys):
+    fake.add_calendar("personal", "personal@group", "Personal")
+    path = tmp_path / "calendars.json"
+    path.write_text(json.dumps({"calendars": [entry("Personal", owners=["asa"])]}))
+    assert gcal.main(["--config", str(path), "insert", "--calendar", "Personal", "--owner", "asa",
+                      "--title", "CODEX PAYMENT", "--date", "2026-09-28",
+                      "--recur", "RRULE:FREQ=MONTHLY;BYMONTHDAY=28"]) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result["event"]["recurrence"] == ["RRULE:FREQ=MONTHLY;BYMONTHDAY=28"]
+
+
 def test_insert_is_idempotent_for_the_same_item_id(writable):
     for _ in range(2):
         result = gcal.insert(write_config(), calendar="Personal", owner="asa", title="Pay rent",

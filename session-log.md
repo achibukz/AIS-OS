@@ -3623,3 +3623,40 @@ Verification:
 Open:
 - Past occurrences were retitled too (not split into "this and following"). Aki was told and
   did not ask for a split.
+
+## 2026-09-27 18:48 [saved]
+
+Goal: delegated from #General, add recurring-event creation support to `gcal.py insert` so Aki
+can schedule an all-day "CODEX PAYMENT" event every 28th, matching how "CLAUDE PAYMENT" repeats.
+
+Decisions:
+- `insert()` takes an optional `recurrence: str | None`, a single raw RRULE string (e.g.
+  `RRULE:FREQ=MONTHLY;BYMONTHDAY=28`), set as `body["recurrence"] = [recurrence]` when given.
+  Rejected building a friendlier `--monthly-on N` DSL: a raw RRULE pass-through is the smallest
+  change that covers every recurrence Aki might ask for later, not just this one shape, and
+  Google's own RRULE syntax is what `calendars check`'s drift report and any manual edit in
+  Google Calendar already use.
+- `normalize_event()` now also carries `raw.get("recurrence")`, so an `insert` response can be
+  checked against the RRULE that was actually sent, the same reasoning as exposing `etag`.
+- Wired `--recur` on `insert` only, not `update`, since Google's `events.patch`/`update` accept
+  a `recurrence` field already carried through `update`'s whole-event replace body if present on
+  the fetched event; there was no reported need to change an existing series' rule.
+- Checked live, read-only, on `achibuntu` with the real `calendars.json`: "CLAUDE PAYMENT" on
+  the `Personal` calendar is `RRULE:FREQ=MONTHLY;BYMONTHDAY=29`, not the 28th the delegation
+  described. Flagged to Aki rather than silently matching the wrong day.
+
+Verification: `~/.local/share/achios/venv/bin/python -m pytest tests -q` gave 895 passed, 1
+pre-existing unrelated failure (`test_learning_reports.py::test_health_reports_...dirty_vault`,
+a `git commit --allow-empty` environment issue reproduced identically on unmodified `main`,
+confirmed before touching anything). 4 new regressions for the recurrence feature, all
+confirmed red before the fix and green after: `test_insert_creates_a_monthly_recurring_all_day_event`,
+`test_insert_recurrence_requires_the_rrule_prefix`, `test_cli_insert_wires_the_recur_flag`, plus
+the pre-existing suite otherwise unchanged.
+
+Open:
+- Did not create the real "CODEX PAYMENT" event on Aki's live Personal calendar. This session
+  came in delegated with no reply channel, and a live recurring write is not something to take
+  unprompted; the exact command is in the receipt for Aki to run himself once he confirms the
+  day.
+- No PR opened yet from `feature/gcal-recurring-events`; will follow with one after this commit
+  per the standing ticket workflow.

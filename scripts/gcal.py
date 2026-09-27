@@ -7,6 +7,8 @@
     gcal.py events list --calendar DLSU --from 2026-09-17 --to 2026-09-17
     gcal.py insert --calendar workouts --owner asta --title "Upper A" --start 2026-09-18T07:00 --end 2026-09-18T08:00
     gcal.py insert --calendar Personal --owner asa --title "Pay rent" --date 2026-09-30
+    gcal.py insert --calendar Personal --owner asa --title "CODEX PAYMENT" --date 2026-09-28 \
+        --recur "RRULE:FREQ=MONTHLY;BYMONTHDAY=28"
     gcal.py update --calendar Personal --event ID --owner asa --date 2026-10-01
     gcal.py delete --calendar Personal --event ID --owner asa
 
@@ -262,6 +264,7 @@ def normalize_event(entry: dict, raw: dict) -> dict:
         "end": end.get("date") if all_day else to_manila(end["dateTime"]),
         "all_day": all_day,
         "recurring_event_id": raw.get("recurringEventId"),
+        "recurrence": raw.get("recurrence"),
         "owner": private.get("achios_owner"),
         "item_id": private.get("achios_item_id"),
         "etag": raw.get("etag"),
@@ -559,11 +562,14 @@ def insert(
     end: str | None = None,
     date: str | None = None,
     item_id: str | None = None,
+    recurrence: str | None = None,
 ) -> dict:
     entry = find_calendar(config, calendar)
     refusal = write_guard(entry, owner)
     if refusal:
         return refusal
+    if recurrence and not recurrence.startswith("RRULE:"):
+        raise GcalError("invalid_arguments", "--recur needs an RRULE, e.g. RRULE:FREQ=MONTHLY;BYMONTHDAY=28")
     if date:
         body = all_day_body(title, dt.date.fromisoformat(date))
         when = date
@@ -573,6 +579,8 @@ def insert(
     item_id = item_id or default_item_id(owner, entry["id"], title, when)
     event_id = event_id_for(item_id)
     body["id"] = event_id
+    if recurrence:
+        body["recurrence"] = [recurrence]
     body["extendedProperties"] = {"private": {"achios_owner": owner, "achios_item_id": item_id}}
 
     existing = get_event(entry["profile"], entry["id"], event_id)
@@ -691,6 +699,10 @@ def build_parser() -> argparse.ArgumentParser:
     insert_parser.add_argument("--end")
     insert_parser.add_argument("--date", type=_date)
     insert_parser.add_argument("--item-id")
+    insert_parser.add_argument(
+        "--recur", dest="recurrence",
+        help='RRULE for a repeating event, e.g. "RRULE:FREQ=MONTHLY;BYMONTHDAY=28"',
+    )
 
     for name in ("update", "delete"):
         write = commands.add_parser(name)
@@ -728,6 +740,7 @@ def run(args: argparse.Namespace) -> dict:
         return insert(
             config, calendar=args.calendar, owner=args.owner, title=args.title, start=args.start,
             end=args.end, date=args.date.isoformat() if args.date else None, item_id=args.item_id,
+            recurrence=args.recurrence,
         )
     if args.command == "update":
         return update(
