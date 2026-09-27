@@ -3702,3 +3702,45 @@ Open:
 - F6 stands: no CLI path changes an existing series' rule once created. Not asked for; noted.
 - Still no live write to Aki's Personal calendar. Day of month (28th vs the real 29th CLAUDE
   PAYMENT uses) is still his call.
+
+## 2026-09-27 19:33 [saved]
+
+Goal: audit and fix Luna's third review of PR #92 at `c44d9d6` (should-fix 1, nit 2).
+
+Audit, before touching anything: isolated `7f84267` in a throwaway `git worktree add --detach`
+(never checked out over this worktree's own tree) and ran the last pass's 4 new tests against
+that pre-fix code: 3 failed, 1 passed. `test_update_still_retitles_a_recurring_event` already
+passed before the fix, confirming Luna's G1 finding, and confirming the other 3 are real
+regressions. Also re-ran `pytest tests -q --ignore=tests/test_learning_reports.py` at `7f84267`
+in that isolated worktree: 879-880 passed depending on an unrelated order-dependent
+`test_canvas_store.py` flake, not the 877 the previous entry here claimed.
+
+Decisions:
+- G1 (should-fix, confirmed by the audit above): the previous entry's "884 passed (was 877
+  before this pass, +7 new regressions, all confirmed red before their fix and green after)" is
+  wrong on two counts. The real baseline was ~880, not 877, and only 3 of the 4 tests added in
+  that pass were red-before-green; the fourth is a pinning test proving the title-only path was
+  never broken. Corrected in the PR body's test plan rather than editing this log's own past
+  entries, which stay as the record of what was actually claimed at the time.
+- G2/G3 (nits, applied together): `normalize_event()` now returns `raw.get("recurrence") or
+  None` instead of the raw value. This collapses the two spellings of "does not repeat" (G3:
+  `[]` after a cleared restore vs. `None` on a plain event) into one, and resolves G2 as a side
+  effect: `tests/test_gcal.py`'s restore test now asserts the normalized field `is None`, which
+  holds regardless of whether the real Google API omits an empty `recurrence` key or a fake
+  echoes `[]` back, rather than pinning the fake's specific echo shape. The raw write itself is
+  still asserted separately (`stored["recurrence"] == []`), so the fix to the actual bug (F3,
+  clearing a stale RRULE on restore) stays proven.
+- Order of work: changed `normalize_event()` first, then ran the suite. The existing
+  `test_restoring_a_deleted_item_without_recur_clears_its_old_recurrence` assertion
+  (`== []`) immediately went red (`assert None == []`) against the new behavior, which is
+  what forced the assertion update rather than one going in blind. Reran after the
+  assertion change and it passed.
+
+Verification: `~/.local/share/achios/venv/bin/python -m pytest tests -q
+--ignore=tests/test_learning_reports.py` gave 884 passed, unchanged from last pass since this
+was an assertion/normalization fix, not a new test.
+
+Open:
+- G2 remains unverified against the real API either way; `--recur` has still never met live
+  Google or `gws`.
+- Live write and day-of-month decision (28th vs 29th) still unresolved, still Aki's call.

@@ -264,7 +264,7 @@ def normalize_event(entry: dict, raw: dict) -> dict:
         "end": end.get("date") if all_day else to_manila(end["dateTime"]),
         "all_day": all_day,
         "recurring_event_id": raw.get("recurringEventId"),
-        "recurrence": raw.get("recurrence"),
+        "recurrence": raw.get("recurrence") or None,
         "owner": private.get("achios_owner"),
         "item_id": private.get("achios_item_id"),
         "etag": raw.get("etag"),

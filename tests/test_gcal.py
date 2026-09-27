@@ -783,7 +783,7 @@ def test_restoring_a_deleted_item_without_recur_clears_its_old_recurrence(writab
                         item_id="codex_payment")
 
     assert again["status"] == "ok" and again["restored"] is True
-    assert again["event"]["recurrence"] == []
+    assert again["event"]["recurrence"] is None
     assert stored["recurrence"] == []
 
 
