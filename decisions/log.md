@@ -1717,3 +1717,22 @@ state and lose the service rules. A new MCP server is unnecessary for this first
 set of existing local commands.
 
 Owner: Aki.
+
+## 2026-10-01: Export persona prompts as native global agents
+
+Decision: Maintain portable core prompts and suggested skills in AIS-OS and
+install them as Codex and Claude Code user agents. Include Asta, Sciel and
+Sciel's two vault variants alongside the existing specialist roles. All agents
+can discover other installed skills. Export no Telegram tool, skill or path
+restrictions.
+
+Why: Aki wants the roles he uses in Telegram available on the Mac and in other
+repositories. The pack needs no achiCore checkout on the Mac.
+
+Alternatives: Copying assembled Telegram prompts would import host-specific
+paths and restrictions. Pinning the Codex model in each persona would prevent
+an explicit spawn model from overriding it. Use Codex's global subagent defaults
+instead, GPT-6.1 Sol medium, and Claude's persona default, Sonnet 5.5 high.
+Codex's defaults also cover other spawned agents with no override.
+
+Owner: Aki.

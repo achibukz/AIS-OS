@@ -1,5 +1,45 @@
 # Session Log
 
+## 2026-10-01 13:37 PHT [saved]
+
+Goal: make the Telegram personas invokable from Codex and Claude Code on the
+Mac and server, with Aki's model defaults and access to other installed skills.
+
+Decisions:
+
+- Added 12 portable core prompts, role descriptions and suggested skills.
+- Added native global agent export with conflict preflight, dry runs and backups.
+- Set Codex spawned-agent defaults to GPT-6.1 Sol medium. Persona files leave
+  model selection open to explicit spawn overrides. Other unconfigured spawned
+  agents share these defaults; the main session's model settings stay intact.
+- Set Claude persona defaults to the exact Sonnet 5.5 ID with high effort.
+- Kept Telegram restrictions and transport instructions out of the exports.
+
+Rejected approaches:
+
+- Copying assembled hub prompts with server paths and enforced skill allowlists.
+- Pinning Codex models in persona files, which defeats invocation overrides.
+
+Verification:
+
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q`
+  passed, 949 tests and one existing unknown-marker warning.
+- Agent regression tests passed, 26 tests. They need no new dependencies.
+- Server Claude initialization discovered all 12 agents with Sonnet 5.5.
+- Server Codex app-server accepted strict config and reported Sol medium defaults.
+- Installed all 12 agents on achibook-air through SSH using its existing access.
+- Mac agent tests passed, 26 tests, using `uv run --python 3.11 --with pytest`
+  with the staged test file and installer on the Python import path.
+- Mac Claude initialization discovered every agent with Sonnet 5.5. Codex's
+  app-server reported Sol medium defaults and every native TOML file parsed.
+- No model inference or specialist service turn was run. Native agent discovery
+  was checked in Claude; Codex checks covered file parsing and configuration.
+
+Open:
+
+- New client sessions are needed to load the installed definitions. Asta's service
+  and Sophie's compute connection remain dependent on existing host setup.
+
 ## 2026-10-01 13:01 PHT [saved]
 
 Goal: make existing achiOS connections available across AI clients and repos,

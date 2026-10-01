@@ -5,6 +5,9 @@ achiOS services while the working directory is another repo. Code and skills liv
 in this checkout. OAuth credentials, Calendar ownership, Canvas state and vaults
 stay outside Git.
 
+The [portable agent pack](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/portable-agents.md)
+adds the Telegram personas as globally available Codex and Claude Code agents.
+
 ## Install on the Mac or server
 
 Pull achiOS first, then run the installer with Python 3.11 or newer:

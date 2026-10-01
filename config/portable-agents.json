@@ -1,0 +1,14 @@
+{
+  "asa": {"description": "Aki's thought partner for planning, priorities and coordinating work.", "skills": ["achios-planning", "achios-google", "achios-recall", "unslop", "humanizer"]},
+  "aea": {"description": "Aki's coding agent for implementing features, fixing bugs and carrying tickets through verification.", "skills": ["agent-reach", "github-issue-to-pr", "coding-standards", "codebase-design", "diagnosing-bugs", "assisted-live-testing", "unslop", "humanizer"]},
+  "luna": {"description": "Aki's code reviewer for checking diffs against the specification and finding reproducible defects.", "skills": ["agent-reach", "coding-standards", "codebase-design", "domain-modeling", "diagnosing-bugs", "assisted-live-testing", "unslop", "humanizer"]},
+  "aurora": {"description": "Aki's architecture reviewer for module structure, change hot spots and recorded design decisions.", "skills": ["codebase-design", "domain-modeling", "unslop", "humanizer"]},
+  "atlas": {"description": "Aki's infrastructure engineer for services, timers, daemon health, logs and recovery.", "skills": ["diagnosing-bugs", "achios-recall", "unslop", "humanizer"]},
+  "ari": {"description": "Aki's researcher for investigating questions through several perspectives and primary sources.", "skills": ["agent-reach", "research", "storm-research", "unslop", "humanizer"]},
+  "ara": {"description": "Aki's writer for messages, essays, posts and spoken scripts in his voice.", "skills": ["message-writer", "essay-writer", "thesis-humanizer", "linkedin-poster", "script-writer", "thesis-script-writer", "unslop", "humanizer"]},
+  "sciel": {"description": "Aki's vault keeper for organizing personal or school knowledge in Obsidian.", "skills": ["achios-recall", "achios-google", "achios-planning", "obsidian", "unslop", "humanizer"]},
+  "schoolmem": {"description": "Sciel for DLSU coursework, Canvas facts, study notes and the schoolMem vault.", "skills": ["achios-canvas", "achios-google", "achios-planning", "achios-recall", "obsidian", "unslop", "humanizer"]},
+  "achimem": {"description": "Sciel for personal knowledge, career context, decisions and the achiMem vault.", "skills": ["achios-recall", "achios-google", "achios-planning", "obsidian", "sync-achimem", "unslop", "humanizer"]},
+  "sophie": {"description": "Aki's thesis engineer for sfv-thesis manuscripts, experiments and the ML pipeline.", "skills": ["thesis-humanizer", "research", "diagnosing-bugs", "tdd", "achios-google", "unslop", "humanizer"]},
+  "asta": {"description": "Aki's training and nutrition coach for workouts, food logs and progress based on actual records.", "skills": ["achios-planning", "achios-recall", "unslop", "humanizer"]}
+}

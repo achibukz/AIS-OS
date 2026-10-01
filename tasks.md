@@ -104,6 +104,8 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Done
 
+- [x] Port Telegram personas as global Codex and Claude Code agents with suggested skills and model defaults #systems @2026-10-01
+
 - [x] Install and verify portable achiOS skills on the Mac with existing Google accounts #systems @2026-10-01
 - [x] Manually activate Canvas task reconciliation for STDISCM to observe the pipeline ([AIS-OS #90](https://github.com/achibukz/AIS-OS/issues/90)) #school #systems !low (done 2026-09-25)
 - [x] Submit STDISCM Too Much Milk homework #school #STDISCM !high @2026-09-19 (done 2026-09-19)

@@ -134,3 +134,8 @@ reads, and a DLSU Doc read returned three tabs. Calendar reads use the privately
 copied mapping. Tasks and recall work from schoolMem. Canvas reads use the existing
 Mac-to-server SSH connection and report the stale September 28 cache. Automatic
 model selection in a new client chat remains unexercised.
+
+The portable persona pack adds 12 named user agents to Codex and Claude Code.
+It shares the global service skills and uses suggested skills without an allowlist.
+Codex defaults spawned agents to GPT-6.1 Sol medium; Claude persona defaults are
+Sonnet 5.5 high. See the [agent setup guide](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/portable-agents.md).
