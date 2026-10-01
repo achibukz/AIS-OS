@@ -119,3 +119,15 @@ The Asta branch adds private SQLite nutrition records, cached USDA food search,
 workout-calendar reads, topic-directed daily summaries and nightly backups.
 USDA credentials, the private staples seed and Telegram delivery configuration
 are operator setup. The new timers are not installed or live-verified.
+
+## Portable client access, 2026-10-01
+
+The achios-google skill and `scripts/achios_workspace.py` reuse the four existing
+gws profiles from any repo. The installer links Google, planning, Canvas and recall
+skills into user discovery directories. Credentials remain private and machine-local.
+Calendar uses its existing configured owners. Canvas reads require an existing
+cache; a Git pull does not install one. See the
+[portable setup guide](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/portable-skills.md).
+
+Automated checks and server token/schema checks do not establish Mac installation
+or file access. Record those results separately after checking the Mac.

@@ -24,6 +24,8 @@ the parser skips the line.
 Move finished items to `## Done` with the completion date appended. Don't delete them.
 
 ## Active
+
+- [ ] Install and verify portable achiOS skills on the Mac with existing Google accounts #systems !high
 - [ ] STDISCM Distributed Food Delivery Platform #school !med #STDISCM @2026-09-26 <!-- task-id: task_8bf73b1065178056c39f0ebd -->
 - [ ] STDISCM PRACTICE - Test Case Upload Check #school !med #STDISCM @2026-09-18 <!-- task-id: task_baafb1c46bf47acc4f05af6f -->
 - [ ] STDISCM P4 - Distributed Fault Tolerance #school !med #STDISCM @2026-11-21 <!-- task-id: task_3bc5591795bff1478e165373 -->

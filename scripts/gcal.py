@@ -24,6 +24,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -50,7 +51,7 @@ def user_home() -> Path:
 
 
 USER_HOME = user_home()
-GWS_BIN = USER_HOME / ".npm-global" / "bin" / "gws"
+GWS_BIN = Path(shutil.which("gws") or USER_HOME / ".npm-global" / "bin" / "gws")
 CONFIG_PATH = USER_HOME / ".config" / "achios" / "calendars.json"
 WIKI_PATH = USER_HOME / "Documents" / "Obsidian" / "schoolMem" / "wiki"
 PROFILES = ("personal", "work", "main", "dlsu")

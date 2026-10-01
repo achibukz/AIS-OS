@@ -1,5 +1,41 @@
 # Session Log
 
+## 2026-10-01 13:01 PHT [saved]
+
+Goal: make existing achiOS connections available across AI clients and repos,
+including the Mac's existing Google credentials.
+
+Decisions:
+
+- Added four model-selectable skills for Google access, planning, Canvas reads
+  and recall, with bundled commands that resolve achiOS independently of cwd.
+- Added an account-scoped gws helper and a conflict-safe global skill installer.
+- Reused existing service code and ownership rules. Added PATH discovery for gws
+  so Calendar can use the Mac's executable location.
+- Kept credentials and private runtime state outside Git. Used a separate checkout
+  to preserve the main checkout's uncommitted task and log edits.
+
+Rejected approaches:
+
+- Copying authentication into each repo or assuming a Git pull transfers state.
+- Opening every hub control through skills without a coordinator contract.
+
+Verification:
+
+- Targeted portable-skill tests passed, 27 tests.
+- Live server DLSU token status and Docs schema inspection succeeded.
+- `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q`
+  passed: 920 tests, one existing unknown-marker warning.
+- All four skill frontmatter validations passed.
+- Mac SSH connected after Aki enabled Remote Login and authorized the server key.
+  Its existing checkout fast-forwarded with its local scribe edit preserved.
+
+Open:
+
+- Mac SSH authentication must accept the server key before remote installation.
+- Model selection and a user-selected private Doc remain live acceptance checks.
+
+
 ## 2026-09-25 12:15 PHT [saved]
 
 Goal: Manually activate Canvas task reconciliation for a course to observe the pipeline ([AIS-OS #90](https://github.com/achibukz/AIS-OS/issues/90)).

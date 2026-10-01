@@ -1703,3 +1703,17 @@ Owner: Aki approved the combined approach; Astra implements and verifies it.
 **Consequence:** any owner with `write_owner` on a calendar can now edit or delete pre-existing, non-achiOS-created events on it, not only future ones. Applied to STSP002's master recurring event only so far (`owner=cohesion`, the calendar's actual `write_owner`); no other calendar touched.
 
 **Owner:** Aki
+
+## 2026-10-01: Share achiOS services through portable skills
+
+Decision: Keep service implementations in achiOS and expose four globally installed
+skills with explicit Google account selection and existing writer ownership.
+
+Why: Aki switches among Telegram, Codex CLI, Codex desktop and Claude Code, often
+while working in another repo. Existing Mac credentials should remain reusable.
+
+Alternatives: Per-repo credentials and copied Telegram handlers would duplicate
+state and lose the service rules. A new MCP server is unnecessary for this first
+set of existing local commands.
+
+Owner: Aki.
