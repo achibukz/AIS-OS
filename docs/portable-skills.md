@@ -55,8 +55,8 @@ The helper finds gws on PATH, including a Homebrew or npm installation. Set
 `ACHIOS_GWS_BIN` if the desktop client's PATH omits it. Set `ACHIOS_HOME` to the
 credential home when using a checkout outside `~/Code/GitHub`, or a scoped home
 whose checkout is elsewhere. The helper overrides inherited account token/file
-environment variables for each named profile, preserving its configured keyring
-backend. It does not copy profiles between machines.
+environment variables for each named profile, using the file keyring backend these profiles were created with unless an
+explicit backend is already configured. It does not copy profiles between machines.
 
 Example from schoolMem:
 
@@ -81,7 +81,7 @@ the Google API client.
 | Skill | Shared behavior | Limit |
 |---|---|---|
 | achios-planning | Shared task register and Calendar reads; guidance for authorized linked changes through cohesion | Tasks reflect this checkout. Calendar needs its private config. Writer ownership remains enforced. |
-| achios-canvas | Cached courses, deadlines, grades and announcements with freshness reporting | The Mac needs a local cache or an existing SSH connection to the server. Refresh and login stay with the coordinator. |
+| achios-canvas | Cached courses, deadlines, grades and announcements with freshness reporting | The Mac reads the existing server cache over its verified SSH connection when no local cache exists. Refresh and login stay with the coordinator. |
 | achios-recall | Recent achiMem sessions and source-based vault searches | Local files must exist. This does not transfer chat history or install the learning loop. |
 
 Useful later ports are document-store retrieval and media delivery, on-demand brief
@@ -106,3 +106,21 @@ Canvas cache or unsynced vault should produce a stated limitation. Automated tes
 cover account isolation, symlink discovery, execution from another repo, installer
 conflicts and read-only service routing. They do not prove model selection or Mac
 access until those checks run there.
+
+## Installation evidence, October 1, 2026
+
+The skills are installed on achibuntu and AchiBook Air. The Mac's achiOS checkout
+fast-forwarded without changing its local `projects/scribe/.gitignore` edit. Its
+existing four OAuth profiles authenticated and completed Gmail profile and Drive
+list reads. A DLSU Doc read returned all three tabs. No OAuth login was required.
+
+Calendar reads succeeded after copying the server's private calendar mapping to
+`~/.config/achios/calendars.json` on the Mac with mode 600. Tasks and recent session
+recall ran from the schoolMem working directory. Canvas reads succeeded through
+Mac-to-server SSH. Its September 28 cache reports stale data; no refresh or
+notification was triggered. Model selection inside a new desktop or CLI chat has
+not been exercised by these command checks.
+
+Final automated checks passed with 923 tests on the server and 30 portable-skill
+tests on the Mac. One existing server warning concerns an unregistered pytest
+marker. The Mac Calendar read also passed without a login shell.

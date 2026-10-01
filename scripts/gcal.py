@@ -24,11 +24,12 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 from pathlib import Path
 from zoneinfo import ZoneInfo
+
+from achios_workspace import executable as gws_executable
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
@@ -51,7 +52,7 @@ def user_home() -> Path:
 
 
 USER_HOME = user_home()
-GWS_BIN = Path(shutil.which("gws") or USER_HOME / ".npm-global" / "bin" / "gws")
+GWS_BIN = Path(gws_executable())
 CONFIG_PATH = USER_HOME / ".config" / "achios" / "calendars.json"
 WIKI_PATH = USER_HOME / "Documents" / "Obsidian" / "schoolMem" / "wiki"
 PROFILES = ("personal", "work", "main", "dlsu")
@@ -93,6 +94,7 @@ def gws_env(profile: str) -> dict[str, str]:
         **os.environ,
         "GOOGLE_WORKSPACE_CLI_CONFIG_DIR": str(profile_dir(profile)),
         "GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND": "file",
+        "PATH": str(Path(str(GWS_BIN)).parent) + os.pathsep + os.environ.get("PATH", os.defpath),
     }
 
 

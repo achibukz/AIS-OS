@@ -129,5 +129,8 @@ Calendar uses its existing configured owners. Canvas reads require an existing
 cache; a Git pull does not install one. See the
 [portable setup guide](http://100.106.210.38:8999/Code/GitHub/AIS-OS/docs/portable-skills.md).
 
-Automated checks and server token/schema checks do not establish Mac installation
-or file access. Record those results separately after checking the Mac.
+Mac installation is verified. The existing four accounts passed Gmail and Drive
+reads, and a DLSU Doc read returned three tabs. Calendar reads use the privately
+copied mapping. Tasks and recall work from schoolMem. Canvas reads use the existing
+Mac-to-server SSH connection and report the stale September 28 cache. Automatic
+model selection in a new client chat remains unexercised.

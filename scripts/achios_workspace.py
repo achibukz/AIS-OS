@@ -31,6 +31,9 @@ def executable() -> str:
     found = shutil.which("gws")
     if found:
         return found
+    for candidate in (operator_home() / ".npm-global/bin/gws", Path("/opt/homebrew/bin/gws"), Path("/usr/local/bin/gws")):
+        if candidate.is_file():
+            return str(candidate)
     return str(operator_home() / ".npm-global/bin/gws")
 
 
@@ -42,12 +45,16 @@ def profile_env(profile: str) -> dict[str, str]:
     for key in ("GOOGLE_WORKSPACE_CLI_TOKEN", "GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE"):
         env.pop(key, None)
     env["GOOGLE_WORKSPACE_CLI_CONFIG_DIR"] = str(config)
+    env.setdefault("GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND", "file")
     return env
 
 
 def call(profile: str, args: list[str]) -> dict:
+    binary = executable()
+    env = profile_env(profile)
+    env["PATH"] = str(Path(binary).parent) + os.pathsep + env.get("PATH", os.defpath)
     result = subprocess.run(
-        [executable(), *args], env=profile_env(profile), capture_output=True,
+        [binary, *args], env=env, capture_output=True,
         text=True, timeout=45, stdin=subprocess.DEVNULL,
     )
     if result.returncode:

@@ -181,3 +181,28 @@ def test_canvas_passes_explicit_operator_cache(profile, monkeypatch):
     assert access.main(["canvas", "status"]) == 0
     assert seen[0][0][-3:] == ["--db", str(db), "status"]
     assert seen[0][1]["env"]["ACHIOS_HOME"] == str(profile)
+
+
+def test_existing_profiles_default_to_file_keyring(profile, monkeypatch):
+    monkeypatch.delenv("GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND", raising=False)
+    assert workspace.profile_env("dlsu")["GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND"] == "file"
+    monkeypatch.setenv("GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND", "native")
+    assert workspace.profile_env("dlsu")["GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND"] == "native"
+
+
+def test_gws_wrapper_adds_its_bin_directory_for_node(profile, monkeypatch):
+    monkeypatch.setattr(workspace, "executable", lambda: "/opt/homebrew/bin/gws")
+    monkeypatch.setenv("PATH", "/usr/bin:/bin")
+    def run(command, **kwargs):
+        assert command[0] == "/opt/homebrew/bin/gws"
+        assert kwargs["env"]["PATH"].startswith("/opt/homebrew/bin:")
+        return SimpleNamespace(returncode=0, stdout='{}')
+    monkeypatch.setattr(workspace.subprocess, "run", run)
+    assert workspace.call("dlsu", ["auth", "status"]) == {}
+
+
+def test_gws_homebrew_fallback_without_shell_path(monkeypatch):
+    monkeypatch.delenv("ACHIOS_GWS_BIN", raising=False)
+    monkeypatch.setattr(workspace.shutil, "which", lambda _: None)
+    monkeypatch.setattr(workspace.Path, "is_file", lambda p: str(p) == "/opt/homebrew/bin/gws")
+    assert workspace.executable() == "/opt/homebrew/bin/gws"

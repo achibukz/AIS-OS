@@ -22,18 +22,27 @@ Rejected approaches:
 
 Verification:
 
-- Targeted portable-skill tests passed, 27 tests.
+- Initial targeted portable-skill tests passed, 27 tests, on server and Mac.
+  Added Mac backend and executable-path regression cases after live checks.
 - Live server DLSU token status and Docs schema inspection succeeded.
 - `/home/achibukz/.local/share/achios/venv/bin/python -m pytest tests/ -q`
-  passed: 920 tests, one existing unknown-marker warning.
+  passed after final portability fixes: 923 tests, one existing unknown-marker warning.
 - All four skill frontmatter validations passed.
 - Mac SSH connected after Aki enabled Remote Login and authorized the server key.
   Its existing checkout fast-forwarded with its local scribe edit preserved.
 
 Open:
 
-- Mac SSH authentication must accept the server key before remote installation.
-- Model selection and a user-selected private Doc remain live acceptance checks.
+- Skills installed in user discovery paths on both server and Mac.
+- Mac live checks passed for all four OAuth profiles, Gmail and Drive reads, a
+  three-tab DLSU Doc, Calendar, tasks, local recall and Canvas over SSH.
+- Canvas cache is stale from September 28. No refresh or delivery ran.
+- Automatic model selection inside a new client chat remains unexercised.
+- Final Mac command: `uv run --python 3.11 --with pytest --with requests
+  --with PyYAML python -m pytest tests/test_portable_skills.py -q`, 30 passed.
+- Mac Calendar also succeeded without a login shell, 36 calendars and no errors.
+- Mac gws needed the file keyring backend and its binary directory on PATH for
+  Node. Both cases now have regression coverage.
 
 
 ## 2026-09-25 12:15 PHT [saved]

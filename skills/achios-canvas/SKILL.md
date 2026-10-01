@@ -30,6 +30,18 @@ If the cache is missing, say so and offer a read on the configured achibuntu hos
 through an existing SSH connection. Do not invent an SSH alias, sync an open SQLite
 database, or report an empty schedule. Google OAuth does not authenticate Canvas.
 
+Aki's Mac has a verified SSH connection to `achibukz@100.106.210.38`. When its
+local cache is absent, run the installed server reader over that connection:
+
+```bash
+ssh -o BatchMode=yes -o ConnectTimeout=8 achibukz@100.106.210.38 'python3 /home/achibukz/.agents/skills/achios-canvas/scripts/access.py canvas status'
+```
+
+Use the same read route for `due`, `courses` or another supported read. Keep shell
+arguments quoted. A failed SSH connection is an access failure, not an empty cache.
+Read timestamps on the server response and report stale data. This read route does
+not permit refresh or notification delivery.
+
 Refresh, event delivery and phone login belong to the coordinator. Use the existing
 hub's Refresh now and Start phone login controls. A CLI session may request a
 coordinator refresh through an available authorized control, but installing this

@@ -25,7 +25,6 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 
 ## Active
 
-- [ ] Install and verify portable achiOS skills on the Mac with existing Google accounts #systems !high
 - [ ] STDISCM Distributed Food Delivery Platform #school !med #STDISCM @2026-09-26 <!-- task-id: task_8bf73b1065178056c39f0ebd -->
 - [ ] STDISCM PRACTICE - Test Case Upload Check #school !med #STDISCM @2026-09-18 <!-- task-id: task_baafb1c46bf47acc4f05af6f -->
 - [ ] STDISCM P4 - Distributed Fault Tolerance #school !med #STDISCM @2026-11-21 <!-- task-id: task_3bc5591795bff1478e165373 -->
@@ -104,6 +103,8 @@ Move finished items to `## Done` with the completion date appended. Don't delete
 - [ ] Discuss how to do smart model routing in daily conversations in Telegram for achiCore #achicore #planning !med
 
 ## Done
+
+- [x] Install and verify portable achiOS skills on the Mac with existing Google accounts #systems @2026-10-01
 - [x] Manually activate Canvas task reconciliation for STDISCM to observe the pipeline ([AIS-OS #90](https://github.com/achibukz/AIS-OS/issues/90)) #school #systems !low (done 2026-09-25)
 - [x] Submit STDISCM Too Much Milk homework #school #STDISCM !high @2026-09-19 (done 2026-09-19)
 - [x] Remove broken Gmail links from email digest, filed as [AIS-OS #57](https://github.com/achibukz/AIS-OS/issues/57) #systems #bug !high (done 2026-09-17)
