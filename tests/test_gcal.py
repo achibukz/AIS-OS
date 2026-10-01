@@ -376,6 +376,41 @@ def test_insert_tags_owner_and_item_id(writable):
     assert stored["start"]["dateTime"] == "2026-09-18T07:00:00+08:00"
 
 
+def test_insert_creates_a_monthly_recurring_all_day_event(writable):
+    result = gcal.insert(write_config(), calendar="Personal", owner="asa", title="CODEX PAYMENT",
+                         date="2026-09-28", recurrence="RRULE:FREQ=MONTHLY;BYMONTHDAY=28")
+    assert result["status"] == "ok"
+    assert result["event"]["recurrence"] == ["RRULE:FREQ=MONTHLY;BYMONTHDAY=28"]
+    stored = writable.events[("personal", "personal@group")][result["event"]["event_id"]]
+    assert stored["recurrence"] == ["RRULE:FREQ=MONTHLY;BYMONTHDAY=28"]
+
+
+def test_insert_recurrence_requires_the_rrule_prefix(writable):
+    with pytest.raises(gcal.GcalError) as raised:
+        gcal.insert(write_config(), calendar="Personal", owner="asa", title="CODEX PAYMENT",
+                    date="2026-09-28", recurrence="FREQ=MONTHLY;BYMONTHDAY=28")
+    assert raised.value.code == "invalid_arguments"
+    assert writable.writes() == []
+
+
+def test_insert_rejects_a_bad_rrule_before_any_gws_call(writable):
+    with pytest.raises(gcal.GcalError):
+        gcal.insert(write_config(), calendar="Personal", owner="asa", title="CODEX PAYMENT",
+                    date="2026-09-28", recurrence="FREQ=MONTHLY;BYMONTHDAY=28")
+    assert writable.calls == []
+
+
+def test_cli_insert_wires_the_recur_flag(tmp_path, fake, capsys):
+    fake.add_calendar("personal", "personal@group", "Personal")
+    path = tmp_path / "calendars.json"
+    path.write_text(json.dumps({"calendars": [entry("Personal", owners=["asa"])]}))
+    assert gcal.main(["--config", str(path), "insert", "--calendar", "Personal", "--owner", "asa",
+                      "--title", "CODEX PAYMENT", "--date", "2026-09-28",
+                      "--recur", "RRULE:FREQ=MONTHLY;BYMONTHDAY=28"]) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result["event"]["recurrence"] == ["RRULE:FREQ=MONTHLY;BYMONTHDAY=28"]
+
+
 def test_insert_is_idempotent_for_the_same_item_id(writable):
     for _ in range(2):
         result = gcal.insert(write_config(), calendar="Personal", owner="asa", title="Pay rent",
@@ -479,6 +514,28 @@ def test_update_moves_an_owned_event_to_a_new_day(writable):
     result = gcal.update(write_config(), calendar="Personal", event_id="mine", owner="asa", date="2026-10-01")
     assert result["status"] == "ok"
     assert result["event"]["start"] == "2026-10-01"
+
+
+def test_update_refuses_to_move_a_recurring_events_date(writable):
+    writable.add_event("personal", "personal@group", {
+        **all_day("mine", "CODEX PAYMENT", "2026-09-28"),
+        "recurrence": ["RRULE:FREQ=MONTHLY;BYMONTHDAY=28"],
+        "extendedProperties": {"private": {"achios_owner": "asa", "achios_item_id": "item"}},
+    })
+    result = gcal.update(write_config(), calendar="Personal", event_id="mine", owner="asa", date="2026-10-05")
+    assert result["error"] == "recurring_event"
+    assert writable.writes() == []
+
+
+def test_update_still_retitles_a_recurring_event(writable):
+    writable.add_event("personal", "personal@group", {
+        **all_day("mine", "CODEX PAYMENT", "2026-09-28"),
+        "recurrence": ["RRULE:FREQ=MONTHLY;BYMONTHDAY=28"],
+        "extendedProperties": {"private": {"achios_owner": "asa", "achios_item_id": "item"}},
+    })
+    result = gcal.update(write_config(), calendar="Personal", event_id="mine", owner="asa", title="RENAMED")
+    assert result["status"] == "ok"
+    assert result["event"]["title"] == "RENAMED"
 
 
 def test_delete_removes_an_owned_event(writable):
@@ -713,6 +770,21 @@ def test_inserting_a_deleted_item_again_restores_its_event(writable):
     assert stored["status"] == "confirmed"
     assert stored["extendedProperties"]["private"]["achios_owner"] == "asa"
     assert len([c for c in writable.writes() if c[1:] == ("events", "insert")]) == 1
+
+
+def test_restoring_a_deleted_item_without_recur_clears_its_old_recurrence(writable):
+    config = write_config()
+    first = gcal.insert(config, calendar="Personal", owner="asa", title="CODEX PAYMENT", date="2026-09-28",
+                        item_id="codex_payment", recurrence="RRULE:FREQ=MONTHLY;BYMONTHDAY=28")
+    stored = writable.events[("personal", "personal@group")][first["event"]["event_id"]]
+    stored["status"] = "cancelled"
+
+    again = gcal.insert(config, calendar="Personal", owner="asa", title="CODEX PAYMENT", date="2026-09-28",
+                        item_id="codex_payment")
+
+    assert again["status"] == "ok" and again["restored"] is True
+    assert again["event"]["recurrence"] is None
+    assert stored["recurrence"] == []
 
 
 def test_a_deleted_event_of_another_owner_is_not_restored(writable):

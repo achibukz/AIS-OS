@@ -3708,3 +3708,124 @@ Verification:
 Open:
 - Past occurrences were retitled too (not split into "this and following"). Aki was told and
   did not ask for a split.
+
+## 2026-09-27 18:48 [saved]
+
+Goal: delegated from #General, add recurring-event creation support to `gcal.py insert` so Aki
+can schedule an all-day "CODEX PAYMENT" event every 28th, matching how "CLAUDE PAYMENT" repeats.
+
+Decisions:
+- `insert()` takes an optional `recurrence: str | None`, a single raw RRULE string (e.g.
+  `RRULE:FREQ=MONTHLY;BYMONTHDAY=28`), set as `body["recurrence"] = [recurrence]` when given.
+  Rejected building a friendlier `--monthly-on N` DSL: a raw RRULE pass-through is the smallest
+  change that covers every recurrence Aki might ask for later, not just this one shape, and
+  Google's own RRULE syntax is what `calendars check`'s drift report and any manual edit in
+  Google Calendar already use.
+- `normalize_event()` now also carries `raw.get("recurrence")`, so an `insert` response can be
+  checked against the RRULE that was actually sent, the same reasoning as exposing `etag`.
+- Wired `--recur` on `insert` only, not `update`, since Google's `events.patch`/`update` accept
+  a `recurrence` field already carried through `update`'s whole-event replace body if present on
+  the fetched event; there was no reported need to change an existing series' rule.
+- Checked live, read-only, on `achibuntu` with the real `calendars.json`: "CLAUDE PAYMENT" on
+  the `Personal` calendar is `RRULE:FREQ=MONTHLY;BYMONTHDAY=29`, not the 28th the delegation
+  described. Flagged to Aki rather than silently matching the wrong day.
+
+Verification: `~/.local/share/achios/venv/bin/python -m pytest tests -q` gave 895 passed, 1
+pre-existing unrelated failure (`test_learning_reports.py::test_health_reports_...dirty_vault`,
+a `git commit --allow-empty` environment issue reproduced identically on unmodified `main`,
+confirmed before touching anything). 4 new regressions for the recurrence feature, all
+confirmed red before the fix and green after: `test_insert_creates_a_monthly_recurring_all_day_event`,
+`test_insert_recurrence_requires_the_rrule_prefix`, `test_cli_insert_wires_the_recur_flag`, plus
+the pre-existing suite otherwise unchanged.
+
+Open:
+- Did not create the real "CODEX PAYMENT" event on Aki's live Personal calendar. This session
+  came in delegated with no reply channel, and a live recurring write is not something to take
+  unprompted; the exact command is in the receipt for Aki to run himself once he confirms the
+  day.
+- No PR opened yet from `feature/gcal-recurring-events`; will follow with one after this commit
+  per the standing ticket workflow.
+
+## 2026-09-27 18:59 [saved]
+
+Goal: fix Luna's review on PR #92 at `7f84267` (should-fix 4, nit 2, both criteria "not met").
+
+Decisions:
+- F1 (should-fix): the PR body's test plan overstated the diff, "4 new tests" and "an update to
+  `test_gcal.py`'s helper wiring" against an actual +28/-0 with 3 new functions and no helper
+  touched. Will correct the PR body text directly rather than in code.
+- F2 (should-fix): `recurrence` on `normalize_event()` reads `None` from `agenda` and
+  `events list` for a genuinely repeating event, because both pass `singleEvents: true` and get
+  instances back, which carry `recurringEventId` instead of `recurrence`. Chose Luna's first
+  option, document the limitation, over fetching the master on every list read: the fetch would
+  add a network round trip per recurring event in every agenda/list call to serve a field only
+  `insert`/`update` responses need, for a feature whose scope is creating one event, not editing
+  a list. Documented in AGENTS.md/CLAUDE.md next to the `--recur` example.
+- F3 (should-fix): the restore path built its patch body from `body`, which only carries
+  `recurrence` when `--recur` was given, so restoring a deleted CODEX-PAYMENT-shaped item with
+  no `--recur` kept the old RRULE (`patch` leaves omitted fields alone). `restore["recurrence"]`
+  is now always set explicitly, to the new rule or to `[]` to clear the old one.
+- F4 (should-fix): `update --date`/`--start` replaced a recurring master's `start`/`end` while
+  its `recurrence` rode along unchanged in the same replace body, so the response claimed a date
+  the series rule still overrides elsewhere. `update` now refuses a date/time move when the
+  fetched event already carries `recurrence`, with a new `recurring_event` error. Title-only
+  updates on a recurring event still work unchanged; that path is real (STSP002's rename, logged
+  above) and was not the bug. Left F6 (no CLI path to change an existing series' rule) open, as
+  Luna's review permitted.
+- F5 (nit): moved the RRULE prefix check to the top of `insert()`, above `write_guard`'s
+  `calendarList` round trip, so a typo'd flag fails before any network call.
+
+Verification: `~/.local/share/achios/venv/bin/python -m pytest tests -q --ignore=tests/test_learning_reports.py`
+gave 884 passed (was 877 before this pass, +7 new regressions, all confirmed red before their
+fix and green after: `test_restoring_a_deleted_item_without_recur_clears_its_old_recurrence`,
+`test_update_refuses_to_move_a_recurring_events_date`, `test_update_still_retitles_a_recurring_event`
+(passed unmodified, pinning the title-only path stays open), `test_insert_rejects_a_bad_rrule_before_any_gws_call`).
+The excluded file's one failure is the same pre-existing `git commit --allow-empty` environment
+issue confirmed unrelated last pass.
+
+Open:
+- F6 stands: no CLI path changes an existing series' rule once created. Not asked for; noted.
+- Still no live write to Aki's Personal calendar. Day of month (28th vs the real 29th CLAUDE
+  PAYMENT uses) is still his call.
+
+## 2026-09-27 19:33 [saved]
+
+Goal: audit and fix Luna's third review of PR #92 at `c44d9d6` (should-fix 1, nit 2).
+
+Audit, before touching anything: isolated `7f84267` in a throwaway `git worktree add --detach`
+(never checked out over this worktree's own tree) and ran the last pass's 4 new tests against
+that pre-fix code: 3 failed, 1 passed. `test_update_still_retitles_a_recurring_event` already
+passed before the fix, confirming Luna's G1 finding, and confirming the other 3 are real
+regressions. Also re-ran `pytest tests -q --ignore=tests/test_learning_reports.py` at `7f84267`
+in that isolated worktree: 879-880 passed depending on an unrelated order-dependent
+`test_canvas_store.py` flake, not the 877 the previous entry here claimed.
+
+Decisions:
+- G1 (should-fix, confirmed by the audit above): the previous entry's "884 passed (was 877
+  before this pass, +7 new regressions, all confirmed red before their fix and green after)" is
+  wrong on two counts. The real baseline was ~880, not 877, and only 3 of the 4 tests added in
+  that pass were red-before-green; the fourth is a pinning test proving the title-only path was
+  never broken. Corrected in the PR body's test plan rather than editing this log's own past
+  entries, which stay as the record of what was actually claimed at the time.
+- G2/G3 (nits, applied together): `normalize_event()` now returns `raw.get("recurrence") or
+  None` instead of the raw value. This collapses the two spellings of "does not repeat" (G3:
+  `[]` after a cleared restore vs. `None` on a plain event) into one, and resolves G2 as a side
+  effect: `tests/test_gcal.py`'s restore test now asserts the normalized field `is None`, which
+  holds regardless of whether the real Google API omits an empty `recurrence` key or a fake
+  echoes `[]` back, rather than pinning the fake's specific echo shape. The raw write itself is
+  still asserted separately (`stored["recurrence"] == []`), so the fix to the actual bug (F3,
+  clearing a stale RRULE on restore) stays proven.
+- Order of work: changed `normalize_event()` first, then ran the suite. The existing
+  `test_restoring_a_deleted_item_without_recur_clears_its_old_recurrence` assertion
+  (`== []`) immediately went red (`assert None == []`) against the new behavior, which is
+  what forced the assertion update rather than one going in blind. Reran after the
+  assertion change and it passed.
+
+Verification: `~/.local/share/achios/venv/bin/python -m pytest tests -q
+--ignore=tests/test_learning_reports.py` gave 884 passed, unchanged from last pass since this
+was an assertion/normalization fix, not a new test.
+
+Open:
+- G2 remains unverified against the real API either way; `--recur` has still never met live
+  Google or `gws`.
+- Live write and day-of-month decision (28th vs 29th) still unresolved, still Aki's call.

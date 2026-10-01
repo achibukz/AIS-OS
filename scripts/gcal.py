@@ -7,6 +7,8 @@
     gcal.py events list --calendar DLSU --from 2026-09-17 --to 2026-09-17
     gcal.py insert --calendar workouts --owner asta --title "Upper A" --start 2026-09-18T07:00 --end 2026-09-18T08:00
     gcal.py insert --calendar Personal --owner asa --title "Pay rent" --date 2026-09-30
+    gcal.py insert --calendar Personal --owner asa --title "CODEX PAYMENT" --date 2026-09-28 \
+        --recur "RRULE:FREQ=MONTHLY;BYMONTHDAY=28"
     gcal.py update --calendar Personal --event ID --owner asa --date 2026-10-01
     gcal.py delete --calendar Personal --event ID --owner asa
 
@@ -265,6 +267,7 @@ def normalize_event(entry: dict, raw: dict) -> dict:
         "end": end.get("date") if all_day else to_manila(end["dateTime"]),
         "all_day": all_day,
         "recurring_event_id": raw.get("recurringEventId"),
+        "recurrence": raw.get("recurrence") or None,
         "owner": private.get("achios_owner"),
         "item_id": private.get("achios_item_id"),
         "etag": raw.get("etag"),
@@ -562,7 +565,10 @@ def insert(
     end: str | None = None,
     date: str | None = None,
     item_id: str | None = None,
+    recurrence: str | None = None,
 ) -> dict:
+    if recurrence and not recurrence.startswith("RRULE:"):
+        raise GcalError("invalid_arguments", "--recur needs an RRULE, e.g. RRULE:FREQ=MONTHLY;BYMONTHDAY=28")
     entry = find_calendar(config, calendar)
     refusal = write_guard(entry, owner)
     if refusal:
@@ -576,6 +582,8 @@ def insert(
     item_id = item_id or default_item_id(owner, entry["id"], title, when)
     event_id = event_id_for(item_id)
     body["id"] = event_id
+    if recurrence:
+        body["recurrence"] = [recurrence]
     body["extendedProperties"] = {"private": {"achios_owner": owner, "achios_item_id": item_id}}
 
     existing = get_event(entry["profile"], entry["id"], event_id)
@@ -586,7 +594,10 @@ def insert(
         if existing.get("status") != "cancelled":
             return {"status": "exists", "event": normalize_event(entry, existing)}
         # Google keeps a deleted event's ID forever, so asking for the same item again restores it.
+        # patch leaves fields it isn't sent untouched, so recurrence needs an explicit value or a
+        # restore with no --recur would keep whatever RRULE the deleted event had.
         restore = {key: value for key, value in body.items() if key != "id"}
+        restore["recurrence"] = body.get("recurrence", [])
         event = patch_event(entry["profile"], entry["id"], event_id, {**restore, "status": "confirmed"})
         return {"status": "ok", "restored": True, "event": normalize_event(entry, event)}
     try:
@@ -634,6 +645,12 @@ def update(
             "status": "error",
             "error": "conflict",
             "message": "event changed since it was read, refetch and retry",
+        }
+    if (date or start) and event.get("recurrence"):
+        return {
+            "status": "error",
+            "error": "recurring_event",
+            "message": "date/time moves are not supported on a recurring event; edit the series in Google Calendar",
         }
     # gws rejects null fields, so a patch cannot switch between timed and all day.
     # Replacing the whole event can, and it keeps every field this call does not change.
@@ -694,6 +711,10 @@ def build_parser() -> argparse.ArgumentParser:
     insert_parser.add_argument("--end")
     insert_parser.add_argument("--date", type=_date)
     insert_parser.add_argument("--item-id")
+    insert_parser.add_argument(
+        "--recur", dest="recurrence",
+        help='RRULE for a repeating event, e.g. "RRULE:FREQ=MONTHLY;BYMONTHDAY=28"',
+    )
 
     for name in ("update", "delete"):
         write = commands.add_parser(name)
@@ -731,6 +752,7 @@ def run(args: argparse.Namespace) -> dict:
         return insert(
             config, calendar=args.calendar, owner=args.owner, title=args.title, start=args.start,
             end=args.end, date=args.date.isoformat() if args.date else None, item_id=args.item_id,
+            recurrence=args.recurrence,
         )
     if args.command == "update":
         return update(
