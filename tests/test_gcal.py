@@ -355,6 +355,8 @@ def write_config():
         entry("workouts", cid="workouts@group", owners=["asta"]),
         entry("Canvas", cid="canvas@import", profile="dlsu"),
         entry("Shared", cid="shared@group", owners=["asa"]),
+        entry("ING", cid="ing@group", profile="work", owners=["cohesion"]),
+        entry("Job", cid="job@group", profile="work"),
     ]
 
 
@@ -364,6 +366,8 @@ def writable(fake):
     fake.add_calendar("personal", "workouts@group", "workouts")
     fake.add_calendar("dlsu", "canvas@import", "Canvas", role="reader")
     fake.add_calendar("personal", "shared@group", "Shared", role="reader")
+    fake.add_calendar("work", "ing@group", "ING")
+    fake.add_calendar("work", "job@group", "Job")
     return fake
 
 
@@ -402,13 +406,13 @@ def test_insert_recovers_an_accepted_insert_that_timed_out(writable, monkeypatch
 
 
 def test_insert_refuses_a_calendar_it_does_not_own(writable):
-    result = gcal.insert(write_config(), calendar="workouts", owner="asa", title="x", date="2026-09-30")
+    result = gcal.insert(write_config(), calendar="Personal", owner="asta", title="x", date="2026-09-30")
     assert result["reason"] == "calendar_owner"
     assert writable.writes() == []
 
 
 def test_insert_refuses_a_calendar_that_is_read_only_in_config(writable):
-    result = gcal.insert(write_config(), calendar="Canvas", owner="asa", title="x", date="2026-09-30")
+    result = gcal.insert(write_config(), calendar="Job", owner="asta", title="x", date="2026-09-30")
     assert result["reason"] == "read_only"
     assert writable.writes() == []
 
@@ -422,12 +426,12 @@ def test_insert_refuses_a_calendar_that_is_read_only_live(writable):
 # Update and delete guards
 
 
-def seed(fake, event_id, owner=None, calendar="personal@group"):
+def seed(fake, event_id, owner=None, calendar="personal@group", profile="personal"):
     private = {"achios_owner": owner, "achios_item_id": "item"} if owner else {}
     event = all_day(event_id, "Seeded", "2026-09-30")
     if private:
         event["extendedProperties"] = {"private": private}
-    fake.add_event("personal", calendar, event)
+    fake.add_event(profile, calendar, event)
 
 
 def test_update_allows_an_untagged_event(writable):
@@ -445,16 +449,16 @@ def test_delete_allows_an_untagged_event(writable):
 
 @pytest.mark.parametrize("action", ["update", "delete"])
 def test_writes_refuse_another_owners_event(writable, action):
-    seed(writable, "theirs", owner="cohesion")
-    result = _write(action, calendar="Personal", event_id="theirs", owner="asa")
+    seed(writable, "theirs", owner="cohesion", calendar="workouts@group")
+    result = _write(action, calendar="workouts", event_id="theirs", owner="asta")
     assert result["reason"] == "event_owner"
     assert writable.writes() == []
 
 
 @pytest.mark.parametrize("action", ["update", "delete"])
 def test_writes_refuse_a_calendar_owned_by_another_agent(writable, action):
-    seed(writable, "mine", owner="asa", calendar="workouts@group")
-    result = _write(action, calendar="workouts", event_id="mine", owner="asa")
+    seed(writable, "mine", owner="asta")
+    result = _write(action, calendar="Personal", event_id="mine", owner="asta")
     assert result["reason"] == "calendar_owner"
     assert writable.writes() == []
 
@@ -464,6 +468,36 @@ def test_writes_refuse_a_read_only_calendar(writable, action):
     result = _write(action, calendar="Canvas", event_id="anything", owner="asa")
     assert result["reason"] == "read_only"
     result = _write(action, calendar="Shared", event_id="anything", owner="asa")
+    assert result["reason"] == "read_only"
+    assert writable.writes() == []
+
+
+def test_asa_inserts_into_a_calendar_whose_write_owner_omits_it(writable):
+    result = gcal.insert(write_config(), calendar="workouts", owner="asa", title="x", date="2026-09-30")
+    assert result["status"] == "ok"
+    assert result["event"]["owner"] == "asa"
+
+
+def test_asa_inserts_into_a_calendar_with_no_write_owner(writable):
+    result = gcal.insert(write_config(), calendar="Job", owner="asa", title="x", date="2026-09-30")
+    assert result["status"] == "ok"
+
+
+def test_asa_updates_a_cohesion_event_on_a_cohesion_calendar(writable):
+    seed(writable, "theirs", owner="cohesion", calendar="ing@group", profile="work")
+    result = gcal.update(write_config(), calendar="ING", event_id="theirs", owner="asa", date="2026-10-01")
+    assert result["status"] == "ok"
+    assert result["event"]["start"] == "2026-10-01"
+    assert result["event"]["owner"] == "cohesion"
+
+
+def test_asa_deletes_another_owners_event(writable):
+    seed(writable, "theirs", owner="asta", calendar="workouts@group")
+    assert gcal.delete(write_config(), calendar="workouts", event_id="theirs", owner="asa")["status"] == "ok"
+
+
+def test_asa_is_still_refused_by_a_read_only_access_role(writable):
+    result = gcal.insert(write_config(), calendar="Canvas", owner="asa", title="x", date="2026-09-30")
     assert result["reason"] == "read_only"
     assert writable.writes() == []
 

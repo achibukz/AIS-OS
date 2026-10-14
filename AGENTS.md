@@ -103,11 +103,13 @@ scripts/gcal.py events list --calendar DLSU --from 2026-09-17 --to 2026-09-17
 scripts/gcal.py calendars list
 ```
 
-Only Asa, Asta and the cohesion writer write, each to calendars whose `write_owner` in the
-private `~/.config/achios/calendars.json` names it. Choose the calendar by its configured
-purpose. `config/calendars.example.json` shows the shape; there is no calendar table to keep in
-sync here. Every created event carries `achios_owner` and `achios_item_id`, and `update` and
-`delete` refuse untagged events, another owner's events and read-only calendars:
+Only Asa, Asta and the cohesion writer write. Asta and cohesion write to calendars whose
+`write_owner` in the private `~/.config/achios/calendars.json` names them. Asa is the calendar
+admin and writes every calendar and every event whatever `write_owner` or `achios_owner` says;
+Google's access role still refuses a reader or imported calendar. Choose the calendar by its
+configured purpose. `config/calendars.example.json` shows the shape; there is no calendar table
+to keep in sync here. Every created event carries `achios_owner` and `achios_item_id`, and for
+Asta and cohesion `update` and `delete` refuse another owner's events and read-only calendars:
 
 ```
 scripts/gcal.py insert --calendar Personal --owner asa --title "Pay rent" --date 2026-09-30

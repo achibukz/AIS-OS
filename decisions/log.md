@@ -1736,3 +1736,20 @@ instead, GPT-6.1 Sol medium, and Claude's persona default, Sonnet 5.5 high.
 Codex's defaults also cover other spawned agents with no override.
 
 Owner: Aki.
+
+## 2026-10-14: Asa is the calendar admin
+
+Decision: `scripts/gcal.py` lets `--owner asa` write every configured calendar
+and every event, ignoring `write_owner` and the event's `achios_owner`. Asta and
+cohesion keep the per-calendar and per-event checks. Google's access role still
+applies to Asa, so reader and imported calendars stay read-only.
+
+Why: Aki approved an event change on ING and Asa was refused because ING lists
+only `cohesion`. Aki asked for full write access so the refusal cannot recur on
+another calendar.
+
+Consequence: an Asa edit to a cohesion event changes its etag, so cohesion stops
+with a concurrent-edit error the next time it changes that item instead of
+reverting Asa's edit.
+
+Owner: Aki.
