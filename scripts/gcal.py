@@ -58,6 +58,9 @@ WIKI_PATH = USER_HOME / "Documents" / "Obsidian" / "schoolMem" / "wiki"
 PROFILES = ("personal", "work", "main", "dlsu")
 OWNER_COHESION = "cohesion"
 OWNERS = ("asta", "asa", OWNER_COHESION)
+# Asa writes every calendar and every event, whatever write_owner and achios_owner say.
+# Google's own access role still applies, so an import or a reader calendar stays read-only.
+ADMIN_OWNER = "asa"
 WRITABLE_ROLES = {"owner", "writer"}
 MANILA = ZoneInfo("Asia/Manila")
 KEYRING_BANNER = "Using keyring backend"
@@ -530,10 +533,11 @@ def _refused(reason: str, message: str) -> dict:
 
 def write_guard(entry: dict, owner: str) -> dict | None:
     """Refuse a write to a calendar the owner does not hold or cannot write live."""
-    if not entry["write_owner"]:
-        return _refused("read_only", f"{entry['name']} is read-only for agents")
-    if owner not in entry["write_owner"]:
-        return _refused("calendar_owner", f"{entry['name']} is not written by {owner}")
+    if owner != ADMIN_OWNER:
+        if not entry["write_owner"]:
+            return _refused("read_only", f"{entry['name']} is read-only for agents")
+        if owner not in entry["write_owner"]:
+            return _refused("calendar_owner", f"{entry['name']} is not written by {owner}")
     role = gws(
         entry["profile"], "calendar", "calendarList", "get",
         "--params", json.dumps({"calendarId": entry["id"]}),
@@ -547,7 +551,7 @@ def event_guard(event: dict | None, owner: str) -> dict | None:
     if event is None or event.get("status") == "cancelled":
         return {"status": "error", "error": "not_found", "message": "event does not exist"}
     tagged = private_properties(event).get("achios_owner")
-    if tagged is not None and tagged != owner:
+    if tagged is not None and tagged != owner and owner != ADMIN_OWNER:
         return _refused("event_owner", f"event belongs to {tagged}")
     return None
 

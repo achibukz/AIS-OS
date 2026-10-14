@@ -1,5 +1,27 @@
 # Session Log
 
+## 2026-10-14 19:15 PHT [saved]
+
+Goal: Asa was refused an approved event change on ING because `gcal.py` only
+lets a calendar's `write_owner` write it, and ING lists only `cohesion`. Aki
+asked for full calendar access for Asa.
+
+Decisions:
+
+- Added `ADMIN_OWNER = "asa"` to `scripts/gcal.py`. `write_guard` skips the
+  config ownership checks for Asa and still checks Google's access role.
+  `event_guard` lets Asa change events tagged to another owner.
+- Left `calendars.json` alone. The bypass lives in code, so a calendar added
+  later is writable by Asa without a config edit.
+- Moved the restriction tests that used Asa as the outsider onto Asta, and added
+  tests for Asa on ING, an ownerless calendar, another owner's event and a reader
+  calendar. The four admin tests failed on the old guard.
+
+Verification:
+
+- `tests/test_gcal.py`: 77 passed. Full `pytest tests` with a temporary HOME:
+  954 passed.
+
 ## 2026-10-01 13:37 PHT [saved]
 
 Goal: make the Telegram personas invokable from Codex and Claude Code on the
